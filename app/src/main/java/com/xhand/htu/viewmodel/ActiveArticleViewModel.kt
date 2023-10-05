@@ -1,0 +1,46 @@
+package com.xhand.htu.viewmodel
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.xhand.htu.model.entity.ArticleEntity
+//新闻列表
+class ActiveArticleViewModel: ViewModel() {
+    var list = listOf(
+        ArticleEntity(
+            title = "关于召开2023年学生军训汇报暨总结表彰大会的通知",
+            timestamp = "2023-09-26",
+            views = "1247"
+        ),
+        ArticleEntity(
+            title = "关于高性能计算平台关机更改供电模式的通知",
+            timestamp = "2023-10-02",
+            views = "220"
+        ),
+        ArticleEntity(
+            title = "关于召开主题教育总结大会的通知",
+            timestamp = " 2023-09-27",
+            views = "1010"
+        ),
+        ArticleEntity(
+            title = "关于申报2024年度河南省高等学校重点科研项目计划基础研究专项的通知",
+            timestamp = "2023-09-27",
+            views = "1261"
+        ),
+        ArticleEntity(
+            title = "关于举办河南师范大学“中华民族一家亲 同心共筑中国梦”主题演讲比赛的通知",
+            timestamp = "2023-09-26",
+            views = "2970"
+        ),
+        ArticleEntity(
+            title = "关于2023年中秋节国庆节放假安排的通知",
+            timestamp = "2023-09-26",
+            views = "11308"
+        ),
+        ArticleEntity(
+            title = "关于2023年中秋节国庆节放假安排的通知",
+            timestamp = "2023-09-26",
+            views = "11308"
+        )
+    )
+        private set
+}
