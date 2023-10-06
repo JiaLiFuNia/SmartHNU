@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -37,43 +38,54 @@ fun PersonScreen() {
         LazyColumn(
             modifier = Modifier.padding(15.dp)
         ) {
-            item { 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+            item {
+                Card(
+                    modifier = Modifier.padding(vertical = 8.dp)
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.headimage2),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .size(80.dp)
-                            .clip(CircleShape)
-                    )
-                    Column(
-                        verticalArrangement = Arrangement.SpaceAround,
-                        modifier = Modifier
-                            .padding(horizontal = 8.dp)
-                            .height(75.dp)
+                            .fillMaxWidth()
+                            .padding(10.dp)
                     ) {
-                        Text(text = "许博涵", fontSize = 19.sp)
-                        Text(text = "2201214001", fontSize = 15.sp)
-                        Text(text = "数学与信息科学学院", fontSize = 15.sp)
+                        Image(
+                            painter = painterResource(id = R.drawable.headimage2),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(CircleShape)
+                        )
+                        Column(
+                            verticalArrangement = Arrangement.SpaceAround,
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .height(75.dp)
+                        ) {
+                            Text(text = "许博涵", fontSize = 19.sp)
+                            Text(text = "2201214001", fontSize = 15.sp, color = Color.Gray)
+                            Text(text = "数学与信息科学学院", fontSize = 15.sp, color = Color.Gray)
+                        }
                     }
                 }
             }
+
             item {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 14.dp)
+                        .padding(vertical = 7.dp)
                 ) {
                     Text(
                         text = "今日课程",
                         modifier = Modifier
-                            .padding(8.dp),
+                            .padding(start = 8.dp, top = 8.dp),
                         fontSize = 17.sp
                     )
-                    Row {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
                         Column(
                             modifier = Modifier.padding(8.dp)
                         ) {
@@ -112,18 +124,18 @@ fun PersonScreen() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
-                        .padding(vertical = 14.dp)
+                        .padding(vertical = 7.dp)
                 ) {
                     Text(
                         text = "第二课堂",
                         modifier = Modifier
-                            .padding(8.dp),
+                            .padding(start = 8.dp, top = 8.dp),
                         fontSize = 17.sp
                     )
                     Text(
                         text = "请先登录",
                         modifier = Modifier
-                            .padding(horizontal = 8.dp)
+                            .padding(8.dp)
                     )
                 }
             }
@@ -132,12 +144,12 @@ fun PersonScreen() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
-                        .padding(vertical = 14.dp)
+                        .padding(vertical = 7.dp)
                 ) {
                     Text(
                         text = "课程成绩",
                         modifier = Modifier
-                            .padding(8.dp),
+                            .padding(start = 8.dp, top = 8.dp),
                         fontSize = 17.sp
                     )
                 }
