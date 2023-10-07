@@ -66,11 +66,16 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
 
     //轮播图
+    val accompanist_version = "0.24.3-alpha"
     //implementation("com.google.accompanlist:accompanlist-systemuicontroller:0.24.3-alpha")
     //implementation("com.google.accompanlist:accompanlist-insets:0.24.3-alpha")
     //implementation("com.google.accompanlist:accompanlist-pager:0.24.3-alpha")
-    implementation("com.google.accompanist:accompanist-navigation-animation:0.24.3-alpha")
+    implementation("com.google.accompanist:accompanist-navigation-animation:$accompanist_version")
+    implementation("com.google.accompanist:accompanist-insets:$accompanist_version")
+    implementation("com.google.accompanist:accompanist-insets-ui:$accompanist_version")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:$accompanist_version")
 
+    implementation("androidx.compose.ui:ui:1.2.0")
     //图片加载
     implementation("io.coil-kt:coil-compose:2.0.0-rc01")
 
