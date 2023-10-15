@@ -5,6 +5,5 @@ import java.sql.Timestamp
 //文章数据类
 data class ArticleEntity(
     val title: String,
-    var timestamp: String,
-    var views: String
+    var timestamp: String
 )

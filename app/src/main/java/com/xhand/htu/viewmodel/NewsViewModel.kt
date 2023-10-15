@@ -5,22 +5,37 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.xhand.htu.model.entity.Category
+import com.xhand.htu.model.entity.HomeService
 import com.xhand.htu.model.entity.SwiperEntity
 
 class NewsViewModel:ViewModel() {
+
+    private val homeService = HomeService.instance()
+
     //首页标签
-    val categories by mutableStateOf(
+    var categories by mutableStateOf(
         listOf(
-            Category("通知通告"),
-            Category("活动通知"),
-            Category("教务通知")
+            Category("通知通告","1"),
+            Category("活动通知","2"),
+            Category("教务通知","3")
             )
     )
+        private set
+
+    suspend fun categoryData(){
+        val categoryRes = homeService.category()
+        if(categoryRes.code == 200) {
+            categories = categoryRes.data
+        }else{
+            val message = categoryRes.message
+        }
+    }
+
 
     var categoryIndex by mutableStateOf(0)
         private set
 
-    fun updataCategoryIndex(index: Int){
+    fun updateCategoryIndex(index: Int){
         categoryIndex = index
     }
 

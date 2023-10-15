@@ -60,10 +60,11 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    // Retrofit
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    // Retrofit with Scalar Converter
-    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+
+    val retrofit = "2.9.0"
+    implementation("com.squareup.retrofit2:retrofit:$retrofit")
+    implementation("com.squareup.retrofit2:converter-moshi:$retrofit")
+    implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
 
     //轮播图
     val accompanist_version = "0.24.3-alpha"

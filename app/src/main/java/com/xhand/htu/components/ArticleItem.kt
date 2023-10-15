@@ -41,13 +41,6 @@ fun ArticleItem(article: ArticleEntity,modifier: Modifier = Modifier) {
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    " 浏览量：${article.views}",
-                    fontSize = 12.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Right
-                )
             }
         }
     }

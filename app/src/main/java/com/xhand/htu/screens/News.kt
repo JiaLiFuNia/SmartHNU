@@ -17,6 +17,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -38,6 +39,9 @@ fun NewsScreen(
     activeArticleViewModel: ActiveArticleViewModel = viewModel(),
     onNavigateToArticle: () -> Unit = {}
 ) {
+    LaunchedEffect(Unit) {
+        vm.categoryData()
+    }
     Column(modifier = Modifier) {
         //标题栏
         TopAppBar(
@@ -74,7 +78,7 @@ fun NewsScreen(
                     Tab(
                         selected = vm.categoryIndex == index,
                         onClick = {
-                            vm.updataCategoryIndex(index)
+                            vm.updateCategoryIndex(index)
                         }
                     ) {
                         Text(
