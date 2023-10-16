@@ -5,5 +5,7 @@ import java.sql.Timestamp
 //文章数据类
 data class ArticleEntity(
     val title: String,
-    var timestamp: String
+    var time: String
 )
+
+data class ArticleListResponse(var data: List<ArticleEntity>):BaseResponse()

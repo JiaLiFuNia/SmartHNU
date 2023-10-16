@@ -36,7 +36,7 @@ fun ArticleItem(article: ArticleEntity,modifier: Modifier = Modifier) {
             )
             Row(horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
-                    text = "时间：${article.timestamp}",
+                    text = "时间：${article.time}",
                     fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
