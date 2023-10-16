@@ -50,6 +50,7 @@ fun ArticleDetailScreen(onBack:()->Unit) {
         {
             LazyColumn(
                 modifier = Modifier.padding(15.dp)
+
             ) {
                 item {
                     Text(
