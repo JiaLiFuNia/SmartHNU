@@ -4,22 +4,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.xhand.htu.model.entity.ArticleEntity
+import com.xhand.htu.model.entity.HomeArticle.ArticleEntity
 //文章样式
 @Composable
-fun ArticleItem(article: ArticleEntity,modifier: Modifier = Modifier) {
+fun ArticleItem(article: ArticleEntity, modifier: Modifier = Modifier) {
 
     Card(
         modifier = Modifier

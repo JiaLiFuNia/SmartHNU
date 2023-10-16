@@ -42,6 +42,7 @@ fun NewsScreen(
     LaunchedEffect(Unit) {
         vm.categoryData()
         articleViewModel.fetchArticleList()
+        activeArticleViewModel.fetchActiveArticleList()
     }
     Column(modifier = Modifier) {
         //标题栏

@@ -4,8 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.xhand.htu.model.entity.Category
-import com.xhand.htu.model.entity.HomeService
+import com.xhand.htu.model.entity.tabs.Category
+import com.xhand.htu.model.entity.tabs.HomeService
 import com.xhand.htu.model.entity.SwiperEntity
 
 class NewsViewModel:ViewModel() {
@@ -26,8 +26,6 @@ class NewsViewModel:ViewModel() {
         val categoryRes = homeService.category()
         if(categoryRes.code == 200) {
             categories = categoryRes.data
-        }else{
-            val message = categoryRes.message
         }
     }
 
