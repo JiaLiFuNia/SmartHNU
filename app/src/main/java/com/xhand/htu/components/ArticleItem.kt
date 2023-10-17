@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,13 +17,17 @@ import androidx.compose.ui.unit.sp
 import com.xhand.htu.model.entity.HomeArticle.ArticleEntity
 //文章样式
 @Composable
-fun ArticleItem(article: ArticleEntity, modifier: Modifier = Modifier) {
+fun ArticleItem(article: ArticleEntity, modifier: Modifier = Modifier,
+onNavigateToArticle: () -> Unit = {}) {
 
     Card(
+        elevation = CardDefaults.cardElevation(4.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 15.dp, vertical = 6.dp)
-            .clickable { }
+            .clickable {
+                onNavigateToArticle()
+            }
     ) {
         Column(modifier = modifier.padding(8.dp)) {
             Text(

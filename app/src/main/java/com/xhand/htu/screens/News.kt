@@ -29,6 +29,7 @@ import com.xhand.htu.components.ArticleItem
 import com.xhand.htu.viewmodel.ActiveArticleViewModel
 import com.xhand.htu.viewmodel.ArticleViewModel
 import com.xhand.htu.viewmodel.NewsViewModel
+import com.xhand.htu.viewmodel.OtherArticleViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -37,38 +38,30 @@ fun NewsScreen(
     vm: NewsViewModel = viewModel(),
     articleViewModel: ArticleViewModel = viewModel(),
     activeArticleViewModel: ActiveArticleViewModel = viewModel(),
+    otherArticleViewModel: OtherArticleViewModel = viewModel(),
     onNavigateToArticle: () -> Unit = {}
 ) {
     LaunchedEffect(Unit) {
         vm.categoryData()
         articleViewModel.fetchArticleList()
         activeArticleViewModel.fetchActiveArticleList()
+        otherArticleViewModel.fetchOtherArticleList()
     }
     Column(modifier = Modifier) {
         //标题栏
         TopAppBar(
-            title = { Text("新闻") }
+            title = { Text("新闻") },
+            //搜索按钮
+            /*navigationIcon = {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .clickable { }
+                )
+            }*/
         )
-        //搜索框
-        /*var text by remember{ mutableStateOf("")}
-        Column(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            TextField(
-                value = text,
-                onValueChange = {
-                    text = it
-                },
-                leadingIcon = {
-                    Row {
-                        Icon(Icons.Filled.Search, null)
-                    }
-
-                },
-            )
-        }*/
         Row{
             //切换标签
             TabRow(
@@ -91,31 +84,29 @@ fun NewsScreen(
                     }
                 }
             }
-            //搜索按钮
-            /*IconButton(onClick = { ) {
-                Icon(imageVector = Icons.Filled.Search,contentDescription = null)
-            }*/
         }
 
-
         if (vm.categoryIndex == 0) {
-            //图片
-            HorizontalPager(
-                pageCount = vm.swiperData.size,
-                modifier = Modifier
-                    .padding(horizontal = 15.dp, vertical = 8.dp)
-                    .clip(RoundedCornerShape(8.dp))
-            ) { index ->
-                AsyncImage(
-                    model = vm.swiperData[index].imageUrl,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(16 / 9f), contentScale = ContentScale.Crop
-                )
-            }
             //通知通告
             LazyColumn() {
+                //图片
+                item {
+                    HorizontalPager(
+                    pageCount = vm.swiperData.size,
+                    modifier = Modifier
+                        .padding(horizontal = 15.dp, vertical = 8.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                    ) { index ->
+                        AsyncImage(
+                        model = vm.swiperData[index].imageUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(16 / 9f), contentScale = ContentScale.Crop
+                        )
+                    }
+                }
+
                 items(articleViewModel.list) { article ->
                     ArticleItem(
                         article,
@@ -129,9 +120,24 @@ fun NewsScreen(
         }
 
         if (vm.categoryIndex == 1) {
-            //活动通知
+            //师大新闻
             LazyColumn() {
                 items(activeArticleViewModel.list){ article ->
+                    ArticleItem(
+                        article,
+                        modifier = Modifier
+                            .clickable{
+                                onNavigateToArticle()
+                            }
+                    )
+                }
+            }
+        }
+
+        if (vm.categoryIndex == 2) {
+            //其他通知
+            LazyColumn() {
+                items(otherArticleViewModel.list){ article ->
                     ArticleItem(
                         article,
                         modifier = Modifier

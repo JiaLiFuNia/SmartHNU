@@ -10,3 +10,5 @@ data class ArticleEntity(
 
 data class ArticleListResponse(var data: List<ArticleEntity>): BaseResponse()
 data class ActiveArticleListResponse(var data: List<ArticleEntity>): BaseResponse()
+
+data class OtherArticleListResponse(var data: List<ArticleEntity>): BaseResponse()

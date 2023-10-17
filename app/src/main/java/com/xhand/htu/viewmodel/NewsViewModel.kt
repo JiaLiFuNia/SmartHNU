@@ -15,9 +15,9 @@ class NewsViewModel:ViewModel() {
     //首页标签
     var categories by mutableStateOf(
         listOf(
-            Category("通知通告","1"),
-            Category("活动通知","2"),
-            Category("教务通知","3")
+            Category("通知公告","1"),
+            Category("师大新闻","2"),
+            Category("其他新闻","3")
             )
     )
         private set
