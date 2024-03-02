@@ -3,6 +3,7 @@ package com.xhand.hnu2.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,13 +12,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -173,6 +178,90 @@ fun PersonScreen() {
                 }
             }
             Spacer(modifier = Modifier.height(14.dp))
+            val smallCard = Modifier
+                .height(70.dp)
+                .weight(1f)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Card(
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    modifier = smallCard,
+                    onClick = {}
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.DateRange,
+                                contentDescription = null,
+                                modifier = Modifier.padding(end = 3.dp)
+                            )
+                            Text(
+                                text = "课表",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Card(
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    modifier = smallCard,
+                    onClick = {}
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Home,
+                                contentDescription = null,
+                                modifier = Modifier.padding(end = 3.dp)
+                            )
+                            Text(
+                                text = "教室",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Card(
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    modifier = smallCard,
+                    onClick = {}
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.Send,
+                                contentDescription = null,
+                                modifier = Modifier.padding(end = 3.dp)
+                            )
+                            Text(
+                                text = "其他",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
             checkboxes.forEach { cards ->
                 PersonCardItem(
                     onclick = { },
@@ -202,13 +291,13 @@ fun PersonScreen() {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
+                    .fillMaxWidth()
                     .padding(start = 32.dp)
                     .clickable {
                         checkboxes[index] = info.copy(
                             isChecked = !info.isChecked
                         )
                     }
-                    .padding(end = 16.dp)
             ) {
                 Checkbox(
                     checked = info.isChecked,

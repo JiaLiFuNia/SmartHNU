@@ -1,5 +1,6 @@
 package com.xhand.hnu2.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -52,12 +53,18 @@ fun PersonCardItem(
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
-            Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(text = "暂无信息", color = Color.Gray)
             }
         }
     }
 }
+
 
 @Preview
 @Composable

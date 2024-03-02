@@ -56,11 +56,6 @@ fun SettingScreen(settingsViewModel: SettingsViewModel, vm: SettingsViewModel = 
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     val cbManager = LocalClipboardManager.current
-    var update = Update("")
-    var nowUpdate = Update("2.0.2.29")
-    LaunchedEffect(Unit) {
-        update = vm.updateRes()
-    }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -164,8 +159,4 @@ fun SettingScreen(settingsViewModel: SettingsViewModel, vm: SettingsViewModel = 
             )
         }
     }
-    if (update == nowUpdate) {
-        Toast.makeText(context, "发现新版本", Toast.LENGTH_SHORT).show()
-    }
-
 }
