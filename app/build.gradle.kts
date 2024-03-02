@@ -14,7 +14,7 @@ android {
         minSdk = 29
         targetSdk = 33
         versionCode = 1
-        versionName = "2.0.2.29"
+        versionName = "2.0.3.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -73,6 +73,9 @@ dependencies {
 
     // navigation
     implementation("androidx.navigation:navigation-compose:2.7.7")
+
+    //
+    implementation("com.google.accompanist:accompanist-swipperefresh:0.24.3-alpha")
 
     // html解析
     implementation("org.jsoup:jsoup:1.16.1")

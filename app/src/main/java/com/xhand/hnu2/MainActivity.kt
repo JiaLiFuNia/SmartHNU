@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -43,7 +42,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val list = getNewsList()
             MyApplicationTheme {
                 val bottomNavigationItems = listOf(
                     BottomNavigationItem(
@@ -113,7 +111,7 @@ class MainActivity : ComponentActivity() {
                         Box(modifier = Modifier.padding(it)) {
                             when (selectedItemIndex) {
                                 0 -> PersonScreen()
-                                1 -> NavigationScreen(list)
+                                1 -> NavigationScreen()
                                 2 -> SettingScreen(settingsViewModel = SettingsViewModel())
                             }
                         }

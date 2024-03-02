@@ -15,6 +15,7 @@ object Network {
         return retrofitNews.create(clazz)
     }
 
+
     private val retrofitUpdate = Retrofit.Builder()
         .baseUrl("https://gitee.com/")
         .addConverterFactory(GsonConverterFactory.create())
@@ -22,6 +23,16 @@ object Network {
 
     fun <T> updateService(clazz: Class<T>): T {
         return retrofitUpdate.create(clazz)
+    }
+
+
+
+    private val retrofitNewsList = Retrofit.Builder()
+        .baseUrl(baseurl)
+        .build()
+
+    fun <T> newsService(clazz: Class<T>): T {
+        return retrofitNewsList.create(clazz)
     }
 
 }

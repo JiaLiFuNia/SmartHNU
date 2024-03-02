@@ -2,9 +2,15 @@ package com.xhand.hnu2.viewmodel
 
 import android.util.Base64
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.xhand.hnu2.model.entity.ArticleListEntity
+import com.xhand.hnu2.network.NewsListService
+import com.xhand.hnu2.network.OtherNewsListService
 import com.xhand.hnu2.network.SearchService
+import com.xhand.hnu2.network.getNewsList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import org.jsoup.Jsoup
@@ -26,6 +32,39 @@ class NewsViewModel : ViewModel() {
             it.copy(openFilterSheet = value)
         }
     }
+
+    var list by mutableStateOf(listOf(ArticleListEntity("正在加载中...", "正在加载中...", 1, "", "通知公告")))
+    private val newsListService = NewsListService.instance()
+    // private val otherNewsListService = OtherNewsListService.instance()
+    private val newsListType = mapOf(
+        "8955" to "通知公告",
+        "8954" to "师大要闻",
+        "8957" to "院部动态"
+    )
+    private val otherNewsList = mapOf(
+        "3251" to "教务通知",
+        "3258" to "公示公告",
+        "kwgl" to "考务管理"
+    )
+    suspend fun newsList() {
+        // var list1 by mutableStateOf(listOf(ArticleListEntity("正在加载中...", "正在加载中...", 1, "", "通知公告")))
+        // var list2 by mutableStateOf(listOf(ArticleListEntity("正在加载中...", "正在加载中...", 1, "", "通知公告")))
+        for (type in newsListType) {
+            for (i in 1..10) {
+                val htmlRes = newsListService.getNewsList(i.toString(), type.key)
+                list = getNewsList(htmlRes, type.value)
+            }
+        }
+        Log.i("TAG666", "newsList: $list")
+        // for (type in otherNewsList) {
+        //     for (i in 1..10) {
+        //         val htmlRes = otherNewsListService.getNewsList(i.toString(), type.key)
+        //         list2 = getNewsList(htmlRes, type.value)
+        //     }
+        // }
+        // list = list1 + list2
+    }
+
 
     private val searchList = mutableListOf<ArticleListEntity>()
     private val searchService = SearchService.instance()

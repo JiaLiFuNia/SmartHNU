@@ -60,7 +60,7 @@ import com.xhand.hnu2.viewmodel.NewsViewModel
 var url = ""
 
 @Composable
-fun NavigationScreen(list: List<ArticleListEntity>) {
+fun NavigationScreen() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -69,8 +69,8 @@ fun NavigationScreen(list: List<ArticleListEntity>) {
         composable("newsList_screen") {
             NewsScreen(
                 navController = navController,
-                list = list,
-                uiState = NewsUiState()
+                uiState = NewsUiState(),
+                newsViewModel = NewsViewModel()
             )
         }
         composable("detail_screen") {
@@ -86,14 +86,14 @@ fun NavigationScreen(list: List<ArticleListEntity>) {
 @Composable
 fun NewsScreen(
     navController: NavController,
-    list: List<ArticleListEntity>,
     uiState: NewsUiState,
+    newsViewModel: NewsViewModel,
     vm: NewsViewModel = viewModel(),
 ) {
     val showBottomSheet = remember {
         mutableStateOf(false)
     }
-    val options = listOf("通知公告", "师大要闻", "教务通知", "考务管理", "公示公告")
+    val options = listOf("通知公告", "师大要闻", "院部动态")
     var selectedOption by remember { mutableStateOf(options[0]) }
     var isShowSearchBar by remember {
         mutableStateOf(false)
@@ -103,8 +103,10 @@ fun NewsScreen(
     }
     var searchlist = mutableListOf<ArticleListEntity>()
 
-
-
+    LaunchedEffect(Unit) {
+        newsViewModel.newsList()
+    }
+    Log.i("TAG666", "NewsScreen: ${newsViewModel.list}")
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
@@ -200,7 +202,7 @@ fun NewsScreen(
     ) {
         LazyColumn(modifier = Modifier.padding(paddingValues = it)) {
             if (!isShowSearchBar) {
-                items(list) { article ->
+                items(newsViewModel.list) { article ->
                     if (article.type == selectedOption) {
                         ArticleListItem(
                             article = article,
@@ -239,7 +241,6 @@ fun NewsScreen(
             }
         }
     }
-
     ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "选择新闻源") {
         Column(
             modifier = Modifier.fillMaxWidth(),
