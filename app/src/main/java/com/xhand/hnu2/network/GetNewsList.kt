@@ -37,7 +37,7 @@ fun getNewsList(str: String?, type: String, rule: Int): MutableList<ArticleListE
             firstList.add(
                 ArticleListEntity(
                     title = dateElements[index].text(),
-                    time = liElements[index].text(),
+                    time = liElements[index].text().substring(5, 15),
                     id = num,
                     url = dateElements[index].attr("href"),
                     type = type
