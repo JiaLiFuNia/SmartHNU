@@ -25,10 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.xhand.hnu2.screens.NavigationScreen
-import com.xhand.hnu2.screens.PersonScreen
 import com.xhand.hnu2.screens.SettingScreen
 import com.xhand.hnu2.ui.theme.MyApplicationTheme
-import com.xhand.hnu2.network.getNewsList
+import com.xhand.hnu2.screens.NavigationPersonScreen
 import com.xhand.hnu2.viewmodel.SettingsViewModel
 
 data class BottomNavigationItem(
@@ -45,7 +44,7 @@ class MainActivity : ComponentActivity() {
             MyApplicationTheme {
                 val bottomNavigationItems = listOf(
                     BottomNavigationItem(
-                        title = "我的",
+                        title = "主页",
                         selectedIcon = R.drawable.ic_filled_person,
                         unselectedIcon = R.drawable.ic_outline_person,
                         hasNews = remember { mutableStateOf(false) }
@@ -110,7 +109,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         Box(modifier = Modifier.padding(it)) {
                             when (selectedItemIndex) {
-                                0 -> PersonScreen()
+                                0 -> NavigationPersonScreen()
                                 1 -> NavigationScreen()
                                 2 -> SettingScreen(settingsViewModel = SettingsViewModel())
                             }

@@ -1,5 +1,7 @@
 package com.xhand.hnu2.screens
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,16 +53,71 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.xhand.hnu2.R
 import com.xhand.hnu2.components.ModalBottomSheet
 import com.xhand.hnu2.components.PersonCardItem
 
+
+@Composable
+fun NavigationPersonScreen() {
+    val navController = rememberNavController()
+    NavHost(
+        navController = navController,
+        startDestination = "person_screen",
+        enterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left,
+                animationSpec = tween(500)
+            )
+        },
+        exitTransition = {
+           slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left,
+                animationSpec = tween(500)
+            )
+        },
+        popEnterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Right,
+                animationSpec = tween(500)
+            )
+        },
+        popExitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Right,
+                animationSpec = tween(500)
+            )
+        }
+    ) {
+        composable("person_screen") {
+            PersonScreen(
+                navController = navController
+            )
+        }
+        composable("room_screen") {
+            ClassRoom(
+                onBack = { navController.popBackStack() })
+        }
+        composable("class_screen") {
+            ClassSchedule(
+                onBack = { navController.popBackStack() })
+        }
+        composable("other_screen") {
+            OtherWay(
+                onBack = { navController.popBackStack() })
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PersonScreen() {
+fun PersonScreen(navController: NavController) {
     data class ToggleableInfo(
         val isChecked: Boolean,
         val text: String,
@@ -146,7 +203,8 @@ fun PersonScreen() {
                 onClick = {
                     showModalBottomSheet.value = !showModalBottomSheet.value
                     text = name
-                }
+                },
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -188,7 +246,7 @@ fun PersonScreen() {
                 Card(
                     elevation = CardDefaults.cardElevation(4.dp),
                     modifier = smallCard,
-                    onClick = {}
+                    onClick = { navController.navigate("class_screen") }
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -200,7 +258,9 @@ fun PersonScreen() {
                             Icon(
                                 imageVector = Icons.Outlined.DateRange,
                                 contentDescription = null,
-                                modifier = Modifier.padding(end = 3.dp)
+                                modifier = Modifier
+                                    .padding(end = 3.dp)
+                                    .size(25.dp)
                             )
                             Text(
                                 text = "课表",
@@ -213,7 +273,7 @@ fun PersonScreen() {
                 Card(
                     elevation = CardDefaults.cardElevation(4.dp),
                     modifier = smallCard,
-                    onClick = {}
+                    onClick = { navController.navigate("room_screen") }
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -225,7 +285,9 @@ fun PersonScreen() {
                             Icon(
                                 imageVector = Icons.Outlined.Home,
                                 contentDescription = null,
-                                modifier = Modifier.padding(end = 3.dp)
+                                modifier = Modifier
+                                    .padding(end = 3.dp)
+                                    .size(25.dp)
                             )
                             Text(
                                 text = "教室",
@@ -238,7 +300,7 @@ fun PersonScreen() {
                 Card(
                     elevation = CardDefaults.cardElevation(4.dp),
                     modifier = smallCard,
-                    onClick = {}
+                    onClick = { navController.navigate("other_screen") }
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -250,7 +312,9 @@ fun PersonScreen() {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.Send,
                                 contentDescription = null,
-                                modifier = Modifier.padding(end = 3.dp)
+                                modifier = Modifier
+                                    .padding(end = 3.dp)
+                                    .size(25.dp)
                             )
                             Text(
                                 text = "其他",
@@ -327,10 +391,3 @@ val ic_ids = listOf(
     R.drawable.ic_11,
     R.drawable.ic_12
 )
-
-
-@Preview
-@Composable
-fun PersonScreenPreview() {
-    PersonScreen()
-}

@@ -1,6 +1,8 @@
 package com.xhand.hnu2.screens
 
 import android.util.Log
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -64,7 +66,31 @@ fun NavigationScreen() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "newsList_screen"
+        startDestination = "newsList_screen",
+        enterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left,
+                animationSpec = tween(500)
+            )
+        },
+        exitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left,
+                animationSpec = tween(500)
+            )
+        },
+        popEnterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Right,
+                animationSpec = tween(500)
+            )
+        },
+        popExitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Right,
+                animationSpec = tween(500)
+            )
+        }
     ) {
         composable("newsList_screen") {
             NewsScreen(
@@ -101,12 +127,11 @@ fun NewsScreen(
     var content by remember {
         mutableStateOf("")
     }
-    var searchlist = mutableListOf<ArticleListEntity>()
 
     LaunchedEffect(Unit) {
         newsViewModel.newsList()
     }
-    Log.i("TAG666", "NewsScreen: ${newsViewModel.list}")
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
@@ -176,12 +201,6 @@ fun NewsScreen(
                                 }
                             )
                         }
-                        if (content != "") {
-                            LaunchedEffect(Unit) {
-                                Log.i("TAG666", "NewsScreen: $content")
-                                searchlist = vm.searchRes(content)
-                            }
-                        }
                     }
                 }
             )
@@ -200,6 +219,12 @@ fun NewsScreen(
         },
         floatingActionButtonPosition = FabPosition.End
     ) {
+        var searchlist = mutableListOf<ArticleListEntity>()
+        if (content != "") {
+            LaunchedEffect(Unit) {
+                searchlist = vm.searchRes(content).toMutableList()
+            }
+        }
         LazyColumn(modifier = Modifier.padding(paddingValues = it)) {
             if (!isShowSearchBar) {
                 items(newsViewModel.list) { article ->
@@ -215,8 +240,8 @@ fun NewsScreen(
                     }
                 }
             } else {
+                Log.i("TAG666", "news${searchlist}")
                 if (searchlist.size != 0) {
-                    Log.d("TAG666", "NewsScreen: $searchlist")
                     items(searchlist) { article ->
                         ArticleListItem(
                             article = article,
