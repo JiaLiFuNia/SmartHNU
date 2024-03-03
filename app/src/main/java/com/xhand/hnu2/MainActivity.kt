@@ -14,6 +14,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -28,6 +29,7 @@ import com.xhand.hnu2.screens.NavigationScreen
 import com.xhand.hnu2.screens.SettingScreen
 import com.xhand.hnu2.ui.theme.MyApplicationTheme
 import com.xhand.hnu2.screens.NavigationPersonScreen
+import com.xhand.hnu2.viewmodel.LocalUserViewModel
 import com.xhand.hnu2.viewmodel.SettingsViewModel
 
 data class BottomNavigationItem(
@@ -107,11 +109,14 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     ) {
-                        Box(modifier = Modifier.padding(it)) {
-                            when (selectedItemIndex) {
-                                0 -> NavigationPersonScreen()
-                                1 -> NavigationScreen()
-                                2 -> SettingScreen(settingsViewModel = SettingsViewModel())
+                        CompositionLocalProvider(LocalUserViewModel provides SettingsViewModel()) {
+                            val settingsViewModel = LocalUserViewModel.current
+                            Box(modifier = Modifier.padding(it)) {
+                                when (selectedItemIndex) {
+                                    0 -> NavigationPersonScreen(settingsViewModel)
+                                    1 -> NavigationScreen()
+                                    2 -> SettingScreen(settingsViewModel)
+                                }
                             }
                         }
                     }

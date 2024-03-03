@@ -18,9 +18,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
+import com.xhand.hnu2.viewmodel.SettingsViewModel
 
 @Composable
-fun showLoginDialog(): Boolean {
+fun showLoginDialog(settingsViewModel: SettingsViewModel): Boolean {
     var displayPassword by remember { mutableStateOf(true) }
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -65,6 +66,10 @@ fun showLoginDialog(): Boolean {
         confirmButton = {
             TextButton(
                 onClick = {
+                    settingsViewModel.login()
+                    if (settingsViewModel.logined) {
+                        showdialog = false
+                    }
                     Toast.makeText(context, "登录功能正在开发中...", Toast.LENGTH_SHORT).show()
                 }
             ) {
@@ -82,10 +87,4 @@ fun showLoginDialog(): Boolean {
         }
     )
     return showdialog
-}
-
-@Preview
-@Composable
-fun ShowLoginDiaPreview() {
-    showLoginDialog()
 }

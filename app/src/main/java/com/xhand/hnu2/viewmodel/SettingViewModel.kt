@@ -11,11 +11,24 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import com.xhand.hnu2.R
 import com.xhand.hnu2.model.entity.Update
+import com.xhand.hnu2.model.entity.UserInfoEntity
 import com.xhand.hnu2.network.UpdateService
 import retrofit2.Response
 
 
 class SettingsViewModel : ViewModel() {
+
+    var userInfo: UserInfoEntity? = null
+    val logined: Boolean
+        get() {
+            return userInfo != null
+        }
+
+    fun login() {
+        userInfo = UserInfoEntity("许博涵","2201214001","数学与信息科学学院")
+    }
+
+
 
     val ifUpdate: Boolean = true
 

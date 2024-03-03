@@ -84,15 +84,23 @@ fun SettingScreen(settingsViewModel: SettingsViewModel, vm: SettingsViewModel = 
             }
             BasicListItem(leadingText = "账户")
             BasicListItem(
-                headlineText = "登录",
-                supportingText = "请先登录",
+                headlineText = if (settingsViewModel.logined) {
+                    "退出"
+                } else {
+                    "登录"
+                },
+                supportingText = if (settingsViewModel.logined) {
+                    "点击退出登录"
+                } else {
+                    "请先登录"
+                },
                 leadingImageVector = R.drawable.ic_outline_account_circle,
                 onClick = {
                     showdialog = true
                 }
             )
             if (showdialog) {
-                showdialog = showLoginDialog()
+                showdialog = showLoginDialog(settingsViewModel)
             }
             BasicListItem(leadingText = "显示")
             SwitchListItem(

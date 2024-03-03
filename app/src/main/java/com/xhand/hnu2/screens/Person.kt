@@ -1,5 +1,6 @@
 package com.xhand.hnu2.screens
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -51,6 +52,7 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -62,10 +64,11 @@ import androidx.navigation.compose.rememberNavController
 import com.xhand.hnu2.R
 import com.xhand.hnu2.components.ModalBottomSheet
 import com.xhand.hnu2.components.PersonCardItem
+import com.xhand.hnu2.viewmodel.SettingsViewModel
 
 
 @Composable
-fun NavigationPersonScreen() {
+fun NavigationPersonScreen(settingsViewModel: SettingsViewModel) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -77,7 +80,7 @@ fun NavigationPersonScreen() {
             )
         },
         exitTransition = {
-           slideOutOfContainer(
+            slideOutOfContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
                 animationSpec = tween(500)
             )
@@ -97,7 +100,8 @@ fun NavigationPersonScreen() {
     ) {
         composable("person_screen") {
             PersonScreen(
-                navController = navController
+                navController = navController,
+                settingsViewModel = settingsViewModel
             )
         }
         composable("room_screen") {
@@ -117,13 +121,14 @@ fun NavigationPersonScreen() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PersonScreen(navController: NavController) {
+fun PersonScreen(navController: NavController, settingsViewModel: SettingsViewModel) {
     data class ToggleableInfo(
         val isChecked: Boolean,
         val text: String,
         val imageVector: ImageVector
     )
 
+    val context = LocalContext.current
     val showModalBottomSheet = rememberSaveable { mutableStateOf(false) }
     val showModalBottomSheetEdit = rememberSaveable { mutableStateOf(false) }
     val checkboxes = remember {
@@ -150,9 +155,7 @@ fun PersonScreen(navController: NavController) {
     var text by remember {
         mutableStateOf("")
     }
-    val name by remember {
-        mutableStateOf("许博涵")
-    }
+    val userInfo = settingsViewModel.userInfo
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
         modifier = Modifier
@@ -168,7 +171,13 @@ fun PersonScreen(navController: NavController) {
                 ),
                 title = {
                     if (scrollBehavior.state.heightOffset < 0f) {
-                        Text(text = "你好！$name")
+                        Text(
+                            text = if (settingsViewModel.logined) {
+                                "你好！${userInfo?.name}"
+                            } else {
+                                "你好！"
+                            }
+                        )
                     } else {
                         Text(text = "我的")
                     }
@@ -201,8 +210,11 @@ fun PersonScreen(navController: NavController) {
             Card(
                 elevation = CardDefaults.cardElevation(4.dp),
                 onClick = {
+                    text = userInfo?.name ?: "请先登录"
                     showModalBottomSheet.value = !showModalBottomSheet.value
-                    text = name
+                    if (userInfo == null) {
+                        Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
+                    }
                 },
                 colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
             ) {
@@ -229,9 +241,12 @@ fun PersonScreen(navController: NavController) {
                             .height(75.dp)
                             .padding(start = 15.dp)
                     ) {
-                        Text(text = name, style = MaterialTheme.typography.headlineSmall)
-                        Text(text = "2201214001", fontSize = 15.sp, color = Color.Gray)
-                        Text(text = "数学与信息科学学院", fontSize = 15.sp, color = Color.Gray)
+                        Text(
+                            text = userInfo?.name ?: "请先登录",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        Text(text = userInfo?.studentID ?: "", fontSize = 15.sp, color = Color.Gray)
+                        Text(text = userInfo?.academy ?: "", fontSize = 15.sp, color = Color.Gray)
                     }
                 }
             }

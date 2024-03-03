@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,54 +57,60 @@ import com.xhand.hnu2.R
 import com.xhand.hnu2.components.ArticleListItem
 import com.xhand.hnu2.components.ModalBottomSheet
 import com.xhand.hnu2.model.entity.ArticleListEntity
+import com.xhand.hnu2.viewmodel.LocalNewsViewModel
+import com.xhand.hnu2.viewmodel.LocalUserViewModel
 import com.xhand.hnu2.viewmodel.NewsUiState
 import com.xhand.hnu2.viewmodel.NewsViewModel
+import com.xhand.hnu2.viewmodel.SettingsViewModel
 
 var url = ""
 
 @Composable
 fun NavigationScreen() {
     val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = "newsList_screen",
-        enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(500)
-            )
-        },
-        exitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(500)
-            )
-        },
-        popEnterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(500)
-            )
-        },
-        popExitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(500)
-            )
-        }
-    ) {
-        composable("newsList_screen") {
-            NewsScreen(
-                navController = navController,
-                uiState = NewsUiState(),
-                newsViewModel = NewsViewModel()
-            )
-        }
-        composable("detail_screen") {
-            ArticleDetailScreen(
-                onBack = { navController.popBackStack() },
-                url = url
-            )
+    CompositionLocalProvider(LocalNewsViewModel provides NewsViewModel()) {
+        val newsViewModel = LocalNewsViewModel.current
+        NavHost(
+            navController = navController,
+            startDestination = "newsList_screen",
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            popEnterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            },
+            popExitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            }
+        ) {
+            composable("newsList_screen") {
+                NewsScreen(
+                    navController = navController,
+                    uiState = NewsUiState(),
+                    newsViewModel = newsViewModel
+                )
+            }
+            composable("detail_screen") {
+                ArticleDetailScreen(
+                    onBack = { navController.popBackStack() },
+                    url = url
+                )
+            }
         }
     }
 }
