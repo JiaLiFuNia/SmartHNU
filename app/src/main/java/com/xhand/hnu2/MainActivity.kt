@@ -109,7 +109,9 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     ) {
-                        CompositionLocalProvider(LocalUserViewModel provides SettingsViewModel()) {
+                        CompositionLocalProvider(
+                            LocalUserViewModel provides SettingsViewModel()
+                        ) {
                             val settingsViewModel = LocalUserViewModel.current
                             Box(modifier = Modifier.padding(it)) {
                                 when (selectedItemIndex) {

@@ -327,7 +327,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="file:/$PROJECT_DIR$/../../../SDK/icons/material/materialiconsoutlined/filter_alt/outline_filter_alt_24.xml" />
+                                      <entry key="url" value="file:/$PROJECT_DIR$/../../../SDK/icons/material/materialiconsoutlined/visibility_off/outline_visibility_off_24.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -337,7 +337,7 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="outputName" value="ic_outline_filter" />
+                            <entry key="outputName" value="ic_outline_visibility_off_24" />
                             <entry key="sourceFile" value="D:\MY\Kotlin\xhand2" />
                           </map>
                         </option>

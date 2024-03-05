@@ -34,6 +34,7 @@ import com.xhand.hnu2.components.BasicListItem
 import com.xhand.hnu2.components.DropdownListItem
 import com.xhand.hnu2.components.SelectionItem
 import com.xhand.hnu2.components.SwitchListItem
+import com.xhand.hnu2.components.showAlert
 import com.xhand.hnu2.components.showLoginDialog
 import com.xhand.hnu2.model.entity.DarkMode
 import com.xhand.hnu2.model.entity.Update
@@ -79,9 +80,6 @@ fun SettingScreen(settingsViewModel: SettingsViewModel, vm: SettingsViewModel = 
                 .padding(values)
                 .verticalScroll(scrollState)
         ) {
-            var showdialog by remember {
-                mutableStateOf(false)
-            }
             BasicListItem(leadingText = "账户")
             BasicListItem(
                 headlineText = if (settingsViewModel.logined) {
@@ -96,12 +94,15 @@ fun SettingScreen(settingsViewModel: SettingsViewModel, vm: SettingsViewModel = 
                 },
                 leadingImageVector = R.drawable.ic_outline_account_circle,
                 onClick = {
-                    showdialog = true
+                    if (settingsViewModel.logined and settingsViewModel.isLoginSuccess) {
+                        settingsViewModel.isShowAlert = true
+                    } else {
+                        settingsViewModel.isShowDialog = true
+                        settingsViewModel.username = ""
+                        settingsViewModel.password = ""
+                    }
                 }
             )
-            if (showdialog) {
-                showdialog = showLoginDialog(settingsViewModel)
-            }
             BasicListItem(leadingText = "显示")
             SwitchListItem(
                 leadingImageVector = R.drawable.ic_palette,
@@ -126,7 +127,7 @@ fun SettingScreen(settingsViewModel: SettingsViewModel, vm: SettingsViewModel = 
             BasicListItem(leadingText = stringResource(R.string.about))
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.0.3.2",
+                supportingText = "Copyright 2023-2024 Xhand v2.0.3.3",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = { }
             )
@@ -166,5 +167,8 @@ fun SettingScreen(settingsViewModel: SettingsViewModel, vm: SettingsViewModel = 
                 }
             )
         }
+        showAlert(settingsViewModel = settingsViewModel, text = "确定要退出登录吗？")
+
+        showLoginDialog(settingsViewModel)
     }
 }

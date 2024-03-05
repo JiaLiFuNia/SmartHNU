@@ -1,11 +1,14 @@
 package com.xhand.hnu2.components
 
-import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -13,78 +16,106 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.xhand.hnu2.R
 import com.xhand.hnu2.viewmodel.SettingsViewModel
+import kotlinx.coroutines.launch
 
 @Composable
-fun showLoginDialog(settingsViewModel: SettingsViewModel): Boolean {
+fun showLoginDialog(
+    settingsViewModel: SettingsViewModel
+) {
     var displayPassword by remember { mutableStateOf(true) }
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val context = LocalContext.current
-    var showdialog by remember {
-        mutableStateOf(true)
-    }
-    var stuid by remember {
-        mutableStateOf("")
-    }
-    var pwd by remember {
-        mutableStateOf("")
+    val coroutineScope = rememberCoroutineScope()
+    var showPassword by remember {
+        mutableStateOf(false)
     }
     displayPassword = isPressed
 
-    AlertDialog(
-        title = {
-            Text(text = "河南师大智慧教务")
-        },
-        text = {
-            Column(verticalArrangement = Arrangement.SpaceAround) {
-                TextField(
-                    value = stuid,
-                    onValueChange = { stuid = it },
-                    label = { Text("学号") },
-                    isError = false,
-                    supportingText = { },
-                    trailingIcon = { },
-                )
-                TextField(
-                    value = pwd,
-                    onValueChange = { pwd = it },
-                    label = { Text("密码") },
-                    isError = false,
-                    supportingText = { },
-                    trailingIcon = { },
-                    visualTransformation = if (displayPassword) VisualTransformation.None else PasswordVisualTransformation()
-                )
-            }
-        },
-        onDismissRequest = { },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    settingsViewModel.login()
-                    if (settingsViewModel.logined) {
-                        showdialog = false
+    if (settingsViewModel.isShowDialog) {
+        AlertDialog(
+            title = {
+                Text(text = "河南师大智慧教务")
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.SpaceAround) {
+                    TextField(
+                        value = settingsViewModel.username,
+                        onValueChange = { settingsViewModel.username = it },
+                        label = { Text("学号") },
+                        isError = settingsViewModel.isLoginSuccess,
+                        supportingText = {
+                            if (settingsViewModel.isLoginSuccess) {
+                                Text(text = "账号或密码错误！", color = Color.Red)
+                            }
+                        },
+                        trailingIcon = { },
+                    )
+                    TextField(
+                        value = settingsViewModel.password,
+                        onValueChange = { settingsViewModel.password = it },
+                        label = { Text("密码") },
+                        isError = settingsViewModel.isLoginSuccess,
+                        supportingText = {
+                            if (settingsViewModel.isLoginSuccess) {
+                                Text(text = "账号或密码错误！", color = Color.Red)
+                            }
+                        },
+                        trailingIcon = {
+                            Icon(
+                                painterResource(
+                                    id = if (showPassword) R.drawable.ic_outline_visibility_24 else R.drawable.ic_outline_visibility_off_24
+                                ),
+                                contentDescription = "展示密码",
+                                modifier = Modifier.clickable {
+                                    showPassword = !showPassword
+                                },
+                                tint = Color.Black
+                            )
+                        },
+                        visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                    )
+                }
+            },
+            onDismissRequest = { },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            settingsViewModel.login()
+                        }
                     }
-                    Toast.makeText(context, "登录功能正在开发中...", Toast.LENGTH_SHORT).show()
+                ) {
+                    Text("登录")
+                    if (settingsViewModel.isLogining) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(14.dp),
+                            strokeWidth = 2.dp
+                        )
+                    }
                 }
-            ) {
-                Text("登录")
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    showdialog = false
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        settingsViewModel.isShowDialog = false
+                        if (settingsViewModel.isLoginSuccess) {
+                            settingsViewModel.isShowDialog = false
+                        }
+                    }
+                ) {
+                    Text("取消")
                 }
-            ) {
-                Text("取消")
             }
-        }
-    )
-    return showdialog
+        )
+    }
 }
