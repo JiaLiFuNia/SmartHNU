@@ -2,15 +2,18 @@ package com.xhand.hnu2.viewmodel
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Base64
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import com.xhand.hnu2.R
 import com.xhand.hnu2.components.RSAEncryptionHelper
+import com.xhand.hnu2.model.entity.ArticleListEntity
 import com.xhand.hnu2.model.entity.GradePost
 import com.xhand.hnu2.model.entity.KccjList
 import com.xhand.hnu2.model.entity.LoginPostEntity
@@ -18,7 +21,9 @@ import com.xhand.hnu2.model.entity.Update
 import com.xhand.hnu2.model.entity.UserInfoEntity
 import com.xhand.hnu2.network.GradeService
 import com.xhand.hnu2.network.LoginService
+import com.xhand.hnu2.network.SearchService
 import com.xhand.hnu2.network.UpdateService
+import com.xhand.hnu2.network.getNewsList
 import kotlinx.coroutines.delay
 
 
@@ -121,7 +126,6 @@ class SettingsViewModel() : ViewModel() {
         }
         Log.i("TAG666", "66$gradeList")
     }
-
 
     @SuppressLint("StaticFieldLeak")
     fun copyText(cbManager: ClipboardManager, context: Context) {

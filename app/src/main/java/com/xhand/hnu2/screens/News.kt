@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
@@ -20,6 +21,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -120,8 +122,7 @@ fun NavigationScreen() {
 fun NewsScreen(
     navController: NavController,
     uiState: NewsUiState,
-    newsViewModel: NewsViewModel,
-    vm: NewsViewModel = viewModel(),
+    newsViewModel: NewsViewModel
 ) {
     val showBottomSheet = remember {
         mutableStateOf(false)
@@ -130,9 +131,6 @@ fun NewsScreen(
     var selectedOption by remember { mutableStateOf(options[0]) }
     var isShowSearchBar by remember {
         mutableStateOf(false)
-    }
-    var content by remember {
-        mutableStateOf("")
     }
 
     LaunchedEffect(Unit) {
@@ -175,8 +173,8 @@ fun NewsScreen(
                         }
                         val interactionSource = remember { MutableInteractionSource() }
                         BasicTextField(
-                            value = content,
-                            onValueChange = { content = it },
+                            value = newsViewModel.content,
+                            onValueChange = { newsViewModel.content = it },
                             interactionSource = interactionSource,
                             maxLines = 1,
                             modifier = Modifier.fillMaxWidth(),
@@ -186,7 +184,7 @@ fun NewsScreen(
                             )
                         ) {
                             OutlinedTextFieldDefaults.DecorationBox(
-                                value = content,
+                                value = newsViewModel.content,
                                 innerTextField = it,
                                 enabled = true,
                                 singleLine = true,
@@ -226,37 +224,65 @@ fun NewsScreen(
         },
         floatingActionButtonPosition = FabPosition.End
     ) {
-        if (content != "") {
+        if (newsViewModel.content != "") {
             LaunchedEffect(Unit) {
-                vm.searchRes(content)
+                newsViewModel.searchRes()
             }
         }
         LazyColumn(modifier = Modifier.padding(paddingValues = it)) {
-            if (newsViewModel.list.isNotEmpty()) {
-                items(newsViewModel.list) { article ->
-                    if (article.type == selectedOption) {
-                        ArticleListItem(
-                            article = article,
+            if (newsViewModel.newsIsLoading) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
                             modifier = Modifier
-                                .clickable {
-                                    navController.navigate("detail_screen")
-                                    url = article.url
-                                }
+                                .size(50.dp)
                         )
                     }
                 }
             } else {
-                if (content != "") {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 10.dp), contentAlignment = Alignment.Center
-                        ) { Text(text = "未检索到相关新闻") }
+                if (!isShowSearchBar) {
+                    items(newsViewModel.list) { article ->
+                        if (article.type == selectedOption) {
+                            ArticleListItem(
+                                article = article,
+                                modifier = Modifier
+                                    .clickable {
+                                        navController.navigate("detail_screen")
+                                        url = article.url
+                                    }
+                            )
+                        }
+                    }
+                } else {
+                    if (newsViewModel.searchList.isNotEmpty()) {
+                        items(newsViewModel.searchList) { article ->
+                            ArticleListItem(
+                                article = article,
+                                modifier = Modifier
+                                    .clickable {
+                                        navController.navigate("detail_screen")
+                                        url = article.url
+                                    }
+                            )
+                        }
+                    } else {
+                        if (newsViewModel.content != "") {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 10.dp), contentAlignment = Alignment.Center
+                                ) { Text(text = "未检索到相关新闻") }
+                            }
+                        }
                     }
                 }
             }
         }
+
     }
     ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "选择新闻源") {
         Column(
