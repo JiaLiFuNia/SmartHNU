@@ -13,10 +13,6 @@
 ### 4.教师评教
 可以使用软件，对教师进行批量评教，一键满分
 ## 界面预览
-<img src="img/Screenshot_2024-03-07-20-54-05-629_com.xhand.hnu2-edit.jpg" width="24%">
-<img src="img/Screenshot_2024-03-07-20-54-20-896_com.xhand.hnu2.jpg" width="24%">
-<img src="img/Screenshot_2024-03-07-20-54-52-915_com.xhand.hnu2.jpg" width="24%">
-<img src="img/Screenshot_2024-03-07-20-54-25-512_com.xhand.hnu2.jpg" width="24%">
-
+[!["Screen"](/img/图片1.png)]
 ## 开发问题
 目前开发遇到了很多问题，目前也不太想继续了（以后会），对知识过于缺乏，开发过程太难了，甚至有些代码我都不知道写的对不对（虽然能够实现我想要的效果），希望后继有人接替下去，如有人愿意请邮箱联系2695520089@qq.com——2024-3-7
