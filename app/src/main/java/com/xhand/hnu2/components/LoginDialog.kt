@@ -1,5 +1,6 @@
 package com.xhand.hnu2.components
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -20,6 +22,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -36,86 +39,98 @@ fun showLoginDialog(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     var showPassword by remember {
         mutableStateOf(false)
     }
     displayPassword = isPressed
-
-    if (settingsViewModel.isShowDialog) {
-        AlertDialog(
-            title = {
-                Text(text = "河南师大智慧教务")
-            },
-            text = {
-                Column(verticalArrangement = Arrangement.SpaceAround) {
-                    TextField(
-                        value = settingsViewModel.username,
-                        onValueChange = { settingsViewModel.username = it },
-                        label = { Text("学号") },
-                        isError = settingsViewModel.isLoginSuccess,
-                        supportingText = {
-                            if (settingsViewModel.isLoginSuccess) {
-                                Text(text = "账号或密码错误！", color = Color.Red)
-                            }
-                        },
-                        trailingIcon = { },
-                    )
-                    TextField(
-                        value = settingsViewModel.password,
-                        onValueChange = { settingsViewModel.password = it },
-                        label = { Text("密码") },
-                        isError = settingsViewModel.isLoginSuccess,
-                        supportingText = {
-                            if (settingsViewModel.isLoginSuccess) {
-                                Text(text = "账号或密码错误！", color = Color.Red)
-                            }
-                        },
-                        trailingIcon = {
+    AlertDialog(
+        title = {
+            Text(text = "河南师大智慧教务")
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.SpaceAround) {
+                TextField(
+                    value = settingsViewModel.username,
+                    onValueChange = { settingsViewModel.username = it },
+                    label = { Text("学号") },
+                    isError = !settingsViewModel.isLoginSuccess and settingsViewModel.isLogging,
+                    supportingText = {
+                        if (!settingsViewModel.isLoginSuccess and settingsViewModel.isLogging) {
+                            Text(text = "账号或密码错误！", color = Color.Red)
+                        }
+                    },
+                    trailingIcon = { },
+                )
+                TextField(
+                    value = settingsViewModel.password,
+                    onValueChange = { settingsViewModel.password = it },
+                    label = { Text("密码") },
+                    isError = !settingsViewModel.isLoginSuccess and settingsViewModel.isLogging,
+                    supportingText = {
+                        if (!settingsViewModel.isLoginSuccess and settingsViewModel.isLogging) {
+                            Text(text = "账号或密码错误！", color = Color.Red)
+                        }
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = { showPassword = !showPassword }) {
                             Icon(
                                 painterResource(
                                     id = if (showPassword) R.drawable.ic_outline_visibility_24 else R.drawable.ic_outline_visibility_off_24
                                 ),
                                 contentDescription = "展示密码",
-                                modifier = Modifier.clickable {
-                                    showPassword = !showPassword
-                                },
                                 tint = Color.Black
                             )
-                        },
-                        visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                        }
+
+                    },
+                    visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                )
+            }
+        },
+        onDismissRequest = { },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    coroutineScope.launch {
+                        settingsViewModel.login()
+                    }
+
+                }
+            ) {
+                Text("登录")
+                if (settingsViewModel.LoginCircle) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(14.dp),
+                        strokeWidth = 2.dp
                     )
                 }
-            },
-            onDismissRequest = { },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            settingsViewModel.login()
-                        }
-                    }
-                ) {
-                    Text("登录")
-                    if (settingsViewModel.isLogining) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(14.dp),
-                            strokeWidth = 2.dp
-                        )
-                    }
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        settingsViewModel.isShowDialog = false
-                        if (settingsViewModel.isLoginSuccess) {
-                            settingsViewModel.isShowDialog = false
-                        }
-                    }
-                ) {
-                    Text("取消")
+                if (settingsViewModel.isLoginSuccess) {
+                    Toast.makeText(context, "登录成功！", Toast.LENGTH_SHORT).show()
+                    settingsViewModel.isShowDialog = false
+                    settingsViewModel.isLogging = false
                 }
             }
-        )
-    }
+            TextButton(
+                onClick = {
+                    settingsViewModel.username = "2201214001"
+                    settingsViewModel.password = "xubohan2004819."
+                }
+            ) {
+                Text("临时")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    settingsViewModel.isShowDialog = false
+                    if (settingsViewModel.isLoginSuccess) {
+                        settingsViewModel.isLogging = false
+                    }
+                }
+            ) {
+                Text("取消")
+            }
+        }
+    )
 }

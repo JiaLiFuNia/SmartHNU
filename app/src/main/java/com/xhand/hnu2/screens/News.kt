@@ -226,14 +226,13 @@ fun NewsScreen(
         },
         floatingActionButtonPosition = FabPosition.End
     ) {
-        var searchlist = mutableListOf<ArticleListEntity>()
         if (content != "") {
             LaunchedEffect(Unit) {
-                searchlist = vm.searchRes(content).toMutableList()
+                vm.searchRes(content)
             }
         }
         LazyColumn(modifier = Modifier.padding(paddingValues = it)) {
-            if (!isShowSearchBar) {
+            if (newsViewModel.list.isNotEmpty()) {
                 items(newsViewModel.list) { article ->
                     if (article.type == selectedOption) {
                         ArticleListItem(
@@ -247,27 +246,13 @@ fun NewsScreen(
                     }
                 }
             } else {
-                Log.i("TAG666", "news${searchlist}")
-                if (searchlist.size != 0) {
-                    items(searchlist) { article ->
-                        ArticleListItem(
-                            article = article,
+                if (content != "") {
+                    item {
+                        Box(
                             modifier = Modifier
-                                .clickable {
-                                    navController.navigate("detail_screen")
-                                    url = article.url
-                                }
-                        )
-                    }
-                } else {
-                    if (content != "") {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 10.dp), contentAlignment = Alignment.Center
-                            ) { Text(text = "未检索到相关新闻") }
-                        }
+                                .fillMaxWidth()
+                                .padding(top = 10.dp), contentAlignment = Alignment.Center
+                        ) { Text(text = "未检索到相关新闻") }
                     }
                 }
             }

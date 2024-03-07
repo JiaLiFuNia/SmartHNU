@@ -52,7 +52,7 @@ fun DarkMode.toStringResourceId(): Int {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingScreen(settingsViewModel: SettingsViewModel, vm: SettingsViewModel = viewModel()) {
+fun SettingScreen(settingsViewModel: SettingsViewModel) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
     val context = LocalContext.current
@@ -82,19 +82,23 @@ fun SettingScreen(settingsViewModel: SettingsViewModel, vm: SettingsViewModel = 
         ) {
             BasicListItem(leadingText = "账户")
             BasicListItem(
-                headlineText = if (settingsViewModel.logined) {
+                headlineText = if (settingsViewModel.isLoginSuccess) {
                     "退出"
                 } else {
                     "登录"
                 },
-                supportingText = if (settingsViewModel.logined) {
+                supportingText = if (settingsViewModel.isLoginSuccess) {
                     "点击退出登录"
                 } else {
                     "请先登录"
                 },
-                leadingImageVector = R.drawable.ic_outline_account_circle,
+                leadingImageVector = if (settingsViewModel.isLoginSuccess) {
+                    R.drawable.ic_outline_account_circle
+                } else {
+                    R.drawable.ic_outline_no_accounts_24
+                },
                 onClick = {
-                    if (settingsViewModel.logined and settingsViewModel.isLoginSuccess) {
+                    if (settingsViewModel.isLoginSuccess) {
                         settingsViewModel.isShowAlert = true
                     } else {
                         settingsViewModel.isShowDialog = true
@@ -167,8 +171,11 @@ fun SettingScreen(settingsViewModel: SettingsViewModel, vm: SettingsViewModel = 
                 }
             )
         }
-        showAlert(settingsViewModel = settingsViewModel, text = "确定要退出登录吗？")
-
-        showLoginDialog(settingsViewModel)
+        if (settingsViewModel.isShowAlert) {
+            showAlert(settingsViewModel = settingsViewModel, text = "确定要退出登录吗？")
+        }
+        if (settingsViewModel.isShowDialog) {
+            showLoginDialog(settingsViewModel)
+        }
     }
 }

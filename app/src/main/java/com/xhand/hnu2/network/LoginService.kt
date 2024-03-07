@@ -19,12 +19,12 @@ interface LoginService {
     )
     @POST("dev-api/appapi/applogin")
     suspend fun loginPost(
-        @Body body: LoginPostEntity
-    ): Response<LoginEntity>
+        @Body body: LoginPostEntity?
+    ): LoginEntity
 
     companion object {
         fun instance(): LoginService {
-            return Network.LoginService(LoginService::class.java)
+            return Network.loginService(LoginService::class.java)
         }
     }
 

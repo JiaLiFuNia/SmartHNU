@@ -1,5 +1,6 @@
 package com.xhand.hnu2.screens
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -18,9 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -33,8 +32,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -44,7 +43,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -52,17 +50,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.xhand.hnu2.R
 import com.xhand.hnu2.components.ModalBottomSheet
 import com.xhand.hnu2.components.PersonCardItem
+import com.xhand.hnu2.viewmodel.GradeViewModel
+import com.xhand.hnu2.viewmodel.PersonViewModel
 import com.xhand.hnu2.viewmodel.SettingsViewModel
 
 
 @Composable
-fun NavigationPersonScreen(settingsViewModel: SettingsViewModel) {
+fun NavigationPersonScreen(settingsViewModel: SettingsViewModel, personViewModel: PersonViewModel) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -94,19 +95,23 @@ fun NavigationPersonScreen(settingsViewModel: SettingsViewModel) {
     ) {
         composable("person_screen") {
             PersonScreen(
+                navController = navController,
+                settingsViewModel = settingsViewModel,
+                personViewModel = personViewModel
+            )
+        }
+        composable("grade_screen") {
+            GradeScreen(
+                onBack = { navController.popBackStack() },
                 settingsViewModel = settingsViewModel
             )
         }
-        composable("room_screen") {
-            ClassRoom(
-                onBack = { navController.popBackStack() })
-        }
-        composable("class_screen") {
-            ClassSchedule(
+        composable("schedule_screen") {
+            ScheduleScreen(
                 onBack = { navController.popBackStack() })
         }
         composable("other_screen") {
-            OtherWay(
+            OtherScreen(
                 onBack = { navController.popBackStack() })
         }
     }
@@ -114,42 +119,22 @@ fun NavigationPersonScreen(settingsViewModel: SettingsViewModel) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PersonScreen(settingsViewModel: SettingsViewModel) {
-    data class ToggleableInfo(
-        val isChecked: Boolean,
-        val text: String,
-        val imageVector: ImageVector
-    )
-
+fun PersonScreen(
+    navController: NavController,
+    settingsViewModel: SettingsViewModel,
+    personViewModel: PersonViewModel
+) {
     val context = LocalContext.current
     val showModalBottomSheet = rememberSaveable { mutableStateOf(false) }
     val showModalBottomSheetEdit = rememberSaveable { mutableStateOf(false) }
-    val checkboxes = remember {
-        mutableStateListOf(
-            ToggleableInfo(
-                isChecked = true,
-                text = "今日课程",
-                imageVector = Icons.Default.DateRange
-
-            ),
-            ToggleableInfo(
-                isChecked = true,
-                text = "消息中心",
-                imageVector = Icons.Default.Email
-            ),
-            ToggleableInfo(
-                isChecked = true,
-                text = "课程成绩",
-                imageVector = Icons.Default.Edit
-            ),
-        )
-    }
+    val checkboxes = personViewModel.checkboxes.toMutableList()
     val scrollState = rememberScrollState()
     var text by remember {
         mutableStateOf("")
     }
     val userInfo = settingsViewModel.userInfo
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -165,7 +150,7 @@ fun PersonScreen(settingsViewModel: SettingsViewModel) {
                 title = {
                     if (scrollBehavior.state.heightOffset < 0f) {
                         Text(
-                            text = if (settingsViewModel.logined) {
+                            text = if (settingsViewModel.isLoginSuccess) {
                                 "你好！${userInfo?.name}"
                             } else {
                                 "你好！"
@@ -204,7 +189,7 @@ fun PersonScreen(settingsViewModel: SettingsViewModel) {
                 elevation = CardDefaults.cardElevation(4.dp),
                 onClick = {
                     if (userInfo == null) {
-                        Toast.makeText(context, "未登录", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
                     } else {
                         text = userInfo.name
                         showModalBottomSheet.value = !showModalBottomSheet.value
@@ -247,7 +232,9 @@ fun PersonScreen(settingsViewModel: SettingsViewModel) {
             Spacer(modifier = Modifier.height(14.dp))
             checkboxes.forEach { cards ->
                 PersonCardItem(
-                    onclick = { },
+                    onclick = {
+                        cards.route?.let { navController.navigate(it) }
+                    },
                     text = cards.text,
                     imageVector = cards.imageVector,
                     ifShowCard = cards.isChecked

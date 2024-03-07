@@ -8,6 +8,7 @@ object Network {
         .baseUrl("https://www.htu.edu.cn/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
+
     fun <T> createService(clazz: Class<T>): T {
         return retrofitNews.create(clazz)
     }
@@ -17,25 +18,26 @@ object Network {
         .baseUrl("https://jwc.htu.edu.cn/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
-    fun <T> LoginService(clazz: Class<T>): T {
+
+    fun <T> loginService(clazz: Class<T>): T {
         return retrofitLogin.create(clazz)
     }
-
 
 
     private val retrofitUpdate = Retrofit.Builder()
         .baseUrl("https://gitee.com/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
+
     fun <T> updateService(clazz: Class<T>): T {
         return retrofitUpdate.create(clazz)
     }
 
 
-
     private val retrofitNewsList = Retrofit.Builder()
         .baseUrl("https://www.htu.edu.cn/")
         .build()
+
     fun <T> newsService(clazz: Class<T>): T {
         return retrofitNewsList.create(clazz)
     }

@@ -11,9 +11,12 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import com.xhand.hnu2.R
 import com.xhand.hnu2.components.RSAEncryptionHelper
+import com.xhand.hnu2.model.entity.GradePost
+import com.xhand.hnu2.model.entity.KccjList
 import com.xhand.hnu2.model.entity.LoginPostEntity
 import com.xhand.hnu2.model.entity.Update
 import com.xhand.hnu2.model.entity.UserInfoEntity
+import com.xhand.hnu2.network.GradeService
 import com.xhand.hnu2.network.LoginService
 import com.xhand.hnu2.network.UpdateService
 import kotlinx.coroutines.delay
@@ -37,61 +40,87 @@ class SettingsViewModel() : ViewModel() {
             }
         }
     }*/
+    // TextFiled
     var username by mutableStateOf("")
     var password by mutableStateOf("")
+
+    // 登录信息
     var userInfo: UserInfoEntity? = null
+
+    // 软件更新
     val ifUpdate: Boolean = true
+
+    // 展示登录弹窗
     var isShowDialog by mutableStateOf(false)
+
+    // 展示退出弹窗
     var isShowAlert by mutableStateOf(false)
-    var isLoginSuccess by mutableStateOf(false)
-    var isLogining by mutableStateOf(false)
 
-    private val loginService = LoginService.instance()
-    private val updateService = UpdateService.instance()
-
-    // 登录是否成功
-    val logined: Boolean
+    // 是否登录成功
+    val isLoginSuccess: Boolean
         get() {
             return userInfo != null
         }
 
+    // 是否正在登录
+    var LoginCircle by mutableStateOf(false)
+    var isLogging by mutableStateOf(false)
+
+    private val loginService = LoginService.instance()
+    private val updateService = UpdateService.instance()
+
     // 登录请求
     suspend fun login() {
         val publicKey = RSAEncryptionHelper.getPublicKeyFromString()
-        val passwordEncrypt = publicKey?.let { RSAEncryptionHelper.encryptText(password, it) }
-        val loginPost = passwordEncrypt?.let {
-            LoginPostEntity(
-                username = username,
-                password = it,
-                code = "",
-                appid = null
-            )
-        }
-        val res = loginPost?.let { loginService.loginPost(it) }
-        isLogining = true
-        delay(2000)
-        if (res != null) {
-            if (res.code() == 200) {
-                Log.i("TAG666", "${res.body()}")
-                userInfo = res.body()?.user?.let {
-                    UserInfoEntity(
-                        name = it.userxm,
-                        studentID = res.body()?.user!!.userAccount,
-                        academy = res.body()?.user!!.userdwmc
-                    )
-                }
-                isLoginSuccess = true
-                Log.i("TAG666", "userInfo is not null")
+        val passwordEncrypt = RSAEncryptionHelper.encryptText(password, publicKey)
+        val loginPost = LoginPostEntity(
+            username = username,
+            password = passwordEncrypt,
+            code = "",
+            appid = null
+        )
+        try {
+            val res = loginService.loginPost(loginPost)
+            LoginCircle = true
+            delay(2000)
+            userInfo = if (res.code.toInt() == 200) {
+                UserInfoEntity(
+                    name = res.user!!.userxm,
+                    studentID = res.user.userAccount,
+                    academy = res.user.userdwmc,
+                    token = res.user.token
+                )
             } else {
-                userInfo = null
-                isLoginSuccess = false
-                Log.i("TAG666", "userInfo is null")
+                null
             }
+            Log.i("TAG666", "$res")
+            LoginCircle = false
+            isLogging = true
+        } catch (e: Exception) {
+            Log.i("TAG666", e.toString())
         }
-        isLogining = false
-        Log.i("TAG666", "$userInfo")
+
     }
 
+    var gradeList: List<KccjList> = listOf()
+    private val gradeService = GradeService.instance()
+    suspend fun gradeService() {
+        Log.i("TAG666", "667$gradeList")
+        val res = userInfo?.let {
+            gradeService.gradePost(
+                GradePost("202301"),
+                token = it.token
+            )
+        }
+        if (res != null) {
+            if (res.code.toInt() == 200) {
+                gradeList = res.kccjList
+            } else {
+                Log.i("TAG666", "null")
+            }
+        }
+        Log.i("TAG666", "66$gradeList")
+    }
 
 
     @SuppressLint("StaticFieldLeak")

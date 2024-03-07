@@ -41,6 +41,7 @@ class NewsViewModel : ViewModel() {
             )
         )
     )
+
     private var listTemp by mutableStateOf(
         listOf(
             ArticleListEntity(
@@ -54,6 +55,8 @@ class NewsViewModel : ViewModel() {
     )
 
     private val newsListService = NewsListService.instance()
+    private val searchService = SearchService.instance()
+
     private val newsListType = mapOf(
         "8955" to "通知公告",
         "8954" to "师大要闻",
@@ -65,19 +68,22 @@ class NewsViewModel : ViewModel() {
             for (i in 1..10) {
                 val htmlRes = newsListService.getNewsList(i.toString(), type.key)
                 listTemp = listTemp + getNewsList(htmlRes.body()?.string(), type.value, 1)
-                }
+            }
         }
         list = listTemp
     }
 
-    private val searchService = SearchService.instance()
-    suspend fun searchRes(searchKey: String): List<ArticleListEntity> {
+    suspend fun searchRes(searchKey: String) {
         val searchKeys =
             """[{"field":"pageIndex","value":2},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$searchKey"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
         val searchKeyEncode = Base64.encodeToString(searchKeys.toByteArray(), 0)
-        val searchRes = searchService.pushPost(searchKeyEncode)
-        val searchList = getNewsList(searchRes.body()?.data, "搜索", 3)
-        Log.i("TAG666", "viewmodel${searchList}")
-        return searchList
+        try {
+            val searchRes = searchService.pushPost(searchKeyEncode)
+            list = getNewsList(searchRes.body()?.data, "搜索", 3)
+            Log.i("TAG666", "$list")
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
+        }
+
     }
 }

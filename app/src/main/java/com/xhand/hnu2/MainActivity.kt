@@ -30,6 +30,7 @@ import com.xhand.hnu2.screens.SettingScreen
 import com.xhand.hnu2.ui.theme.MyApplicationTheme
 import com.xhand.hnu2.screens.NavigationPersonScreen
 import com.xhand.hnu2.viewmodel.LocalUserViewModel
+import com.xhand.hnu2.viewmodel.PersonViewModel
 import com.xhand.hnu2.viewmodel.SettingsViewModel
 
 data class BottomNavigationItem(
@@ -115,7 +116,7 @@ class MainActivity : ComponentActivity() {
                             val settingsViewModel = LocalUserViewModel.current
                             Box(modifier = Modifier.padding(it)) {
                                 when (selectedItemIndex) {
-                                    0 -> NavigationPersonScreen(settingsViewModel)
+                                    0 -> NavigationPersonScreen(settingsViewModel, PersonViewModel())
                                     1 -> NavigationScreen()
                                     2 -> SettingScreen(settingsViewModel)
                                 }

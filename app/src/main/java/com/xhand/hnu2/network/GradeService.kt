@@ -1,14 +1,16 @@
 package com.xhand.hnu2.network
 
+import com.xhand.hnu2.model.entity.GradeEntity
+import com.xhand.hnu2.model.entity.GradePost
 import com.xhand.hnu2.model.entity.LoginEntity
 import com.xhand.hnu2.model.entity.LoginPostEntity
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.POST
 
 interface GradeService {
-
     @Headers(
         "Host: jwc.htu.edu.cn",
         "Accept: application/json, text/plain, */*",
@@ -18,14 +20,15 @@ interface GradeService {
         "Accept-Language: zh-CN,zh;q=0.9",
         "Cookie: language=zh-CN"
     )
-    @POST("dev-api/appapi/applogin")
+    @POST("dev-api/appapi/Studentcj/data")
     suspend fun gradePost(
-        @Body body: LoginPostEntity
-    ): Response<LoginEntity>
+        @Body body: GradePost,
+        @Header("Token") token: String
+    ): GradeEntity
 
     companion object {
         fun instance(): GradeService {
-            return Network.LoginService(GradeService::class.java)
+            return Network.loginService(GradeService::class.java)
         }
     }
 

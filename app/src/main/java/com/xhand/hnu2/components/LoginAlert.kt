@@ -11,29 +11,27 @@ fun showAlert(
     settingsViewModel: SettingsViewModel,
     text: String
 ) {
-    if (settingsViewModel.isShowAlert) {
-        AlertDialog(
-            title = { Text(text = "提示") },
-            text = { Text(text = text) },
-            onDismissRequest = { settingsViewModel.isShowDialog = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        settingsViewModel.isShowAlert = false
-                    }
-                ) {
-                    Text("取消")
+    AlertDialog(
+        title = { Text(text = "提示") },
+        text = { Text(text = text) },
+        onDismissRequest = { settingsViewModel.isShowDialog = false },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    settingsViewModel.isShowAlert = false
                 }
-                TextButton(
-                    onClick = {
-                        settingsViewModel.isShowAlert = false
-                        settingsViewModel.userInfo = null
-                    }
-                ) {
-                    Text("确认")
-                }
+            ) {
+                Text("取消")
             }
-        )
-    }
+            TextButton(
+                onClick = {
+                    settingsViewModel.isShowAlert = false
+                    settingsViewModel.userInfo = null
+                }
+            ) {
+                Text("确认")
+            }
+        }
+    )
 
 }
