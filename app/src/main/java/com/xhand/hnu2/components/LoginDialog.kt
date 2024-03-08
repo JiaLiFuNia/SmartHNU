@@ -11,6 +11,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -57,7 +58,7 @@ fun showLoginDialog(
                     isError = !settingsViewModel.isLoginSuccess and settingsViewModel.isLogging,
                     supportingText = {
                         if (!settingsViewModel.isLoginSuccess and settingsViewModel.isLogging) {
-                            Text(text = "账号或密码错误！", color = Color.Red)
+                            Text(text = "账号或密码错误！", color = MaterialTheme.colorScheme.error)
                         }
                     },
                     trailingIcon = { },
@@ -69,7 +70,7 @@ fun showLoginDialog(
                     isError = !settingsViewModel.isLoginSuccess and settingsViewModel.isLogging,
                     supportingText = {
                         if (!settingsViewModel.isLoginSuccess and settingsViewModel.isLogging) {
-                            Text(text = "账号或密码错误！", color = Color.Red)
+                            Text(text = "账号或密码错误！", color = MaterialTheme.colorScheme.error)
                         }
                     },
                     trailingIcon = {

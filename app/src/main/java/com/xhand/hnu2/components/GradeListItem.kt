@@ -46,16 +46,18 @@ fun pp() {
         grade = KccjList(
             xsxm = "许博涵",
             zcjfs = 100.0,
+            kcflmc = "博约经典",
             xnxqmc = "2023-2024-1",
             kcdlmc = "专业教育",
             cjjd = 5.0,
-            kcrwdm = "10000000",
+            kcrwdm = "10060608",
             kcmc = "数据结构",
-            cjdm = "1000000",
+            cjdm = "29664301",
+            zcj = "优秀",
             xf = 3,
             xnxqdm = "202301",
             xdfsmc = "类型",
-            cjfsmc = "cj"
+            cjfsmc = "百分制",
         ), modifier = Modifier.clickable { }
     )
 }

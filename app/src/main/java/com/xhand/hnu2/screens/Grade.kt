@@ -32,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
@@ -45,6 +46,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.xhand.hnu2.R
 import com.xhand.hnu2.components.GradeListItem
 import com.xhand.hnu2.components.ModalBottomSheet
+import com.xhand.hnu2.components.showAlert
 import com.xhand.hnu2.model.entity.ArticleListEntity
 import com.xhand.hnu2.model.entity.KccjList
 import com.xhand.hnu2.viewmodel.GradeViewModel
@@ -55,9 +57,30 @@ import com.xhand.hnu2.viewmodel.SettingsViewModel
 @Composable
 fun GradeScreen(
     onBack: () -> Unit,
-    settingsViewModel: SettingsViewModel
+    settingsViewModel: SettingsViewModel,
+    gradeViewModel: GradeViewModel
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    var showAlert by remember {
+        mutableStateOf(
+            KccjList(
+                xsxm = "",
+                zcjfs = 100.0,
+                kcflmc = "",
+                xnxqmc = "",
+                kcdlmc = "",
+                cjjd = 5.0,
+                kcrwdm = "",
+                kcmc = "",
+                cjdm = "",
+                zcj = "",
+                xf = 3,
+                xnxqdm = "",
+                xdfsmc = "",
+                cjfsmc = "",
+            )
+        )
+    }
     var showBottomSheet = remember {
         mutableStateOf(false)
     }
@@ -112,11 +135,17 @@ fun GradeScreen(
         LazyColumn(modifier = Modifier.padding(paddingValues = it)) {
             Log.i("TAG666", "3")
             items(settingsViewModel.gradeList) { grade ->
-                GradeListItem(grade = grade, modifier = Modifier.clickable { })
+                GradeListItem(grade = grade, modifier = Modifier.clickable {
+                    showAlert = grade
+                    settingsViewModel.showPersonAlert = true
+                })
             }
         }
     }
-
+    if (settingsViewModel.showPersonAlert) {
+        Log.i("TAG666", "${settingsViewModel.showPersonAlert}")
+        showAlert(grade = showAlert, settingsViewModel = settingsViewModel)
+    }
     ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "筛选成绩") {
         Column(
             modifier = Modifier.fillMaxWidth(),

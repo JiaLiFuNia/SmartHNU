@@ -10,5 +10,4 @@ import com.xhand.hnu2.model.entity.KccjList
 import com.xhand.hnu2.network.GradeService
 
 class GradeViewModel() : ViewModel() {
-
 }

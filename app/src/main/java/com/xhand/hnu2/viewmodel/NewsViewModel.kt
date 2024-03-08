@@ -2,6 +2,7 @@ package com.xhand.hnu2.viewmodel
 
 import android.util.Base64
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -77,7 +78,16 @@ class NewsViewModel : ViewModel() {
     }
 
     var content by mutableStateOf("")
-    var searchList: List<ArticleListEntity> = listOf()
+    val isSearching: Boolean
+        get() {
+            return content.isNotEmpty()
+        }
+    var searchList = mutableListOf<ArticleListEntity>()
+    val isSearched: Boolean
+        get() {
+            return searchList.isEmpty()
+        }
+
     private val searchService = SearchService.instance()
     suspend fun searchRes() {
         val searchKeys =

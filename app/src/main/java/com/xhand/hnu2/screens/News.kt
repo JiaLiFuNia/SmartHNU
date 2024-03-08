@@ -64,6 +64,7 @@ import com.xhand.hnu2.viewmodel.LocalUserViewModel
 import com.xhand.hnu2.viewmodel.NewsUiState
 import com.xhand.hnu2.viewmodel.NewsViewModel
 import com.xhand.hnu2.viewmodel.SettingsViewModel
+import kotlinx.coroutines.delay
 
 var url = ""
 
@@ -132,7 +133,7 @@ fun NewsScreen(
     var isShowSearchBar by remember {
         mutableStateOf(false)
     }
-
+    var isSearch by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         newsViewModel.newsList()
     }
@@ -190,6 +191,14 @@ fun NewsScreen(
                                 singleLine = true,
                                 interactionSource = interactionSource,
                                 visualTransformation = VisualTransformation.None,
+                                leadingIcon = {
+                                    IconButton(onClick = { isSearch = true }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Search,
+                                            contentDescription = "搜索"
+                                        )
+                                    }
+                                },
                                 placeholder = { Text(text = "请输入关键词...") },
                                 container = {
                                     OutlinedTextFieldDefaults.ContainerBox(
@@ -224,7 +233,7 @@ fun NewsScreen(
         },
         floatingActionButtonPosition = FabPosition.End
     ) {
-        if (newsViewModel.content != "") {
+        if (isSearch or newsViewModel.isSearching) {
             LaunchedEffect(Unit) {
                 newsViewModel.searchRes()
             }
@@ -233,13 +242,12 @@ fun NewsScreen(
             if (newsViewModel.newsIsLoading) {
                 item {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 10.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .size(50.dp)
-                        )
+                        CircularProgressIndicator()
                     }
                 }
             } else {
@@ -257,7 +265,7 @@ fun NewsScreen(
                         }
                     }
                 } else {
-                    if (newsViewModel.searchList.isNotEmpty()) {
+                    if (!newsViewModel.isSearched) {
                         items(newsViewModel.searchList) { article ->
                             ArticleListItem(
                                 article = article,
@@ -269,7 +277,7 @@ fun NewsScreen(
                             )
                         }
                     } else {
-                        if (newsViewModel.content != "") {
+                        if (newsViewModel.content.isNotEmpty() and newsViewModel.isSearched and isSearch) {
                             item {
                                 Box(
                                     modifier = Modifier

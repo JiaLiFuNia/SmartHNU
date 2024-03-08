@@ -32,6 +32,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,6 +59,9 @@ import com.xhand.hnu2.R
 import com.xhand.hnu2.components.ModalBottomSheet
 import com.xhand.hnu2.components.PersonCardItem
 import com.xhand.hnu2.viewmodel.GradeViewModel
+import com.xhand.hnu2.viewmodel.LocalGradeViewModel
+import com.xhand.hnu2.viewmodel.LocalPersonViewModel
+import com.xhand.hnu2.viewmodel.LocalUserViewModel
 import com.xhand.hnu2.viewmodel.PersonViewModel
 import com.xhand.hnu2.viewmodel.SettingsViewModel
 
@@ -103,7 +107,8 @@ fun NavigationPersonScreen(settingsViewModel: SettingsViewModel, personViewModel
         composable("grade_screen") {
             GradeScreen(
                 onBack = { navController.popBackStack() },
-                settingsViewModel = settingsViewModel
+                settingsViewModel = settingsViewModel,
+                gradeViewModel = GradeViewModel()
             )
         }
         composable("schedule_screen") {

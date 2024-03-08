@@ -39,6 +39,7 @@ data class KccjList(
     val xsxm: String, // 姓名
     val zcjfs: Double, // 总成绩
     val xnxqmc: String, // 学期
+    val kcflmc: String, // 博约
     val kcdlmc: String, // 课程类型
     val cjjd: Double, // 绩点
     val kcrwdm: String, // 课程代码
@@ -48,4 +49,5 @@ data class KccjList(
     val xnxqdm: String, // 学期
     val xdfsmc: String, // 类型
     val cjfsmc: String, // 成绩类型
+    val zcj: String // 成绩
 )

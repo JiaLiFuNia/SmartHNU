@@ -163,7 +163,7 @@ fun SettingScreen(settingsViewModel: SettingsViewModel) {
                 leadingImageVector = R.drawable.ic_code,
                 onClick = {
                     Intent(Intent.ACTION_VIEW).also {
-                        it.data = Uri.parse("https://xhand.fun")
+                        it.data = Uri.parse("https://github.com/JiaLiFuNia/SmartHNU")
                         if (it.resolveActivity(context.packageManager) != null) {
                             context.startActivity(it)
                         }

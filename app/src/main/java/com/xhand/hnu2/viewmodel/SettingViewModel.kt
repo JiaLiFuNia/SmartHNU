@@ -45,6 +45,7 @@ class SettingsViewModel() : ViewModel() {
             }
         }
     }*/
+    var showPersonAlert by mutableStateOf(false)
     // TextFiled
     var username by mutableStateOf("")
     var password by mutableStateOf("")
@@ -87,7 +88,7 @@ class SettingsViewModel() : ViewModel() {
         try {
             val res = loginService.loginPost(loginPost)
             LoginCircle = true
-            delay(2000)
+            delay(1200)
             userInfo = if (res.code.toInt() == 200) {
                 UserInfoEntity(
                     name = res.user!!.userxm,
