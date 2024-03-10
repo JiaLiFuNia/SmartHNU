@@ -29,22 +29,17 @@ fun showAlert(
             Row(
                 modifier = Modifier.padding(10.dp)
             ) {
-                if (grade.cjfsmc == "五级制") {
                     Column(
-                        modifier = Modifier.weight(0.6f)
+                        modifier = Modifier.weight(0.5f)
                     ) {
-                        Text(text = "成绩 ${grade.zcjfs} (${grade.zcj})")
-                        Text(text = "绩点 ${grade.cjjd}")
-                    }
-                } else
-                    Column(
-                        modifier = Modifier.weight(0.4f)
-                    ) {
-                        Text(text = "成绩 ${grade.zcjfs}")
+                        if (grade.cjfsmc == "五级制") {
+                            Text(text = "成绩 ${grade.zcjfs} (${grade.zcj})")
+                        } else
+                            Text(text = "成绩 ${grade.zcjfs}")
                         Text(text = "绩点 ${grade.cjjd}")
                     }
                 Column(
-                    modifier = Modifier.weight(0.6f),
+                    modifier = Modifier.weight(0.5f),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     if (grade.kcdlmc != "博约通识")
@@ -52,7 +47,7 @@ fun showAlert(
                             text = grade.kcdlmc
                         )
                     Text(
-                        text = grade.kcflmc
+                        text = grade.kcflmc.replace("（","\n").replace("）","")
                     )
                 }
 
@@ -127,9 +122,9 @@ fun pppppp() {
         grade = KccjList(
             xsxm = "许博涵",
             zcjfs = 100.0,
-            kcflmc = "",
+            kcflmc = "博约经典（博约核心）",
             xnxqmc = "2023-2024-1",
-            kcdlmc = "专业教育",
+            kcdlmc = "博约通识",
             cjjd = 5.0,
             kcrwdm = "10060608",
             kcmc = "数据结构",

@@ -11,6 +11,7 @@ import com.xhand.hnu2.model.entity.ArticleListEntity
 import com.xhand.hnu2.network.NewsListService
 import com.xhand.hnu2.network.SearchService
 import com.xhand.hnu2.network.getNewsList
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
@@ -65,8 +66,11 @@ class NewsViewModel : ViewModel() {
         "8954" to "师大要闻",
         "8957" to "院部动态"
     )
+    var isRefreshing by mutableStateOf(false)
+        private set
 
     suspend fun newsList() {
+        isRefreshing = true
         for (type in newsListType) {
             for (i in 1..10) {
                 val htmlRes = newsListService.getNewsList(i.toString(), type.key)
@@ -75,6 +79,7 @@ class NewsViewModel : ViewModel() {
         }
         list = listTemp
         newsIsLoading = false
+        isRefreshing = false
     }
 
     var content by mutableStateOf("")

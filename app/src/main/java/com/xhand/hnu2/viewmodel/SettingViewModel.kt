@@ -4,13 +4,16 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Base64
 import android.util.Log
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.xhand.hnu2.R
 import com.xhand.hnu2.components.RSAEncryptionHelper
 import com.xhand.hnu2.model.entity.ArticleListEntity
@@ -25,6 +28,7 @@ import com.xhand.hnu2.network.SearchService
 import com.xhand.hnu2.network.UpdateService
 import com.xhand.hnu2.network.getNewsList
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 class SettingsViewModel() : ViewModel() {
@@ -46,6 +50,7 @@ class SettingsViewModel() : ViewModel() {
         }
     }*/
     var showPersonAlert by mutableStateOf(false)
+
     // TextFiled
     var username by mutableStateOf("")
     var password by mutableStateOf("")
@@ -108,24 +113,41 @@ class SettingsViewModel() : ViewModel() {
 
     }
 
-    var gradeList: List<KccjList> = listOf()
+    var gradeList = mutableListOf<KccjList>()
+    var isRefreshing by mutableStateOf(false)
+        private set
+    val gradeTerm =
+        mutableListOf(
+            "202201",
+            "202202",
+            "202301",
+            "202302",
+            "202401",
+            "202402",
+            "202501",
+            "202502"
+        )
     private val gradeService = GradeService.instance()
-    suspend fun gradeService() {
-        Log.i("TAG666", "667$gradeList")
-        val res = userInfo?.let {
-            gradeService.gradePost(
-                GradePost("202301"),
-                token = it.token
-            )
-        }
-        if (res != null) {
-            if (res.code.toInt() == 200) {
-                gradeList = res.kccjList
-            } else {
-                Log.i("TAG666", "null")
+    fun gradeService() = viewModelScope.launch() {
+        for (term in gradeTerm) {
+            isRefreshing = true
+            Log.i("TAG666", "667$gradeList")
+            val res = userInfo?.let {
+                gradeService.gradePost(
+                    GradePost(term),
+                    token = it.token
+                )
             }
+            if (res != null) {
+                if (res.code.toInt() == 200) {
+                    gradeList = (res.kccjList + gradeList).toMutableList()
+                } else {
+                    Log.i("TAG666", "null")
+                }
+            }
+            Log.i("TAG666", "66$gradeList")
+            isRefreshing = false
         }
-        Log.i("TAG666", "66$gradeList")
     }
 
     @SuppressLint("StaticFieldLeak")

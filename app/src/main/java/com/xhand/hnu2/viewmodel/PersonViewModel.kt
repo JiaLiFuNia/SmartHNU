@@ -18,7 +18,7 @@ import com.xhand.hnu2.network.GradeService
 import kotlinx.coroutines.launch
 
 data class ToggleableInfo(
-    val isChecked: Boolean,
+    var isChecked: Boolean,
     val text: String,
     val imageVector: ImageVector,
     val route: String?
@@ -26,19 +26,14 @@ data class ToggleableInfo(
 
 
 class PersonViewModel() : ViewModel() {
-    val checkboxes by mutableStateOf(
+    var hasMessage by mutableStateOf(true)
+    var checkboxes by mutableStateOf(
         listOf(
             ToggleableInfo(
                 isChecked = true,
                 text = "今日课程",
                 imageVector = Icons.Default.DateRange,
                 route = "schedule_screen"
-            ),
-            ToggleableInfo(
-                isChecked = true,
-                text = "消息中心",
-                imageVector = Icons.Default.Email,
-                route = null
             ),
             ToggleableInfo(
                 isChecked = true,

@@ -131,7 +131,7 @@ fun SettingScreen(settingsViewModel: SettingsViewModel) {
             BasicListItem(leadingText = stringResource(R.string.about))
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.0.3.7",
+                supportingText = "Copyright 2023-2024 Xhand v2.0.3.10",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = { }
             )

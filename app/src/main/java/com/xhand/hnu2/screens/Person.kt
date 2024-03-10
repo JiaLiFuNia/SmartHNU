@@ -20,6 +20,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -166,6 +169,17 @@ fun PersonScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { personViewModel.hasMessage = false }) {
+                        BadgedBox(
+                            badge = {
+                                if (personViewModel.hasMessage) {
+                                    Badge()
+                                }
+                            }
+                        ) {
+                            Icon(imageVector = Icons.Default.Email, contentDescription = null)
+                        }
+                    }
                     IconButton(
                         onClick = {
                             showModalBottomSheetEdit.value = !showModalBottomSheetEdit.value
@@ -177,6 +191,7 @@ fun PersonScreen(
                             contentDescription = "编辑"
                         )
                     }
+
                 },
                 scrollBehavior = scrollBehavior
             )
@@ -276,10 +291,8 @@ fun PersonScreen(
             ) {
                 Checkbox(
                     checked = info.isChecked,
-                    onCheckedChange = { isChecked ->
-                        checkboxes[index] = info.copy(
-                            isChecked = isChecked
-                        )
+                    onCheckedChange = {
+                        checkboxes[index].isChecked = it
                     }
                 )
                 Text(text = info.text)

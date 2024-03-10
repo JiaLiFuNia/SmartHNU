@@ -18,9 +18,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
@@ -40,6 +44,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,6 +70,7 @@ import com.xhand.hnu2.viewmodel.NewsUiState
 import com.xhand.hnu2.viewmodel.NewsViewModel
 import com.xhand.hnu2.viewmodel.SettingsViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 var url = ""
 
@@ -118,7 +124,7 @@ fun NavigationScreen() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun NewsScreen(
     navController: NavController,
@@ -134,6 +140,15 @@ fun NewsScreen(
         mutableStateOf(false)
     }
     var isSearch by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = newsViewModel.isRefreshing,
+        onRefresh = {
+            scope.launch {
+                newsViewModel.newsList()
+            }
+        }
+    )
     LaunchedEffect(Unit) {
         newsViewModel.newsList()
     }
@@ -238,58 +253,72 @@ fun NewsScreen(
                 newsViewModel.searchRes()
             }
         }
-        LazyColumn(modifier = Modifier.padding(paddingValues = it)) {
-            if (newsViewModel.newsIsLoading) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
-            } else {
-                if (!isShowSearchBar) {
-                    items(newsViewModel.list) { article ->
-                        if (article.type == selectedOption) {
-                            ArticleListItem(
-                                article = article,
-                                modifier = Modifier
-                                    .clickable {
-                                        navController.navigate("detail_screen")
-                                        url = article.url
-                                    }
-                            )
+        Box(
+            modifier = Modifier.pullRefresh(pullRefreshState)
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(paddingValues = it)
+            ) {
+                if (newsViewModel.newsIsLoading) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(top = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
                         }
                     }
                 } else {
-                    if (!newsViewModel.isSearched) {
-                        items(newsViewModel.searchList) { article ->
-                            ArticleListItem(
-                                article = article,
-                                modifier = Modifier
-                                    .clickable {
-                                        navController.navigate("detail_screen")
-                                        url = article.url
-                                    }
-                            )
+                    if (!isShowSearchBar) {
+                        items(newsViewModel.list) { article ->
+                            if (article.type == selectedOption) {
+                                ArticleListItem(
+                                    article = article,
+                                    modifier = Modifier
+                                        .clickable {
+                                            navController.navigate("detail_screen")
+                                            url = article.url
+                                        }
+                                )
+                            }
                         }
                     } else {
-                        if (newsViewModel.content.isNotEmpty() and newsViewModel.isSearched and isSearch) {
-                            item {
-                                Box(
+                        if (!newsViewModel.isSearched) {
+                            items(newsViewModel.searchList) { article ->
+                                ArticleListItem(
+                                    article = article,
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 10.dp), contentAlignment = Alignment.Center
-                                ) { Text(text = "未检索到相关新闻") }
+                                        .clickable {
+                                            navController.navigate("detail_screen")
+                                            url = article.url
+                                        }
+                                )
+                            }
+                        } else {
+                            if (newsViewModel.content.isNotEmpty() and newsViewModel.isSearched and isSearch) {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 10.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) { Text(text = "未检索到相关新闻") }
+                                }
                             }
                         }
                     }
                 }
             }
+            PullRefreshIndicator(
+                modifier = Modifier.align(Alignment.TopCenter),
+                refreshing = newsViewModel.isRefreshing,
+                state = pullRefreshState
+            )
         }
+
 
     }
     ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "选择新闻源") {
