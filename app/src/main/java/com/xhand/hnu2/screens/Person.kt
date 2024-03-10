@@ -1,6 +1,5 @@
 package com.xhand.hnu2.screens
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -35,8 +34,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,9 +59,6 @@ import com.xhand.hnu2.R
 import com.xhand.hnu2.components.ModalBottomSheet
 import com.xhand.hnu2.components.PersonCardItem
 import com.xhand.hnu2.viewmodel.GradeViewModel
-import com.xhand.hnu2.viewmodel.LocalGradeViewModel
-import com.xhand.hnu2.viewmodel.LocalPersonViewModel
-import com.xhand.hnu2.viewmodel.LocalUserViewModel
 import com.xhand.hnu2.viewmodel.PersonViewModel
 import com.xhand.hnu2.viewmodel.SettingsViewModel
 

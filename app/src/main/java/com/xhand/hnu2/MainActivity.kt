@@ -29,9 +29,7 @@ import com.xhand.hnu2.screens.NavigationScreen
 import com.xhand.hnu2.screens.SettingScreen
 import com.xhand.hnu2.ui.theme.MyApplicationTheme
 import com.xhand.hnu2.screens.NavigationPersonScreen
-import com.xhand.hnu2.viewmodel.LocalNewsViewModel
 import com.xhand.hnu2.viewmodel.LocalUserViewModel
-import com.xhand.hnu2.viewmodel.NewsViewModel
 import com.xhand.hnu2.viewmodel.PersonViewModel
 import com.xhand.hnu2.viewmodel.SettingsViewModel
 

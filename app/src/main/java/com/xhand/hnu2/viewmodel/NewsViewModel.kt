@@ -2,7 +2,6 @@ package com.xhand.hnu2.viewmodel
 
 import android.util.Base64
 import android.util.Log
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,27 +10,8 @@ import com.xhand.hnu2.model.entity.ArticleListEntity
 import com.xhand.hnu2.network.NewsListService
 import com.xhand.hnu2.network.SearchService
 import com.xhand.hnu2.network.getNewsList
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
-
-data class NewsUiState(
-    val openFilterSheet: Boolean = false,
-    var isSearchBarShow: Boolean = false
-)
 
 class NewsViewModel : ViewModel() {
-
-    private val _uiState = MutableStateFlow(
-        NewsUiState()
-    )
-
-    fun setOpenFilterSheet(value: Boolean) {
-        _uiState.update {
-            it.copy(openFilterSheet = value)
-        }
-    }
-
 
     var newsIsLoading by mutableStateOf(true)
 

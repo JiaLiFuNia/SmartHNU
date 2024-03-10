@@ -2,9 +2,6 @@ package com.xhand.hnu2.network
 
 import com.xhand.hnu2.model.entity.GradeEntity
 import com.xhand.hnu2.model.entity.GradePost
-import com.xhand.hnu2.model.entity.LoginEntity
-import com.xhand.hnu2.model.entity.LoginPostEntity
-import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.Headers

@@ -2,13 +2,9 @@ package com.xhand.hnu2.viewmodel
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Base64
 import android.util.Log
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
@@ -16,7 +12,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.xhand.hnu2.R
 import com.xhand.hnu2.components.RSAEncryptionHelper
-import com.xhand.hnu2.model.entity.ArticleListEntity
 import com.xhand.hnu2.model.entity.GradePost
 import com.xhand.hnu2.model.entity.KccjList
 import com.xhand.hnu2.model.entity.LoginPostEntity
@@ -24,14 +19,12 @@ import com.xhand.hnu2.model.entity.Update
 import com.xhand.hnu2.model.entity.UserInfoEntity
 import com.xhand.hnu2.network.GradeService
 import com.xhand.hnu2.network.LoginService
-import com.xhand.hnu2.network.SearchService
 import com.xhand.hnu2.network.UpdateService
-import com.xhand.hnu2.network.getNewsList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
-class SettingsViewModel() : ViewModel() {
+class SettingsViewModel : ViewModel() {
     // private val userInfoManager = UserInfoManager(context = context)
     /*init {
         viewModelScope.launch {
@@ -116,7 +109,7 @@ class SettingsViewModel() : ViewModel() {
     var gradeList = mutableListOf<KccjList>()
     var isRefreshing by mutableStateOf(false)
         private set
-    val gradeTerm =
+    private val gradeTerm =
         mutableListOf(
             "202201",
             "202202",
@@ -128,7 +121,7 @@ class SettingsViewModel() : ViewModel() {
             "202502"
         )
     private val gradeService = GradeService.instance()
-    fun gradeService() = viewModelScope.launch() {
+    fun gradeService() = viewModelScope.launch {
         for (term in gradeTerm) {
             isRefreshing = true
             Log.i("TAG666", "667$gradeList")
