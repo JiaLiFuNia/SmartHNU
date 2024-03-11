@@ -3,7 +3,7 @@
     android:height="108dp"
     android:viewportWidth="24"
     android:viewportHeight="24"
-    android:tint="@color/ic_launcher_foreground"
+    android:tint="#FFFFFF"
     android:autoMirrored="true">
   <group android:scaleX="0.464"
       android:scaleY="0.464"
