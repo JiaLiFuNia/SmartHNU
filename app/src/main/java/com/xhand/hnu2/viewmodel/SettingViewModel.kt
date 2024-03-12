@@ -19,6 +19,7 @@ import com.xhand.hnu2.model.entity.Update
 import com.xhand.hnu2.model.entity.UserInfoEntity
 import com.xhand.hnu2.network.GradeService
 import com.xhand.hnu2.network.LoginService
+import com.xhand.hnu2.network.NewsDetailService
 import com.xhand.hnu2.network.UpdateService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -42,6 +43,7 @@ class SettingsViewModel : ViewModel() {
             }
         }
     }*/
+    var url by mutableStateOf("")
     var showPersonAlert by mutableStateOf(false)
 
     // TextFiled
@@ -72,6 +74,7 @@ class SettingsViewModel : ViewModel() {
 
     private val loginService = LoginService.instance()
     private val updateService = UpdateService.instance()
+    private val detailService = NewsDetailService.instance()
 
     // 登录请求
     suspend fun login() {
@@ -141,6 +144,18 @@ class SettingsViewModel : ViewModel() {
             Log.i("TAG666", "66$gradeList")
             isRefreshing = false
         }
+    }
+
+    var htmlParsing: String = ""
+    suspend fun detailService() {
+        try {
+            val res = detailService.getNewsDetail(url)
+            htmlParsing = res.body()?.string() ?: ""
+            Log.i("TAG666", htmlParsing)
+        } catch (e: Exception) {
+            htmlParsing = ""
+        }
+
     }
 
     @SuppressLint("StaticFieldLeak")

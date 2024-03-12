@@ -62,12 +62,12 @@ import com.xhand.hnu2.components.ArticleListItem
 import com.xhand.hnu2.components.ModalBottomSheet
 import com.xhand.hnu2.viewmodel.LocalNewsViewModel
 import com.xhand.hnu2.viewmodel.NewsViewModel
+import com.xhand.hnu2.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
 
-var url by mutableStateOf("")
 
 @Composable
-fun NavigationScreen() {
+fun NavigationScreen(settingsViewModel: SettingsViewModel) {
     val navController = rememberNavController()
     CompositionLocalProvider(LocalNewsViewModel provides NewsViewModel()) {
         val newsViewModel = LocalNewsViewModel.current
@@ -102,13 +102,14 @@ fun NavigationScreen() {
             composable("newsList_screen") {
                 NewsScreen(
                     navController = navController,
-                    newsViewModel = newsViewModel
+                    newsViewModel = newsViewModel,
+                    settingsViewModel = settingsViewModel
                 )
             }
             composable("detail_screen") {
                 ArticleDetailScreen(
                     onBack = { navController.popBackStack() },
-                    url = url
+                    settingsViewModel = settingsViewModel
                 )
             }
         }
@@ -119,7 +120,8 @@ fun NavigationScreen() {
 @Composable
 fun NewsScreen(
     navController: NavController,
-    newsViewModel: NewsViewModel
+    newsViewModel: NewsViewModel,
+    settingsViewModel: SettingsViewModel
 ) {
     val showBottomSheet = remember {
         mutableStateOf(false)
@@ -270,7 +272,7 @@ fun NewsScreen(
                                     modifier = Modifier
                                         .clickable {
                                             navController.navigate("detail_screen")
-                                            url = article.url
+                                            settingsViewModel.url = article.url
                                         }
                                 )
                             }
@@ -283,7 +285,7 @@ fun NewsScreen(
                                     modifier = Modifier
                                         .clickable {
                                             navController.navigate("detail_screen")
-                                            url = article.url
+                                            settingsViewModel.url = article.url
                                         }
                                 )
                             }

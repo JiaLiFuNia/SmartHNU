@@ -58,7 +58,7 @@ fun showLoginDialog(
                     isError = !settingsViewModel.isLoginSuccess and settingsViewModel.isLogging,
                     supportingText = {
                         if (!settingsViewModel.isLoginSuccess and settingsViewModel.isLogging) {
-                            Text(text = "账号或密码错误！", color = MaterialTheme.colorScheme.error)
+                            Text(text = "学号或密码错误！", color = MaterialTheme.colorScheme.error)
                         }
                     },
                     trailingIcon = { },
@@ -70,7 +70,7 @@ fun showLoginDialog(
                     isError = !settingsViewModel.isLoginSuccess and settingsViewModel.isLogging,
                     supportingText = {
                         if (!settingsViewModel.isLoginSuccess and settingsViewModel.isLogging) {
-                            Text(text = "账号或密码错误！", color = MaterialTheme.colorScheme.error)
+                            Text(text = "学号或密码错误！", color = MaterialTheme.colorScheme.error)
                         }
                     },
                     trailingIcon = {

@@ -42,4 +42,14 @@ object Network {
         return retrofitNewsList.create(clazz)
     }
 
+
+    private val retrofitNewsDetail = Retrofit.Builder()
+        .baseUrl("https://www.htu.edu.cn/")
+        .build()
+
+    fun <T> detailService(clazz: Class<T>): T {
+        return retrofitNewsList.create(clazz)
+    }
+
+
 }

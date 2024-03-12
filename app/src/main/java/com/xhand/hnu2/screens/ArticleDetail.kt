@@ -3,12 +3,17 @@ package com.xhand.hnu2.screens
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
+import android.text.AutoText.get
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -25,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,25 +39,41 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.chimbori.crux.Crux
+import com.chimbori.crux.api.Fields.BANNER_IMAGE_URL
+import com.chimbori.crux.api.Fields.FAVICON_URL
+import com.chimbori.crux.api.Fields.TITLE
 import com.xhand.hnu2.R
+import com.xhand.hnu2.components.ArticleParsing
+import com.xhand.hnu2.viewmodel.SettingsViewModel
+import kotlinx.coroutines.runBlocking
+import net.dankito.readability4j.Article
+import net.dankito.readability4j.Readability4J
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun ArticleDetailScreen(
-    url: String,
+    settingsViewModel: SettingsViewModel,
     onBack: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val webView = remember {
+    /*val webView = remember {
         WebView(context).apply {
             settings.javaScriptEnabled = true
             webViewClient = WebViewClient()
-            loadUrl(url)
+            loadUrl(settingsViewModel.url)
         }
-    }
+    }*/
     Scaffold(
         topBar = {
             TopAppBar(
@@ -74,7 +96,7 @@ fun ArticleDetailScreen(
                     IconButton(
                         onClick = {
                             Intent(Intent.ACTION_SEND).also {
-                                it.putExtra(Intent.EXTRA_TEXT, url)
+                                it.putExtra(Intent.EXTRA_TEXT, settingsViewModel.url)
                                 it.type = "text/plain"
                                 if (it.resolveActivity(context.packageManager) != null) {
                                     context.startActivity(it)
@@ -95,16 +117,6 @@ fun ArticleDetailScreen(
                         )
                     }
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-                        DropdownMenuItem(
-                            text = { Text(text = "重新加载") },
-                            onClick = { webView.reload() },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Refresh,
-                                    contentDescription = "刷新"
-                                )
-                            }
-                        )
                         val ifStar = remember { mutableStateOf(false) }
                         val ifStarText = remember { mutableStateOf("收藏") }
                         DropdownMenuItem(
@@ -132,7 +144,7 @@ fun ArticleDetailScreen(
                             text = { Text(text = "使用外部浏览器") },
                             onClick = {
                                 Intent(Intent.ACTION_VIEW).also {
-                                    it.data = Uri.parse(url)
+                                    it.data = Uri.parse(settingsViewModel.url)
                                     if (it.resolveActivity(context.packageManager) != null) {
                                         context.startActivity(it)
                                     }
@@ -164,13 +176,58 @@ fun ArticleDetailScreen(
             )
         }
     ) {
-        Box(
+        // Create a reusable object configured with the default set of plugins.
+        LaunchedEffect(Unit) {
+            settingsViewModel.detailService()
+        }
+        val readability4J = Readability4J(settingsViewModel.url, settingsViewModel.htmlParsing)
+        val article: Article = readability4J.parse()
+
+        // 标题
+        val title: String = article.title ?: ""
+        // 内容
+        val content: String = article.articleContent.toString()
+        // html头部
+        val htmlHeader = """
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title></title>
+            <style>
+                body {
+                  font-size: 120%;
+                }
+                img {
+                    max-width: 100% !important;
+                }
+            </style>
+        </head>
+        <body>
+    """
+        // html尾部
+        val htmlFooter = """
+        </body>
+        </html>
+    """
+        Column(
             Modifier
                 .fillMaxSize()
                 .padding(paddingValues = it)
         ) {
-            AndroidView(factory = { webView })
+            Text(text = title, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+            AndroidView(factory = { context ->
+                WebView(context)
+            }, modifier = Modifier.padding(top = 60.dp)) { view ->
+                view.loadDataWithBaseURL(
+                    "",
+                    "$htmlHeader$content$htmlFooter",
+                    null,
+                    "utf-8",
+                    null
+                )
+            }
         }
     }
 }
-

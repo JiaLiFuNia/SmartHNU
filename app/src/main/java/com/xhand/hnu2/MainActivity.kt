@@ -117,7 +117,7 @@ class MainActivity : ComponentActivity() {
                             Box(modifier = Modifier.padding(it)) {
                                 when (selectedItemIndex) {
                                     0 -> NavigationPersonScreen(settingsViewModel, PersonViewModel())
-                                    1 -> NavigationScreen()
+                                    1 -> NavigationScreen(settingsViewModel)
                                     2 -> SettingScreen(settingsViewModel)
                                 }
                             }

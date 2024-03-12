@@ -75,6 +75,8 @@ dependencies {
 
     // html解析
     implementation("org.jsoup:jsoup:1.16.1")
+    implementation("com.chimbori.crux:crux:5.0.0")
+    implementation("net.dankito.readability4j:readability4j:1.0.8")
 
     // Network
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
