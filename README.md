@@ -34,7 +34,7 @@ Studio，了解Gradle...从去年10月份，到今年3月份断断续续，重�
 
 ## 下载链接
 
-[师韵：GitHub](https://github.com/JiaLiFuNia/SmartHNU/blob/master/app/release/app-release.apk)
+[师韵：GitHub](https://raw.githubusercontent.com/JiaLiFuNia/SmartHNU/master/app/release/app-release.apk)
 
 ## 开发问题
 
