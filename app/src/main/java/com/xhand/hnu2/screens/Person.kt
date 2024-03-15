@@ -247,7 +247,11 @@ fun PersonScreen(
             checkboxes.forEach { cards ->
                 PersonCardItem(
                     onclick = {
-                        cards.route?.let { navController.navigate(it) }
+                        if (userInfo == null) {
+                            Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
+                        } else {
+                            cards.route?.let { navController.navigate(it) }
+                        }
                     },
                     text = cards.text,
                     imageVector = cards.imageVector,
