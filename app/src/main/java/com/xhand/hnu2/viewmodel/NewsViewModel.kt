@@ -51,14 +51,19 @@ class NewsViewModel : ViewModel() {
 
     suspend fun newsList() {
         isRefreshing = true
-        for (type in newsListType) {
-            for (i in 1..10) {
-                val htmlRes = newsListService.getNewsList(i.toString(), type.key)
-                listTemp = listTemp + getNewsList(htmlRes.body()?.string(), type.value, 1)
+        try {
+            for (type in newsListType) {
+                for (i in 1..10) {
+                    val htmlRes = newsListService.getNewsList(i.toString(), type.key)
+                    listTemp = listTemp + getNewsList(htmlRes.body()?.string(), type.value, 1)
+                }
             }
+            list = listTemp
+            listTemp = listOf() // 避免刷新时重复增加
+            newsIsLoading = false
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
         }
-        list = listTemp
-        newsIsLoading = false
         isRefreshing = false
     }
 

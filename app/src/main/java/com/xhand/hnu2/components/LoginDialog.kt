@@ -100,7 +100,7 @@ fun showLoginDialog(
                 }
             ) {
                 Text("登录")
-                if (settingsViewModel.LoginCircle) {
+                if (settingsViewModel.loginCircle) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(14.dp),
                         strokeWidth = 2.dp

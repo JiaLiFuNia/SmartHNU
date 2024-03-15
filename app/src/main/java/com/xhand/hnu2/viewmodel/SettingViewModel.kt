@@ -26,24 +26,9 @@ import kotlinx.coroutines.launch
 
 
 class SettingsViewModel : ViewModel() {
-    // private val userInfoManager = UserInfoManager(context = context)
-    /*init {
-        viewModelScope.launch {
-            val name = userInfoManager.userName.firstOrNull()
-            val stuid = userInfoManager.stuID.firstOrNull()
-            val academic = userInfoManager.accadamic.firstOrNull()
-            userInfo = if (name?.isNotEmpty() == true) {
-                UserInfoEntity(
-                    name = name,
-                    studentID = if (stuid?.isNotEmpty() == true) stuid else "",
-                    academy = if (academic?.isNotEmpty() == true) academic else ""
-                )
-            } else {
-                null
-            }
-        }
-    }*/
     var url by mutableStateOf("")
+
+    // 展示登录框
     var showPersonAlert by mutableStateOf(false)
 
     // TextFiled
@@ -69,9 +54,37 @@ class SettingsViewModel : ViewModel() {
         }
 
     // 是否正在登录
-    var LoginCircle by mutableStateOf(false)
+    var loginCircle by mutableStateOf(false)
     var isLogging by mutableStateOf(false)
 
+    // 成绩列表
+    var gradeList = mutableListOf<KccjList>()
+
+    // 成绩列表——临时
+    private var gradeListTemp = mutableListOf<KccjList>()
+
+    // 是否正在刷新
+    var isRefreshing by mutableStateOf(false)
+        private set
+
+    // 网页源码请求
+    var htmlParsing: String = ""
+
+    // 学期
+    private val gradeTerm =
+        mutableListOf(
+            "202201",
+            "202202",
+            "202301",
+            "202302",
+            "202401",
+            "202402",
+            "202501",
+            "202502"
+        )
+
+    // 网络请求
+    private val gradeService = GradeService.instance()
     private val loginService = LoginService.instance()
     private val updateService = UpdateService.instance()
     private val detailService = NewsDetailService.instance()
@@ -88,7 +101,7 @@ class SettingsViewModel : ViewModel() {
         )
         try {
             val res = loginService.loginPost(loginPost)
-            LoginCircle = true
+            loginCircle = true
             delay(1200)
             userInfo = if (res.code.toInt() == 200) {
                 UserInfoEntity(
@@ -101,7 +114,7 @@ class SettingsViewModel : ViewModel() {
                 null
             }
             Log.i("TAG666", "$res")
-            LoginCircle = false
+            loginCircle = false
             isLogging = true
         } catch (e: Exception) {
             Log.i("TAG666", e.toString())
@@ -109,21 +122,7 @@ class SettingsViewModel : ViewModel() {
 
     }
 
-    var gradeList = mutableListOf<KccjList>()
-    var isRefreshing by mutableStateOf(false)
-        private set
-    private val gradeTerm =
-        mutableListOf(
-            "202201",
-            "202202",
-            "202301",
-            "202302",
-            "202401",
-            "202402",
-            "202501",
-            "202502"
-        )
-    private val gradeService = GradeService.instance()
+    // 成绩请求
     fun gradeService() = viewModelScope.launch {
         for (term in gradeTerm) {
             isRefreshing = true
@@ -136,7 +135,7 @@ class SettingsViewModel : ViewModel() {
             }
             if (res != null) {
                 if (res.code.toInt() == 200) {
-                    gradeList = (res.kccjList + gradeList).toMutableList()
+                    gradeListTemp = (res.kccjList + gradeListTemp).toMutableList()
                 } else {
                     Log.i("TAG666", "null")
                 }
@@ -144,9 +143,11 @@ class SettingsViewModel : ViewModel() {
             Log.i("TAG666", "66$gradeList")
             isRefreshing = false
         }
+        gradeList = gradeListTemp
+        gradeListTemp = mutableListOf() // 下拉刷新时置空
     }
 
-    var htmlParsing: String = ""
+    // 新闻页面源码请求
     suspend fun detailService() {
         try {
             val res = detailService.getNewsDetail(url)

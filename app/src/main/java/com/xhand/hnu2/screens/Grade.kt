@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -55,6 +57,7 @@ fun GradeScreen(
     gradeViewModel: GradeViewModel
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollState = rememberScrollState()
     var showAlert by remember {
         mutableStateOf(
             KccjList(
@@ -135,13 +138,21 @@ fun GradeScreen(
         floatingActionButtonPosition = FabPosition.End
     ) {
         Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
-            LazyColumn(modifier = Modifier.padding(paddingValues = it)) {
+            Column(
+                modifier = Modifier
+                    .padding(paddingValues = it)
+                    .verticalScroll(scrollState)
+            ) {
                 Log.i("TAG666", "3")
-                items(settingsViewModel.gradeList) { grade ->
-                    GradeListItem(grade = grade, modifier = Modifier.clickable {
-                        showAlert = grade
-                        settingsViewModel.showPersonAlert = true
-                    })
+                settingsViewModel.gradeList.forEach { grade ->
+                    GradeListItem(
+                        grade = grade,
+                        modifier = Modifier
+                            .clickable {
+                                showAlert = grade
+                                settingsViewModel.showPersonAlert = true
+                            }
+                    )
                 }
             }
             PullRefreshIndicator(

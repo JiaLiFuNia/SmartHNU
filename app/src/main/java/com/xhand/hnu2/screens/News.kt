@@ -51,6 +51,7 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -257,7 +258,7 @@ fun NewsScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(top = 10.dp),
+                                .height(600.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator()
@@ -342,4 +343,10 @@ fun NewsScreen(
             }
         }
     }
+}
+
+@Composable
+@Preview
+fun NewsScreenPreview() {
+    NavigationScreen(settingsViewModel = SettingsViewModel())
 }
