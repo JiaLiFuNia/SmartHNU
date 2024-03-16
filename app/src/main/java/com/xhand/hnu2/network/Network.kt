@@ -9,19 +9,11 @@ object Network {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    fun <T> createService(clazz: Class<T>): T {
-        return retrofitNews.create(clazz)
-    }
-
 
     private val retrofitLogin = Retrofit.Builder()
         .baseUrl("https://jwc.htu.edu.cn/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
-
-    fun <T> loginService(clazz: Class<T>): T {
-        return retrofitLogin.create(clazz)
-    }
 
 
     private val retrofitUpdate = Retrofit.Builder()
@@ -29,23 +21,26 @@ object Network {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    fun <T> updateService(clazz: Class<T>): T {
-        return retrofitUpdate.create(clazz)
-    }
-
 
     private val retrofitNewsList = Retrofit.Builder()
         .baseUrl("https://www.htu.edu.cn/")
         .build()
 
+    fun <T> createService(clazz: Class<T>): T {
+        return retrofitNews.create(clazz)
+    }
+
+    fun <T> loginService(clazz: Class<T>): T {
+        return retrofitLogin.create(clazz)
+    }
+
+    fun <T> updateService(clazz: Class<T>): T {
+        return retrofitUpdate.create(clazz)
+    }
+
     fun <T> newsService(clazz: Class<T>): T {
         return retrofitNewsList.create(clazz)
     }
-
-
-    private val retrofitNewsDetail = Retrofit.Builder()
-        .baseUrl("https://www.htu.edu.cn/")
-        .build()
 
     fun <T> detailService(clazz: Class<T>): T {
         return retrofitNewsList.create(clazz)

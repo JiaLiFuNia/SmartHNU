@@ -18,7 +18,7 @@ import com.xhand.hnu2.viewmodel.SettingsViewModel
 @Composable
 fun showAlert(
     grade: KccjList,
-    settingsViewModel: SettingsViewModel
+    viewModel: SettingsViewModel
 ) {
     AlertDialog(
         title = { Text(text = "${grade.kcmc}  [${grade.xdfsmc}]") },
@@ -51,13 +51,13 @@ fun showAlert(
             }
         },
         onDismissRequest = {
-            settingsViewModel.showPersonAlert = false
+            viewModel.showPersonAlert = false
         },
         confirmButton = {
             TextButton(
                 onClick = {
-                    Log.i("TAG666", "${settingsViewModel.showPersonAlert}")
-                    settingsViewModel.showPersonAlert = false
+                    Log.i("TAG666", "${viewModel.showPersonAlert}")
+                    viewModel.showPersonAlert = false
                 }
             ) {
                 Text("关闭")
@@ -85,7 +85,7 @@ fun pppp() {
             xnxqdm = "202301",
             xdfsmc = "必修",
             cjfsmc = "百分制",
-        ), settingsViewModel = SettingsViewModel()
+        ), viewModel = SettingsViewModel()
     )
 }
 
@@ -108,7 +108,7 @@ fun ppppp() {
             xnxqdm = "202301",
             xdfsmc = "必修",
             cjfsmc = "百分制",
-        ), settingsViewModel = SettingsViewModel()
+        ), viewModel = SettingsViewModel()
     )
 }
 
@@ -131,6 +131,6 @@ fun pppppp() {
             xnxqdm = "202301",
             xdfsmc = "必修",
             cjfsmc = "五级制",
-        ), settingsViewModel = SettingsViewModel()
+        ), viewModel = SettingsViewModel()
     )
 }

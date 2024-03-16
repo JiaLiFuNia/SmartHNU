@@ -52,7 +52,7 @@ fun DarkMode.toStringResourceId(): Int {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingScreen(settingsViewModel: SettingsViewModel) {
+fun SettingScreen(viewModel: SettingsViewModel) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
     val context = LocalContext.current
@@ -82,28 +82,28 @@ fun SettingScreen(settingsViewModel: SettingsViewModel) {
         ) {
             BasicListItem(leadingText = "账户")
             BasicListItem(
-                headlineText = if (settingsViewModel.isLoginSuccess) {
+                headlineText = if (viewModel.isLoginSuccess) {
                     "退出"
                 } else {
                     "登录"
                 },
-                supportingText = if (settingsViewModel.isLoginSuccess) {
+                supportingText = if (viewModel.isLoginSuccess) {
                     "点击退出登录"
                 } else {
                     "请先登录"
                 },
-                leadingImageVector = if (settingsViewModel.isLoginSuccess) {
+                leadingImageVector = if (viewModel.isLoginSuccess) {
                     R.drawable.ic_outline_account_circle
                 } else {
                     R.drawable.ic_outline_no_accounts_24
                 },
                 onClick = {
-                    if (settingsViewModel.isLoginSuccess) {
-                        settingsViewModel.isShowAlert = true
+                    if (viewModel.isLoginSuccess) {
+                        viewModel.isShowAlert = true
                     } else {
-                        settingsViewModel.isShowDialog = true
-                        settingsViewModel.username = ""
-                        settingsViewModel.password = ""
+                        viewModel.isShowDialog = true
+                        viewModel.username = ""
+                        viewModel.password = ""
                     }
                 }
             )
@@ -131,7 +131,7 @@ fun SettingScreen(settingsViewModel: SettingsViewModel) {
             BasicListItem(leadingText = stringResource(R.string.about))
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.0.3.13",
+                supportingText = "Copyright 2023-2024 Xhand v2.0.3.16",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = { }
             )
@@ -139,8 +139,8 @@ fun SettingScreen(settingsViewModel: SettingsViewModel) {
                 leadingImageVector = R.drawable.ic_refresh,
                 headlineText = stringResource(R.string.update),
                 supportingText = "开启以自动检测更新",
-                value = settingsViewModel.ifUpdate,
-                onValueChanged = { !settingsViewModel.ifUpdate }
+                value = viewModel.ifUpdate,
+                onValueChanged = { !viewModel.ifUpdate }
             )
             BasicListItem(
                 headlineText = stringResource(R.string.dev_title),
@@ -153,7 +153,7 @@ fun SettingScreen(settingsViewModel: SettingsViewModel) {
                 supportingText = stringResource(R.string.feedback_desc),
                 leadingImageVector = R.drawable.ic_outline_chat,
                 onClick = {
-                    settingsViewModel.copyText(cbManager, context)
+                    viewModel.copyText(cbManager, context)
                     Toast.makeText(context, "已复制邮件地址", Toast.LENGTH_SHORT).show()
                 }
             )
@@ -171,11 +171,11 @@ fun SettingScreen(settingsViewModel: SettingsViewModel) {
                 }
             )
         }
-        if (settingsViewModel.isShowAlert) {
-            showAlert(settingsViewModel = settingsViewModel, text = "确定要退出登录吗？")
+        if (viewModel.isShowAlert) {
+            showAlert(viewModel = viewModel, text = "确定要退出登录吗？")
         }
-        if (settingsViewModel.isShowDialog) {
-            showLoginDialog(settingsViewModel)
+        if (viewModel.isShowDialog) {
+            showLoginDialog(viewModel)
         }
     }
 }

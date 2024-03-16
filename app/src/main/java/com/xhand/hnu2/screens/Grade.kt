@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -40,6 +42,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.xhand.hnu2.R
 import com.xhand.hnu2.components.GradeListItem
 import com.xhand.hnu2.components.ModalBottomSheet
@@ -53,9 +57,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun GradeScreen(
     onBack: () -> Unit,
-    settingsViewModel: SettingsViewModel,
+    viewModel: SettingsViewModel,
     gradeViewModel: GradeViewModel
 ) {
+    val checkboxes = gradeViewModel.checkboxes
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
     var showAlert by remember {
@@ -83,20 +88,20 @@ fun GradeScreen(
     }
     val scope = rememberCoroutineScope()
     val pullRefreshState = rememberPullRefreshState(
-        refreshing = settingsViewModel.isRefreshing,
+        refreshing = viewModel.isRefreshing,
         onRefresh = {
             scope.launch {
-                settingsViewModel.gradeService()
+                viewModel.gradeService()
             }
         }
     )
 
-    if (settingsViewModel.isLoginSuccess) {
+    if (viewModel.isLoginSuccess) {
         LaunchedEffect(Unit) {
-            settingsViewModel.gradeService()
+            viewModel.gradeService()
         }
     }
-    Log.i("TAG666", "5656${settingsViewModel.gradeList}")
+    Log.i("TAG666", "5656${viewModel.gradeList}")
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -144,13 +149,13 @@ fun GradeScreen(
                     .verticalScroll(scrollState)
             ) {
                 Log.i("TAG666", "3")
-                settingsViewModel.gradeList.forEach { grade ->
+                viewModel.gradeList.forEach { grade ->
                     GradeListItem(
                         grade = grade,
                         modifier = Modifier
                             .clickable {
                                 showAlert = grade
-                                settingsViewModel.showPersonAlert = true
+                                viewModel.showPersonAlert = true
                             }
                     )
                 }
@@ -158,21 +163,50 @@ fun GradeScreen(
             PullRefreshIndicator(
                 modifier = Modifier
                     .align(Alignment.TopCenter),
-                refreshing = settingsViewModel.isRefreshing,
+                refreshing = viewModel.isRefreshing,
                 state = pullRefreshState
             )
         }
     }
-    if (settingsViewModel.showPersonAlert) {
-        Log.i("TAG666", "${settingsViewModel.showPersonAlert}")
-        showAlert(grade = showAlert, settingsViewModel = settingsViewModel)
+    if (viewModel.showPersonAlert) {
+        Log.i("TAG666", "${viewModel.showPersonAlert}")
+        showAlert(grade = showAlert, viewModel = viewModel)
     }
     ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "筛选成绩") {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.Center
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(start = 16.dp)
         ) {
-
+            Text(
+                text = "学年学期",
+                fontWeight = FontWeight.W900,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        Log.i("TAG666", "666$checkboxes")
+        checkboxes.forEachIndexed { index, info ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 32.dp)
+                    .clickable {
+                        checkboxes[index] = info.copy(
+                            isChecked = !info.isChecked
+                        )
+                    }
+            ) {
+                Checkbox(
+                    checked = info.isChecked,
+                    onCheckedChange = { isChecked ->
+                        checkboxes[index] = info.copy(
+                            isChecked = isChecked
+                        )
+                    }
+                )
+                Text(text = info.term)
+            }
         }
     }
 }

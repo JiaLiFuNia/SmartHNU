@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun showLoginDialog(
-    settingsViewModel: SettingsViewModel
+    viewModel: SettingsViewModel
 ) {
     var displayPassword by remember { mutableStateOf(true) }
     val interactionSource = remember { MutableInteractionSource() }
@@ -52,24 +52,24 @@ fun showLoginDialog(
         text = {
             Column(verticalArrangement = Arrangement.SpaceAround) {
                 TextField(
-                    value = settingsViewModel.username,
-                    onValueChange = { settingsViewModel.username = it },
+                    value = viewModel.username,
+                    onValueChange = { viewModel.username = it },
                     label = { Text("学号") },
-                    isError = !settingsViewModel.isLoginSuccess and settingsViewModel.isLogging,
+                    isError = !viewModel.isLoginSuccess and viewModel.isLogging,
                     supportingText = {
-                        if (!settingsViewModel.isLoginSuccess and settingsViewModel.isLogging) {
+                        if (!viewModel.isLoginSuccess and viewModel.isLogging) {
                             Text(text = "学号或密码错误！", color = MaterialTheme.colorScheme.error)
                         }
                     },
                     trailingIcon = { },
                 )
                 TextField(
-                    value = settingsViewModel.password,
-                    onValueChange = { settingsViewModel.password = it },
+                    value = viewModel.password,
+                    onValueChange = { viewModel.password = it },
                     label = { Text("密码") },
-                    isError = !settingsViewModel.isLoginSuccess and settingsViewModel.isLogging,
+                    isError = !viewModel.isLoginSuccess and viewModel.isLogging,
                     supportingText = {
-                        if (!settingsViewModel.isLoginSuccess and settingsViewModel.isLogging) {
+                        if (!viewModel.isLoginSuccess and viewModel.isLogging) {
                             Text(text = "学号或密码错误！", color = MaterialTheme.colorScheme.error)
                         }
                     },
@@ -94,28 +94,28 @@ fun showLoginDialog(
             TextButton(
                 onClick = {
                     coroutineScope.launch {
-                        settingsViewModel.login()
+                        viewModel.login()
                     }
 
                 }
             ) {
                 Text("登录")
-                if (settingsViewModel.loginCircle) {
+                if (viewModel.loginCircle) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(14.dp),
                         strokeWidth = 2.dp
                     )
                 }
-                if (settingsViewModel.isLoginSuccess) {
+                if (viewModel.isLoginSuccess) {
                     Toast.makeText(context, "登录成功！", Toast.LENGTH_SHORT).show()
-                    settingsViewModel.isShowDialog = false
-                    settingsViewModel.isLogging = false
+                    viewModel.isShowDialog = false
+                    viewModel.isLogging = false
                 }
             }
             TextButton(
                 onClick = {
-                    settingsViewModel.username = "2201214001"
-                    settingsViewModel.password = "xubohan2004819."
+                    viewModel.username = "2201214001"
+                    viewModel.password = "xubohan2004819."
                 }
             ) {
                 Text("临时")
@@ -124,9 +124,9 @@ fun showLoginDialog(
         dismissButton = {
             TextButton(
                 onClick = {
-                    settingsViewModel.isShowDialog = false
-                    if (settingsViewModel.isLoginSuccess) {
-                        settingsViewModel.isLogging = false
+                    viewModel.isShowDialog = false
+                    if (viewModel.isLoginSuccess) {
+                        viewModel.isLogging = false
                     }
                 }
             ) {

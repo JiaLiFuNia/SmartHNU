@@ -68,7 +68,7 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun NavigationScreen(settingsViewModel: SettingsViewModel) {
+fun NavigationScreen(viewModel: SettingsViewModel) {
     val navController = rememberNavController()
     CompositionLocalProvider(LocalNewsViewModel provides NewsViewModel()) {
         val newsViewModel = LocalNewsViewModel.current
@@ -104,13 +104,13 @@ fun NavigationScreen(settingsViewModel: SettingsViewModel) {
                 NewsScreen(
                     navController = navController,
                     newsViewModel = newsViewModel,
-                    settingsViewModel = settingsViewModel
+                    viewModel = viewModel
                 )
             }
             composable("detail_screen") {
                 ArticleDetailScreen(
                     onBack = { navController.popBackStack() },
-                    settingsViewModel = settingsViewModel
+                    viewModel = viewModel
                 )
             }
         }
@@ -122,12 +122,14 @@ fun NavigationScreen(settingsViewModel: SettingsViewModel) {
 fun NewsScreen(
     navController: NavController,
     newsViewModel: NewsViewModel,
-    settingsViewModel: SettingsViewModel
+    viewModel: SettingsViewModel
 ) {
     val showBottomSheet = remember {
         mutableStateOf(false)
     }
-    val options = listOf("通知公告", "师大要闻", "院部动态")
+    val options = listOf(
+        "通知公告", "师大要闻", "院部动态", "教务通知", "公示公告", "考务管理"
+    )
     var selectedOption by remember { mutableStateOf(options[0]) }
     var isShowSearchBar by remember {
         mutableStateOf(false)
@@ -273,7 +275,7 @@ fun NewsScreen(
                                     modifier = Modifier
                                         .clickable {
                                             navController.navigate("detail_screen")
-                                            settingsViewModel.url = article.url
+                                            viewModel.url = article.url
                                         }
                                 )
                             }
@@ -286,7 +288,7 @@ fun NewsScreen(
                                     modifier = Modifier
                                         .clickable {
                                             navController.navigate("detail_screen")
-                                            settingsViewModel.url = article.url
+                                            viewModel.url = article.url
                                         }
                                 )
                             }
@@ -348,5 +350,5 @@ fun NewsScreen(
 @Composable
 @Preview
 fun NewsScreenPreview() {
-    NavigationScreen(settingsViewModel = SettingsViewModel())
+    NavigationScreen(viewModel = SettingsViewModel())
 }

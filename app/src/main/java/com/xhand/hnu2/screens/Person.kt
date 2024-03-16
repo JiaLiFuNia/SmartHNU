@@ -64,7 +64,7 @@ import com.xhand.hnu2.viewmodel.SettingsViewModel
 
 
 @Composable
-fun NavigationPersonScreen(settingsViewModel: SettingsViewModel, personViewModel: PersonViewModel) {
+fun NavigationPersonScreen(viewModel: SettingsViewModel, personViewModel: PersonViewModel) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -97,14 +97,14 @@ fun NavigationPersonScreen(settingsViewModel: SettingsViewModel, personViewModel
         composable("person_screen") {
             PersonScreen(
                 navController = navController,
-                settingsViewModel = settingsViewModel,
+                viewModel = viewModel,
                 personViewModel = personViewModel
             )
         }
         composable("grade_screen") {
             GradeScreen(
                 onBack = { navController.popBackStack() },
-                settingsViewModel = settingsViewModel,
+                viewModel = viewModel,
                 gradeViewModel = GradeViewModel()
             )
         }
@@ -123,18 +123,18 @@ fun NavigationPersonScreen(settingsViewModel: SettingsViewModel, personViewModel
 @Composable
 fun PersonScreen(
     navController: NavController,
-    settingsViewModel: SettingsViewModel,
+    viewModel: SettingsViewModel,
     personViewModel: PersonViewModel
 ) {
     val context = LocalContext.current
     val showModalBottomSheet = rememberSaveable { mutableStateOf(false) }
     val showModalBottomSheetEdit = rememberSaveable { mutableStateOf(false) }
-    val checkboxes = personViewModel.checkboxes.toMutableList()
+    val checkboxes = viewModel.checkboxes
     val scrollState = rememberScrollState()
     var text by remember {
         mutableStateOf("")
     }
-    val userInfo = settingsViewModel.userInfo
+    val userInfo = viewModel.userInfo
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     Scaffold(
@@ -152,7 +152,7 @@ fun PersonScreen(
                 title = {
                     if (scrollBehavior.state.heightOffset < 0f) {
                         Text(
-                            text = if (settingsViewModel.isLoginSuccess) {
+                            text = if (viewModel.isLoginSuccess) {
                                 "你好！${userInfo?.name}"
                             } else {
                                 "你好！"
@@ -289,8 +289,10 @@ fun PersonScreen(
             ) {
                 Checkbox(
                     checked = info.isChecked,
-                    onCheckedChange = {
-                        checkboxes[index].isChecked = it
+                    onCheckedChange = { isChecked ->
+                        checkboxes[index] = info.copy(
+                            isChecked = isChecked
+                        )
                     }
                 )
                 Text(text = info.text)

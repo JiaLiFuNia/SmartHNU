@@ -7,10 +7,13 @@ import com.xhand.hnu2.model.entity.ArticleListEntity
 var num = 0
 fun getNewsList(str: String?, type: String, rule: Int): MutableList<ArticleListEntity> {
     val firstList = mutableListOf<ArticleListEntity>()
+    // 主页用
     var ruleDate = "ul.news_list > li.news > div.wz > div.news_time"
     var ruleTime = "ul.news_list > li.news > div.wz > div.news_title > a"
+    // 教务用
     val ruleDate2 = "ul.news_list li.news span.news_meta"
     val ruleTime2 = "ul.news_list li.news span.news_title a"
+    // 搜索用
     val ruleDate3 = "div.result_item h3.item_title a"
     val ruleTime3 = "div.result_item span.item_metas:nth-of-type(2)"
 

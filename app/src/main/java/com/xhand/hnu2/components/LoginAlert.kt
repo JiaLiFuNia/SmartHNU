@@ -8,25 +8,25 @@ import com.xhand.hnu2.viewmodel.SettingsViewModel
 
 @Composable
 fun showAlert(
-    settingsViewModel: SettingsViewModel,
+    viewModel: SettingsViewModel,
     text: String
 ) {
     AlertDialog(
         title = { Text(text = "提示") },
         text = { Text(text = text) },
-        onDismissRequest = { settingsViewModel.isShowDialog = false },
+        onDismissRequest = { viewModel.isShowDialog = false },
         confirmButton = {
             TextButton(
                 onClick = {
-                    settingsViewModel.isShowAlert = false
+                    viewModel.isShowAlert = false
                 }
             ) {
                 Text("取消")
             }
             TextButton(
                 onClick = {
-                    settingsViewModel.isShowAlert = false
-                    settingsViewModel.userInfo = null
+                    viewModel.isShowAlert = false
+                    viewModel.userInfo = null
                 }
             ) {
                 Text("确认")

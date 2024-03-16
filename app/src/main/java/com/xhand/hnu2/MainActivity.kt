@@ -113,12 +113,12 @@ class MainActivity : ComponentActivity() {
                         CompositionLocalProvider(
                             LocalUserViewModel provides SettingsViewModel()
                         ) {
-                            val settingsViewModel = LocalUserViewModel.current
+                            val viewModel = LocalUserViewModel.current
                             Box(modifier = Modifier.padding(it)) {
                                 when (selectedItemIndex) {
-                                    0 -> NavigationPersonScreen(settingsViewModel, PersonViewModel())
-                                    1 -> NavigationScreen(settingsViewModel)
-                                    2 -> SettingScreen(settingsViewModel)
+                                    0 -> NavigationPersonScreen(viewModel, PersonViewModel())
+                                    1 -> NavigationScreen(viewModel)
+                                    2 -> SettingScreen(viewModel)
                                 }
                             }
                         }

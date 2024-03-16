@@ -48,7 +48,7 @@ import net.dankito.readability4j.Readability4J
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun ArticleDetailScreen(
-    settingsViewModel: SettingsViewModel,
+    viewModel: SettingsViewModel,
     onBack: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -57,7 +57,7 @@ fun ArticleDetailScreen(
         WebView(context).apply {
             settings.javaScriptEnabled = true
             webViewClient = WebViewClient()
-            loadUrl(settingsViewModel.url)
+            loadUrl(viewModel.url)
         }
     }*/
     Surface(
@@ -85,7 +85,7 @@ fun ArticleDetailScreen(
                         IconButton(
                             onClick = {
                                 Intent(Intent.ACTION_SEND).also {
-                                    it.putExtra(Intent.EXTRA_TEXT, settingsViewModel.url)
+                                    it.putExtra(Intent.EXTRA_TEXT, viewModel.url)
                                     it.type = "text/plain"
                                     if (it.resolveActivity(context.packageManager) != null) {
                                         context.startActivity(it)
@@ -134,7 +134,7 @@ fun ArticleDetailScreen(
                                 text = { Text(text = "使用外部浏览器") },
                                 onClick = {
                                     Intent(Intent.ACTION_VIEW).also {
-                                        it.data = Uri.parse(settingsViewModel.url)
+                                        it.data = Uri.parse(viewModel.url)
                                         if (it.resolveActivity(context.packageManager) != null) {
                                             context.startActivity(it)
                                         }
@@ -172,9 +172,9 @@ fun ArticleDetailScreen(
         ) {
             // Create a reusable object configured with the default set of plugins.
             LaunchedEffect(Unit) {
-                settingsViewModel.detailService()
+                viewModel.detailService()
             }
-            val readability4J = Readability4J(settingsViewModel.url, settingsViewModel.htmlParsing)
+            val readability4J = Readability4J(viewModel.url, viewModel.htmlParsing)
             val article: Article = readability4J.parse()
 
             // 标题

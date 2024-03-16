@@ -3,7 +3,11 @@ package com.xhand.hnu2.viewmodel
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ClipboardManager
@@ -12,6 +16,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.xhand.hnu2.R
 import com.xhand.hnu2.components.RSAEncryptionHelper
+import com.xhand.hnu2.model.entity.ArticleListEntity
 import com.xhand.hnu2.model.entity.GradePost
 import com.xhand.hnu2.model.entity.KccjList
 import com.xhand.hnu2.model.entity.LoginPostEntity
@@ -26,6 +31,24 @@ import kotlinx.coroutines.launch
 
 
 class SettingsViewModel : ViewModel() {
+
+    var hasMessage by mutableStateOf(true)
+    var checkboxes = mutableStateListOf(
+        ToggleableInfo(
+            isChecked = true,
+            text = "今日课程",
+            imageVector = Icons.Default.DateRange,
+            route = "schedule_screen"
+        ),
+        ToggleableInfo(
+            isChecked = true,
+            text = "课程成绩",
+            imageVector = Icons.Default.Edit,
+            route = "grade_screen"
+        )
+    )
+
+    // 新闻链接
     var url by mutableStateOf("")
 
     // 展示登录框
@@ -44,7 +67,7 @@ class SettingsViewModel : ViewModel() {
     // 展示登录弹窗
     var isShowDialog by mutableStateOf(false)
 
-    // 展示退出弹窗
+    // 展示退出登录弹窗
     var isShowAlert by mutableStateOf(false)
 
     // 是否登录成功
@@ -70,18 +93,31 @@ class SettingsViewModel : ViewModel() {
     // 网页源码请求
     var htmlParsing: String = ""
 
+    // 学号 年级
+    private val grade: String
+        get() {
+            return userInfo?.studentID?.substring(0, 2) ?: "22"
+        }
+
+    private val gradeInt: Int
+        get() {
+            return grade.toInt()
+        }
+
     // 学期
-    private val gradeTerm =
-        mutableListOf(
-            "202201",
-            "202202",
-            "202301",
-            "202302",
-            "202401",
-            "202402",
-            "202501",
-            "202502"
-        )
+    val gradeTerm: MutableList<String>
+        get() {
+            return mutableListOf(
+                "20${gradeInt}01",
+                "20${gradeInt}02",
+                "20${gradeInt + 1}01",
+                "20${gradeInt + 1}02",
+                "20${gradeInt + 2}01",
+                "20${gradeInt + 2}02",
+                "20${gradeInt + 3}01",
+                "20${gradeInt + 3}02"
+            )
+        }
 
     // 网络请求
     private val gradeService = GradeService.instance()
@@ -119,7 +155,6 @@ class SettingsViewModel : ViewModel() {
         } catch (e: Exception) {
             Log.i("TAG666", e.toString())
         }
-
     }
 
     // 成绩请求
@@ -143,11 +178,12 @@ class SettingsViewModel : ViewModel() {
             Log.i("TAG666", "66$gradeList")
             isRefreshing = false
         }
+        Log.i("TAG666", "$gradeTerm")
         gradeList = gradeListTemp
         gradeListTemp = mutableListOf() // 下拉刷新时置空
     }
 
-    // 新闻页面源码请求
+    // 新闻页面详情请求
     suspend fun detailService() {
         try {
             val res = detailService.getNewsDetail(url)
@@ -159,12 +195,16 @@ class SettingsViewModel : ViewModel() {
 
     }
 
+    // 软件更新请求
+    suspend fun updateRes(): Update {
+        return updateService.update()
+    }
+
+    // 复制内容到剪切板
     @SuppressLint("StaticFieldLeak")
     fun copyText(cbManager: ClipboardManager, context: Context) {
         cbManager.setText(AnnotatedString(context.getString(R.string.qq_group_number)))
     }
-
-    suspend fun updateRes(): Update {
-        return updateService.update()
-    }
 }
+
+
