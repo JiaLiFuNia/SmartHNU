@@ -8,6 +8,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -20,21 +21,28 @@ fun showAlert(
     grade: KccjList,
     viewModel: SettingsViewModel
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.gradeDetailService()
+    }
+    val gradeDetail = viewModel.gradeDetail
     AlertDialog(
         title = { Text(text = "${grade.kcmc}  [${grade.xdfsmc}]") },
         text = {
             Row(
                 modifier = Modifier.padding(10.dp)
             ) {
-                    Column(
-                        modifier = Modifier.weight(0.5f)
-                    ) {
-                        if (grade.cjfsmc == "五级制") {
-                            Text(text = "成绩 ${grade.zcjfs} (${grade.zcj})")
-                        } else
-                            Text(text = "成绩 ${grade.zcjfs}")
-                        Text(text = "绩点 ${grade.cjjd}")
+                Column(
+                    modifier = Modifier.weight(0.5f)
+                ) {
+                    if (grade.cjfsmc == "五级制") {
+                        Text(text = "成绩 ${grade.zcjfs} (${grade.zcj})")
+                    } else
+                        Text(text = "成绩 ${grade.zcjfs}")
+                    Text(text = "绩点 ${grade.cjjd}")
+                    if (gradeDetail != null) {
+                        Text(text = "排名 ${gradeDetail.pm} / ${gradeDetail.rs}")
                     }
+                }
                 Column(
                     modifier = Modifier.weight(0.5f),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -44,7 +52,7 @@ fun showAlert(
                             text = grade.kcdlmc
                         )
                     Text(
-                        text = grade.kcflmc.replace("（","\n").replace("）","")
+                        text = grade.kcflmc.replace("（", "\n").replace("）", "")
                     )
                 }
 

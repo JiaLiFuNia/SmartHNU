@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -86,6 +87,9 @@ fun GradeScreen(
     val showBottomSheet = remember {
         mutableStateOf(false)
     }
+    val showBottomSheetData = remember {
+        mutableStateOf(false)
+    }
     val scope = rememberCoroutineScope()
     val pullRefreshState = rememberPullRefreshState(
         refreshing = viewModel.isRefreshing,
@@ -125,6 +129,20 @@ fun GradeScreen(
                             contentDescription = "返回"
                         )
                     }
+                },
+                actions = {
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null
+                        )
+                    }
+                    IconButton(onClick = { showBottomSheetData.value = true }) {
+                        Icon(
+                            painterResource(id = R.drawable.ic_baseline_show_chart_24),
+                            contentDescription = null
+                        )
+                    }
                 }
             )
         },
@@ -156,6 +174,7 @@ fun GradeScreen(
                             .clickable {
                                 showAlert = grade
                                 viewModel.showPersonAlert = true
+                                viewModel.cjdm = grade.cjdm
                             }
                     )
                 }
@@ -173,40 +192,59 @@ fun GradeScreen(
         showAlert(grade = showAlert, viewModel = viewModel)
     }
     ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "筛选成绩") {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(start = 16.dp)
-        ) {
-            Text(
-                text = "学年学期",
-                fontWeight = FontWeight.W900,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-        Log.i("TAG666", "666$checkboxes")
-        checkboxes.forEachIndexed { index, info ->
+        Column {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 32.dp)
-                    .clickable {
-                        checkboxes[index] = info.copy(
-                            isChecked = !info.isChecked
-                        )
-                    }
+                    .padding(start = 16.dp)
             ) {
-                Checkbox(
-                    checked = info.isChecked,
-                    onCheckedChange = { isChecked ->
-                        checkboxes[index] = info.copy(
-                            isChecked = isChecked
-                        )
-                    }
+                Text(
+                    text = "排序方式",
+                    fontWeight = FontWeight.W900,
+                    color = MaterialTheme.colorScheme.primary
                 )
-                Text(text = info.term)
             }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(start = 16.dp)
+            ) {
+                Text(
+                    text = "学年学期",
+                    fontWeight = FontWeight.W900,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            checkboxes.forEachIndexed { index, info ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 32.dp)
+                        .clickable {
+                            checkboxes[index] = info.copy(
+                                isChecked = !info.isChecked
+                            )
+                        }
+                ) {
+                    Checkbox(
+                        checked = info.isChecked,
+                        onCheckedChange = { isChecked ->
+                            checkboxes[index] = info.copy(
+                                isChecked = isChecked
+                            )
+                        }
+                    )
+                    Text(text = info.term)
+                }
+            }
+
         }
+
     }
+    ModalBottomSheet(showModalBottomSheet = showBottomSheetData, text = "数据统计") {
+        TODO()
+    }
+
 }

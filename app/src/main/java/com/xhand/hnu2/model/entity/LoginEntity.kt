@@ -28,6 +28,35 @@ data class GradePost(
     val xnxqdm: String
 )
 
+
+// 成绩详情
+data class GradeDetailPost(
+    val cjdm: String
+)
+
+// 成绩详情回传
+data class GradeDetailEntity (
+    val msg: String,
+    val code: Int,
+    val info1: GradeInfo,
+    val info: GradeInfo
+)
+data class GradeInfo (
+    val zcj: Double,
+    val rs: String,
+    val mc: String,
+    val z1: String,
+    val z2: String,
+    val z3: String,
+    val z4: String,
+    val z5: String,
+    val ywmc: String? = null,
+    val lx: String,
+    val pm: Int,
+    val cjdm: String
+)
+
+
 // 成绩回传
 data class GradeEntity(
     val msg: String,

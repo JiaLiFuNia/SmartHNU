@@ -17,6 +17,9 @@ import androidx.lifecycle.viewModelScope
 import com.xhand.hnu2.R
 import com.xhand.hnu2.components.RSAEncryptionHelper
 import com.xhand.hnu2.model.entity.ArticleListEntity
+import com.xhand.hnu2.model.entity.GradeDetailEntity
+import com.xhand.hnu2.model.entity.GradeDetailPost
+import com.xhand.hnu2.model.entity.GradeInfo
 import com.xhand.hnu2.model.entity.GradePost
 import com.xhand.hnu2.model.entity.KccjList
 import com.xhand.hnu2.model.entity.LoginPostEntity
@@ -47,6 +50,13 @@ class SettingsViewModel : ViewModel() {
             route = "grade_screen"
         )
     )
+
+    // 成绩代码
+    var cjdm by mutableStateOf("")
+
+    // 成绩详情
+    var gradeDetail: GradeInfo? = null
+    var gradeOrder: GradeInfo? = null
 
     // 新闻链接
     var url by mutableStateOf("")
@@ -161,7 +171,6 @@ class SettingsViewModel : ViewModel() {
     fun gradeService() = viewModelScope.launch {
         for (term in gradeTerm) {
             isRefreshing = true
-            Log.i("TAG666", "667$gradeList")
             val res = userInfo?.let {
                 gradeService.gradePost(
                     GradePost(term),
@@ -178,9 +187,19 @@ class SettingsViewModel : ViewModel() {
             Log.i("TAG666", "66$gradeList")
             isRefreshing = false
         }
-        Log.i("TAG666", "$gradeTerm")
         gradeList = gradeListTemp
         gradeListTemp = mutableListOf() // 下拉刷新时置空
+    }
+
+    suspend fun gradeDetailService() {
+        val res =
+            userInfo?.let { gradeService.gradeDetail(GradeDetailPost(cjdm), it.token) }
+        if (res != null) {
+            if (res.code == 200) {
+                gradeDetail = res.info1
+                gradeOrder = res.info
+            }
+        }
     }
 
     // 新闻页面详情请求
@@ -192,7 +211,6 @@ class SettingsViewModel : ViewModel() {
         } catch (e: Exception) {
             htmlParsing = ""
         }
-
     }
 
     // 软件更新请求
