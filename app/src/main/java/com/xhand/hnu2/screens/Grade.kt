@@ -244,7 +244,6 @@ fun GradeScreen(
 
     }
     ModalBottomSheet(showModalBottomSheet = showBottomSheetData, text = "数据统计") {
-        TODO()
-    }
 
+    }
 }

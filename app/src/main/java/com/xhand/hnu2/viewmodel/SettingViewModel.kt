@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -72,7 +73,8 @@ class SettingsViewModel : ViewModel() {
     var userInfo: UserInfoEntity? = null
 
     // 软件更新
-    val ifUpdate: Boolean = true
+    var ifUpdate by mutableStateOf(true)
+    var ifNeedUpdate by mutableStateOf(false)
 
     // 展示登录弹窗
     var isShowDialog by mutableStateOf(false)
@@ -214,8 +216,15 @@ class SettingsViewModel : ViewModel() {
     }
 
     // 软件更新请求
-    suspend fun updateRes(): Update {
-        return updateService.update()
+    suspend fun updateRes(currentVersion: String) {
+        val res: Update
+        try {
+            res = updateService.update()
+            Log.i("TAG666", "${res.version}${currentVersion}")
+            ifNeedUpdate = res.version != currentVersion
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
+        }
     }
 
     // 复制内容到剪切板

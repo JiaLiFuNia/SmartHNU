@@ -57,6 +57,16 @@ fun SettingScreen(viewModel: SettingsViewModel) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     val cbManager = LocalClipboardManager.current
+    val currentVersion = stringResource(id = R.string.update)
+    LaunchedEffect(Unit) {
+        Log.i("TAG666", "${viewModel.ifUpdate}")
+        if (viewModel.ifUpdate) {
+            viewModel.updateRes(currentVersion)
+        }
+    }
+    if (viewModel.ifNeedUpdate and viewModel.ifUpdate) {
+        Toast.makeText(context, "检测到新版本！", Toast.LENGTH_SHORT).show()
+    }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -131,7 +141,7 @@ fun SettingScreen(viewModel: SettingsViewModel) {
             BasicListItem(leadingText = stringResource(R.string.about))
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.0.7.16",
+                supportingText = "Copyright 2023-2024 Xhand v2.0.3.19",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = { }
             )
@@ -140,7 +150,7 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                 headlineText = stringResource(R.string.update),
                 supportingText = "开启以自动检测更新",
                 value = viewModel.ifUpdate,
-                onValueChanged = { !viewModel.ifUpdate }
+                onValueChanged = { viewModel.ifUpdate = !viewModel.ifUpdate }
             )
             BasicListItem(
                 headlineText = stringResource(R.string.dev_title),
@@ -163,7 +173,7 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                 leadingImageVector = R.drawable.ic_code,
                 onClick = {
                     Intent(Intent.ACTION_VIEW).also {
-                        it.data = Uri.parse("https://github.com/JiaLiFuNia/SmartHNU")
+                        it.data = Uri.parse("https://xhand.fun")
                         if (it.resolveActivity(context.packageManager) != null) {
                             context.startActivity(it)
                         }
