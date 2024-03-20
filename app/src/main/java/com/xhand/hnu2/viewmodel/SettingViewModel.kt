@@ -258,8 +258,8 @@ class SettingsViewModel : ViewModel() {
 
     // 复制内容到剪切板
     @SuppressLint("StaticFieldLeak")
-    fun copyText(cbManager: ClipboardManager, context: Context) {
-        cbManager.setText(AnnotatedString(context.getString(R.string.qq_group_number)))
+    fun copyText(cbManager: ClipboardManager, text: String) {
+        cbManager.setText(AnnotatedString(text))
     }
 }
 

@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,6 +54,7 @@ fun ArticleDetailScreen(
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val cbManager = LocalClipboardManager.current
     var showHtml by remember {
         mutableStateOf(false)
     }
@@ -123,6 +125,15 @@ fun ArticleDetailScreen(
                                     R.drawable.ic_filled_star
                                 } else R.drawable.ic_star_outline
                             ), contentDescription = "刷新"
+                        )
+                    })
+                    DropdownMenuItem(text = { Text(text = "复制文章链接") }, onClick = {
+                        viewModel.copyText(cbManager, viewModel.url)
+                        Toast.makeText(context, "已复制", Toast.LENGTH_SHORT).show()
+                    }, leadingIcon = {
+                        Icon(
+                            painterResource(id = R.drawable.ic_baseline_content_copy_24),
+                            contentDescription = ""
                         )
                     })
                     DropdownMenuItem(text = { Text(text = "使用外部浏览器") }, onClick = {

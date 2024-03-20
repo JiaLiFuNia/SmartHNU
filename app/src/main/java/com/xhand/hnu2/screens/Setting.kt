@@ -143,7 +143,14 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                 headlineText = stringResource(R.string.app_name),
                 supportingText = "Copyright 2023-2024 Xhand v2.0.3.20",
                 leadingImageVector = R.drawable.ic_outline_info,
-                onClick = { }
+                onClick = {
+                    Intent(Intent.ACTION_VIEW).also {
+                        it.data = Uri.parse("https://xhand.fun")
+                        if (it.resolveActivity(context.packageManager) != null) {
+                            context.startActivity(it)
+                        }
+                    }
+                }
             )
             SwitchListItem(
                 leadingImageVector = R.drawable.ic_refresh,
@@ -163,7 +170,7 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                 supportingText = stringResource(R.string.feedback_desc),
                 leadingImageVector = R.drawable.ic_outline_chat,
                 onClick = {
-                    viewModel.copyText(cbManager, context)
+                    viewModel.copyText(cbManager, "2695520089@qq.com")
                     Toast.makeText(context, "已复制邮件地址", Toast.LENGTH_SHORT).show()
                 }
             )

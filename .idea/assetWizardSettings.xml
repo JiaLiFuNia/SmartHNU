@@ -327,7 +327,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="file:/$PROJECT_DIR$/../../../SDK/icons/material/materialicons/warning/baseline_warning_24.xml" />
+                                      <entry key="url" value="file:/$PROJECT_DIR$/../../../SDK/icons/material/materialicons/content_copy/baseline_content_copy_24.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -337,7 +337,7 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="outputName" value="ic_baseline_warning_24" />
+                            <entry key="outputName" value="ic_baseline_content_copy_24" />
                             <entry key="sourceFile" value="D:\MY\Kotlin\xhand2" />
                           </map>
                         </option>
