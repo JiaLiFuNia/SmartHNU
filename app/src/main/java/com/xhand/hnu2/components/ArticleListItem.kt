@@ -22,9 +22,10 @@ fun ArticleListItem(
         },
         supportingContent = {
             Text(
-                text = "时间：${article.time}"
+                text = article.time
             )
         },
         modifier = modifier
     )
+    // HorizontalDivider()
 }

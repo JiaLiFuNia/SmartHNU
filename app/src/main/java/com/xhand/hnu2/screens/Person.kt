@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.Badge
@@ -34,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -136,7 +138,9 @@ fun PersonScreen(
     }
     val userInfo = viewModel.userInfo
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-
+    LaunchedEffect(Unit) {
+        viewModel.todaySchedule()
+    }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -244,21 +248,19 @@ fun PersonScreen(
                 }
             }
             Spacer(modifier = Modifier.height(14.dp))
-            checkboxes.forEach { cards ->
-                PersonCardItem(
-                    onclick = {
-                        if (userInfo == null) {
-                            Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
-                        } else {
-                            cards.route?.let { navController.navigate(it) }
-                        }
-                    },
-                    text = cards.text,
-                    imageVector = cards.imageVector,
-                    ifShowCard = cards.isChecked
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-            }
+            PersonCardItem(
+                onclick = {
+                    if (userInfo == null) {
+                        Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
+                    } else {
+                        navController.navigate("schedule_screen")
+                    }
+                },
+                text = "今日课程",
+                imageVector = Icons.Default.DateRange,
+                schedule = viewModel.todaySchedule
+            )
+            Spacer(modifier = Modifier.height(14.dp))
         }
     }
     ModalBottomSheet(showModalBottomSheet, text)

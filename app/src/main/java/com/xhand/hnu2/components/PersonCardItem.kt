@@ -1,8 +1,11 @@
 package com.xhand.hnu2.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,52 +23,65 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.xhand.hnu2.model.entity.KbList
+import com.xhand.hnu2.viewmodel.SettingsViewModel
 
 @Composable
 fun PersonCardItem(
-    ifShowCard: Boolean? = true,
     onclick: () -> Unit,
     text: String,
-    imageVector: ImageVector
+    imageVector: ImageVector,
+    schedule: MutableList<KbList>
 ) {
-    if (ifShowCard == true) {
-        Card(
-            elevation = CardDefaults.cardElevation(4.dp),
+    Card(
+        elevation = CardDefaults.cardElevation(4.dp),
+        modifier = Modifier
+            .fillMaxWidth(),
+        onClick = onclick,
+    ) {
+        Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            onClick = onclick,
+                .padding(start = 8.dp, top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
+            Icon(
+                imageVector = imageVector,
+                contentDescription = null,
+                modifier = Modifier.padding(end = 3.dp)
+            )
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+        if (schedule.size != 0)
+            Column(
                 modifier = Modifier
-                    .padding(start = 8.dp, top = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .padding(start = 10.dp, top = 8.dp),
             ) {
-                Icon(
-                    imageVector = imageVector,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 3.dp)
-                )
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                schedule.forEach { schedule ->
+                    Column {
+                        Text(text = "课程名称 ${schedule.kcmc}")
+                        Text(text = "授课教师 ${schedule.teaxms}")
+                        Text(text = "上课地点 ${schedule.jxcdmc}")
+                        Text(text = "上课时间 ${schedule.qssj} - ${schedule.jssj}")
+                        Text(text = "评价方式 ${schedule.khfsmc}")
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
             }
+        else
             Box(
                 modifier = Modifier
+                    .height(200.dp)
                     .fillMaxWidth()
                     .fillMaxHeight(),
                 contentAlignment = Alignment.Center
             ) {
                 Text(text = "暂无信息", color = Color.Gray)
             }
-        }
     }
-}
 
-
-@Preview
-@Composable
-fun p() {
-    PersonCardItem(onclick = { /*TODO*/ }, text = "消息中心", imageVector = Icons.Default.Email)
 }

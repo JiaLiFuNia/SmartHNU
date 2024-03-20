@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -22,16 +23,20 @@ import com.xhand.hnu2.model.entity.GradeDetailEntity
 import com.xhand.hnu2.model.entity.GradeDetailPost
 import com.xhand.hnu2.model.entity.GradeInfo
 import com.xhand.hnu2.model.entity.GradePost
+import com.xhand.hnu2.model.entity.KbList
 import com.xhand.hnu2.model.entity.KccjList
 import com.xhand.hnu2.model.entity.LoginPostEntity
+import com.xhand.hnu2.model.entity.SchedulePost
 import com.xhand.hnu2.model.entity.Update
 import com.xhand.hnu2.model.entity.UserInfoEntity
 import com.xhand.hnu2.network.GradeService
 import com.xhand.hnu2.network.LoginService
 import com.xhand.hnu2.network.NewsDetailService
+import com.xhand.hnu2.network.ScheduleService
 import com.xhand.hnu2.network.UpdateService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.annotations.Async.Schedule
 
 
 class SettingsViewModel : ViewModel() {
@@ -51,6 +56,9 @@ class SettingsViewModel : ViewModel() {
             route = "grade_screen"
         )
     )
+
+    // 今日课程
+    var todaySchedule = mutableListOf<KbList>()
 
     // 成绩代码
     var cjdm by mutableStateOf("")
@@ -136,6 +144,7 @@ class SettingsViewModel : ViewModel() {
     private val loginService = LoginService.instance()
     private val updateService = UpdateService.instance()
     private val detailService = NewsDetailService.instance()
+    private val todayScheduleService = ScheduleService.instance()
 
     // 登录请求
     suspend fun login() {
@@ -193,6 +202,7 @@ class SettingsViewModel : ViewModel() {
         gradeListTemp = mutableListOf() // 下拉刷新时置空
     }
 
+    // 成绩请求
     suspend fun gradeDetailService() {
         val res =
             userInfo?.let { gradeService.gradeDetail(GradeDetailPost(cjdm), it.token) }
@@ -200,6 +210,25 @@ class SettingsViewModel : ViewModel() {
             if (res.code == 200) {
                 gradeDetail = res.info1
                 gradeOrder = res.info
+            }
+        }
+    }
+
+
+    // 今日课程
+    suspend fun todaySchedule() {
+        val res =
+            userInfo?.let {
+                todayScheduleService.scheduleDetail(
+                    SchedulePost(todaykb = "1"),
+                    token = it.token
+                )
+            }
+        Log.i("TAG666", "33${res}")
+        if (res != null) {
+            if (res.code == 200) {
+                todaySchedule = res.kbList.toMutableStateList()
+
             }
         }
     }

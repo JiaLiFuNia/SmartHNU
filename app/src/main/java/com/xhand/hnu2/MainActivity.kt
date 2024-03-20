@@ -66,8 +66,10 @@ class MainActivity : ComponentActivity() {
                     )
                 )
                 var selectedItemIndex by rememberSaveable {
-                    mutableIntStateOf(0)
+                    mutableIntStateOf(1)
                 }
+                if (SettingsViewModel().isLoginSuccess)
+                    selectedItemIndex = 0
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     shadowElevation = 3.dp
