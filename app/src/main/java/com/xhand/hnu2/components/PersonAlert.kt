@@ -64,7 +64,6 @@ fun showAlert(
         confirmButton = {
             TextButton(
                 onClick = {
-                    Log.i("TAG666", "${viewModel.showPersonAlert}")
                     viewModel.showPersonAlert = false
                 }
             ) {

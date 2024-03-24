@@ -105,7 +105,6 @@ fun GradeScreen(
             viewModel.gradeService()
         }
     }
-    Log.i("TAG666", "5656${viewModel.gradeList}")
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -165,8 +164,8 @@ fun GradeScreen(
                 modifier = Modifier
                     .padding(paddingValues = it)
                     .verticalScroll(scrollState)
+                    .pullRefresh(pullRefreshState)
             ) {
-                Log.i("TAG666", "3")
                 viewModel.gradeList.forEach { grade ->
                     GradeListItem(
                         grade = grade,
@@ -188,7 +187,6 @@ fun GradeScreen(
         }
     }
     if (viewModel.showPersonAlert) {
-        Log.i("TAG666", "${viewModel.showPersonAlert}")
         showAlert(grade = showAlert, viewModel = viewModel)
     }
     ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "筛选成绩") {

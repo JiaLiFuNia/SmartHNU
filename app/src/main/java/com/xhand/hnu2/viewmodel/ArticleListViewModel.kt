@@ -14,7 +14,8 @@ class ArticleListViewModel : ViewModel() {
                 time = "2024-01-16",
                 id = 10,
                 url = "https://www.htu.edu.cn/rsc/2024/0116/c1595a296555/page.htm",
-                type = "通知公告"
+                type = "通知公告",
+                isTop = false
             )
         )
     )

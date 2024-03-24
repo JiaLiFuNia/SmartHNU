@@ -83,6 +83,7 @@ class SettingsViewModel : ViewModel() {
     // 软件更新
     var ifUpdate by mutableStateOf(true)
     var ifNeedUpdate by mutableStateOf(false)
+    var ifHadUpdate by mutableStateOf(false)
 
     // 展示登录弹窗
     var isShowDialog by mutableStateOf(false)
@@ -170,11 +171,10 @@ class SettingsViewModel : ViewModel() {
             } else {
                 null
             }
-            Log.i("TAG666", "$res")
             loginCircle = false
             isLogging = true
         } catch (e: Exception) {
-            Log.i("TAG666", e.toString())
+            Log.i("TAG666", "$e")
         }
     }
 
@@ -195,7 +195,6 @@ class SettingsViewModel : ViewModel() {
                     Log.i("TAG666", "null")
                 }
             }
-            Log.i("TAG666", "66$gradeList")
             isRefreshing = false
         }
         gradeList = gradeListTemp
@@ -224,7 +223,6 @@ class SettingsViewModel : ViewModel() {
                     token = it.token
                 )
             }
-        Log.i("TAG666", "33${res}")
         if (res != null) {
             if (res.code == 200) {
                 todaySchedule = res.kbList.toMutableStateList()
@@ -238,7 +236,6 @@ class SettingsViewModel : ViewModel() {
         try {
             val res = detailService.getNewsDetail(url)
             htmlParsing = res.body()?.string() ?: ""
-            Log.i("TAG666", htmlParsing)
         } catch (e: Exception) {
             htmlParsing = ""
         }
@@ -249,7 +246,6 @@ class SettingsViewModel : ViewModel() {
         val res: Update
         try {
             res = updateService.update()
-            Log.i("TAG666", "${res.version}${currentVersion}")
             ifNeedUpdate = res.version != currentVersion
         } catch (e: Exception) {
             Log.i("TAG666", "$e")

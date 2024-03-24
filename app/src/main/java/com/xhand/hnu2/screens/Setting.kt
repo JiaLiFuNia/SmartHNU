@@ -34,6 +34,7 @@ import com.xhand.hnu2.components.BasicListItem
 import com.xhand.hnu2.components.DropdownListItem
 import com.xhand.hnu2.components.SelectionItem
 import com.xhand.hnu2.components.SwitchListItem
+import com.xhand.hnu2.components.UpdateAlert
 import com.xhand.hnu2.components.showAlert
 import com.xhand.hnu2.components.showLoginDialog
 import com.xhand.hnu2.model.entity.DarkMode
@@ -58,14 +59,14 @@ fun SettingScreen(viewModel: SettingsViewModel) {
     val context = LocalContext.current
     val cbManager = LocalClipboardManager.current
     val currentVersion = stringResource(id = R.string.update)
-    LaunchedEffect(Unit) {
-        Log.i("TAG666", "${viewModel.ifUpdate}")
-        if (viewModel.ifUpdate) {
+    if (viewModel.ifUpdate) {
+        LaunchedEffect(Unit) {
             viewModel.updateRes(currentVersion)
         }
     }
-    if (viewModel.ifNeedUpdate and viewModel.ifUpdate) {
+    if (viewModel.ifNeedUpdate and viewModel.ifUpdate and !viewModel.ifHadUpdate) {
         Toast.makeText(context, "检测到新版本！", Toast.LENGTH_SHORT).show()
+        viewModel.ifHadUpdate = true
     }
     Scaffold(
         modifier = Modifier
@@ -141,7 +142,7 @@ fun SettingScreen(viewModel: SettingsViewModel) {
             BasicListItem(leadingText = stringResource(R.string.about))
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.0.3.20",
+                supportingText = "Copyright 2023-2024 Xhand v2.0.3.23",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = {
                     Intent(Intent.ACTION_VIEW).also {

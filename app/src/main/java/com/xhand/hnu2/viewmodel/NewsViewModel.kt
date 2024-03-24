@@ -29,7 +29,7 @@ class NewsViewModel : ViewModel() {
     private val newsListType = mapOf(
         "8955" to "通知公告",
         "8954" to "师大要闻",
-        "8957" to "院部动态"
+        "8957" to "新闻速递"
     )
 
     // 教务新闻类型
@@ -103,7 +103,6 @@ class NewsViewModel : ViewModel() {
         try {
             val searchRes = searchService.pushPost(searchKeyEncode)
             searchList = getNewsList(searchRes.body()?.data, "搜索", 3)
-            Log.i("TAG666", "$searchList")
             newsIsLoading = false
         } catch (e: Exception) {
             Log.i("TAG666", "$e")

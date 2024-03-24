@@ -128,7 +128,7 @@ fun NewsScreen(
         mutableStateOf(false)
     }
     val options = listOf(
-        "通知公告", "师大要闻", "院部动态", "教务通知", "公示公告", "考务管理"
+        "通知公告", "师大要闻", "新闻速递", "教务通知", "公示公告", "考务管理"
     )
     var selectedOption by remember { mutableStateOf(options[0]) }
     var isShowSearchBar by remember {

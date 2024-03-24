@@ -1,5 +1,6 @@
 package com.xhand.hnu2.network
 
+import android.util.Log
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import com.xhand.hnu2.model.entity.ArticleListEntity
@@ -10,6 +11,7 @@ fun getNewsList(str: String?, type: String, rule: Int): MutableList<ArticleListE
     // 主页用
     var ruleDate = "ul.news_list > li.news > div.wz > div.news_time"
     var ruleTime = "ul.news_list > li.news > div.wz > div.news_title > a"
+    var ifTop = "ul.news_list > li.news > div.wz > div.news_title > a > font"
     // 教务用
     val ruleDate2 = "ul.news_list li.news span.news_meta"
     val ruleTime2 = "ul.news_list li.news span.news_title a"
@@ -34,6 +36,9 @@ fun getNewsList(str: String?, type: String, rule: Int): MutableList<ArticleListE
         document.select(ruleDate) // 链接和标题
     val liElements =
         document.select(ruleTime)
+    val topsElements = document.select(ifTop)
+    var ifTopNum = topsElements.size
+    Log.i("TAG666", "${topsElements.size} ${liElements.size}")
     for (index in 0 until dateElements.size) {
         if (rule == 3) {
             num += 1
@@ -43,7 +48,8 @@ fun getNewsList(str: String?, type: String, rule: Int): MutableList<ArticleListE
                     time = liElements[index].text(),
                     id = num,
                     url = dateElements[index].attr("href"),
-                    type = type
+                    type = type,
+                    isTop = false
                 )
             )
         } else {
@@ -58,10 +64,12 @@ fun getNewsList(str: String?, type: String, rule: Int): MutableList<ArticleListE
                     time = dateElements[index].text(),
                     id = num,
                     url = url,
-                    type = type
+                    type = type,
+                    isTop = ifTopNum == 1
                 )
             )
         }
+        ifTopNum = 0
     }
     return firstList
 }

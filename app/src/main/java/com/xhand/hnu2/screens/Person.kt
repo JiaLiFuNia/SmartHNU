@@ -6,9 +6,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
@@ -138,6 +141,7 @@ fun PersonScreen(
     }
     val userInfo = viewModel.userInfo
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val schedule = viewModel.todaySchedule
     LaunchedEffect(Unit) {
         viewModel.todaySchedule()
     }
@@ -157,13 +161,13 @@ fun PersonScreen(
                     if (scrollBehavior.state.heightOffset < 0f) {
                         Text(
                             text = if (viewModel.isLoginSuccess) {
-                                "你好！${userInfo?.name}"
+                                "欢迎！${userInfo?.name}"
                             } else {
-                                "你好！"
+                                "欢迎！"
                             }
                         )
                     } else {
-                        Text(text = "我的")
+                        Text(text = "欢迎！")
                     }
                 },
                 actions = {
@@ -249,16 +253,72 @@ fun PersonScreen(
             }
             Spacer(modifier = Modifier.height(14.dp))
             PersonCardItem(
+                isChecked = checkboxes[0].isChecked,
                 onclick = {
                     if (userInfo == null) {
                         Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
                     } else {
-                        navController.navigate("schedule_screen")
+                        checkboxes[0].route?.let { navController.navigate(it) }
                     }
                 },
-                text = "今日课程",
-                imageVector = Icons.Default.DateRange,
-                schedule = viewModel.todaySchedule
+                text = checkboxes[0].text,
+                imageVector = checkboxes[0].imageVector,
+                content = {
+                    if (schedule.size != 0)
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(start = 10.dp, top = 8.dp),
+                        ) {
+                            schedule.forEach { schedule ->
+                                Column {
+                                    Text(text = "课程名称 ${schedule.kcmc}")
+                                    Text(text = "授课教师 ${schedule.teaxms}")
+                                    Text(text = "上课地点 ${schedule.jxcdmc}")
+                                    Text(text = "上课时间 ${schedule.qssj} - ${schedule.jssj}")
+                                    Text(text = "评价方式 ${schedule.khfsmc}")
+                                }
+                                Spacer(modifier = Modifier.height(10.dp))
+                            }
+                        }
+                    else
+                        Box(
+                            modifier = Modifier
+                                .height(200.dp)
+                                .fillMaxWidth()
+                                .fillMaxHeight(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (viewModel.isLoginSuccess)
+                                Text(text = "今日无课程", color = Color.Gray)
+                            else
+                                Text(text = "暂无信息", color = Color.Gray)
+                        }
+                }
+            )
+            Spacer(modifier = Modifier.height(14.dp))
+            PersonCardItem(
+                isChecked = checkboxes[1].isChecked,
+                onclick = {
+                    if (userInfo == null) {
+                        Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
+                    } else {
+                        checkboxes[1].route?.let { navController.navigate(it) }
+                    }
+                },
+                text = checkboxes[1].text,
+                imageVector = checkboxes[1].imageVector,
+                content = {
+                    Box(
+                        modifier = Modifier
+                            .height(200.dp)
+                            .fillMaxWidth()
+                            .fillMaxHeight(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "暂无信息", color = Color.Gray)
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(14.dp))
         }

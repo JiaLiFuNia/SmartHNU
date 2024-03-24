@@ -5,5 +5,6 @@ data class ArticleListEntity(
     var time: String,
     var id: Int,
     var url: String,
-    var type: String
+    var type: String,
+    val isTop: Boolean
 )

@@ -202,7 +202,6 @@ fun ArticleDetailScreen(
         </body>
         </html>
     """
-            Log.i("TAG655", fontColor)
             LazyColumn(
                 Modifier
                     .fillMaxSize()
