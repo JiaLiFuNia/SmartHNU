@@ -25,7 +25,7 @@ fun ArticleListItem(
         },
         supportingContent = {
             Text(
-                text = timeSwitch(dateString = article.time),
+                text = if (article.time == "") "" else timeSwitch(dateString = article.time),
                 color = Color.Gray
             )
         },
@@ -38,9 +38,8 @@ fun timeSwitch(dateString: String): String {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd") // 格式转换
     val parsedDate = LocalDate.parse(dateString, formatter) // 新闻日期
     val currentDate = LocalDate.now() // 当前日期
-    val daysDifference = currentDate.toEpochDay() - parsedDate.toEpochDay() // 日期差
 
-    val result = when (daysDifference) {
+    val result = when (currentDate.toEpochDay() - parsedDate.toEpochDay()) { // 日期差
         0L -> "今天"
         1L -> "昨天"
         2L -> "前天"

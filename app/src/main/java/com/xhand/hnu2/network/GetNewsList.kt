@@ -45,13 +45,14 @@ fun getNewsList(str: String?, type: String, rule: Int): MutableList<ArticleListE
             firstList.add(
                 ArticleListEntity(
                     title = dateElements[index].text(),
-                    time = liElements[index].text(),
+                    time = if (liElements[index].text()[0] == '发') liElements[index].text().substring(5,15) else "",
                     id = num,
                     url = dateElements[index].attr("href"),
                     type = type,
                     isTop = false
                 )
             )
+            Log.i("TAG666", "$firstList")
         } else {
             var url = liElements[index].attr("href")
             if (url[0] != 'h') {

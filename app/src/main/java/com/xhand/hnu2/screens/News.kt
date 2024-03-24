@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -134,6 +136,7 @@ fun NewsScreen(
     var isShowSearchBar by remember {
         mutableStateOf(false)
     }
+    val scrollState = rememberScrollState()
     var isSearch by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val pullRefreshState = rememberPullRefreshState(
@@ -249,26 +252,26 @@ fun NewsScreen(
             }
         }
         Box(
-            modifier = Modifier.pullRefresh(pullRefreshState)
+            modifier = Modifier
+                .pullRefresh(pullRefreshState)
         ) {
-            LazyColumn(
+            Column(
                 modifier = Modifier
                     .padding(paddingValues = it)
+                    .verticalScroll(scrollState)
             ) {
                 if (newsViewModel.newsIsLoading) {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .height(600.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
+                    Box(
+                        modifier = Modifier
+                            .height(600.dp)
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
                 } else {
                     if (!isShowSearchBar) {
-                        items(newsViewModel.list) { article ->
+                        newsViewModel.list.forEach { article ->
                             if (article.type == selectedOption) {
                                 ArticleListItem(
                                     article = article,
@@ -282,7 +285,7 @@ fun NewsScreen(
                         }
                     } else {
                         if (!newsViewModel.isSearched) {
-                            items(newsViewModel.searchList) { article ->
+                            newsViewModel.searchList.forEach { article ->
                                 ArticleListItem(
                                     article = article,
                                     modifier = Modifier
@@ -294,14 +297,12 @@ fun NewsScreen(
                             }
                         } else {
                             if (newsViewModel.content.isNotEmpty() and newsViewModel.isSearched and isSearch) {
-                                item {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(top = 10.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) { Text(text = "未检索到相关新闻") }
-                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 10.dp),
+                                    contentAlignment = Alignment.Center
+                                ) { Text(text = "未检索到相关新闻") }
                             }
                         }
                     }
