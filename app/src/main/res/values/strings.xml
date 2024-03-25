@@ -45,7 +45,7 @@
     <string name="feedback_title">反馈</string>
     <string name="feedback_desc">发送邮件提供你的意见及建议</string>
     <string name="open_source_code_title">项目链接</string>
-    <string name="open_source_code_desc">此应用遵循 Apache-2.0 license 开源协议，欢迎前往开源页面参与贡献</string>
+    <string name="open_source_code_desc">欢迎前往开源页面参与贡献</string>
     <string name="open_source_code_message">您即将离开此应用，确认后将跳转到浏览器打开 GitHub 仓库</string>
     <string name="dev">开发者选项</string>
     <string name="screenshot_mode_title">截屏模式</string>

@@ -242,12 +242,24 @@ fun PersonScreen(
                             .height(75.dp)
                             .padding(start = 15.dp)
                     ) {
-                        Text(
-                            text = userInfo?.name ?: "未登录",
-                            style = MaterialTheme.typography.headlineSmall
-                        )
-                        Text(text = userInfo?.studentID ?: "", fontSize = 15.sp, color = Color.Gray)
-                        Text(text = userInfo?.academy ?: "", fontSize = 15.sp, color = Color.Gray)
+                        if (viewModel.isLoginSuccess) {
+                            Text(
+                                text = userInfo?.name ?: "",
+                                style = MaterialTheme.typography.headlineSmall
+                            )
+                            Text(
+                                text = userInfo?.studentID ?: "",
+                                fontSize = 15.sp,
+                                color = Color.Gray
+                            )
+                            Text(
+                                text = userInfo?.academy ?: "",
+                                fontSize = 15.sp,
+                                color = Color.Gray
+                            )
+                        } else {
+                            Text(text = "未登录", fontSize = 25.sp)
+                        }
                     }
                 }
             }
@@ -323,7 +335,19 @@ fun PersonScreen(
             Spacer(modifier = Modifier.height(14.dp))
         }
     }
-    ModalBottomSheet(showModalBottomSheet, text)
+    ModalBottomSheet(showModalBottomSheet, text) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(start = 16.dp)
+        ) {
+            Text(
+                text = "个人信息",
+                fontWeight = FontWeight.W900,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
 
     ModalBottomSheet(showModalBottomSheetEdit, text) {
         Row(

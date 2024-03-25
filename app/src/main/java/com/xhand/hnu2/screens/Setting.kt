@@ -58,7 +58,7 @@ fun SettingScreen(viewModel: SettingsViewModel) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     val cbManager = LocalClipboardManager.current
-    val currentVersion = stringResource(id = R.string.update)
+    val currentVersion = stringResource(id = R.string.version)
     if (viewModel.ifUpdate) {
         LaunchedEffect(Unit) {
             viewModel.updateRes(currentVersion)
@@ -67,6 +67,8 @@ fun SettingScreen(viewModel: SettingsViewModel) {
     if (viewModel.ifNeedUpdate and viewModel.ifUpdate and !viewModel.ifHadUpdate) {
         Toast.makeText(context, "检测到新版本！", Toast.LENGTH_SHORT).show()
         viewModel.ifHadUpdate = true
+    } else {
+        Toast.makeText(context, "当前是最新版本", Toast.LENGTH_SHORT).show()
     }
     Scaffold(
         modifier = Modifier
@@ -84,11 +86,11 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                 scrollBehavior = scrollBehavior
             )
         }
-    ) { values ->
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(values)
+                .padding(paddingValues = it)
                 .verticalScroll(scrollState)
         ) {
             BasicListItem(leadingText = "账户")

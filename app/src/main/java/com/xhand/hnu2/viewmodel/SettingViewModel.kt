@@ -240,7 +240,6 @@ class SettingsViewModel : ViewModel() {
         if (res != null) {
             if (res.code == 200) {
                 todaySchedule = res.kbList.toMutableStateList()
-
             }
         }
     }
@@ -261,6 +260,7 @@ class SettingsViewModel : ViewModel() {
         try {
             res = updateService.update()
             ifNeedUpdate = res.version != currentVersion
+            Log.i("TAG666","${res.version}${currentVersion}")
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
         }
