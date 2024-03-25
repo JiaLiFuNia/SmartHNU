@@ -29,6 +29,7 @@ import com.xhand.hnu2.model.entity.LoginPostEntity
 import com.xhand.hnu2.model.entity.SchedulePost
 import com.xhand.hnu2.model.entity.Update
 import com.xhand.hnu2.model.entity.UserInfoEntity
+import com.xhand.hnu2.model.entity.Xscj
 import com.xhand.hnu2.network.GradeService
 import com.xhand.hnu2.network.LoginService
 import com.xhand.hnu2.network.NewsDetailService
@@ -65,6 +66,7 @@ class SettingsViewModel : ViewModel() {
 
     // 成绩详情
     var gradeDetail: GradeInfo? = null
+    var gradeDetails: Xscj? = null
     var gradeOrder: GradeInfo? = null
 
     // 新闻链接
@@ -203,14 +205,26 @@ class SettingsViewModel : ViewModel() {
 
     // 成绩请求
     suspend fun gradeDetailService() {
-        val res =
-            userInfo?.let { gradeService.gradeDetail(GradeDetailPost(cjdm), it.token) }
-        if (res != null) {
-            if (res.code == 200) {
-                gradeDetail = res.info1
-                gradeOrder = res.info
+        try {
+            val res =
+                userInfo?.let { gradeService.gradeDetail(GradeDetailPost(cjdm), it.token) }
+            if (res != null) {
+                if (res.code == 200) {
+                    gradeDetail = res.info1
+                    gradeOrder = res.info
+                }
             }
+            val detail =
+                userInfo?.let { gradeService.gradeDetails(GradeDetailPost(cjdm), it.token) }
+            if (detail != null) {
+                if (detail.code == 200) {
+                    gradeDetails = detail.xscj
+                }
+            }
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
         }
+
     }
 
 
@@ -233,11 +247,11 @@ class SettingsViewModel : ViewModel() {
 
     // 新闻页面详情请求
     suspend fun detailService() {
-        try {
+        htmlParsing = try {
             val res = detailService.getNewsDetail(url)
-            htmlParsing = res.body()?.string() ?: ""
+            res.body()?.string() ?: ""
         } catch (e: Exception) {
-            htmlParsing = ""
+            ""
         }
     }
 

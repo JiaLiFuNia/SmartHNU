@@ -58,7 +58,7 @@ data class GradeInfo(
 )
 
 
-// 成绩回传
+// 成绩回传 - 排名
 data class GradeEntity(
     val msg: String,
     val code: Long,
@@ -83,8 +83,23 @@ data class KccjList(
 )
 
 
-// 今日任务
+// 成绩回传 - 平时成绩
+data class GradeDetailsEntity(
+    val msg: String,
+    val code: Int,
+    val xscj: Xscj,
+)
 
+data class Xscj(
+    val zcj: String, // 总成绩
+    val bl1: Int? = 100, // 平时占比
+    val cj1: Double? = 100.0, // 平时
+    val bl4: Int? = 100, // 期末占比
+    val cj4: Double? = 100.0, // 期末
+)
+
+
+// 今日任务
 data class SchedulePost(
     val todaykb: String = "1"
 )

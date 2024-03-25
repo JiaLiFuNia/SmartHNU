@@ -2,6 +2,7 @@ package com.xhand.hnu2.network
 
 import com.xhand.hnu2.model.entity.GradeDetailEntity
 import com.xhand.hnu2.model.entity.GradeDetailPost
+import com.xhand.hnu2.model.entity.GradeDetailsEntity
 import com.xhand.hnu2.model.entity.GradeEntity
 import com.xhand.hnu2.model.entity.GradePost
 import retrofit2.http.Body
@@ -22,6 +23,11 @@ interface GradeService {
         @Header("Token") token: String
     ): GradeDetailEntity
 
+    @POST("dev-api/appapi/Studentcj/detail")
+    suspend fun gradeDetails(
+        @Body body: GradeDetailPost,
+        @Header("Token") token: String
+    ): GradeDetailsEntity
     companion object {
         fun instance(): GradeService {
             return Network.loginService(GradeService::class.java)
