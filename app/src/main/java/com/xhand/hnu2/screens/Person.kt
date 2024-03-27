@@ -16,16 +16,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -54,6 +51,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -117,8 +115,8 @@ fun NavigationPersonScreen(viewModel: SettingsViewModel, personViewModel: Person
             ScheduleScreen(
                 onBack = { navController.popBackStack() })
         }
-        composable("other_screen") {
-            OtherScreen(
+        composable("message_screen") {
+            MessageScreen(
                 onBack = { navController.popBackStack() })
         }
     }
@@ -171,16 +169,8 @@ fun PersonScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { personViewModel.hasMessage = false }) {
-                        BadgedBox(
-                            badge = {
-                                if (personViewModel.hasMessage) {
-                                    Badge()
-                                }
-                            }
-                        ) {
-                            Icon(imageVector = Icons.Default.Email, contentDescription = null)
-                        }
+                    IconButton(onClick = { navController.navigate("message_screen") }) {
+                        Icon(imageVector = Icons.Default.Email, contentDescription = "消息")
                     }
                     IconButton(
                         onClick = {
@@ -280,15 +270,43 @@ fun PersonScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(start = 10.dp, top = 8.dp),
+                                .padding(start = 10.dp, top = 8.dp)
                         ) {
                             schedule.forEach { schedule ->
-                                Column {
-                                    Text(text = "课程名称 ${schedule.kcmc}")
-                                    Text(text = "授课教师 ${schedule.teaxms}")
-                                    Text(text = "上课地点 ${schedule.jxcdmc}")
-                                    Text(text = "上课时间 ${schedule.qssj} - ${schedule.jssj}")
-                                    Text(text = "评价方式 ${schedule.khfsmc}")
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Card(
+                                        modifier = Modifier
+                                            .width(6.dp)
+                                            .height(40.dp),
+                                        colors = CardDefaults.cardColors(
+                                            MaterialTheme.colorScheme.primary
+                                        )
+                                    ) { Text(text = "") }
+                                    Column(
+                                        modifier = Modifier.padding(start = 10.dp)
+                                    ) {
+                                        Text(text = "${schedule.khfsmc}-${schedule.kcmc}")
+                                        Row {
+                                            Text(
+                                                text = "${schedule.qssj} - ${schedule.jssj}",
+                                                modifier = Modifier.weight(0.5f),
+                                                textAlign = TextAlign.Left
+                                            )
+                                            Text(
+                                                text = schedule.jxcdmc,
+                                                modifier = Modifier.weight(0.25f),
+                                                textAlign = TextAlign.Left
+                                            )
+                                            Text(
+                                                text = schedule.teaxms,
+                                                modifier = Modifier.weight(0.25f),
+                                                textAlign = TextAlign.Left
+                                            )
+                                        }
+
+                                    }
                                 }
                                 Spacer(modifier = Modifier.height(10.dp))
                             }

@@ -111,28 +111,29 @@ data class ScheduleEntity(
 )
 
 data class KbList(
-    // val flfzmc: String,
     val khfsmc: String, // 考试或考察
+    val qssj: String, // 开始时间
+    val jssj: String, // 结束时间
+    val kcmc: String, // 课程名称
+    val teaxms: String, // 教师姓名
+    val jxcdmc: String, // 上课地点
+    // val flfzmc: String,
     // val ps: String,
     // val pkrs: Long,
     // val sknrjj: String,
     // val lngandlat: String,
     // val zwh: Long,
     // val jxhjmc: String,
-    val qssj: String, // 开始时间
     // val lx: String,
     // val kcywmc: String,
     // val xnxqmc: String,
     // val jxbdm: String,
-    val jssj: String, // 结束时间
     // val qsrq: String,
     // val jxbrs: Long,
     // val bz: String,
     // val kxh: String,
     // val szxqmc: String,
-    val kcmc: String, // 课程名称
     // val kcptbh: String,
-    val teaxms: String, // 教师姓名
     // val skrq: String,
     // val address: String,
     // val tasktype: Long,
@@ -140,7 +141,6 @@ data class KbList(
     // val zc: String,
     // val jxxsmc: String,
     // val kcbh: String,
-    val jxcdmc: String, // 上课地点
     // val bgcolor: String,
     // val jcdm: String,
     // val jzwmc: String,

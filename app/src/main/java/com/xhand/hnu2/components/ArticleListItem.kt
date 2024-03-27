@@ -1,5 +1,6 @@
 package com.xhand.hnu2.components
 
+import android.util.Log
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,12 +39,16 @@ fun timeSwitch(dateString: String): String {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd") // 格式转换
     val parsedDate = LocalDate.parse(dateString, formatter) // 新闻日期
     val currentDate = LocalDate.now() // 当前日期
-
-    val result = when (currentDate.toEpochDay() - parsedDate.toEpochDay()) { // 日期差
-        0L -> "今天"
-        1L -> "昨天"
-        2L -> "前天"
-        else -> dateString
-    }
+    val result =
+        if (dateString.substring(2, 4) == currentDate.year.toString().substring(2, 4)) {
+            when (currentDate.toEpochDay() - parsedDate.toEpochDay()) { // 日期差
+                0L -> "今天"
+                1L -> "昨天"
+                2L -> "前天"
+                else -> dateString.substring(5)
+            }
+        } else {
+            dateString
+        }
     return result
 }

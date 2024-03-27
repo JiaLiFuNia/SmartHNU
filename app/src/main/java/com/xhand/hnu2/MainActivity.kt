@@ -1,6 +1,8 @@
 package com.xhand.hnu2
 
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -15,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -23,7 +26,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.xhand.hnu2.screens.NavigationScreen
 import com.xhand.hnu2.screens.SettingScreen
@@ -62,14 +68,12 @@ class MainActivity : ComponentActivity() {
                         title = "设置",
                         selectedIcon = R.drawable.ic_filled_settings,
                         unselectedIcon = R.drawable.ic_outline_settings,
-                        hasNews = remember { mutableStateOf(true) }
+                        hasNews = remember { mutableStateOf(SettingsViewModel().ifNeedUpdate) }
                     )
                 )
                 var selectedItemIndex by rememberSaveable {
                     mutableIntStateOf(1)
                 }
-                if (SettingsViewModel().isLoginSuccess)
-                    selectedItemIndex = 0
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     shadowElevation = 3.dp
@@ -116,6 +120,19 @@ class MainActivity : ComponentActivity() {
                             LocalUserViewModel provides SettingsViewModel()
                         ) {
                             val viewModel = LocalUserViewModel.current
+                            val context = LocalContext.current
+                            val currentVersion = stringResource(id = R.string.version)
+                            if (viewModel.ifUpdate) {
+                                LaunchedEffect(Unit) {
+                                    viewModel.updateRes(currentVersion)
+                                }
+                            }
+                            if (viewModel.ifNeedUpdate and viewModel.ifUpdate) {
+                                Toast.makeText(context, "检测到新版本！", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(context, "当前是最新版本", Toast.LENGTH_SHORT).show()
+                            }
+                            Log.i("TAG665", "${viewModel.ifNeedUpdate}")
                             Box(modifier = Modifier.padding(it)) {
                                 when (selectedItemIndex) {
                                     0 -> NavigationPersonScreen(viewModel, PersonViewModel())

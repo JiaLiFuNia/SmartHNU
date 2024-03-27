@@ -58,18 +58,6 @@ fun SettingScreen(viewModel: SettingsViewModel) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     val cbManager = LocalClipboardManager.current
-    val currentVersion = stringResource(id = R.string.version)
-    if (viewModel.ifUpdate) {
-        LaunchedEffect(Unit) {
-            viewModel.updateRes(currentVersion)
-        }
-    }
-    if (viewModel.ifNeedUpdate and viewModel.ifUpdate and !viewModel.ifHadUpdate) {
-        Toast.makeText(context, "检测到新版本！", Toast.LENGTH_SHORT).show()
-        viewModel.ifHadUpdate = true
-    } else {
-        Toast.makeText(context, "当前是最新版本", Toast.LENGTH_SHORT).show()
-    }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -144,7 +132,7 @@ fun SettingScreen(viewModel: SettingsViewModel) {
             BasicListItem(leadingText = stringResource(R.string.about))
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.0.3.25",
+                supportingText = "Copyright 2023-2024 Xhand v2.0.3.27",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = {
                     Intent(Intent.ACTION_VIEW).also {

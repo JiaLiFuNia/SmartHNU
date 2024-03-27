@@ -83,9 +83,8 @@ class SettingsViewModel : ViewModel() {
     var userInfo: UserInfoEntity? = null
 
     // 软件更新
-    var ifUpdate by mutableStateOf(true)
-    var ifNeedUpdate by mutableStateOf(false)
-    var ifHadUpdate by mutableStateOf(false)
+    var ifUpdate by mutableStateOf(true) // 用户是否选择自动更新
+    var ifNeedUpdate by mutableStateOf(false) // 是否有更新
 
     // 展示登录弹窗
     var isShowDialog by mutableStateOf(false)
@@ -239,10 +238,12 @@ class SettingsViewModel : ViewModel() {
             }
         if (res != null) {
             if (res.code == 200) {
-                todaySchedule = res.kbList.toMutableStateList()
+                todaySchedule =
+                    res.kbList.sortedBy { it.qssj.substring(0, 2).toInt() }.toMutableList()
             }
         }
     }
+
 
     // 新闻页面详情请求
     suspend fun detailService() {
@@ -260,7 +261,7 @@ class SettingsViewModel : ViewModel() {
         try {
             res = updateService.update()
             ifNeedUpdate = res.version != currentVersion
-            Log.i("TAG666","${res.version}${currentVersion}")
+            Log.i("TAG666", "${res.version}${currentVersion}${ifNeedUpdate}")
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
         }

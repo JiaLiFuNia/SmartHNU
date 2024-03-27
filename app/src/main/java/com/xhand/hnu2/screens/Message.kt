@@ -20,7 +20,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OtherScreen(
+fun MessageScreen(
     onBack: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -37,7 +37,7 @@ fun OtherScreen(
                         )
                 ),
                 title = {
-                    Text(text = "快捷访问")
+                    Text(text = "消息中心")
                 },
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
