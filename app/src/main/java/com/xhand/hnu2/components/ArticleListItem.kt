@@ -1,6 +1,5 @@
 package com.xhand.hnu2.components
 
-import android.util.Log
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable

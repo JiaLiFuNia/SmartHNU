@@ -120,7 +120,7 @@ class MainActivity : ComponentActivity() {
                             LocalUserViewModel provides SettingsViewModel()
                         ) {
                             val viewModel = LocalUserViewModel.current
-                            val context = LocalContext.current
+                            /*val context = LocalContext.current
                             val currentVersion = stringResource(id = R.string.version)
                             if (viewModel.ifUpdate) {
                                 LaunchedEffect(Unit) {
@@ -132,7 +132,7 @@ class MainActivity : ComponentActivity() {
                             } else {
                                 Toast.makeText(context, "当前是最新版本", Toast.LENGTH_SHORT).show()
                             }
-                            Log.i("TAG665", "${viewModel.ifNeedUpdate}")
+                            Log.i("TAG665", "${viewModel.ifNeedUpdate}")*/
                             Box(modifier = Modifier.padding(it)) {
                                 when (selectedItemIndex) {
                                     0 -> NavigationPersonScreen(viewModel, PersonViewModel())

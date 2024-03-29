@@ -72,7 +72,7 @@ class NewsViewModel : ViewModel() {
                     listTemp = (listTemp + getNewsList(
                         htmlRes.body()?.string(),
                         type.value,
-                        1
+                        rule = if (type.key == "8955") 4 else 1
                     )).toMutableList()
                 }
             }

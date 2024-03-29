@@ -42,7 +42,7 @@ import org.jetbrains.annotations.Async.Schedule
 
 class SettingsViewModel : ViewModel() {
 
-    var hasMessage by mutableStateOf(true)
+    var readNotice by mutableStateOf(false)
     var checkboxes = mutableStateListOf(
         ToggleableInfo(
             isChecked = true,
@@ -55,6 +55,58 @@ class SettingsViewModel : ViewModel() {
             text = "课程成绩",
             imageVector = Icons.Default.Edit,
             route = "grade_screen"
+        )
+    )
+    var functionCards = mutableStateListOf(
+        FunctionCard(
+            title = "教室查询",
+            painterResource = R.drawable.ic_baseline_location_city_24,
+            route = "class_room"
+        ),
+        FunctionCard(
+            title = "课程查询",
+            painterResource = R.drawable.ic_outline_manage_search_24,
+            route = "class_search"
+        ),
+        FunctionCard(
+            title = "上课任务",
+            painterResource = R.drawable.ic_baseline_task_24,
+            route = "class_task"
+        ),
+        FunctionCard(
+            title = "学习计划",
+            painterResource = R.drawable.ic_outline_schedule_24,
+            route = "class_schedule"
+        ),
+        FunctionCard(
+            title = "教学评价",
+            painterResource = R.drawable.ic_baseline_menu_book_24,
+            route = "class_evaluate"
+        ),
+        FunctionCard(
+            title = "教务系统",
+            painterResource = R.drawable.ic_baseline_menu_book_24,
+            route = "class_evaluate"
+        ),
+        FunctionCard(
+            title = "师大官网",
+            painterResource = R.drawable.ic_baseline_menu_book_24,
+            route = "class_evaluate"
+        ),
+        FunctionCard(
+            title = "教务处",
+            painterResource = R.drawable.ic_baseline_menu_book_24,
+            route = "class_evaluate"
+        ),
+        FunctionCard(
+            title = "",
+            painterResource = R.drawable.ic_baseline_add_circle_outline_24,
+            route = "class_evaluate"
+        ),
+        FunctionCard(
+            title = "",
+            painterResource = R.drawable.ic_baseline_add_circle_outline_24,
+            route = "class_evaluate"
         )
     )
 
