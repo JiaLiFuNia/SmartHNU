@@ -44,10 +44,25 @@ fun timeSwitch(dateString: String): String {
                 0L -> "今天"
                 1L -> "昨天"
                 2L -> "前天"
-                else -> dateString.substring(5)
+                else -> datePattern(dateString.substring(5))
             }
         } else {
-            dateString
+            datePattern(dateString)
         }
     return result
+}
+
+
+fun datePattern(date: String): String {
+    val parts = date.split("-")
+    return if (parts.size == 2) {
+        val month = parts[0].toInt()
+        val day = parts[1].toInt()
+        "${month}月${day}日"
+    } else {
+        val year = parts[0].toInt()
+        val month = parts[1].toInt()
+        val day = parts[2].toInt()
+        "${year}年${month}月${day}日"
+    }
 }

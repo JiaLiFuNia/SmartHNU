@@ -65,6 +65,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.xhand.hnu2.R
+import com.xhand.hnu2.components.Chart.GPAChangeLineChart
 import com.xhand.hnu2.components.ModalBottomSheet
 import com.xhand.hnu2.components.PersonCardItem
 import com.xhand.hnu2.components.PersonFunctionCardItem
@@ -72,6 +73,7 @@ import com.xhand.hnu2.viewmodel.GradeViewModel
 import com.xhand.hnu2.viewmodel.PersonViewModel
 import com.xhand.hnu2.viewmodel.SettingsViewModel
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
@@ -244,6 +246,7 @@ fun PersonScreen(
                 isChecked = true,
                 onclick = { },
                 text = "快捷方式",
+                rightText = null,
                 imageVector = Icons.Default.Home,
                 content = {
                     Column(
@@ -306,6 +309,10 @@ fun PersonScreen(
                 }
             )
             Spacer(modifier = Modifier.height(14.dp))
+            val currentDate = LocalDate.now()
+            val dayOfMonth = currentDate.dayOfMonth
+            val month = currentDate.month.getDisplayName(TextStyle.FULL, Locale.SIMPLIFIED_CHINESE)
+            val dayOfWeek = currentDate.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.SIMPLIFIED_CHINESE)
             PersonCardItem(
                 isChecked = checkboxes[0].isChecked,
                 onclick = {
@@ -316,6 +323,7 @@ fun PersonScreen(
                     }
                 },
                 text = checkboxes[0].text,
+                rightText = "${month}${dayOfMonth}日 ${dayOfWeek}",
                 imageVector = checkboxes[0].imageVector,
                 content = {
                     if (schedule.size != 0) Column(
@@ -391,23 +399,36 @@ fun PersonScreen(
                     }
                 })
             Spacer(modifier = Modifier.height(14.dp))
-            PersonCardItem(isChecked = checkboxes[1].isChecked, onclick = {
-                if (userInfo == null) {
-                    Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
-                } else {
-                    checkboxes[1].route?.let { navController.navigate(it) }
+            PersonCardItem(
+                isChecked = checkboxes[1].isChecked,
+                onclick = {
+                    if (userInfo == null) {
+                        Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
+                    } else {
+                        checkboxes[1].route?.let { navController.navigate(it) }
+                    }
+                },
+                text = checkboxes[1].text,
+                rightText = null,
+                imageVector = checkboxes[1].imageVector,
+                content = {
+                    Box(
+                        modifier = Modifier
+                            .padding(10.dp)
+                    ) {
+                        GPAChangeLineChart()
+                    }
+                    /*Box(
+                        modifier = Modifier
+                            .height(200.dp)
+                            .fillMaxWidth()
+                            .fillMaxHeight(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "暂无信息", color = Color.Gray)
+                    }*/
                 }
-            }, text = checkboxes[1].text, imageVector = checkboxes[1].imageVector, content = {
-                Box(
-                    modifier = Modifier
-                        .height(200.dp)
-                        .fillMaxWidth()
-                        .fillMaxHeight(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "暂无信息", color = Color.Gray)
-                }
-            })
+            )
             Spacer(modifier = Modifier.height(14.dp))
         }
     }

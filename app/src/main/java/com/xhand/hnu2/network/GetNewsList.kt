@@ -5,107 +5,139 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import com.xhand.hnu2.model.entity.ArticleListEntity
 
-var num = 0
 fun getNewsList(str: String?, type: String, rule: Int): MutableList<ArticleListEntity> {
-    val firstList = mutableListOf<ArticleListEntity>()
-    // 通知公告
-    val ruleTime4 = "ul.news_list > li.news > a > div.news_box > div.news_meta" // 时间 .data
-    val ruleUrl = "ul.news_list > li.news > a" // Url .href
-    val ruleTitle =
-        "ul.news_list > li.news > a > div.news_box > div.wz > div.news_con" // 标题 .text
-    val ifTop2 =
-        "ul.news_list > li.news > a > div.news_box > div.wz > div.news_con > div.new_title > font" // top .text
-    // 主页用
-    var ruleDate = "ul.news_list > li.news > div.wz > div.news_time"
-    var ruleTime = "ul.news_list > li.news > div.wz > div.news_title > a"
-    val ifTop = "ul.news_list > li.news > div.wz > div.news_title > a > font"
-    // 教务用
-    val ruleDate2 = "ul.news_list li.news span.news_meta"
-    val ruleTime2 = "ul.news_list li.news span.news_title a"
-    // 搜索用
-    val ruleDate3 = "div.result_item h3.item_title a"
-    val ruleTime3 = "div.result_item span.item_metas:nth-of-type(2)"
-
-    if (rule != 4) {
-        when (rule) {
-            1 -> {}
-            2 -> {
-                ruleDate = ruleDate2
-                ruleTime = ruleTime2
-            }
-
-            3 -> {
-                ruleDate = ruleDate3
-                ruleTime = ruleTime3
-            }
-        }
-        val document: Document = Jsoup.parse(str)
-        val dateElements =
-            document.select(ruleDate) // 链接和标题
-        val liElements =
-            document.select(ruleTime)
-        val topsElements = document.select(ifTop)
-        var ifTopNum = topsElements.size
-        for (index in 0 until dateElements.size) {
-            if (rule == 3) {
-                num += 1
-                firstList.add(
-                    ArticleListEntity(
-                        title = dateElements[index].text(),
-                        time = if (liElements[index].text()[0] == '发') liElements[index].text()
-                            .substring(5, 15) else "",
-                        id = num,
-                        url = dateElements[index].attr("href"),
-                        type = type,
-                        isTop = false
-                    )
-                )
-            } else {
-                var url = liElements[index].attr("href")
-                if (url[0] != 'h') {
-                    url = "https://www.htu.edu.cn${liElements[index].attr("href")}"
-                }
-                num += 1
-                firstList.add(
-                    ArticleListEntity(
-                        title = liElements[index].attr("title"),
-                        time = dateElements[index].text(),
-                        id = num,
-                        url = url,
-                        type = type,
-                        isTop = ifTopNum == 1
-                    )
-                )
-            }
-            ifTopNum = 0
-        }
-    } else {
-        val document: Document = Jsoup.parse(str)
-        val timeElements =
-            document.select(ruleTime4) // 时间
-        val urlElements =
-            document.select(ruleUrl)
-        val titleElements =
-            document.select(ruleTitle)
-        val topsElements = document.select(ifTop2)
-        Log.i("TAG666", "${topsElements.size}")
-        var ifTopNum = topsElements.size
-        for (index in 0 until timeElements.size) {
-            num += 1
-            firstList.add(
-                ArticleListEntity(
-                    title = titleElements[index].text(),
-                    time = timeElements[index].attr("date"),
-                    id = num,
-                    url = urlElements[index].attr("href"),
-                    type = type,
-                    isTop = ifTopNum == 1
-                )
-            )
-            ifTopNum = 0
+    val firstList: MutableList<ArticleListEntity> = when (rule) {
+        2 -> getNewsList2(str, type) // 搜索
+        3 -> getNewsList3(str, type) // 教务
+        4 -> getNewsList4(str, type) // 通知公告
+        else -> {
+            getNewsList1(str, type) // 主页
         }
     }
-
     return firstList
 }
 
+// 搜索
+fun getNewsList2(str: String?, type: String): MutableList<ArticleListEntity> {
+    val firstList = mutableListOf<ArticleListEntity>()
+    // 搜索用
+    val titleAndUrlRule = "div.result_item h3.item_title a"
+    val timeRule = "div.result_item span.item_metas:nth-of-type(2)"
+    val timeRule2 = "div.result_item span.item_metas:nth-of-type(3)"
+    val document: Document = Jsoup.parse(str)
+    val titleAndUrlElements =
+        document.select(titleAndUrlRule) // 链接和标题
+    val timeElements =
+        document.select(timeRule)
+    val timeElements2 =
+        document.select(timeRule2)
+    for (index in 0 until titleAndUrlElements.size) {
+        firstList.add(
+            ArticleListEntity(
+                title = titleAndUrlElements[index].text(),
+                time = if (timeElements[index].text()[0] == '发') timeElements[index].text()
+                    .substring(5, 15) else timeElements2[index].text().substring(5, 15),
+                url = titleAndUrlElements[index].attr("href"),
+                type = type,
+                isTop = false
+            )
+        )
+    }
+    return firstList
+}
+
+// 教务
+fun getNewsList3(str: String?, type: String): MutableList<ArticleListEntity> {
+    val firstList = mutableListOf<ArticleListEntity>()
+    val timeRule = "ul.news_list li.news span.news_meta" // time.text
+    val titleAndUrlRule =
+        "ul.news_list li.news span.news_title a" // title.title url.href
+    val document: Document = Jsoup.parse(str)
+    val timeElements =
+        document.select(timeRule)
+    val titleAndUrlElements =
+        document.select(titleAndUrlRule)
+    for (index in 0 until timeElements.size) {
+        var url = titleAndUrlElements[index].attr("href")
+        if (url.first() == 'h') {
+            url = "https://www.htu.edu.cn${titleAndUrlElements[index].attr("href")}"
+        }
+        firstList.add(
+            ArticleListEntity(
+                title = titleAndUrlElements[index].attr("title"),
+                time = timeElements[index].text(),
+                url = url,
+                type = type,
+                isTop = false
+            )
+        )
+    }
+    return firstList
+}
+
+// 通用
+fun getNewsList1(str: String?, type: String): MutableList<ArticleListEntity> {
+    val firstList = mutableListOf<ArticleListEntity>()
+    val timeRule = "ul.news_list > li.news > div.wz > div.news_time" // time.text
+    val titleAndUrlRule =
+        "ul.news_list > li.news > div.wz > div.news_title > a" // title.title url.href
+    val document: Document = Jsoup.parse(str)
+    val timeElements =
+        document.select(timeRule)
+    val titleAndUrlElements =
+        document.select(titleAndUrlRule)
+    for (index in 0 until timeElements.size) {
+        var url = titleAndUrlElements[index].attr("href")
+        if (url.first() == 'h') {
+            url = "https://www.htu.edu.cn${titleAndUrlElements[index].attr("href")}"
+        }
+        firstList.add(
+            ArticleListEntity(
+                title = titleAndUrlElements[index].attr("title"),
+                time = timeElements[index].text(),
+                url = url,
+                type = type,
+                isTop = false
+            )
+        )
+    }
+    return firstList
+}
+
+// 通知公告
+fun getNewsList4(str: String?, type: String): MutableList<ArticleListEntity> {
+    val firstList = mutableListOf<ArticleListEntity>()
+    val timeRule = "ul.news_list > li.news > a > div.news_box > div.news_meta" // time .data
+    val urlRule = "ul.news_list > li.news > a" // url .href
+    val titleRule =
+        "ul.news_list > li.news > a > div.news_box > div.wz > div.news_con" // title .text
+    val ifTop =
+        "ul.news_list > li.news > a > div.news_box > div.wz > div.news_con > div.news_title > font" // top .text
+    val document: Document = Jsoup.parse(str)
+    val timeElements =
+        document.select(timeRule) // 时间
+    val urlElements =
+        document.select(urlRule)
+    val titleElements =
+        document.select(titleRule)
+    val topsElements = document.select(ifTop)
+    Log.i("TAG666", "${topsElements.size}")
+    var ifTopNum = topsElements.size
+    for (index in 0 until timeElements.size) {
+        var url = urlElements[index].attr("href")
+        if (url.first() == 'h') {
+            url = "https://www.htu.edu.cn${urlElements[index].attr("href")}"
+        }
+        firstList.add(
+            ArticleListEntity(
+                title = titleElements[index].text(),
+                time = timeElements[index].attr("date"),
+                url = url,
+                type = type,
+                isTop = ifTopNum == 1
+            )
+        )
+        ifTopNum = 0
+    }
+    return firstList
+}

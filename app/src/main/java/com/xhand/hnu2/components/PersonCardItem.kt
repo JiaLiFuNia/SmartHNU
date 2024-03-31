@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -27,6 +29,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,6 +40,7 @@ fun PersonCardItem(
     isChecked: Boolean,
     onclick: () -> Unit,
     text: String,
+    rightText: String?,
     imageVector: ImageVector,
     content: @Composable () -> Unit = {}
 ) {
@@ -49,7 +53,8 @@ fun PersonCardItem(
         ) {
             Row(
                 modifier = Modifier
-                    .padding(start = 8.dp, top = 8.dp),
+                    .padding(start = 8.dp, top = 8.dp, end = 8.dp)
+                    .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
@@ -61,6 +66,9 @@ fun PersonCardItem(
                     text = text,
                     style = MaterialTheme.typography.bodyLarge
                 )
+                if (rightText != null) {
+                    Text(text = rightText, textAlign = TextAlign.Right, color = Color.Gray, modifier = Modifier.fillMaxWidth())
+                }
             }
             content()
         }
@@ -114,4 +122,19 @@ fun hhhhh() {
         painterResource = R.drawable.ic_outline_manage_search_24,
         onClick = {}
     )
+}
+
+
+@Composable
+@Preview
+fun hhhhhh() {
+    PersonCardItem(
+        isChecked = true,
+        onclick = { /*TODO*/ },
+        text = "今日课程",
+        rightText = "三月31日 星期日",
+        imageVector = Icons.Default.Home
+    ) {
+
+    }
 }

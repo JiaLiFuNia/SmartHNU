@@ -70,8 +70,8 @@ class NewsViewModel : ViewModel() {
                 for (i in 1..10) {
                     val htmlRes = newsListService.getNewsList(i.toString(), type.key)
                     listTemp = (listTemp + getNewsList(
-                        htmlRes.body()?.string(),
-                        type.value,
+                        str = htmlRes.body()?.string(),
+                        type = type.value,
                         rule = if (type.key == "8955") 4 else 1
                     )).toMutableList()
                 }
@@ -82,7 +82,7 @@ class NewsViewModel : ViewModel() {
                     listTemp = (listTemp + getNewsList(
                         htmlRes.body()?.string(),
                         type.value,
-                        2
+                        3
                     )).toMutableList()
                 }
             }
@@ -97,15 +97,20 @@ class NewsViewModel : ViewModel() {
 
     // 搜索列表请求
     suspend fun searchRes() {
-        val searchKeys =
-            """[{"field":"pageIndex","value":2},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$content"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
-        val searchKeyEncode = Base64.encodeToString(searchKeys.toByteArray(), 0)
-        try {
-            val searchRes = searchService.pushPost(searchKeyEncode)
-            searchList = getNewsList(searchRes.body()?.data, "搜索", 3)
-            newsIsLoading = false
-        } catch (e: Exception) {
-            Log.i("TAG666", "$e")
+        for (i in 1..5) {
+            val searchKeys =
+                """[{"field":"pageIndex","value":1},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$content"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
+            val searchKeyEncode = Base64.encodeToString(searchKeys.toByteArray(), 0)
+            try {
+                val searchRes = searchService.pushPost(searchKeyEncode)
+                listTemp =
+                    (listTemp + getNewsList(searchRes.body()?.data, "搜索", 2)).toMutableList()
+                newsIsLoading = false
+            } catch (e: Exception) {
+                Log.i("TAG666", "$e")
+            }
         }
+        searchList = listTemp
+        listTemp = mutableListOf()
     }
 }
