@@ -73,6 +73,7 @@ import com.xhand.hnu2.viewmodel.GradeViewModel
 import com.xhand.hnu2.viewmodel.PersonViewModel
 import com.xhand.hnu2.viewmodel.SettingsViewModel
 import java.text.SimpleDateFormat
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -84,23 +85,29 @@ import java.util.Locale
 @Composable
 fun NavigationPersonScreen(viewModel: SettingsViewModel, personViewModel: PersonViewModel) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "person_screen", enterTransition = {
-        slideIntoContainer(
-            AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
-        )
-    }, exitTransition = {
-        slideOutOfContainer(
-            AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
-        )
-    }, popEnterTransition = {
-        slideIntoContainer(
-            AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(500)
-        )
-    }, popExitTransition = {
-        slideOutOfContainer(
-            AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(500)
-        )
-    }) {
+    NavHost(
+        navController = navController,
+        startDestination = "person_screen",
+        enterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
+            )
+        },
+        exitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
+            )
+        },
+        popEnterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(500)
+            )
+        },
+        popExitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(500)
+            )
+        }) {
         composable("person_screen") {
             PersonScreen(
                 navController = navController,
@@ -256,52 +263,25 @@ fun PersonScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            otherCards.forEachIndexed { index, functionCard ->
-                                if (index < 5)
-                                    PersonFunctionCardItem(
-                                        modifier = Modifier
-                                            .padding(10.dp)
-                                            .weight(0.2f),
-                                        title = functionCard.title,
-                                        painterResource = functionCard.painterResource,
-                                        onClick = {
-                                            if (userInfo == null) {
-                                                Toast.makeText(
-                                                    context,
-                                                    "请先登录",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            } else {
-                                                /*TODO*/
-                                            }
+                            otherCards.forEach { functionCard ->
+                                PersonFunctionCardItem(
+                                    modifier = Modifier
+                                        .padding(10.dp)
+                                        .weight(0.2f),
+                                    title = functionCard.title,
+                                    painterResource = functionCard.painterResource,
+                                    onClick = {
+                                        if (userInfo == null) {
+                                            Toast.makeText(
+                                                context,
+                                                "请先登录",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else {
+                                            /*TODO*/
                                         }
-                                    )
-                            }
-                        }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            otherCards.forEachIndexed { index, functionCard ->
-                                if (index >= 5)
-                                    PersonFunctionCardItem(
-                                        modifier = Modifier
-                                            .padding(10.dp)
-                                            .weight(0.2f),
-                                        title = functionCard.title,
-                                        painterResource = functionCard.painterResource,
-                                        onClick = {
-                                            if (userInfo == null) {
-                                                Toast.makeText(
-                                                    context,
-                                                    "请先登录",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            } else {
-                                                /*TODO*/
-                                            }
-                                        }
-                                    )
+                                    }
+                                )
                             }
                         }
                     }
@@ -311,8 +291,9 @@ fun PersonScreen(
             Spacer(modifier = Modifier.height(14.dp))
             val currentDate = LocalDate.now()
             val dayOfMonth = currentDate.dayOfMonth
-            val month = currentDate.month.getDisplayName(TextStyle.FULL, Locale.SIMPLIFIED_CHINESE)
-            val dayOfWeek = currentDate.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.SIMPLIFIED_CHINESE)
+            val month = currentDate.monthValue
+            val dayOfWeek =
+                currentDate.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.SIMPLIFIED_CHINESE)
             PersonCardItem(
                 isChecked = checkboxes[0].isChecked,
                 onclick = {
@@ -323,7 +304,7 @@ fun PersonScreen(
                     }
                 },
                 text = checkboxes[0].text,
-                rightText = "${month}${dayOfMonth}日 ${dayOfWeek}",
+                rightText = "${month}月${dayOfMonth}日 $dayOfWeek",
                 imageVector = checkboxes[0].imageVector,
                 content = {
                     if (schedule.size != 0) Column(
@@ -351,10 +332,12 @@ fun PersonScreen(
                                             startIndex = 0,
                                             endIndex = 5
                                         )
-                                    ) // 课程结束时间大于当前时间为true
+                                    )// 课程结束时间大于当前时间为true
                                     Text(
                                         text = "${schedule.khfsmc}-${schedule.kcmc}",
-                                        color = if (isAfterCurrentTime) Color.Gray else Color.Unspecified
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        color = if (isAfterCurrentTime <= 0) Color.Gray else Color.Unspecified
                                     )
                                     Row {
                                         Text(
@@ -366,19 +349,19 @@ fun PersonScreen(
                                             } - ${schedule.jssj.substring(0, 5)}",
                                             modifier = Modifier.weight(0.4f),
                                             textAlign = TextAlign.Left,
-                                            color = if (isAfterCurrentTime) Color.Gray else Color.Unspecified
-                                        )
-                                        Text(
-                                            text = schedule.jxcdmc,
-                                            modifier = Modifier.weight(0.35f),
-                                            textAlign = TextAlign.Left,
-                                            color = if (isAfterCurrentTime) Color.Gray else Color.Unspecified
+                                            color = if (isAfterCurrentTime <= 0) Color.Gray else Color.Unspecified
                                         )
                                         Text(
                                             text = schedule.teaxms,
                                             modifier = Modifier.weight(0.25f),
                                             textAlign = TextAlign.Left,
-                                            color = if (isAfterCurrentTime) Color.Gray else Color.Unspecified
+                                            color = if (isAfterCurrentTime <= 0) Color.Gray else Color.Unspecified
+                                        )
+                                        Text(
+                                            text = schedule.jxcdmc,
+                                            modifier = Modifier.weight(0.35f),
+                                            textAlign = TextAlign.Left,
+                                            color = if (isAfterCurrentTime <= 0) Color.Gray else Color.Unspecified
                                         )
                                     }
 
@@ -478,7 +461,7 @@ fun PersonScreen(
 }
 
 // 判断时间
-fun isCurrentTimeBetween(endTimeString: String): Boolean {
+fun isCurrentTimeBetween(endTimeString: String): Long {
     val formatter = DateTimeFormatter.ofPattern("HH:mm")
 
     val currentTime = LocalTime.now()
@@ -486,10 +469,15 @@ fun isCurrentTimeBetween(endTimeString: String): Boolean {
 
     val givenTime = LocalTime.parse(endTimeString, formatter)
     val givenTimeFormatted = givenTime.format(formatter)
-    // 如果大于就是真
-    return givenTimeFormatted > currentTimeFormatted
-}
 
+    // 使用 Duration.between 来计算两个时间之间的差值
+    val duration = Duration.between(currentTime, givenTime)
+    // 获取分钟数
+    val minutes = duration.toMinutes()
+
+    // 如果大于就是真
+    return minutes
+}
 
 val ic_ids = listOf(
     R.drawable.ic_1,

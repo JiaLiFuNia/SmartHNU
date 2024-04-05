@@ -93,12 +93,13 @@ fun showLoginDialog(
             )
         }
     }, onDismissRequest = { }, confirmButton = {
-        TextButton(onClick = {
-            coroutineScope.launch {
-                viewModel.login()
+        TextButton(
+            onClick = {
+                coroutineScope.launch {
+                    viewModel.login()
+                }
             }
-
-        }) {
+        ) {
             Text("登录")
             if (viewModel.loginCircle) {
                 CircularProgressIndicator(

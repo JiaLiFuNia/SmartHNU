@@ -111,30 +111,3 @@ fun PersonFunctionCardItem(
         }
     }
 }
-
-
-@Composable
-@Preview
-fun hhhhh() {
-    PersonFunctionCardItem(
-        modifier = Modifier,
-        title = "教室查询",
-        painterResource = R.drawable.ic_outline_manage_search_24,
-        onClick = {}
-    )
-}
-
-
-@Composable
-@Preview
-fun hhhhhh() {
-    PersonCardItem(
-        isChecked = true,
-        onclick = { /*TODO*/ },
-        text = "今日课程",
-        rightText = "三月31日 星期日",
-        imageVector = Icons.Default.Home
-    ) {
-
-    }
-}

@@ -82,31 +82,6 @@ class SettingsViewModel : ViewModel() {
             title = "教学评价",
             painterResource = R.drawable.ic_baseline_menu_book_24,
             route = "class_evaluate"
-        ),
-        FunctionCard(
-            title = "教务系统",
-            painterResource = R.drawable.ic_baseline_menu_book_24,
-            route = "class_evaluate"
-        ),
-        FunctionCard(
-            title = "师大官网",
-            painterResource = R.drawable.ic_baseline_menu_book_24,
-            route = "class_evaluate"
-        ),
-        FunctionCard(
-            title = "教务处",
-            painterResource = R.drawable.ic_baseline_menu_book_24,
-            route = "class_evaluate"
-        ),
-        FunctionCard(
-            title = "",
-            painterResource = R.drawable.ic_baseline_add_circle_outline_24,
-            route = "class_evaluate"
-        ),
-        FunctionCard(
-            title = "",
-            painterResource = R.drawable.ic_baseline_add_circle_outline_24,
-            route = "class_evaluate"
         )
     )
 
@@ -131,7 +106,7 @@ class SettingsViewModel : ViewModel() {
     var username by mutableStateOf("")
     var password by mutableStateOf("")
 
-    // 登录信息
+    // 登录信
     var userInfo: UserInfoEntity? = null
 
     // 软件更新
