@@ -59,7 +59,7 @@ fun getNewsList3(str: String?, type: String): MutableList<ArticleListEntity> {
         document.select(titleAndUrlRule)
     for (index in 0 until timeElements.size) {
         var url = titleAndUrlElements[index].attr("href")
-        if (url[0] == 'h') {
+        if (url[0] != 'h') {
             url = "https://www.htu.edu.cn${titleAndUrlElements[index].attr("href")}"
         }
         firstList.add(
@@ -88,7 +88,7 @@ fun getNewsList1(str: String?, type: String): MutableList<ArticleListEntity> {
         document.select(titleAndUrlRule)
     for (index in 0 until timeElements.size) {
         var url = titleAndUrlElements[index].attr("href")
-        if (url[0] == 'h') {
+        if (url[0] != 'h') {
             url = "https://www.htu.edu.cn${titleAndUrlElements[index].attr("href")}"
         }
         firstList.add(
@@ -125,7 +125,7 @@ fun getNewsList4(str: String?, type: String): MutableList<ArticleListEntity> {
     var ifTopNum = topsElements.size
     for (index in 0 until timeElements.size) {
         var url = urlElements[index].attr("href")
-        if (url[0] == 'h') {
+        if (url[0] != 'h') {
             url = "https://www.htu.edu.cn${urlElements[index].attr("href")}"
         }
         firstList.add(
