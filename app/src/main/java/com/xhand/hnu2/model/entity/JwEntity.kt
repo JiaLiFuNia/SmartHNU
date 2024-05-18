@@ -197,3 +197,13 @@ data class KbList(
 //      "jsrq": "2024-03-20",
 //      "xq": "3"
 //    },
+
+
+data class teacherPost(
+    val xnxqdm: String
+)
+
+data class teacherEntity(
+    val msg: String,
+    val code: Int,
+)

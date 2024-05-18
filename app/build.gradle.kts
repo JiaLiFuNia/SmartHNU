@@ -95,5 +95,6 @@ dependencies {
     implementation("com.patrykandpatrick.vico:core:2.0.0-alpha.13")
     // For the view system.
     implementation("com.patrykandpatrick.vico:views:2.0.0-alpha.13")
-
+    // 加载picture
+    implementation("io.coil-kt:coil-compose:2.6.0")
 }

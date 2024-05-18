@@ -30,6 +30,7 @@ import com.xhand.hnu2.model.entity.SchedulePost
 import com.xhand.hnu2.model.entity.Update
 import com.xhand.hnu2.model.entity.UserInfoEntity
 import com.xhand.hnu2.model.entity.Xscj
+import com.xhand.hnu2.model.entity.teacherPost
 import com.xhand.hnu2.network.GradeService
 import com.xhand.hnu2.network.LoginService
 import com.xhand.hnu2.network.NewsDetailService
@@ -61,27 +62,27 @@ class SettingsViewModel : ViewModel() {
         FunctionCard(
             title = "教室查询",
             painterResource = R.drawable.ic_baseline_location_city_24,
-            route = "class_room"
+            route = "classroom_screen"
         ),
         FunctionCard(
             title = "课程查询",
             painterResource = R.drawable.ic_outline_manage_search_24,
-            route = "class_search"
+            route = "search_screen"
         ),
         FunctionCard(
             title = "上课任务",
             painterResource = R.drawable.ic_baseline_task_24,
-            route = "class_task"
+            route = "task_screen"
         ),
         FunctionCard(
             title = "学习计划",
             painterResource = R.drawable.ic_outline_schedule_24,
-            route = "class_schedule"
+            route = "plan_screen"
         ),
         FunctionCard(
             title = "教学评价",
             painterResource = R.drawable.ic_baseline_menu_book_24,
-            route = "class_evaluate"
+            route = "teacher_screen"
         )
     )
 
@@ -106,7 +107,7 @@ class SettingsViewModel : ViewModel() {
     var username by mutableStateOf("")
     var password by mutableStateOf("")
 
-    // 登录信
+    // 登录信息
     var userInfo: UserInfoEntity? = null
 
     // 软件更新
@@ -271,6 +272,12 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    // 教师评价
+    suspend fun teacherService() {
+        val res =
+            userInfo?.let { gradeService.teacherDetails(teacherPost("202302"), token = it.token) }
+        Log.i("TAG6654", "$res")
+    }
 
     // 新闻页面详情请求
     suspend fun detailService() {

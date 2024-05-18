@@ -2,20 +2,26 @@ package com.xhand.hnu2.screens
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
@@ -48,8 +54,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
@@ -60,6 +68,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.xhand.hnu2.R
 import com.xhand.hnu2.components.ArticleListItem
 import com.xhand.hnu2.components.ModalBottomSheet
@@ -119,7 +128,10 @@ fun NavigationScreen(viewModel: SettingsViewModel) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+    ExperimentalFoundationApi::class
+)
 @Composable
 fun NewsScreen(
     navController: NavController,
@@ -147,8 +159,10 @@ fun NewsScreen(
             }
         }
     )
+    val pictures = newsViewModel.pictures
     LaunchedEffect(Unit) {
         newsViewModel.newsList()
+        newsViewModel.imageLoad()
     }
 
     Scaffold(
@@ -251,6 +265,7 @@ fun NewsScreen(
                 newsViewModel.searchRes()
             }
         }
+        val pagerState = rememberPagerState(pageCount = { pictures.size })
         Box(
             modifier = Modifier
                 .pullRefresh(pullRefreshState)
@@ -260,6 +275,21 @@ fun NewsScreen(
                     .padding(paddingValues = it)
                     .verticalScroll(scrollState)
             ) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .padding(horizontal = 15.dp, vertical = 8.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                ) { index ->
+                    AsyncImage(
+                        model = pictures[index],
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(16 / 9f),
+                        contentScale = ContentScale.Crop
+                    )
+                }
                 if (newsViewModel.newsIsLoading) {
                     Box(
                         modifier = Modifier

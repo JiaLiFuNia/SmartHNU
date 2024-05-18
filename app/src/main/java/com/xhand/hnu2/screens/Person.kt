@@ -69,6 +69,7 @@ import com.xhand.hnu2.components.Chart.GPAChangeLineChart
 import com.xhand.hnu2.components.ModalBottomSheet
 import com.xhand.hnu2.components.PersonCardItem
 import com.xhand.hnu2.components.PersonFunctionCardItem
+import com.xhand.hnu2.components.showLoginDialog
 import com.xhand.hnu2.viewmodel.GradeViewModel
 import com.xhand.hnu2.viewmodel.PersonViewModel
 import com.xhand.hnu2.viewmodel.SettingsViewModel
@@ -127,6 +128,24 @@ fun NavigationPersonScreen(viewModel: SettingsViewModel, personViewModel: Person
         }
         composable("message_screen") {
             MessageScreen(onBack = { navController.popBackStack() })
+        }
+        composable("classroom_screen") {
+            MessageScreen(onBack = { navController.popBackStack() })
+        }
+        composable("search_screen") {
+            MessageScreen(onBack = { navController.popBackStack() })
+        }
+        composable("task_screen") {
+            MessageScreen(onBack = { navController.popBackStack() })
+        }
+        composable("plan_screen") {
+            MessageScreen(onBack = { navController.popBackStack() })
+        }
+        composable("teacher_screen") {
+            TeacherScreen(
+                onBack = { navController.popBackStack() },
+                viewModel = SettingsViewModel()
+            )
         }
     }
 }
@@ -200,9 +219,10 @@ fun PersonScreen(
                 elevation = CardDefaults.cardElevation(4.dp), onClick = {
                     if (userInfo == null) {
                         Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
+                        viewModel.isShowDialog = true
                     } else {
                         text = userInfo.name
-                        showModalBottomSheet.value = !showModalBottomSheet.value
+
                     }
                 }, colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
             ) {
@@ -278,7 +298,7 @@ fun PersonScreen(
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         } else {
-                                            /*TODO*/
+                                            navController.navigate("teacher_screen")
                                         }
                                     }
                                 )
@@ -414,6 +434,9 @@ fun PersonScreen(
             )
             Spacer(modifier = Modifier.height(14.dp))
         }
+    }
+    if (viewModel.isShowDialog) {
+        showLoginDialog(viewModel)
     }
     ModalBottomSheet(showModalBottomSheet, text) {
         Row(

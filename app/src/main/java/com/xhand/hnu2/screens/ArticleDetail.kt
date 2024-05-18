@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,7 +40,9 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.xhand.hnu2.R
 import com.xhand.hnu2.viewmodel.SettingsViewModel
@@ -68,101 +71,139 @@ fun ArticleDetailScreen(
     Surface(
         color = Color.White
     ) {
-        Scaffold(topBar = {
-            TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-                    .compositeOver(
-                        MaterialTheme.colorScheme.surface.copy()
-                    )
-            ), title = { Text(text = "详情") }, navigationIcon = {
-                IconButton(onClick = { onBack() }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "返回"
-                    )
-                }
-            }, actions = {
-                IconButton(onClick = {
-                    Intent(Intent.ACTION_SEND).also {
-                        it.putExtra(Intent.EXTRA_TEXT, viewModel.url)
-                        it.type = "text/plain"
-                        if (it.resolveActivity(context.packageManager) != null) {
-                            context.startActivity(it)
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                            .compositeOver(
+                                MaterialTheme.colorScheme.surface.copy()
+                            )
+                    ),
+                    title = { Text(text = "详情") },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = { onBack() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "返回"
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = {
+                                Intent(Intent.ACTION_SEND).also {
+                                    it.putExtra(Intent.EXTRA_TEXT, viewModel.url)
+                                    it.type = "text/plain"
+                                    if (it.resolveActivity(context.packageManager) != null) {
+                                        context.startActivity(it)
+                                    }
+                                }
+                                Toast.makeText(context, "请选择分享的应用", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Share, contentDescription = "分享"
+                            )
+                        }
+                        IconButton(
+                            onClick = { showMenu = !showMenu }
+                        )
+                        {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert, contentDescription = "其他"
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            val ifStar = remember { mutableStateOf(false) }
+                            val ifStarText = remember { mutableStateOf("收藏") }
+                            DropdownMenuItem(
+                                text = { if (!showHtml) Text(text = "查看原网页") else Text(text = "新闻内容提取") },
+                                onClick = {
+                                    showHtml = !showHtml
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painterResource(id = R.drawable.ic_baseline_library_books_24),
+                                        contentDescription = ""
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = ifStarText.value) },
+                                onClick = {
+                                    ifStar.value = !ifStar.value
+                                    if (ifStar.value) {
+                                        ifStarText.value = "取消收藏"
+                                        Toast.makeText(context, "收藏成功", Toast.LENGTH_SHORT)
+                                            .show()
+                                    } else ifStarText.value = "收藏"
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painterResource(
+                                            id = if (ifStar.value) {
+                                                R.drawable.ic_filled_star
+                                            } else R.drawable.ic_star_outline
+                                        ), contentDescription = "刷新"
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "复制文章链接") },
+                                onClick = {
+                                    viewModel.copyText(cbManager, viewModel.url)
+                                    Toast.makeText(context, "已复制", Toast.LENGTH_SHORT).show()
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painterResource(id = R.drawable.ic_baseline_content_copy_24),
+                                        contentDescription = ""
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "使用外部浏览器") },
+                                onClick = {
+                                    Intent(Intent.ACTION_VIEW).also {
+                                        it.data = Uri.parse(viewModel.url)
+                                        if (it.resolveActivity(context.packageManager) != null) {
+                                            context.startActivity(it)
+                                        }
+                                    }
+                                    Toast.makeText(
+                                        context, "正在打开外部浏览器", Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painterResource(id = R.drawable.ic_public),
+                                        contentDescription = ""
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = "缓存到本地") },
+                                onClick = {
+                                    Toast.makeText(context, "已缓存", Toast.LENGTH_SHORT).show()
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painterResource(id = R.drawable.ic_download),
+                                        contentDescription = "缓存"
+                                    )
+                                }
+                            )
                         }
                     }
-                    Toast.makeText(context, "请选择分享的应用", Toast.LENGTH_SHORT).show()
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.Share, contentDescription = "分享"
-                    )
-                }
-                IconButton(onClick = { showMenu = !showMenu }) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert, contentDescription = "其他"
-                    )
-                }
-                DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-                    val ifStar = remember { mutableStateOf(false) }
-                    val ifStarText = remember { mutableStateOf("收藏") }
-                    DropdownMenuItem(text = { Text(text = "查看原网页") }, onClick = {
-                        showHtml = true
-                    }, leadingIcon = {
-                        Icon(
-                            painterResource(id = R.drawable.ic_baseline_library_books_24),
-                            contentDescription = ""
-                        )
-                    })
-                    DropdownMenuItem(text = { Text(text = ifStarText.value) }, onClick = {
-                        ifStar.value = !ifStar.value
-                        if (ifStar.value) {
-                            ifStarText.value = "取消收藏"
-                            Toast.makeText(context, "收藏成功", Toast.LENGTH_SHORT).show()
-                        } else ifStarText.value = "收藏"
-                    }, leadingIcon = {
-                        Icon(
-                            painterResource(
-                                id = if (ifStar.value) {
-                                    R.drawable.ic_filled_star
-                                } else R.drawable.ic_star_outline
-                            ), contentDescription = "刷新"
-                        )
-                    })
-                    DropdownMenuItem(text = { Text(text = "复制文章链接") }, onClick = {
-                        viewModel.copyText(cbManager, viewModel.url)
-                        Toast.makeText(context, "已复制", Toast.LENGTH_SHORT).show()
-                    }, leadingIcon = {
-                        Icon(
-                            painterResource(id = R.drawable.ic_baseline_content_copy_24),
-                            contentDescription = ""
-                        )
-                    })
-                    DropdownMenuItem(text = { Text(text = "使用外部浏览器") }, onClick = {
-                        Intent(Intent.ACTION_VIEW).also {
-                            it.data = Uri.parse(viewModel.url)
-                            if (it.resolveActivity(context.packageManager) != null) {
-                                context.startActivity(it)
-                            }
-                        }
-                        Toast.makeText(
-                            context, "正在打开外部浏览器", Toast.LENGTH_SHORT
-                        ).show()
-                    }, leadingIcon = {
-                        Icon(
-                            painterResource(id = R.drawable.ic_public),
-                            contentDescription = ""
-                        )
-                    })
-                    DropdownMenuItem(text = { Text(text = "缓存到本地") }, onClick = {
-                        Toast.makeText(context, "已缓存", Toast.LENGTH_SHORT).show()
-                    }, leadingIcon = {
-                        Icon(
-                            painterResource(id = R.drawable.ic_download),
-                            contentDescription = "缓存"
-                        )
-                    })
-                }
-            })
-        }) {
+                )
+            }
+        ) {
             // Create a reusable object configured with the default set of plugins.
             LaunchedEffect(Unit) {
                 viewModel.detailService()
@@ -174,8 +215,7 @@ fun ArticleDetailScreen(
             val title: String = article.title ?: ""
             // 内容
             val content: String = article.articleContent.toString()
-            val fontColor: String = if (isSystemInDarkTheme()) "rgb(255,255,255)"
-            else "rgb(0,0,0)"
+            val fontColor: String = if (isSystemInDarkTheme()) "rgb(255,255,255)" else "rgb(0,0,0)"
             // html头部
             val htmlHeader = """
         <!DOCTYPE html>
@@ -189,6 +229,7 @@ fun ArticleDetailScreen(
                   font-size: 120%;
                   background-color: rgb(${(MaterialTheme.colorScheme.surface.red) * 256}, ${(MaterialTheme.colorScheme.surface.green) * 256}, ${(MaterialTheme.colorScheme.surface.blue) * 256});
                   color: ${fontColor};
+                  font-family:"Microsoft YaHei",微软雅黑;
                 }
                 img {
                     max-width: 100% !important;
@@ -208,19 +249,23 @@ fun ArticleDetailScreen(
                     .padding(paddingValues = it)
             ) {
                 item {
-                    if (!showHtml) Text(
-                        text = title,
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(10.dp)
-                    )
+                    if (!showHtml) {
+                        Text(
+                            text = title,
+                            fontSize = 25.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(10.dp)
+                        )
+                        HorizontalDivider(modifier = Modifier.padding(10.dp))
+                    }
                 }
                 item {
                     if (!showHtml) {
                         AndroidView(
                             factory = { context ->
                                 WebView(context)
-                            }, modifier = Modifier
+                            },
+                            modifier = Modifier
                         ) { view ->
                             view.loadDataWithBaseURL(
                                 "", "$htmlHeader$content$htmlFooter", null, "utf-8", null

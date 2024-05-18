@@ -94,9 +94,7 @@ fun PersonFunctionCardItem(
                 modifier = Modifier
                     .height(55.dp)
                     .width(55.dp),
-                onClick = {
-                    onClick
-                }
+                onClick = onClick
             ) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Icon(

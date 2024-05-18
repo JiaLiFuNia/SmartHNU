@@ -122,7 +122,7 @@ fun getNewsList4(str: String?, type: String): MutableList<ArticleListEntity> {
         document.select(titleRule)
     val topsElements = document.select(ifTop)
     Log.i("TAG666", "${topsElements.size}")
-    var ifTopNum = topsElements.size
+    val ifTopNum = topsElements.size
     for (index in 0 until timeElements.size) {
         var url = urlElements[index].attr("href")
         if (url[0] != 'h') {
@@ -134,10 +134,21 @@ fun getNewsList4(str: String?, type: String): MutableList<ArticleListEntity> {
                 time = timeElements[index].attr("date"),
                 url = url,
                 type = type,
-                isTop = ifTopNum == 1
+                isTop = ifTopNum - index - 1 >= 0
             )
         )
-        ifTopNum = 0
+    }
+    return firstList
+}
+
+// 主页图片
+fun getPicList(str: String?): MutableList<String> {
+    val firstList = mutableListOf<String>()
+    val document: Document = Jsoup.parse(str)
+    val picRule = "div#banner div.inner ul.news_list li.news div.imgs a img"
+    val picElements = document.select(picRule)
+    for (index in 0 until picElements.size) {
+        firstList.add(picElements[index].attr("src"))
     }
     return firstList
 }

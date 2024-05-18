@@ -5,6 +5,7 @@ import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.Path
+import retrofit2.http.Url
 
 interface NewsListService {
     @GET("{type}/list{page}.htm")
@@ -22,6 +23,10 @@ interface NewsListService {
         @Path("page") page: String,
         @Path("type") type: String
     ): Response<ResponseBody>
+
+
+    @GET()
+    suspend fun getPicList(@Url url: String): Response<ResponseBody>
 
     companion object {
         fun instance(): NewsListService {
