@@ -24,7 +24,7 @@ fun getNewsList2(str: String?, type: String): MutableList<ArticleListEntity> {
     val titleAndUrlRule = "div.result_item h3.item_title a"
     val timeRule = "div.result_item span.item_metas:nth-of-type(2)"
     val timeRule2 = "div.result_item span.item_metas:nth-of-type(3)"
-    val document: Document = Jsoup.parse(str)
+    val document: Document = Jsoup.parse(str.toString())
     val titleAndUrlElements =
         document.select(titleAndUrlRule) // 链接和标题
     val timeElements =
@@ -52,7 +52,7 @@ fun getNewsList3(str: String?, type: String): MutableList<ArticleListEntity> {
     val timeRule = "ul.news_list li.news span.news_meta" // time.text
     val titleAndUrlRule =
         "ul.news_list li.news span.news_title a" // title.title url.href
-    val document: Document = Jsoup.parse(str)
+    val document: Document = Jsoup.parse(str.toString())
     val timeElements =
         document.select(timeRule)
     val titleAndUrlElements =
@@ -81,7 +81,7 @@ fun getNewsList1(str: String?, type: String): MutableList<ArticleListEntity> {
     val timeRule = "ul.news_list > li.news > div.wz > div.news_time" // time.text
     val titleAndUrlRule =
         "ul.news_list > li.news > div.wz > div.news_title > a" // title.title url.href
-    val document: Document = Jsoup.parse(str)
+    val document: Document = Jsoup.parse(str.toString())
     val timeElements =
         document.select(timeRule)
     val titleAndUrlElements =
@@ -113,7 +113,7 @@ fun getNewsList4(str: String?, type: String): MutableList<ArticleListEntity> {
         "ul.news_list > li.news > a > div.news_box > div.wz > div.news_con" // title .text
     val ifTop =
         "ul.news_list > li.news > a > div.news_box > div.wz > div.news_con > div.news_title > font" // top .text
-    val document: Document = Jsoup.parse(str)
+    val document: Document = Jsoup.parse(str.toString())
     val timeElements =
         document.select(timeRule) // 时间
     val urlElements =
@@ -144,7 +144,7 @@ fun getNewsList4(str: String?, type: String): MutableList<ArticleListEntity> {
 // 主页图片
 fun getPicList(str: String?): MutableList<String> {
     val firstList = mutableListOf<String>()
-    val document: Document = Jsoup.parse(str)
+    val document: Document = Jsoup.parse(str.toString())
     val picRule = "div#banner div.inner ul.news_list li.news div.imgs a img"
     val picElements = document.select(picRule)
     for (index in 0 until picElements.size) {
