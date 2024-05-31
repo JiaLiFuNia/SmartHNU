@@ -8,7 +8,10 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -230,6 +233,7 @@ fun ArticleDetailScreen(
                   background-color: rgb(${(MaterialTheme.colorScheme.surface.red) * 256}, ${(MaterialTheme.colorScheme.surface.green) * 256}, ${(MaterialTheme.colorScheme.surface.blue) * 256});
                   color: ${fontColor};
                   font-family:"Microsoft YaHei",微软雅黑;
+                  line-height:80%;
                 }
                 img {
                     max-width: 100% !important;
@@ -250,12 +254,12 @@ fun ArticleDetailScreen(
             ) {
                 item {
                     if (!showHtml) {
-                        Text(
-                            text = title,
-                            fontSize = 25.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(10.dp)
-                        )
+                            Text(
+                                text = title,
+                                fontSize = 30.sp,
+                                fontWeight = FontWeight.Bold,
+                                lineHeight = 100.sp
+                            )
                         HorizontalDivider(modifier = Modifier.padding(10.dp))
                     }
                 }
