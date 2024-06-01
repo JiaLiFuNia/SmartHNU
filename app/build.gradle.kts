@@ -4,15 +4,15 @@ plugins {
 }
 
 android {
-    namespace = "com.xhand.hnu2"
+    namespace = "com.xhand.hnu"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.xhand.hnu2"
+        applicationId = "com.xhand.hnu"
         minSdk = 29
         targetSdk = 33
         versionCode = 1
-        versionName = "2.0.5.30"
+        versionName = "2.0.6.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

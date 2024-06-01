@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.xhand.hnu2",
+  "applicationId": "com.xhand.hnu",
   "variantName": "release",
   "elements": [
     {
@@ -12,7 +12,7 @@
       "filters": [],
       "attributes": [],
       "versionCode": 1,
-      "versionName": "2.0.5.30",
+      "versionName": "2.0.6.1",
       "outputFile": "app-release.apk"
     }
   ],
