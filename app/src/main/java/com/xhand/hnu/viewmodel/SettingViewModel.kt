@@ -124,6 +124,7 @@ class SettingsViewModel : ViewModel() {
     var loginCircle by mutableStateOf(false)
     var isLogging by mutableStateOf(false)
     var isGettingGrade by mutableStateOf(true)
+    var isGettingCourse by mutableStateOf(true)
 
     // 成绩列表
     var gradeList = mutableListOf<KccjList>()
@@ -228,6 +229,7 @@ class SettingsViewModel : ViewModel() {
     // 成绩请求
     suspend fun gradeDetailService() {
         try {
+            isGettingGrade = true
             val res =
                 userInfo?.let { gradeService.gradeDetail(GradeDetailPost(cjdm), it.token) }
             if (res != null) {
@@ -243,6 +245,7 @@ class SettingsViewModel : ViewModel() {
                     gradeDetails = detail.xscj
                 }
             }
+            isGettingGrade = false
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
         }
@@ -265,7 +268,7 @@ class SettingsViewModel : ViewModel() {
                     res.kbList.sortedBy { it.qssj.substring(0, 2).toInt() }.toMutableList()
             }
         }
-        isGettingGrade = false
+        isGettingCourse = false
     }
 
     // 教师评价

@@ -340,7 +340,7 @@ fun PersonScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             if (viewModel.isLoginSuccess)
-                                if (viewModel.isGettingGrade)
+                                if (viewModel.isGettingCourse)
                                     CircularProgressIndicator()
                                 else
                                     Text(text = "今日无课程", color = Color.Gray)

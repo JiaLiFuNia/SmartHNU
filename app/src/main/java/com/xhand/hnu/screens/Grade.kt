@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import com.xhand.hnu.R
 import com.xhand.hnu.components.GradeListItem
 import com.xhand.hnu.components.ModalBottomSheet
-import com.xhand.hnu.components.showAlert
+import com.xhand.hnu.components.ShowAlert
 import com.xhand.hnu.model.entity.KccjList
 import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
@@ -183,7 +183,7 @@ fun GradeScreen(
         }
     }
     if (viewModel.showPersonAlert) {
-        showAlert(grade = showAlert, viewModel = viewModel)
+        ShowAlert(grade = showAlert, viewModel = viewModel)
     }
     ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "筛选成绩") {
         Column {
