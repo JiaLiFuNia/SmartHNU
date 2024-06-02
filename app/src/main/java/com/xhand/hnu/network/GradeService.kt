@@ -5,7 +5,7 @@ import com.xhand.hnu.model.entity.GradeDetailPost
 import com.xhand.hnu.model.entity.GradeDetailsEntity
 import com.xhand.hnu.model.entity.GradeEntity
 import com.xhand.hnu.model.entity.GradePost
-import com.xhand.hnu.model.entity.teacherEntity
+import com.xhand.hnu.model.entity.TeacherEntity
 import com.xhand.hnu.model.entity.teacherPost
 import retrofit2.http.Body
 import retrofit2.http.Header
@@ -34,7 +34,7 @@ interface GradeService {
     suspend fun teacherDetails(
         @Body body: teacherPost,
         @Header("Token") token: String
-    ): teacherEntity
+    ): TeacherEntity
 
     companion object {
         fun instance(): GradeService {

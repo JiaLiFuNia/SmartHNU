@@ -203,7 +203,21 @@ data class teacherPost(
     val xnxqdm: String
 )
 
-data class teacherEntity(
+data class TeacherEntity(
     val msg: String,
-    val code: Int,
+    val allPjxxList: List<AllPjxxList>,
+    val code: Long,
+    val xnxqdm: String,
+    val xnxqmc: String,
 )
+
+data class AllPjxxList(
+    val teadm: String,
+    val jxhjmc: String,
+    val xnxqmc: String,
+    val xnxqdm: String,
+    val dgksdm: String,
+    val teaxm: String,
+    val kcmc: String,
+)
+

@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.xhand.hnu.R
 import com.xhand.hnu.components.RSAEncryptionHelper
+import com.xhand.hnu.model.entity.AllPjxxList
 import com.xhand.hnu.model.entity.GradeDetailPost
 import com.xhand.hnu.model.entity.GradeInfo
 import com.xhand.hnu.model.entity.GradePost
@@ -128,10 +129,11 @@ class SettingsViewModel : ViewModel() {
 
     // 成绩列表
     var gradeList = mutableListOf<KccjList>()
+    var teacherList = mutableListOf<AllPjxxList>()
 
     // 成绩列表——临时
     private var gradeListTemp = mutableListOf<KccjList>()
-
+    private var teacherListTemp = mutableListOf<AllPjxxList>()
     // 是否正在刷新
     var isRefreshing by mutableStateOf(false)
         private set
@@ -274,8 +276,12 @@ class SettingsViewModel : ViewModel() {
     // 教师评价
     suspend fun teacherService() {
         val res =
-            userInfo?.let { gradeService.teacherDetails(teacherPost("202302"), token = it.token) }
-        Log.i("TAG6654", "$res")
+            userInfo?.let { gradeService.teacherDetails(teacherPost("202301"), token = it.token) }
+        if (res != null) {
+            teacherListTemp = res.allPjxxList.toMutableList()
+        }
+        teacherList = teacherListTemp
+        Log.i("TAG6654", "$teacherList")
     }
 
     // 新闻页面详情请求

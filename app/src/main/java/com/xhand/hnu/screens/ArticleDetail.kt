@@ -132,26 +132,6 @@ fun ArticleDetailScreen(
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text(text = ifStarText.value) },
-                                onClick = {
-                                    ifStar.value = !ifStar.value
-                                    if (ifStar.value) {
-                                        ifStarText.value = "取消收藏"
-                                        Toast.makeText(context, "收藏成功", Toast.LENGTH_SHORT)
-                                            .show()
-                                    } else ifStarText.value = "收藏"
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        painterResource(
-                                            id = if (ifStar.value) {
-                                                R.drawable.ic_filled_star
-                                            } else R.drawable.ic_star_outline
-                                        ), contentDescription = "刷新"
-                                    )
-                                }
-                            )
-                            DropdownMenuItem(
                                 text = { Text(text = "复制文章链接") },
                                 onClick = {
                                     viewModel.copyText(cbManager, viewModel.url)
@@ -181,18 +161,6 @@ fun ArticleDetailScreen(
                                     Icon(
                                         painterResource(id = R.drawable.ic_public),
                                         contentDescription = ""
-                                    )
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(text = "缓存到本地") },
-                                onClick = {
-                                    Toast.makeText(context, "已缓存", Toast.LENGTH_SHORT).show()
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        painterResource(id = R.drawable.ic_download),
-                                        contentDescription = "缓存"
                                     )
                                 }
                             )
