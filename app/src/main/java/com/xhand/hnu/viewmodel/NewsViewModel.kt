@@ -41,9 +41,7 @@ class NewsViewModel : ViewModel() {
     )
 
     var pictures = mutableListOf(
-        "https://www.htu.edu.cn/_upload/article/images/8e/e2/89a1dd094963be08db2bbb450694/9d8d9587-47d0-4814-a45c-bd96e47005a2.jpg",
-        "https://www.htu.edu.cn/_upload/article/images/56/ef/85603b3c481bb825b8d5b24f1646/333551c3-feda-467d-a215-6ed432b58642.jpg",
-        "https://www.htu.edu.cn/_upload/article/images/84/26/4789d0ed4eafb883b79c551a5c02/26a68d01-a3bd-41e1-97f4-9051f8a0b29c.jpg"
+        "https://www.htu.edu.cn/_upload/article/images/8e/e2/89a1dd094963be08db2bbb450694/9d8d9587-47d0-4814-a45c-bd96e47005a2.jpg"
     )
 
     // 网络请求

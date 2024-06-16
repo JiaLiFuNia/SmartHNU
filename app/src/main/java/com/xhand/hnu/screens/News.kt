@@ -3,6 +3,7 @@ package com.xhand.hnu.screens
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -28,12 +30,14 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
@@ -72,6 +76,7 @@ import com.xhand.hnu.components.ModalBottomSheet
 import com.xhand.hnu.viewmodel.LocalNewsViewModel
 import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
@@ -263,6 +268,15 @@ fun NewsScreen(
             }
         }
         val pagerState = rememberPagerState(pageCount = { pictures.size })
+        LaunchedEffect(Unit) {
+            val delayTimeMillis = 3000L
+            while (true) {
+                delay(delayTimeMillis)
+                with(pagerState) {
+                    animateScrollToPage((currentPage + 1) % pageCount)
+                }
+            }
+        }
         Box(
             modifier = Modifier
                 .pullRefresh(pullRefreshState)
@@ -272,21 +286,6 @@ fun NewsScreen(
                     .padding(paddingValues = it)
                     .verticalScroll(scrollState)
             ) {
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                ) { index ->
-                    AsyncImage(
-                        model = pictures[index],
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(16 / 9f),
-                        contentScale = ContentScale.Crop
-                    )
-                }
                 if (newsViewModel.newsIsLoading) {
                     Box(
                         modifier = Modifier
@@ -298,6 +297,36 @@ fun NewsScreen(
                     }
                 } else {
                     if (!isShowSearchBar) {
+                        HorizontalPager(
+                            state = pagerState,
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                        ) { index ->
+                            Box {
+                                AsyncImage(
+                                    model = pictures[index],
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(16 / 9f),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Card(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .padding(5.dp)
+                                        .height(25.dp)
+                                        .width(50.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center,modifier = Modifier.fillMaxSize()) {
+                                        Text(
+                                            text = "${index + 1}/${pictures.size}"
+                                        )
+                                    }
+                                }
+                            }
+                        }
                         newsViewModel.list.forEach { article ->
                             if (article.type == selectedOption) {
                                 ArticleListItem(

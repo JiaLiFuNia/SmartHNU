@@ -328,7 +328,14 @@ fun PersonScreen(
                             .padding(start = 10.dp, top = 8.dp)
                     ) {
                         schedule.forEach { schedule ->
-                            CardCourseList(schedule = schedule)
+                            CardCourseList(schedule = schedule, onClick = {
+                                if (userInfo == null) {
+                                    Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    checkboxes[0].route?.let { navController.navigate(it) }
+                                }
+                            }
+                            )
                             Spacer(modifier = Modifier.height(10.dp))
                         }
                     } else {

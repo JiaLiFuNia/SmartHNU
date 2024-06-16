@@ -15,17 +15,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.xhand.hnu.model.entity.KbList
 import com.xhand.hnu.screens.isCurrentTimeBetween
 
 @Composable
-fun CardCourseList(schedule: KbList) {
+fun CardCourseList(schedule: KbList, onClick: () -> Unit) {
     Card(
-        onClick = { },
+        onClick = onClick,
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(5.dp)
         ) {
             Card(
                 modifier = Modifier
@@ -78,4 +81,19 @@ fun CardCourseList(schedule: KbList) {
             }
         }
     }
+}
+
+
+@Preview
+@Composable
+fun Ppppppp() {
+    val s = KbList(
+        khfsmc = "考试",
+        qssj = "08:00",
+        jssj = "09:40",
+        kcmc = "计算机网络的法国红酒看来时代法国",
+        teaxms = "张三",
+        jxcdmc = "实验楼"
+    )
+    CardCourseList(schedule = s, onClick = { })
 }
