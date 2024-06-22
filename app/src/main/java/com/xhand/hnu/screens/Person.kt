@@ -23,6 +23,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -30,6 +33,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
@@ -68,6 +73,7 @@ import com.xhand.hnu.components.showLoginDialog
 import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.PersonViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
+import kotlinx.coroutines.delay
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -101,7 +107,8 @@ fun NavigationPersonScreen(viewModel: SettingsViewModel, personViewModel: Person
             slideOutOfContainer(
                 AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(500)
             )
-        }) {
+        }
+    ) {
         composable("person_screen") {
             PersonScreen(
                 navController = navController,
@@ -120,24 +127,36 @@ fun NavigationPersonScreen(viewModel: SettingsViewModel, personViewModel: Person
             ScheduleScreen(onBack = { navController.popBackStack() })
         }
         composable("message_screen") {
-            MessageScreen(onBack = { navController.popBackStack() })
+            MessageScreen(onBack = { navController.popBackStack() }, viewModel = viewModel)
         }
         composable("classroom_screen") {
-            MessageScreen(onBack = { navController.popBackStack() })
+            ClassroomScreen(
+                onBack = { navController.popBackStack() },
+                viewModel = viewModel
+            )
         }
         composable("search_screen") {
-            MessageScreen(onBack = { navController.popBackStack() })
+            SearchCourseScreen(
+                onBack = { navController.popBackStack() },
+                viewModel = SettingsViewModel()
+            )
         }
         composable("task_screen") {
-            MessageScreen(onBack = { navController.popBackStack() })
+            CourseTaskScreen(
+                onBack = { navController.popBackStack() },
+                viewModel = SettingsViewModel()
+            )
         }
         composable("plan_screen") {
-            MessageScreen(onBack = { navController.popBackStack() })
+            StudyPlanScreen(
+                onBack = { navController.popBackStack() },
+                viewModel = SettingsViewModel()
+            )
         }
         composable("teacher_screen") {
             TeacherScreen(
                 onBack = { navController.popBackStack() },
-                viewModel = SettingsViewModel()
+                viewModel = viewModel
             )
         }
     }
@@ -160,46 +179,77 @@ fun PersonScreen(
     val userInfo = viewModel.userInfo
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val schedule = viewModel.todaySchedule
+    val hasMessage = viewModel.hasMessage
     LaunchedEffect(Unit) {
         if (viewModel.isLoginSuccess) {
             viewModel.todaySchedule()
+            viewModel.messageService()
+            // viewModel.holidayService()
+            if (hasMessage.size != 0)
+                Toast.makeText(context, "您有${hasMessage.size}条未读消息", Toast.LENGTH_SHORT)
+                    .show()
         }
     }
-    Scaffold(modifier = Modifier
-        .fillMaxSize()
-        .nestedScroll(scrollBehavior.nestedScrollConnection),
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            MediumTopAppBar(colors = TopAppBarDefaults.mediumTopAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-                    .compositeOver(
-                        MaterialTheme.colorScheme.surface.copy()
-                    )
-            ), title = {
-                if (scrollBehavior.state.heightOffset < 0f) {
-                    Text(
-                        text = if (viewModel.isLoginSuccess) {
-                            "欢迎！${userInfo?.name}"
-                        } else {
-                            "欢迎！"
+            MediumTopAppBar(
+                colors = TopAppBarDefaults.mediumTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                        .compositeOver(
+                            MaterialTheme.colorScheme.surface.copy()
+                        )
+                ),
+                title = {
+                    if (scrollBehavior.state.heightOffset < 0f) {
+                        Text(
+                            text = if (viewModel.isLoginSuccess) {
+                                "欢迎！${userInfo?.name}"
+                            } else {
+                                "欢迎！"
+                            }
+                        )
+                    } else {
+                        Text(text = "欢迎！")
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            if (viewModel.hasMessage.size == 0)
+                                Toast.makeText(context, "没有消息", Toast.LENGTH_SHORT).show()
+                            else
+                                navController.navigate("message_screen")
                         }
-                    )
-                } else {
-                    Text(text = "欢迎！")
-                }
-            }, actions = {
-                IconButton(onClick = { navController.navigate("message_screen") }) {
-                    Icon(imageVector = Icons.Default.Email, contentDescription = "消息")
-                }
-                IconButton(onClick = {
-                    showModalBottomSheetEdit.value = !showModalBottomSheetEdit.value
-                    text = "编辑"
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.Edit, contentDescription = "编辑"
-                    )
-                }
-
-            }, scrollBehavior = scrollBehavior
+                    ) {
+                        BadgedBox(
+                            badge = {
+                                if (viewModel.hasMessage.size != 0) {
+                                    Badge {
+                                        Text(text = "${viewModel.hasMessage.size}")
+                                    }
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = if (hasMessage.size > 0) Icons.Default.Email else Icons.Outlined.Email,
+                                contentDescription = "消息"
+                            )
+                        }
+                    }
+                    IconButton(
+                        onClick = {
+                            showModalBottomSheetEdit.value = !showModalBottomSheetEdit.value
+                            text = "编辑"
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit, contentDescription = "编辑"
+                        )
+                    }
+                }, scrollBehavior = scrollBehavior
             )
         }) { values ->
         Column(
@@ -211,17 +261,48 @@ fun PersonScreen(
         ) {
             Spacer(modifier = Modifier.height(15.dp))
             Card(
-                elevation = CardDefaults.cardElevation(4.dp), onClick = {
+                elevation = CardDefaults.cardElevation(4.dp),
+                onClick = {
                     if (userInfo == null) {
                         Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
                         viewModel.isShowDialog = true
                     } else {
                         text = userInfo.name
-
                     }
-                }, colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
+                },
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
             ) {
-                Row(
+                ListItem(
+                    leadingContent = {
+                        Image(
+                            painter = painterResource(id = ic_ids[9]),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(75.dp)
+                                .clip(CircleShape)
+                        )
+                    },
+                    headlineContent = {
+                        Text(
+                            text = userInfo?.name ?: "未登录",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    supportingContent = {
+                        if (viewModel.isLoginSuccess)
+                            Text(
+                                text = "${userInfo?.studentID}\n${userInfo?.academy}",
+                                fontSize = 15.sp,
+                                color = Color.Gray
+                            )
+                    },
+                    colors = ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                )
+                /*Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -261,7 +342,7 @@ fun PersonScreen(
                             Text(text = "未登录", fontSize = 25.sp)
                         }
                     }
-                }
+                }*/
             }
             Spacer(modifier = Modifier.height(14.dp))
             PersonCardItem(
@@ -293,7 +374,7 @@ fun PersonScreen(
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         } else {
-                                            navController.navigate("teacher_screen")
+                                            navController.navigate(functionCard.route)
                                         }
                                     }
                                 )
@@ -325,7 +406,7 @@ fun PersonScreen(
                     if (schedule.size != 0) Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(start = 10.dp, top = 8.dp)
+                            .padding(start = 10.dp, top = 8.dp, end = 10.dp)
                     ) {
                         schedule.forEach { schedule ->
                             CardCourseList(schedule = schedule, onClick = {

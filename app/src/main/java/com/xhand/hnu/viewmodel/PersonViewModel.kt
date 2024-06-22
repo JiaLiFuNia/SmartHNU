@@ -20,7 +20,7 @@ data class ToggleableInfo(
 data class FunctionCard(
     var title: String,
     val painterResource: Int,
-    val route: String?
+    val route: String
 )
 class PersonViewModel : ViewModel() {
     var hasMessage by mutableStateOf(true)

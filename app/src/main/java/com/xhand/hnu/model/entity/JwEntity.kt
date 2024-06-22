@@ -219,5 +219,38 @@ data class AllPjxxList(
     val dgksdm: String,
     val teaxm: String,
     val kcmc: String,
+    val wjkkp: Boolean
 )
 
+data class MessagePost(
+    val pageNum: Int,
+    val pageSize: Int
+)
+
+data class MessageEntity(
+    val msg: String,
+    val code: Int,
+    val data: List<MessageDetail>
+)
+
+data class MessageDetail(
+    val feedback: String,
+    val oprtime: String,
+    val subject: String,
+    val type: String,
+    val status: String,
+)
+
+data class BuildingEntiy(
+    val msg: String,
+    val jxllist: List<Jxllist>,
+    val code: Int,
+)
+
+data class Jxllist(
+    val jzwbh: String,
+    val jzwmc: String,
+    val szxqdm: String,
+    val xqmc: String,
+    val jzwdm: String,
+)

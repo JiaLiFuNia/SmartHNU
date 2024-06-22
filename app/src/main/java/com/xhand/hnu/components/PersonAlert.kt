@@ -79,9 +79,7 @@ fun ShowAlert(
                     }
                 }
         },
-        onDismissRequest = {
-            viewModel.showPersonAlert = false
-        },
+        onDismissRequest = {  },
         confirmButton = {
             TextButton(
                 onClick = {

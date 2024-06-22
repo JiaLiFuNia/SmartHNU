@@ -6,28 +6,38 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.patrykandpatrick.vico.compose.axis.vertical.rememberEndAxis
 import com.xhand.hnu.R
 import com.xhand.hnu.components.RSAEncryptionHelper
 import com.xhand.hnu.model.entity.AllPjxxList
+import com.xhand.hnu.model.entity.BuildingEntiy
 import com.xhand.hnu.model.entity.GradeDetailPost
 import com.xhand.hnu.model.entity.GradeInfo
 import com.xhand.hnu.model.entity.GradePost
+import com.xhand.hnu.model.entity.HolidayEntity
+import com.xhand.hnu.model.entity.Jxllist
 import com.xhand.hnu.model.entity.KbList
 import com.xhand.hnu.model.entity.KccjList
 import com.xhand.hnu.model.entity.LoginPostEntity
+import com.xhand.hnu.model.entity.MessageDetail
+import com.xhand.hnu.model.entity.MessagePost
 import com.xhand.hnu.model.entity.SchedulePost
+import com.xhand.hnu.model.entity.Type
 import com.xhand.hnu.model.entity.Update
 import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.model.entity.Xscj
 import com.xhand.hnu.model.entity.teacherPost
 import com.xhand.hnu.network.GradeService
+import com.xhand.hnu.network.HolidayService
 import com.xhand.hnu.network.LoginService
 import com.xhand.hnu.network.NewsDetailService
 import com.xhand.hnu.network.ScheduleService
@@ -98,6 +108,9 @@ class SettingsViewModel : ViewModel() {
     // 展示登录框
     var showPersonAlert by mutableStateOf(false)
 
+    // 展示信息详情
+    var showMessageDetail by mutableStateOf(false)
+
     // TextFiled
     var username by mutableStateOf("")
     var password by mutableStateOf("")
@@ -127,6 +140,11 @@ class SettingsViewModel : ViewModel() {
     var isGettingGrade by mutableStateOf(true)
     var isGettingCourse by mutableStateOf(true)
 
+    // 是否有消息
+    var hasMessage = mutableListOf<MessageDetail>()
+    var bulidingsData = mutableListOf<Jxllist>()
+    // var holidayData = mutableStateOf(HolidayEntity(-1, Type(0, "", 0), ""))
+
     // 成绩列表
     var gradeList = mutableListOf<KccjList>()
     var teacherList = mutableListOf<AllPjxxList>()
@@ -134,6 +152,7 @@ class SettingsViewModel : ViewModel() {
     // 成绩列表——临时
     private var gradeListTemp = mutableListOf<KccjList>()
     private var teacherListTemp = mutableListOf<AllPjxxList>()
+
     // 是否正在刷新
     var isRefreshing by mutableStateOf(false)
         private set
@@ -173,6 +192,7 @@ class SettingsViewModel : ViewModel() {
     private val updateService = UpdateService.instance()
     private val detailService = NewsDetailService.instance()
     private val todayScheduleService = ScheduleService.instance()
+    // private val holidayService = HolidayService.instance()
 
     // 登录请求
     suspend fun login() {
@@ -276,7 +296,7 @@ class SettingsViewModel : ViewModel() {
     // 教师评价
     suspend fun teacherService() {
         val res =
-            userInfo?.let { gradeService.teacherDetails(teacherPost("202301"), token = it.token) }
+            userInfo?.let { gradeService.teacherDetails(teacherPost("202302"), token = it.token) }
         if (res != null) {
             teacherListTemp = res.allPjxxList.toMutableList()
         }
@@ -293,6 +313,47 @@ class SettingsViewModel : ViewModel() {
             ""
         }
     }
+
+    suspend fun messageService() {
+        try {
+            val res = userInfo?.let {
+                gradeService.messageDetails(
+                    MessagePost(1, 1000000),
+                    token = it.token
+                )
+            }
+            if (res != null) {
+                Log.i("TAG667", "$res")
+                if (res.code == 200) {
+                    hasMessage = res.data.toMutableList()
+                }
+            }
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
+        }
+    }
+
+    suspend fun buildingService() {
+        try {
+            val res = userInfo?.let { gradeService.buildingData(token = it.token) }
+            if (res != null) {
+                Log.i("TAG667", "$res")
+                if (res.code == 200)
+                    bulidingsData = res.jxllist.toMutableList()
+            }
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
+        }
+    }
+
+    /*suspend fun holidayService() {
+        try {
+            val res = holidayService.holiday()
+            Log.i("TAG667", "$res")
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
+        }
+    }*/
 
     // 软件更新请求
     suspend fun updateRes(currentVersion: String) {
