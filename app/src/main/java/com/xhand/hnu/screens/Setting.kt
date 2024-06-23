@@ -28,8 +28,8 @@ import com.xhand.hnu.components.BasicListItem
 import com.xhand.hnu.components.DropdownListItem
 import com.xhand.hnu.components.SelectionItem
 import com.xhand.hnu.components.SwitchListItem
-import com.xhand.hnu.components.showAlert
-import com.xhand.hnu.components.showLoginDialog
+import com.xhand.hnu.components.ShowAlert
+import com.xhand.hnu.components.ShowLoginDialog
 import com.xhand.hnu.model.entity.DarkMode
 import com.xhand.hnu.viewmodel.SettingsViewModel
 
@@ -122,7 +122,7 @@ fun SettingScreen(viewModel: SettingsViewModel) {
             BasicListItem(leadingText = stringResource(R.string.about))
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.0.6.22",
+                supportingText = "Copyright 2023-2024 Xhand v2.0.6.23",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = {
                     Intent(Intent.ACTION_VIEW).also {
@@ -170,10 +170,10 @@ fun SettingScreen(viewModel: SettingsViewModel) {
             )
         }
         if (viewModel.isShowAlert) {
-            showAlert(viewModel = viewModel, text = "确定要退出登录吗？")
+            ShowAlert(viewModel = viewModel, text = "确定要退出登录吗？")
         }
         if (viewModel.isShowDialog) {
-            showLoginDialog(viewModel)
+            ShowLoginDialog(viewModel)
         }
     }
 }

@@ -8,7 +8,7 @@ import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.viewmodel.SettingsViewModel
 
 @Composable
-fun showAlert(
+fun ShowAlert(
     viewModel: SettingsViewModel,
     text: String
 ) {
@@ -20,17 +20,20 @@ fun showAlert(
             TextButton(
                 onClick = {
                     viewModel.isShowAlert = false
-                }
-            ) {
-                Text("取消")
-            }
-            TextButton(
-                onClick = {
-                    viewModel.isShowAlert = false
-                    viewModel.userInfo = UserInfoEntity("","","","")
+                    viewModel.userInfo = null
+                    viewModel.loginCode = 0
                 }
             ) {
                 Text("确认")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    viewModel.isShowAlert = false
+                }
+            ) {
+                Text("取消")
             }
         }
     )

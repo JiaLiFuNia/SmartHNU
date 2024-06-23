@@ -79,8 +79,21 @@ fun ClassroomScreen(
                 .padding(paddingValues = it)
                 .verticalScroll(scrollState)
         ) {
-            buildingsList.forEach { building ->
-                ClassroomListItem(building = building, modifier = Modifier.clickable {  })
+            val buildingsSave = listOf(
+                "启智楼",
+                "新五五四楼",
+                "新联楼",
+                "求是中楼（东区B楼）",
+                "求是中楼（东区A楼）",
+                "求是东楼",
+                "文渊楼",
+                "综合实训楼",
+                "文昌楼（东综）"
+            )
+            val buildings = buildingsList.filter { it.jzwmc in buildingsSave }
+            Log.i("TAG654",buildings.toString())
+            buildings.forEach { building ->
+                ClassroomListItem(building = building, modifier = Modifier.clickable { })
             }
         }
     }

@@ -1,5 +1,8 @@
 package com.xhand.hnu.components
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,9 +18,11 @@ fun ClassroomListItem(
     ListItem(
         headlineContent = {
             Text(
-                text = building.jzwmc,
-                fontWeight = FontWeight.Bold
+                text = building.jzwmc
             )
+        },
+        trailingContent = {
+            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
         },
         modifier = modifier
     )

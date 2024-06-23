@@ -7,13 +7,16 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -120,14 +123,26 @@ fun ArticleDetailScreen(
                             val ifStar = remember { mutableStateOf(false) }
                             val ifStarText = remember { mutableStateOf("收藏") }
                             DropdownMenuItem(
-                                text = { if (!showHtml) Text(text = "查看原网页") else Text(text = "新闻内容提取") },
+                                text = { Text(text = "刷新页面") },
+                                onClick = {
+                                    webView.reload()
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.Refresh,
+                                        contentDescription = "刷新"
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { if (!showHtml) Text(text = "查看原网页") else Text(text = "内容提取") },
                                 onClick = {
                                     showHtml = !showHtml
                                 },
                                 leadingIcon = {
                                     Icon(
                                         painterResource(id = R.drawable.ic_baseline_library_books_24),
-                                        contentDescription = ""
+                                        contentDescription = "切换"
                                     )
                                 }
                             )
@@ -140,7 +155,7 @@ fun ArticleDetailScreen(
                                 leadingIcon = {
                                     Icon(
                                         painterResource(id = R.drawable.ic_baseline_content_copy_24),
-                                        contentDescription = ""
+                                        contentDescription = "复制"
                                     )
                                 }
                             )
@@ -160,7 +175,7 @@ fun ArticleDetailScreen(
                                 leadingIcon = {
                                     Icon(
                                         painterResource(id = R.drawable.ic_public),
-                                        contentDescription = ""
+                                        contentDescription = "外部"
                                     )
                                 }
                             )
@@ -209,13 +224,18 @@ fun ArticleDetailScreen(
         </body>
         </html>
     """
-            LazyColumn(
-                Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues = it)
-            ) {
-                item {
-                    if (!showHtml) {
+            if (viewModel.isDetailLoad)
+                Box(modifier = Modifier.fillMaxSize()) {
+                    CircularProgressIndicator()
+                }
+            else
+                LazyColumn(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues = it)
+                ) {
+                    item {
+                        if (!showHtml) {
                             Text(
                                 text = title,
                                 fontSize = 25.sp,
@@ -223,26 +243,26 @@ fun ArticleDetailScreen(
                                 lineHeight = 35.sp,
                                 modifier = Modifier.padding(10.dp)
                             )
-                        // HorizontalDivider(modifier = Modifier.padding(10.dp))
-                    }
-                }
-                item {
-                    if (!showHtml) {
-                        AndroidView(
-                            factory = { context ->
-                                WebView(context)
-                            },
-                            modifier = Modifier.padding(5.dp)
-                        ) { view ->
-                            view.loadDataWithBaseURL(
-                                "", "$htmlHeader$content$htmlFooter", null, "utf-8", null
-                            )
+                            // HorizontalDivider(modifier = Modifier.padding(10.dp))
                         }
-                    } else {
-                        AndroidView(factory = { webView })
+                    }
+                    item {
+                        if (!showHtml) {
+                            AndroidView(
+                                factory = { context ->
+                                    WebView(context)
+                                },
+                                modifier = Modifier.padding(5.dp)
+                            ) { view ->
+                                view.loadDataWithBaseURL(
+                                    "", "$htmlHeader$content$htmlFooter", null, "utf-8", null
+                                )
+                            }
+                        } else {
+                            AndroidView(factory = { webView })
+                        }
                     }
                 }
-            }
         }
     }
 }

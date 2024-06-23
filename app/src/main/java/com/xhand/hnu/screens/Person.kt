@@ -69,11 +69,10 @@ import com.xhand.hnu.components.Chart.GPAChangeLineChart
 import com.xhand.hnu.components.ModalBottomSheet
 import com.xhand.hnu.components.PersonCardItem
 import com.xhand.hnu.components.PersonFunctionCardItem
-import com.xhand.hnu.components.showLoginDialog
+import com.xhand.hnu.components.ShowLoginDialog
 import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.PersonViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
-import kotlinx.coroutines.delay
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -393,11 +392,11 @@ fun PersonScreen(
             PersonCardItem(
                 isChecked = checkboxes[0].isChecked,
                 onclick = {
-                    if (userInfo == null) {
+                    /*if (userInfo == null) {
                         Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
-                    } else {
+                    } else {*/
                         checkboxes[0].route?.let { navController.navigate(it) }
-                    }
+                   //  }
                 },
                 text = checkboxes[0].text,
                 rightText = "${month}月${dayOfMonth}日 $dayOfWeek",
@@ -474,7 +473,7 @@ fun PersonScreen(
         }
     }
     if (viewModel.isShowDialog) {
-        showLoginDialog(viewModel)
+        ShowLoginDialog(viewModel)
     }
     ModalBottomSheet(showModalBottomSheet, text) {
         Row(

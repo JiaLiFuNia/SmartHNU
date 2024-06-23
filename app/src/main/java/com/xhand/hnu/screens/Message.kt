@@ -27,6 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
+import com.xhand.hnu.R
 import com.xhand.hnu.components.MessageDetailDialog
 import com.xhand.hnu.components.MessageListItem
 import com.xhand.hnu.components.TeacherListItem
@@ -71,6 +73,17 @@ fun MessageScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "返回"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                        }
+                    ) {
+                        Icon(
+                            painterResource(id = R.drawable.baseline_checklist_rtl_24),
+                            contentDescription = null
                         )
                     }
                 }

@@ -131,12 +131,12 @@ class SettingsViewModel : ViewModel() {
     // 是否登录成功
     val isLoginSuccess: Boolean
         get() {
-            return userInfo != null
+            return loginCode == 200
         }
 
     // 是否正在登录
     var loginCircle by mutableStateOf(false)
-    var isLogging by mutableStateOf(false)
+    var loginCode by mutableIntStateOf(0)
     var isGettingGrade by mutableStateOf(true)
     var isGettingCourse by mutableStateOf(true)
 
@@ -158,7 +158,7 @@ class SettingsViewModel : ViewModel() {
         private set
 
     // 网页源码请求
-    var htmlParsing: String = ""
+    var htmlParsing by mutableStateOf("")
 
     // 学号 年级
     private val grade: String
@@ -205,8 +205,8 @@ class SettingsViewModel : ViewModel() {
             appid = null
         )
         try {
-            val res = loginService.loginPost(loginPost)
             loginCircle = true
+            val res = loginService.loginPost(loginPost)
             delay(1200)
             userInfo = if (res.code.toInt() == 200) {
                 UserInfoEntity(
@@ -219,7 +219,7 @@ class SettingsViewModel : ViewModel() {
                 null
             }
             loginCircle = false
-            isLogging = true
+            loginCode = res.code.toInt()
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
         }
@@ -304,6 +304,7 @@ class SettingsViewModel : ViewModel() {
         Log.i("TAG6654", "$teacherList")
     }
 
+    var isDetailLoad by mutableStateOf(true)
     // 新闻页面详情请求
     suspend fun detailService() {
         htmlParsing = try {
@@ -312,6 +313,7 @@ class SettingsViewModel : ViewModel() {
         } catch (e: Exception) {
             ""
         }
+        isDetailLoad = false
     }
 
     suspend fun messageService() {
