@@ -1,6 +1,8 @@
 package com.xhand.hnu.network
 
 import com.xhand.hnu.model.entity.BuildingEntiy
+import com.xhand.hnu.model.entity.ClassroomEntity
+import com.xhand.hnu.model.entity.ClassroomPost
 import com.xhand.hnu.model.entity.GradeDetailEntity
 import com.xhand.hnu.model.entity.GradeDetailPost
 import com.xhand.hnu.model.entity.GradeDetailsEntity
@@ -50,6 +52,12 @@ interface GradeService {
     suspend fun buildingData(
         @Header("Token") token: String
     ): BuildingEntiy
+
+    @POST("dev-api/appapi/appkxjs/classroom")
+    suspend fun classroomData(
+        @Body body: ClassroomPost,
+        @Header("Token") token: String
+    ): ClassroomEntity
 
     companion object {
         fun instance(): GradeService {

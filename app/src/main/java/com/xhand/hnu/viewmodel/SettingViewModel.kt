@@ -20,10 +20,13 @@ import com.xhand.hnu.R
 import com.xhand.hnu.components.RSAEncryptionHelper
 import com.xhand.hnu.model.entity.AllPjxxList
 import com.xhand.hnu.model.entity.BuildingEntiy
+import com.xhand.hnu.model.entity.ClassroomPost
 import com.xhand.hnu.model.entity.GradeDetailPost
 import com.xhand.hnu.model.entity.GradeInfo
 import com.xhand.hnu.model.entity.GradePost
 import com.xhand.hnu.model.entity.HolidayEntity
+import com.xhand.hnu.model.entity.Jszylist
+import com.xhand.hnu.model.entity.JxcdxxList
 import com.xhand.hnu.model.entity.Jxllist
 import com.xhand.hnu.model.entity.KbList
 import com.xhand.hnu.model.entity.KccjList
@@ -44,6 +47,8 @@ import com.xhand.hnu.network.ScheduleService
 import com.xhand.hnu.network.UpdateService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 
 class SettingsViewModel : ViewModel() {
@@ -305,6 +310,7 @@ class SettingsViewModel : ViewModel() {
     }
 
     var isDetailLoad by mutableStateOf(true)
+
     // 新闻页面详情请求
     suspend fun detailService() {
         htmlParsing = try {
@@ -348,6 +354,50 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    var haveClassRoom = mutableListOf<Jszylist>()
+    var allClassRoom = mutableListOf<JxcdxxList>()
+    var isGettingRoom by mutableStateOf(true)
+    private val currentDate = getCurrentDate()
+    val buildingsSave = listOf(
+        ClassroomPost("104", "启智楼", currentDate),
+        ClassroomPost("107", "新五五四楼", currentDate),
+        ClassroomPost("119", "新联楼", currentDate),
+        ClassroomPost("301", "求是中楼（东区B楼）", currentDate),
+        ClassroomPost("302", "求是西楼（东区A楼）", currentDate),
+        ClassroomPost("307", "求是东楼", currentDate),
+        ClassroomPost("102", "文渊楼", currentDate),
+        ClassroomPost("312", "综合实训楼", currentDate),
+        ClassroomPost("310", "文昌楼（东综）", currentDate)
+    )
+
+    suspend fun classroomService() {
+        haveClassRoom.clear()
+        allClassRoom.clear()
+        try {
+            for (i in buildingsSave) {
+                val res = userInfo?.let {
+                    gradeService.classroomData(i, token = it.token)
+                }
+                if (res != null) {
+                    Log.i("TAG667", "$res")
+                    if (res.code == 200) {
+                        haveClassRoom.addAll(res.jszylist)
+                        allClassRoom.addAll(res.jxcdxxList)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.i("TAG667", "$e")
+        }
+        isGettingRoom = false
+    }
+
+    private fun getCurrentDate(): String {
+        val currentDate = LocalDate.now()
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val formattedDate = currentDate.format(formatter)
+        return formattedDate
+    }
     /*suspend fun holidayService() {
         try {
             val res = holidayService.holiday()

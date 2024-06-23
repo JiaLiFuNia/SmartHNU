@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -25,14 +27,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.tooling.preview.Preview
 import com.xhand.hnu.components.ClassroomListItem
 import com.xhand.hnu.components.MessageDetailDialog
 import com.xhand.hnu.components.MessageListItem
 import com.xhand.hnu.components.TeacherListItem
+import com.xhand.hnu.model.entity.ClassroomPost
 import com.xhand.hnu.viewmodel.SettingsViewModel
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,9 +50,12 @@ fun ClassroomScreen(
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
-    val buildingsList = viewModel.bulidingsData
+    val haveClassroom = viewModel.haveClassRoom
+    val allClassroom = viewModel.allClassRoom
+    val buildingsSave = viewModel.buildingsSave
     LaunchedEffect(Unit) {
-        viewModel.buildingService()
+        // viewModel.buildingService()
+        viewModel.classroomService()
     }
     Scaffold(
         modifier = Modifier
@@ -74,27 +84,32 @@ fun ClassroomScreen(
             )
         }
     ) {
-        Column(
-            modifier = Modifier
-                .padding(paddingValues = it)
-                .verticalScroll(scrollState)
-        ) {
-            val buildingsSave = listOf(
-                "启智楼",
-                "新五五四楼",
-                "新联楼",
-                "求是中楼（东区B楼）",
-                "求是中楼（东区A楼）",
-                "求是东楼",
-                "文渊楼",
-                "综合实训楼",
-                "文昌楼（东综）"
-            )
-            val buildings = buildingsList.filter { it.jzwmc in buildingsSave }
-            Log.i("TAG654",buildings.toString())
-            buildings.forEach { building ->
-                ClassroomListItem(building = building, modifier = Modifier.clickable { })
+        if (viewModel.isGettingRoom)
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
             }
-        }
+        else
+            Column(
+                modifier = Modifier
+                    .padding(paddingValues = it)
+                    .verticalScroll(scrollState)
+            ) {
+                // val buildings = buildingsList.filter { it.jzwmc in buildingsSave }
+                Log.i("TAG654", buildingsSave.toString())
+                Log.i("TAG654", haveClassroom.size.toString())
+                Log.i("TAG654", allClassroom.size.toString())
+                buildingsSave.forEach { building ->
+                    ClassroomListItem(building = building, modifier = Modifier.clickable { })
+                }
+            }
     }
+}
+
+@Preview
+@Composable
+fun pp() {
+    ClassroomScreen(onBack = { }, viewModel = SettingsViewModel())
 }

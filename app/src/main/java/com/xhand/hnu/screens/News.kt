@@ -277,25 +277,24 @@ fun NewsScreen(
                 }
             }
         }
-        Box(
-            modifier = Modifier
-                .pullRefresh(pullRefreshState)
-        ) {
-            Column(
+        if (newsViewModel.newsIsLoading) {
+            Box(
                 modifier = Modifier
-                    .padding(paddingValues = it)
-                    .verticalScroll(scrollState)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                if (newsViewModel.newsIsLoading) {
-                    Box(
-                        modifier = Modifier
-                            .height(500.dp)
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                } else {
+                CircularProgressIndicator()
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .pullRefresh(pullRefreshState)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(paddingValues = it)
+                        .verticalScroll(scrollState)
+                ) {
                     if (!isShowSearchBar) {
                         HorizontalPager(
                             state = pagerState,
@@ -319,7 +318,10 @@ fun NewsScreen(
                                         .height(25.dp)
                                         .width(50.dp)
                                 ) {
-                                    Box(contentAlignment = Alignment.Center,modifier = Modifier.fillMaxSize()) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
                                         Text(
                                             text = "${index + 1}/${pictures.size}"
                                         )
@@ -363,15 +365,13 @@ fun NewsScreen(
                         }
                     }
                 }
+                PullRefreshIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    refreshing = newsViewModel.isRefreshing,
+                    state = pullRefreshState
+                )
             }
-            PullRefreshIndicator(
-                modifier = Modifier.align(Alignment.TopCenter),
-                refreshing = newsViewModel.isRefreshing,
-                state = pullRefreshState
-            )
         }
-
-
     }
     ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "选择新闻源") {
         Column(
