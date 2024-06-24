@@ -22,10 +22,10 @@
 
 包括上课任务、学习计划、教学评价、教室查询、课程查询等
 
-## 5.界面预览
+## 界面预览
 
 !["Screen"](/img/Screenshot.png)
 
-## 6.下载链接
+## 下载链接
 
 [师韵：GitHub](https://raw.githubusercontent.com/JiaLiFuNia/SmartHNU/master/app/release/app-release.apk)
