@@ -28,5 +28,7 @@
 
 ## 下载链接
 
-师韵：[GitHub](https://raw.githubusercontent.com/JiaLiFuNia/SmartHNU/master/app/release/app-release.apk)
+师韵：
+[GitHub](https://raw.githubusercontent.com/JiaLiFuNia/SmartHNU/master/app/release/app-release.apk)
+
 [123云盘](https://www.123pan.com/s/uyHuVv-dTdjH.html)
