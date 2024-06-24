@@ -142,8 +142,10 @@ class SettingsViewModel : ViewModel() {
     // 是否正在登录
     var loginCircle by mutableStateOf(false)
     var loginCode by mutableIntStateOf(0)
-    var isGettingGrade by mutableStateOf(true)
+
+    var isGettingDetailGrade by mutableStateOf(true)
     var isGettingCourse by mutableStateOf(true)
+    var isGettingGrade by mutableStateOf(true)
 
     // 是否有消息
     var hasMessage = mutableListOf<MessageDetail>()
@@ -232,6 +234,7 @@ class SettingsViewModel : ViewModel() {
 
     // 成绩请求
     fun gradeService() = viewModelScope.launch {
+        gradeListTemp.clear() // 下拉刷新时置空
         for (term in gradeTerm) {
             isRefreshing = true
             val res = userInfo?.let {
@@ -249,14 +252,13 @@ class SettingsViewModel : ViewModel() {
             }
             isRefreshing = false
         }
+        isGettingGrade = false
         gradeList = gradeListTemp
-        gradeListTemp = mutableListOf() // 下拉刷新时置空
     }
 
     // 成绩请求
     suspend fun gradeDetailService() {
         try {
-            isGettingGrade = true
             val res =
                 userInfo?.let { gradeService.gradeDetail(GradeDetailPost(cjdm), it.token) }
             if (res != null) {
@@ -272,11 +274,10 @@ class SettingsViewModel : ViewModel() {
                     gradeDetails = detail.xscj
                 }
             }
-            isGettingGrade = false
+            isGettingDetailGrade = false
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
         }
-
     }
 
 

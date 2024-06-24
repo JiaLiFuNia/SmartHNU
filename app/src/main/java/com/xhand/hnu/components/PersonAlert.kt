@@ -34,7 +34,7 @@ fun ShowAlert(
     AlertDialog(
         title = { Text(text = "${grade.kcmc}  [${grade.xdfsmc}]") },
         text = {
-            if (viewModel.isGettingGrade) {
+            if (viewModel.isGettingDetailGrade) {
                 Box(
                     modifier = Modifier
                         .height(100.dp)

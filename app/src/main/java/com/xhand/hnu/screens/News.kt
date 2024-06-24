@@ -65,6 +65,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -81,51 +83,48 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun NavigationScreen(viewModel: SettingsViewModel) {
+fun NavigationScreen(viewModel: SettingsViewModel, newsViewModel: NewsViewModel) {
     val navController = rememberNavController()
-    CompositionLocalProvider(LocalNewsViewModel provides NewsViewModel()) {
-        val newsViewModel = LocalNewsViewModel.current
-        NavHost(
-            navController = navController,
-            startDestination = "newsList_screen",
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            popEnterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            },
-            popExitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            }
-        ) {
-            composable("newsList_screen") {
-                NewsScreen(
-                    navController = navController,
-                    newsViewModel = newsViewModel,
-                    viewModel = viewModel
-                )
-            }
-            composable("detail_screen") {
-                ArticleDetailScreen(
-                    onBack = { navController.popBackStack() },
-                    viewModel = viewModel
-                )
-            }
+    NavHost(
+        navController = navController,
+        startDestination = "newsList_screen",
+        enterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left,
+                animationSpec = tween(500)
+            )
+        },
+        exitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Left,
+                animationSpec = tween(500)
+            )
+        },
+        popEnterTransition = {
+            slideIntoContainer(
+                AnimatedContentTransitionScope.SlideDirection.Right,
+                animationSpec = tween(500)
+            )
+        },
+        popExitTransition = {
+            slideOutOfContainer(
+                AnimatedContentTransitionScope.SlideDirection.Right,
+                animationSpec = tween(500)
+            )
+        }
+    ) {
+        composable("newsList_screen") {
+            NewsScreen(
+                navController = navController,
+                newsViewModel = newsViewModel,
+                viewModel = viewModel
+            )
+        }
+        composable("detail_screen") {
+            ArticleDetailScreen(
+                onBack = { navController.popBackStack() },
+                viewModel = viewModel
+            )
         }
     }
 }
@@ -137,7 +136,7 @@ fun NavigationScreen(viewModel: SettingsViewModel) {
 @Composable
 fun NewsScreen(
     navController: NavController,
-    newsViewModel: NewsViewModel,
+    newsViewModel: NewsViewModel = viewModel(),
     viewModel: SettingsViewModel
 ) {
     val showBottomSheet = remember {
@@ -402,10 +401,4 @@ fun NewsScreen(
             }
         }
     }
-}
-
-@Composable
-@Preview
-fun NewsScreenPreview() {
-    NavigationScreen(viewModel = SettingsViewModel())
 }

@@ -30,6 +30,7 @@ import com.xhand.hnu.screens.SettingScreen
 import com.xhand.hnu.ui.theme.MyApplicationTheme
 import com.xhand.hnu.screens.NavigationPersonScreen
 import com.xhand.hnu.viewmodel.LocalUserViewModel
+import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.PersonViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
 
@@ -130,7 +131,7 @@ class MainActivity : ComponentActivity() {
                             Box(modifier = Modifier.padding(it)) {
                                 when (selectedItemIndex) {
                                     0 -> NavigationPersonScreen(viewModel, PersonViewModel())
-                                    1 -> NavigationScreen(viewModel)
+                                    1 -> NavigationScreen(viewModel, NewsViewModel())
                                     2 -> SettingScreen(viewModel)
                                 }
                             }

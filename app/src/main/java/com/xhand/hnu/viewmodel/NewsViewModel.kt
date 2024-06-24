@@ -3,6 +3,7 @@ package com.xhand.hnu.viewmodel
 import android.util.Base64
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -40,7 +41,7 @@ class NewsViewModel : ViewModel() {
         "kwgl" to "考务管理"
     )
 
-    var pictures = mutableListOf(
+    var pictures = mutableStateListOf(
         "https://www.htu.edu.cn/_upload/article/images/8e/e2/89a1dd094963be08db2bbb450694/9d8d9587-47d0-4814-a45c-bd96e47005a2.jpg"
     )
 
@@ -102,6 +103,7 @@ class NewsViewModel : ViewModel() {
 
     // 搜索列表请求
     suspend fun searchRes() {
+        listTemp.clear()
         for (i in 1..5) {
             val searchKeys =
                 """[{"field":"pageIndex","value":1},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$content"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
@@ -124,6 +126,6 @@ class NewsViewModel : ViewModel() {
         val htmlRes = newsListService.getPicList(url = "https://www.htu.edu.cn/")
         // Log.i("TAG6656","${htmlRes.body()?.string()}")
         pictures = getPicList(str = htmlRes.body()?.string())
-        Log.i("TAG6656","$pictures")
+        Log.i("TAG6656", "$pictures")
     }
 }

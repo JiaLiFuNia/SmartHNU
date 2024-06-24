@@ -1,6 +1,8 @@
 package com.xhand.hnu.network
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import com.xhand.hnu.model.entity.ArticleListEntity
@@ -142,8 +144,8 @@ fun getNewsList4(str: String?, type: String): MutableList<ArticleListEntity> {
 }
 
 // 主页图片
-fun getPicList(str: String?): MutableList<String> {
-    val firstList = mutableListOf<String>()
+fun getPicList(str: String?): SnapshotStateList<String> {
+    val firstList = mutableStateListOf<String>()
     val document: Document = Jsoup.parse(str.toString())
     val picRule = "div#banner div.inner ul.news_list li.news div.imgs a img"
     val picElements = document.select(picRule)

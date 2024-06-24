@@ -1,5 +1,6 @@
 package com.xhand.hnu.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
@@ -59,7 +61,12 @@ fun PersonCardItem(
                     style = MaterialTheme.typography.bodyLarge
                 )
                 if (rightText != null) {
-                    Text(text = rightText, textAlign = TextAlign.Right, color = Color.Gray, modifier = Modifier.fillMaxWidth())
+                    Text(
+                        text = rightText,
+                        textAlign = TextAlign.Right,
+                        color = Color.Gray,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
             content()
@@ -73,31 +80,39 @@ fun PersonFunctionCardItem(
     painterResource: Int,
     onClick: () -> Unit
 ) {
-    Box(modifier = modifier) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+    Card(onClick = onClick, modifier = modifier) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    colorScheme.primary.copy(alpha = 0.08f)
-                        .compositeOver(colorScheme.surface.copy())
-                ),
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
-                    .height(55.dp)
-                    .width(55.dp),
-                onClick = onClick
             ) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Icon(
-                        painterResource(id = painterResource),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(35.dp)
-                    )
+                Card(
+                    colors = CardDefaults.cardColors(
+                        colorScheme.primary.copy(alpha = 0.08f)
+                            .compositeOver(colorScheme.surface.copy())
+                    ),
+                    modifier = Modifier
+                        .height(55.dp)
+                        .width(55.dp)
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painterResource(id = painterResource),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(35.dp)
+                        )
+                    }
                 }
+                Text(text = title, modifier = Modifier.padding(top = 4.dp), fontSize = 13.sp)
             }
-            Text(text = title, modifier = Modifier.padding(top = 4.dp), fontSize = 13.sp)
         }
     }
 }

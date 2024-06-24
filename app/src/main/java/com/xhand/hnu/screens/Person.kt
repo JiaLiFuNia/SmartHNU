@@ -238,7 +238,7 @@ fun PersonScreen(
                             )
                         }
                     }
-                    IconButton(
+                    /*IconButton(
                         onClick = {
                             showModalBottomSheetEdit.value = !showModalBottomSheetEdit.value
                             text = "编辑"
@@ -247,8 +247,9 @@ fun PersonScreen(
                         Icon(
                             imageVector = Icons.Default.Edit, contentDescription = "编辑"
                         )
-                    }
-                }, scrollBehavior = scrollBehavior
+                    }*/
+                },
+                scrollBehavior = scrollBehavior
             )
         }
     ) { values ->
@@ -353,7 +354,9 @@ fun PersonScreen(
                 imageVector = Icons.Default.Home,
                 content = {
                     Column(
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .padding(8.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -362,7 +365,6 @@ fun PersonScreen(
                             otherCards.forEach { functionCard ->
                                 PersonFunctionCardItem(
                                     modifier = Modifier
-                                        .padding(10.dp)
                                         .weight(0.2f),
                                     title = functionCard.title,
                                     painterResource = functionCard.painterResource,

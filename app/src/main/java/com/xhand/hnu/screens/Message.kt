@@ -57,15 +57,7 @@ fun MessageScreen(
                         )
                 ),
                 title = {
-                    BadgedBox(
-                        badge = {
-                            if (viewModel.hasMessage.size != 0) {
-                                Badge()
-                            }
-                        }
-                    ) {
-                        Text(text = "消息中心")
-                    }
+                    Text(text = "消息中心")
                 },
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {

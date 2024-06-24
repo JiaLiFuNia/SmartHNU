@@ -17,6 +17,7 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -155,31 +156,40 @@ fun GradeScreen(
         },
         floatingActionButtonPosition = FabPosition.End
     ) {
-        Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
-            Column(
-                modifier = Modifier
-                    .padding(paddingValues = it)
-                    .verticalScroll(scrollState)
-                    .pullRefresh(pullRefreshState)
+        if (viewModel.isGettingGrade)
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                viewModel.gradeList.forEach { grade ->
-                    GradeListItem(
-                        grade = grade,
-                        modifier = Modifier
-                            .clickable {
-                                showAlert = grade
-                                viewModel.showPersonAlert = true
-                                viewModel.cjdm = grade.cjdm
-                            }
-                    )
-                }
+                CircularProgressIndicator()
             }
-            PullRefreshIndicator(
-                modifier = Modifier
-                    .align(Alignment.TopCenter),
-                refreshing = viewModel.isRefreshing,
-                state = pullRefreshState
-            )
+        else {
+            Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
+                Column(
+                    modifier = Modifier
+                        .padding(paddingValues = it)
+                        .verticalScroll(scrollState)
+                        .pullRefresh(pullRefreshState)
+                ) {
+                    viewModel.gradeList.forEach { grade ->
+                        GradeListItem(
+                            grade = grade,
+                            modifier = Modifier
+                                .clickable {
+                                    showAlert = grade
+                                    viewModel.showPersonAlert = true
+                                    viewModel.cjdm = grade.cjdm
+                                }
+                        )
+                    }
+                }
+                PullRefreshIndicator(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter),
+                    refreshing = viewModel.isRefreshing,
+                    state = pullRefreshState
+                )
+            }
         }
     }
     if (viewModel.showPersonAlert) {
