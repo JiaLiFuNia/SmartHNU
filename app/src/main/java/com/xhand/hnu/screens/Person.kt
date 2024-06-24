@@ -184,9 +184,9 @@ fun PersonScreen(
             viewModel.todaySchedule()
             viewModel.messageService()
             // viewModel.holidayService()
-            if (hasMessage.size != 0)
+            /*if (hasMessage.size != 0)
                 Toast.makeText(context, "您有${hasMessage.size}条未读消息", Toast.LENGTH_SHORT)
-                    .show()
+                    .show()*/
         }
     }
     Scaffold(

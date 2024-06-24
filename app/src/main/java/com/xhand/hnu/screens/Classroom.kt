@@ -11,12 +11,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -30,13 +36,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.xhand.hnu.components.ClassroomEmptyListItem
@@ -61,6 +70,8 @@ fun ClassroomScreen(
     val haveClassroom = viewModel.haveClassRoom
     val allClassroom = viewModel.allClassRoom
     val buildingsSave = viewModel.buildingsSave
+    var showMenu by remember { mutableStateOf(false) }
+    var (checkedState, onStateChange) = remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
         // viewModel.buildingService()
         viewModel.classroomService()
@@ -88,6 +99,35 @@ fun ClassroomScreen(
                             contentDescription = "返回"
                         )
                     }
+                },
+                actions = {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(imageVector = Icons.Default.MoreVert, contentDescription = "更多")
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false },
+                        modifier = Modifier
+                            .toggleable(
+                                value = checkedState,
+                                onValueChange = { onStateChange(!checkedState) },
+                                role = Role.Checkbox
+                            )
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("仅展示空闲教室") },
+                            onClick = { onStateChange(!checkedState) },
+                            trailingIcon = {
+                                Checkbox(
+                                    checked = checkedState,
+                                    onCheckedChange = {
+                                        onStateChange(it)
+                                        Log.i("TAG6", "$checkedState")
+                                    }
+                                )
+                            }
+                        )
+                    }
                 }
             )
         }
@@ -105,20 +145,11 @@ fun ClassroomScreen(
                     false,
                     false,
                     false,
-                    false,
-                    false,
-                    false,
-                    false,
-                    false,
                     false
                 )
             }
             val isShowSubSubList = remember {
                 mutableStateListOf(
-                    false,
-                    false,
-                    false,
-                    false,
                     false,
                     false,
                     false,
@@ -143,25 +174,33 @@ fun ClassroomScreen(
                 Log.i("TAG654", haveClassroom.size.toString())
                 Log.i("TAG654", allClassroom.toString())
                 buildingsSave.forEachIndexed { index, building ->
-                    val arrowRotateDegrees: Float by animateFloatAsState(if (isShowSubList[index]) 0f else -90f,
+                    val arrowRotateDegrees: Float by animateFloatAsState(
+                        if (isShowSubList[index]) 0f else -90f,
                         label = ""
                     )
                     ClassroomListItem(
                         text = building.jzwmc,
                         modifier = Modifier.clickable {
+                            for (i in isShowSubList.indices) {
+                                isShowSubList[i] = false
+                            }
+                            for (j in isShowSubSubList.indices) {
+                                isShowSubSubList[j] = false
+                            }
                             isShowSubList[index] = !isShowSubList[index]
                         },
-                        IconModifier = Modifier
+                        iconModifier = Modifier
                             .rotate(arrowRotateDegrees)
                     ) {
                         if (isShowSubList[index]) {
                             Column(
                                 modifier = Modifier.padding(start = 10.dp)
                             ) {
-                                val subArrowRotateDegrees: Float by animateFloatAsState(if (isShowSubSubList[index]) 0f else -90f,
-                                    label = ""
-                                )
                                 timeList.keys.forEachIndexed { timeIndex, timeDivide ->
+                                    val subArrowRotateDegrees: Float by animateFloatAsState(
+                                        if (isShowSubSubList[timeIndex]) 0f else -90f,
+                                        label = ""
+                                    )
                                     ClassroomListItem(
                                         text = timeDivide,
                                         modifier = Modifier
@@ -169,17 +208,24 @@ fun ClassroomScreen(
                                                 isShowSubSubList[timeIndex] =
                                                     !isShowSubSubList[timeIndex]
                                             },
-                                        IconModifier = Modifier
+                                        iconModifier = Modifier
                                             .rotate(subArrowRotateDegrees)
                                     ) {
                                         if (isShowSubSubList[timeIndex])
                                             Column(modifier = Modifier.padding(start = 10.dp)) {
                                                 allClassroom.forEach { classroom ->
                                                     if (classroom.jzwdm == building.jzwdm)
-                                                        ClassroomEmptyListItem(
-                                                            text = classroom.jxcdmc,
-                                                            modifier = Modifier.clickable { }
+                                                        if (classroom.jxcdmc.substring(
+                                                                0,
+                                                                4
+                                                            ) != "启智楼5"
                                                         )
+                                                            ClassroomEmptyListItem(
+                                                                classroom = classroom,
+                                                                modifier = Modifier.clickable { },
+                                                                ifHavingClass = classroom.jcdm == timeList[timeDivide],
+                                                                ifShowHadClass = checkedState
+                                                            )
                                                 }
                                             }
                                     }

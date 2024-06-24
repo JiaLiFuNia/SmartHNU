@@ -404,6 +404,16 @@ class SettingsViewModel : ViewModel() {
                     }
                 }
             }
+            allClassRoom.forEachIndexed { index, jxcdxxList ->
+                haveClassRoom.forEach { jszylist ->
+                    if (jszylist.jxcdmc == jxcdxxList.jxcdmc) {
+                        allClassRoom[index].teaxms = jszylist.teaxms
+                        allClassRoom[index].kcmc = jszylist.kcmc
+                        allClassRoom[index].jcdm = jszylist.jcdm
+                    }
+                }
+
+            }
         } catch (e: Exception) {
             Log.i("TAG667", "$e")
         }

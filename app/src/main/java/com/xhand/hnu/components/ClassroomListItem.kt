@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import com.xhand.hnu.model.entity.ClassroomPost
 import com.xhand.hnu.model.entity.Jszylist
 import com.xhand.hnu.model.entity.JxcdxxList
@@ -17,8 +18,8 @@ import com.xhand.hnu.model.entity.Jxllist
 fun ClassroomListItem(
     text: String,
     modifier: Modifier,
-    IconModifier: Modifier,
-    content: @Composable () -> Unit
+    iconModifier: Modifier,
+    content: @Composable () -> Unit,
 ) {
     ListItem(
         headlineContent = {
@@ -27,7 +28,7 @@ fun ClassroomListItem(
             )
         },
         trailingContent = {
-            Icon(Icons.Default.ArrowDropDown, contentDescription = null, modifier = IconModifier)
+            Icon(Icons.Default.ArrowDropDown, contentDescription = null, modifier = iconModifier)
         },
         modifier = modifier
     )
@@ -37,15 +38,34 @@ fun ClassroomListItem(
 
 @Composable
 fun ClassroomEmptyListItem(
-    text: String,
-    modifier: Modifier
+    classroom: JxcdxxList,
+    modifier: Modifier,
+    ifHavingClass: Boolean,
+    ifShowHadClass: Boolean
 ) {
-    ListItem(
-        headlineContent = {
-            Text(
-                text = text,
-            )
-        },
-        modifier = modifier
-    )
+    if (ifHavingClass and ifShowHadClass)
+        null
+    else
+        ListItem(
+            headlineContent = {
+                Text(
+                    text = classroom.jxcdmc,
+                )
+            },
+            supportingContent = {
+                if (ifHavingClass)
+                    Text(
+                        text = "${classroom.teaxms} ${classroom.kcmc}",
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1
+                    )
+            },
+            trailingContent = {
+                if (ifHavingClass)
+                    Text(text = "有课")
+                else
+                    Text(text = "空闲")
+            },
+            modifier = modifier
+        )
 }

@@ -103,7 +103,7 @@ fun ShowLoginDialog(
                     modifier = Modifier
                         .basicMarquee(),
                     text = AnnotatedString(
-                        text = "*此登录接口采用的是微信公众号河南师大智慧教务",
+                        text = "*此登录接口采用的是河南师大智慧教务公众号",
                         spanStyle = SpanStyle(
                             color = MaterialTheme.colorScheme.primary,
                             textDecoration = TextDecoration.Underline
@@ -121,7 +121,8 @@ fun ShowLoginDialog(
                         )
                     )
                 ) {
-
+                    Toast.makeText(context, "请前往河南师大智慧教务修改密码", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         },
