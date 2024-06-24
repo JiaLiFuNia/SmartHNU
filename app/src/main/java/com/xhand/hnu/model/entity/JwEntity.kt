@@ -263,68 +263,30 @@ data class ClassroomPost(
 
 
 data class ClassroomEntity(
-    val msg: String,
     val jszylist: List<Jszylist>,
     val code: Int,
     val jzwmc: String,
     val jxcdxxList: List<JxcdxxList>,
-    val jzwdm: String,
-    val jcList: List<JcList>,
+    val jzwdm: String
 )
 
 
 data class Jszylist(
-    val flfzmc: String,
-    val teaxms: String,
-    val jydh: String,
-    val jxbmc: String,
-    val pkrs: Any?,
-    val sknrjj: String,
-    val shztdm: String,
-    val dm: String,
-    val zc: String,
-    val jxhjmc: String,
-    val kcywmc: String,
+    val teaxms: String, // 教师
     val jxcdmc: String,
     val xnxqdm: String,
     val jcdm: String,
     val jxcddm: String,
-    val zxs: Int,
-    val jcdm2: String,
     val xq: String,
-    val kxh: Int,
-    val sytype: String,
     val kcmc: String,
     val rq: String,
+    var jzwdm: String
 )
 
 data class JxcdxxList(
-    val whr: String,
-    val lch: Int,
     val jxcddm: String,
     val rnskrs: Int,
-    val lxfs: String,
-    val jxcdbh: String,
     val jxcdmc: String,
+    var jzwdm: String
 )
-
-data class JcList(
-    val dymc: String,
-    val szdm: Int,
-    val xsmc: String,
-    val fzdm: String,
-    val zkbmc: String,
-    val qsjc: String,
-    val jcdm: String,
-    val jsjc: String,
-    val jcdm2: String,
-    val jc2: String,
-    val sjmc: String,
-    val jc1: String,
-    val fzmc: String,
-    val jcs: Int,
-    val jc3: String,
-    val sfyjc: String,
-)
-
 

@@ -298,15 +298,27 @@ class SettingsViewModel : ViewModel() {
         isGettingCourse = false
     }
 
+    var isGettingTeacher by mutableStateOf(true)
+
     // 教师评价
     suspend fun teacherService() {
-        val res =
-            userInfo?.let { gradeService.teacherDetails(teacherPost("202302"), token = it.token) }
-        if (res != null) {
-            teacherListTemp = res.allPjxxList.toMutableList()
+        try {
+            val res =
+                userInfo?.let {
+                    gradeService.teacherDetails(
+                        teacherPost("202302"),
+                        token = it.token
+                    )
+                }
+            if (res != null) {
+                teacherListTemp = res.allPjxxList.toMutableList()
+            }
+            teacherList = teacherListTemp
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
         }
-        teacherList = teacherListTemp
         Log.i("TAG6654", "$teacherList")
+        isGettingTeacher = false
     }
 
     var isDetailLoad by mutableStateOf(true)
@@ -361,12 +373,12 @@ class SettingsViewModel : ViewModel() {
     val buildingsSave = listOf(
         ClassroomPost("104", "启智楼", currentDate),
         ClassroomPost("107", "新五五四楼", currentDate),
-        ClassroomPost("119", "新联楼", currentDate),
-        ClassroomPost("301", "求是中楼（东区B楼）", currentDate),
-        ClassroomPost("302", "求是西楼（东区A楼）", currentDate),
-        ClassroomPost("307", "求是东楼", currentDate),
+        // ClassroomPost("119", "新联楼", currentDate),
+        // ClassroomPost("301", "求是中楼（东区B楼）", currentDate),
+        // ClassroomPost("302", "求是西楼（东区A楼）", currentDate),
+        // ClassroomPost("307", "求是东楼", currentDate),
         ClassroomPost("102", "文渊楼", currentDate),
-        ClassroomPost("312", "综合实训楼", currentDate),
+        // ClassroomPost("312", "综合实训楼", currentDate),
         ClassroomPost("310", "文昌楼（东综）", currentDate)
     )
 
@@ -381,6 +393,12 @@ class SettingsViewModel : ViewModel() {
                 if (res != null) {
                     Log.i("TAG667", "$res")
                     if (res.code == 200) {
+                        for (j in res.jxcdxxList) {
+                            j.jzwdm = res.jzwdm
+                        }
+                        for (k in res.jszylist) {
+                            k.jzwdm = res.jzwdm
+                        }
                         haveClassRoom.addAll(res.jszylist)
                         allClassRoom.addAll(res.jxcdxxList)
                     }

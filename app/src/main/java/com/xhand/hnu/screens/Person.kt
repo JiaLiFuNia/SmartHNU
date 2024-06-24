@@ -250,7 +250,8 @@ fun PersonScreen(
                     }
                 }, scrollBehavior = scrollBehavior
             )
-        }) { values ->
+        }
+    ) { values ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -395,30 +396,35 @@ fun PersonScreen(
                     /*if (userInfo == null) {
                         Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
                     } else {*/
-                        checkboxes[0].route?.let { navController.navigate(it) }
-                   //  }
+                    checkboxes[0].route?.let { navController.navigate(it) }
+                    //  }
                 },
                 text = checkboxes[0].text,
                 rightText = "${month}月${dayOfMonth}日 $dayOfWeek",
                 imageVector = checkboxes[0].imageVector,
                 content = {
-                    if (schedule.size != 0) Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(start = 10.dp, top = 8.dp, end = 10.dp)
-                    ) {
-                        schedule.forEach { schedule ->
-                            CardCourseList(schedule = schedule, onClick = {
-                                if (userInfo == null) {
-                                    Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    checkboxes[0].route?.let { navController.navigate(it) }
-                                }
+                    if (schedule.size != 0)
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(start = 10.dp, top = 8.dp, end = 10.dp)
+                        ) {
+                            schedule.forEach { schedule ->
+                                CardCourseList(
+                                    schedule = schedule,
+                                    onClick = {
+                                        if (userInfo == null) {
+                                            Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT)
+                                                .show()
+                                        } else {
+                                            checkboxes[0].route?.let { navController.navigate(it) }
+                                        }
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
                             }
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
                         }
-                    } else {
+                    else {
                         Box(
                             modifier = Modifier
                                 .height(200.dp)
@@ -487,7 +493,6 @@ fun PersonScreen(
             )
         }
     }
-
     ModalBottomSheet(showModalBottomSheetEdit, text) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

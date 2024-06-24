@@ -28,7 +28,7 @@ fun CardCourseList(schedule: KbList, onClick: () -> Unit) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(5.dp)
+                .padding(start = 5.dp, end = 5.dp)
         ) {
             Card(
                 modifier = Modifier
@@ -91,7 +91,7 @@ fun Ppppppp() {
         khfsmc = "考试",
         qssj = "08:00",
         jssj = "09:40",
-        kcmc = "计算机网络的法国红酒看来时代法国",
+        kcmc = "计算机网络的法国红酒看来时代法国万色的日方提供很健康",
         teaxms = "张三",
         jxcdmc = "实验楼"
     )

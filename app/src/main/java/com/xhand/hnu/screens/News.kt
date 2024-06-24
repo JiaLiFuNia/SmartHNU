@@ -366,7 +366,7 @@ fun NewsScreen(
                     }
                 }
                 PullRefreshIndicator(
-                    modifier = Modifier.align(Alignment.Center),
+                    modifier = Modifier.align(Alignment.TopCenter),
                     refreshing = newsViewModel.isRefreshing,
                     state = pullRefreshState
                 )

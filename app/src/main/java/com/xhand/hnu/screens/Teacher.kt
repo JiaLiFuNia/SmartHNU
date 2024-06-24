@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,11 +55,7 @@ fun TeacherScreen(
     viewModel: SettingsViewModel
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    var showBottomSheet by remember {
-        mutableStateOf(false)
-    }
     val scrollState = rememberScrollState()
-    val scope = rememberCoroutineScope()
     val teacherList = viewModel.teacherList
     LaunchedEffect(Unit) {
         viewModel.teacherService()
@@ -90,19 +87,24 @@ fun TeacherScreen(
             )
         }
     ) {
-        Box(modifier = Modifier) {
-            LazyColumn(
+        if (viewModel.isGettingTeacher)
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        else
+            Column(
                 modifier = Modifier
                     .padding(paddingValues = it)
+                    .verticalScroll(scrollState)
             ) {
-                item {
-                    Log.i("TAG6657", viewModel.teacherList.toString())
-                    teacherList.sortBy { it.wjkkp }
-                    teacherList.forEach { teacherItem ->
-                        TeacherListItem(teacherItem = teacherItem, modifier = Modifier)
-                    }
+                Log.i("TAG6657", viewModel.teacherList.toString())
+                teacherList.sortBy { it.wjkkp }
+                teacherList.forEach { teacherItem ->
+                    TeacherListItem(teacherItem = teacherItem, modifier = Modifier)
                 }
             }
-        }
     }
 }
