@@ -266,7 +266,7 @@ data class ClassroomEntity(
     val jszylist: List<Jszylist>,
     val code: Int,
     val jzwmc: String,
-    val jxcdxxList: List<JxcdxxList>,
+    val jxcdxxList: List<Jszylist>,
     val jzwdm: String
 )
 
@@ -279,14 +279,3 @@ data class Jszylist(
     val kcmc: String,
     var jzwdm: String
 )
-
-data class JxcdxxList(
-    val jxcddm: String,
-    val rnskrs: Int,
-    val jxcdmc: String,
-    var jzwdm: String,
-    var teaxms: String?,
-    var kcmc: String?,
-    var jcdm: String?
-)
-

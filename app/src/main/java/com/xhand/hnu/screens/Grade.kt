@@ -1,5 +1,6 @@
 package com.xhand.hnu.screens
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,11 +27,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -61,6 +66,9 @@ fun GradeScreen(
     val checkboxes = gradeViewModel.checkboxes
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
+    val gradeList = viewModel.gradeList
+    var selectedIndex by remember { mutableIntStateOf(0) }
+    val options = listOf("默认", "成绩", "绩点")
     var showAlert by remember {
         mutableStateOf(
             KccjList(
@@ -91,9 +99,6 @@ fun GradeScreen(
     val pullRefreshState = rememberPullRefreshState(
         refreshing = viewModel.isRefreshing,
         onRefresh = {
-            scope.launch {
-                viewModel.gradeService()
-            }
         }
     )
 
@@ -164,6 +169,16 @@ fun GradeScreen(
                 CircularProgressIndicator()
             }
         else {
+            LaunchedEffect(selectedIndex) {
+                gradeList.sortBy {
+                    when (selectedIndex) {
+                        0 -> null
+                        1 -> it.zcjfs.toString()
+                        2 -> it.cjjd.toString()
+                        else -> null
+                    }
+                }
+            }
             Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
                 Column(
                     modifier = Modifier
@@ -171,16 +186,20 @@ fun GradeScreen(
                         .verticalScroll(scrollState)
                         .pullRefresh(pullRefreshState)
                 ) {
-                    viewModel.gradeList.forEach { grade ->
-                        GradeListItem(
-                            grade = grade,
-                            modifier = Modifier
-                                .clickable {
-                                    showAlert = grade
-                                    viewModel.showPersonAlert = true
-                                    viewModel.cjdm = grade.cjdm
-                                }
-                        )
+                    val matchedElements = checkboxes.filter { it.isChecked }
+                    Log.i("TAG62", matchedElements.toString())
+                    gradeList.forEach { grade ->
+                        Log.i("TAG62", grade.xnxqdm)
+                        if (grade.xnxqmc in matchedElements.map { it.term })
+                            GradeListItem(
+                                grade = grade,
+                                modifier = Modifier
+                                    .clickable {
+                                        showAlert = grade
+                                        viewModel.showPersonAlert = true
+                                        viewModel.cjdm = grade.cjdm
+                                    }
+                            )
                     }
                 }
                 PullRefreshIndicator(
@@ -207,6 +226,23 @@ fun GradeScreen(
                     fontWeight = FontWeight.W900,
                     color = MaterialTheme.colorScheme.primary
                 )
+            }
+
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier.padding(start = 32.dp)
+            ) {
+                options.forEachIndexed { index, label ->
+                    SegmentedButton(
+                        shape = SegmentedButtonDefaults.itemShape(
+                            index = index,
+                            count = options.size
+                        ),
+                        onClick = { selectedIndex = index },
+                        selected = index == selectedIndex
+                    ) {
+                        Text(label)
+                    }
+                }
             }
 
             Row(

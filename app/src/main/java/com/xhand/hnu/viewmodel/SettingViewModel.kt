@@ -26,7 +26,6 @@ import com.xhand.hnu.model.entity.GradeInfo
 import com.xhand.hnu.model.entity.GradePost
 import com.xhand.hnu.model.entity.HolidayEntity
 import com.xhand.hnu.model.entity.Jszylist
-import com.xhand.hnu.model.entity.JxcdxxList
 import com.xhand.hnu.model.entity.Jxllist
 import com.xhand.hnu.model.entity.KbList
 import com.xhand.hnu.model.entity.KccjList
@@ -168,7 +167,7 @@ class SettingsViewModel : ViewModel() {
     var htmlParsing by mutableStateOf("")
 
     // 学号 年级
-    private val grade: String
+    val grade: String
         get() {
             return userInfo?.studentID?.substring(0, 2) ?: "22"
         }
@@ -176,6 +175,20 @@ class SettingsViewModel : ViewModel() {
     private val gradeInt: Int
         get() {
             return grade.toInt()
+        }
+
+    val longGradeTerm: MutableList<String>
+        get() {
+            return mutableListOf(
+                "20${gradeInt}-20${gradeInt+1}-1",
+                "20${gradeInt}-20${gradeInt+1}-2",
+                "20${gradeInt+1}-20${gradeInt+2}-1",
+                "20${gradeInt+1}-20${gradeInt+2}-2",
+                "20${gradeInt+2}-20${gradeInt+3}-1",
+                "20${gradeInt+2}-20${gradeInt+3}-2",
+                "20${gradeInt+3}-20${gradeInt+4}-1",
+                "20${gradeInt+3}-20${gradeInt+4}-2"
+            )
         }
 
     // 学期
@@ -234,6 +247,7 @@ class SettingsViewModel : ViewModel() {
 
     // 成绩请求
     fun gradeService() = viewModelScope.launch {
+        isGettingGrade = true
         gradeListTemp.clear() // 下拉刷新时置空
         for (term in gradeTerm) {
             isRefreshing = true
@@ -259,6 +273,7 @@ class SettingsViewModel : ViewModel() {
     // 成绩请求
     suspend fun gradeDetailService() {
         try {
+            isGettingDetailGrade = true
             val res =
                 userInfo?.let { gradeService.gradeDetail(GradeDetailPost(cjdm), it.token) }
             if (res != null) {
@@ -304,6 +319,7 @@ class SettingsViewModel : ViewModel() {
     // 教师评价
     suspend fun teacherService() {
         try {
+            isGettingTeacher = true
             val res =
                 userInfo?.let {
                     gradeService.teacherDetails(
@@ -368,7 +384,7 @@ class SettingsViewModel : ViewModel() {
     }
 
     var haveClassRoom = mutableListOf<Jszylist>()
-    var allClassRoom = mutableListOf<JxcdxxList>()
+    var allClassRoom = mutableListOf<Jszylist>()
     var isGettingRoom by mutableStateOf(true)
     private val currentDate = getCurrentDate()
     val buildingsSave = listOf(
@@ -405,16 +421,16 @@ class SettingsViewModel : ViewModel() {
                     }
                 }
             }
-            allClassRoom.forEachIndexed { index, jxcdxxList ->
-                haveClassRoom.forEach { jszylist ->
-                    if (jszylist.jxcdmc == jxcdxxList.jxcdmc) {
-                        allClassRoom[index].teaxms = jszylist.teaxms
-                        allClassRoom[index].kcmc = jszylist.kcmc
-                        allClassRoom[index].jcdm = jszylist.jcdm
+            /*for (i in allClassRoom) {
+                Log.i("TAG63",i.toString())
+                for (j in haveClassRoom) {
+                    Log.i("TAG63",j.toString())
+                    if (i.jxcdmc == j.jxcdmc) {
+                        allClassRoom.add(j)
                     }
                 }
-
-            }
+                Log.i("TGA63", allClassRoom.toString())
+            }*/
         } catch (e: Exception) {
             Log.i("TAG667", "$e")
         }

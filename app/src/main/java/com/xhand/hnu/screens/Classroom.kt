@@ -158,11 +158,11 @@ fun ClassroomScreen(
                 )
             }
             val timeList = mapOf(
-                "8:00-9:40" to "0102",
-                "10:10-11:50" to "0304",
-                "15:00-16:40" to "0506",
-                "17:10-18:50" to "0708",
-                "20:00-21:40" to "0910"
+                "8:00-9:40(上午第1，2节)" to "0102",
+                "10:10-11:50(上午第3，4节)" to "0304",
+                "15:00-16:40(下午第1，2节)" to "0506",
+                "17:10-18:50(下午第3，4节)" to "0708",
+                "20:00-21:40(晚上第1，2节)" to "0910"
             )
             Column(
                 modifier = Modifier
@@ -171,7 +171,7 @@ fun ClassroomScreen(
             ) {
                 // val buildings = buildingsList.filter { it.jzwmc in buildingsSave }
                 Log.i("TAG654", buildingsSave.toString())
-                Log.i("TAG654", haveClassroom.size.toString())
+                Log.i("TAG654", haveClassroom.toString())
                 Log.i("TAG654", allClassroom.toString())
                 buildingsSave.forEachIndexed { index, building ->
                     val arrowRotateDegrees: Float by animateFloatAsState(
@@ -223,8 +223,9 @@ fun ClassroomScreen(
                                                             ClassroomEmptyListItem(
                                                                 classroom = classroom,
                                                                 modifier = Modifier.clickable { },
-                                                                ifHavingClass = classroom.jcdm == timeList[timeDivide],
-                                                                ifShowHadClass = checkedState
+                                                                roomAndCourseList = haveClassroom,
+                                                                jcdm = timeList[timeDivide].toString(),
+                                                                isShowHadClassRoom = checkedState
                                                             )
                                                 }
                                             }

@@ -11,7 +11,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.xhand.hnu.model.entity.ClassroomPost
 import com.xhand.hnu.model.entity.Jszylist
-import com.xhand.hnu.model.entity.JxcdxxList
 import com.xhand.hnu.model.entity.Jxllist
 
 @Composable
@@ -38,14 +37,17 @@ fun ClassroomListItem(
 
 @Composable
 fun ClassroomEmptyListItem(
-    classroom: JxcdxxList,
+    classroom: Jszylist,
     modifier: Modifier,
-    ifHavingClass: Boolean,
-    ifShowHadClass: Boolean
+    jcdm: String,
+    roomAndCourseList: List<Jszylist>,
+    isShowHadClassRoom: Boolean
 ) {
-    if (ifHavingClass and ifShowHadClass)
+    val matchedElements =
+        roomAndCourseList.filter { it.jxcdmc == classroom.jxcdmc && it.jcdm == jcdm }
+    if (matchedElements.isNotEmpty() && isShowHadClassRoom)
         null
-    else
+    else {
         ListItem(
             headlineContent = {
                 Text(
@@ -53,19 +55,21 @@ fun ClassroomEmptyListItem(
                 )
             },
             supportingContent = {
-                if (ifHavingClass)
+                if (matchedElements.isNotEmpty()) {
                     Text(
-                        text = "${classroom.teaxms} ${classroom.kcmc}",
+                        text = "${matchedElements[0].teaxms} ${matchedElements[0].kcmc}",
                         overflow = TextOverflow.Ellipsis,
                         maxLines = 1
                     )
+                }
             },
             trailingContent = {
-                if (ifHavingClass)
+                if (matchedElements.isNotEmpty())
                     Text(text = "有课")
                 else
                     Text(text = "空闲")
             },
             modifier = modifier
         )
+    }
 }
