@@ -179,7 +179,7 @@ fun PersonScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val schedule = viewModel.todaySchedule
     val hasMessage = viewModel.hasMessage
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewModel.isLoginSuccess) {
         if (viewModel.isLoginSuccess) {
             viewModel.todaySchedule()
             viewModel.messageService()

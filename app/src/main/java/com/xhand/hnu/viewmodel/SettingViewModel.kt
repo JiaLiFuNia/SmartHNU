@@ -98,13 +98,10 @@ class SettingsViewModel : ViewModel() {
     // 今日课程
     var todaySchedule = mutableListOf<KbList>()
 
-    // 成绩代码
-    var cjdm by mutableStateOf("")
-
     // 成绩详情
-    var gradeDetail: GradeInfo? = null
-    var gradeDetails: Xscj? = null
-    var gradeOrder: GradeInfo? = null
+    var gradeDetail by mutableStateOf(GradeInfo(0.0, "", "", "", "", "", "", "", "", "", 0, ""))
+    var gradeDetails by mutableStateOf(Xscj("", 0, 0.0, 0, 0.0))
+    private var gradeOrder by mutableStateOf(GradeInfo(0.0, "", "", "", "", "", "", "", "", "", 0, ""))
 
     // 新闻链接
     var url by mutableStateOf("")
@@ -180,14 +177,14 @@ class SettingsViewModel : ViewModel() {
     val longGradeTerm: MutableList<String>
         get() {
             return mutableListOf(
-                "20${gradeInt}-20${gradeInt+1}-1",
-                "20${gradeInt}-20${gradeInt+1}-2",
-                "20${gradeInt+1}-20${gradeInt+2}-1",
-                "20${gradeInt+1}-20${gradeInt+2}-2",
-                "20${gradeInt+2}-20${gradeInt+3}-1",
-                "20${gradeInt+2}-20${gradeInt+3}-2",
-                "20${gradeInt+3}-20${gradeInt+4}-1",
-                "20${gradeInt+3}-20${gradeInt+4}-2"
+                "20${gradeInt}-20${gradeInt + 1}-1",
+                "20${gradeInt}-20${gradeInt + 1}-2",
+                "20${gradeInt + 1}-20${gradeInt + 2}-1",
+                "20${gradeInt + 1}-20${gradeInt + 2}-2",
+                "20${gradeInt + 2}-20${gradeInt + 3}-1",
+                "20${gradeInt + 2}-20${gradeInt + 3}-2",
+                "20${gradeInt + 3}-20${gradeInt + 4}-1",
+                "20${gradeInt + 3}-20${gradeInt + 4}-2"
             )
         }
 
@@ -271,7 +268,7 @@ class SettingsViewModel : ViewModel() {
     }
 
     // 成绩请求
-    suspend fun gradeDetailService() {
+    suspend fun gradeDetailService(cjdm: String) {
         try {
             isGettingDetailGrade = true
             val res =

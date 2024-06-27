@@ -24,10 +24,11 @@ import com.xhand.hnu.viewmodel.SettingsViewModel
 @Composable
 fun ShowAlert(
     grade: KccjList,
-    viewModel: SettingsViewModel
+    viewModel: SettingsViewModel,
+    cjdm: String
 ) {
     LaunchedEffect(Unit) {
-        viewModel.gradeDetailService()
+        viewModel.gradeDetailService(cjdm)
     }
     val gradeDetail = viewModel.gradeDetail
     val gradeDetail2 = viewModel.gradeDetails // 有平时成绩
@@ -54,16 +55,12 @@ fun ShowAlert(
                             Text(text = "成绩 ${grade.zcjfs} (${grade.zcj})")
                         } else
                             Text(text = "成绩 ${grade.zcjfs}")
-                        if (gradeDetail2 != null) {
-                            Text(
-                                text = "*${gradeDetail2.cj4} ✕ ${gradeDetail2.bl4}% + ${gradeDetail2.cj1} ✕ ${gradeDetail2.bl1}%",
-                                fontSize = 8.sp
-                            )
-                        }
+                        Text(
+                            text = "*${gradeDetail2.cj4} ✕ ${gradeDetail2.bl4}% + ${gradeDetail2.cj1} ✕ ${gradeDetail2.bl1}%",
+                            fontSize = 8.sp
+                        )
                         Text(text = "绩点 ${grade.cjjd}")
-                        if (gradeDetail != null) {
-                            Text(text = "排名 ${gradeDetail.pm} / ${gradeDetail.rs}")
-                        }
+                        Text(text = "排名 ${gradeDetail.pm} / ${gradeDetail.rs}")
                     }
                     Column(
                         modifier = Modifier.weight(0.5f),
@@ -79,8 +76,10 @@ fun ShowAlert(
                     }
                 }
         },
-        onDismissRequest = {  },
-        confirmButton = {
+        onDismissRequest = {
+
+        },
+        dismissButton = {
             TextButton(
                 onClick = {
                     viewModel.showPersonAlert = false
@@ -88,6 +87,9 @@ fun ShowAlert(
             ) {
                 Text("关闭")
             }
+        },
+        confirmButton = {
+
         }
     )
 }
@@ -111,7 +113,8 @@ fun pppp() {
             xnxqdm = "202301",
             xdfsmc = "必修",
             cjfsmc = "百分制",
-        ), viewModel = SettingsViewModel()
+        ), viewModel = SettingsViewModel(),
+        cjdm = ""
     )
 }
 
@@ -134,7 +137,7 @@ fun ppppp() {
             xnxqdm = "202301",
             xdfsmc = "必修",
             cjfsmc = "百分制",
-        ), viewModel = SettingsViewModel()
+        ), viewModel = SettingsViewModel(), cjdm = ""
     )
 }
 
@@ -157,6 +160,7 @@ fun pppppp() {
             xnxqdm = "202301",
             xdfsmc = "必修",
             cjfsmc = "五级制",
-        ), viewModel = SettingsViewModel()
+        ), viewModel = SettingsViewModel(),
+        cjdm = ""
     )
 }

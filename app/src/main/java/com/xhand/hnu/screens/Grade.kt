@@ -69,6 +69,9 @@ fun GradeScreen(
     val gradeList = viewModel.gradeList
     var selectedIndex by remember { mutableIntStateOf(0) }
     val options = listOf("默认", "成绩", "绩点")
+    var cjdm by remember {
+        mutableStateOf("")
+    }
     var showAlert by remember {
         mutableStateOf(
             KccjList(
@@ -197,7 +200,7 @@ fun GradeScreen(
                                     .clickable {
                                         showAlert = grade
                                         viewModel.showPersonAlert = true
-                                        viewModel.cjdm = grade.cjdm
+                                        cjdm = grade.cjdm
                                     }
                             )
                     }
@@ -212,7 +215,7 @@ fun GradeScreen(
         }
     }
     if (viewModel.showPersonAlert) {
-        ShowAlert(grade = showAlert, viewModel = viewModel)
+        ShowAlert(grade = showAlert, viewModel = viewModel, cjdm = cjdm)
     }
     ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "筛选成绩") {
         Column {

@@ -1,5 +1,6 @@
 package com.xhand.hnu.viewmodel
 
+import android.annotation.SuppressLint
 import android.util.Base64
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -13,19 +14,20 @@ import com.xhand.hnu.network.SearchService
 import com.xhand.hnu.network.getNewsList
 import com.xhand.hnu.network.getPicList
 
+@SuppressLint("MutableCollectionMutableState")
 class NewsViewModel : ViewModel() {
 
     // 是否正在加载
     var newsIsLoading by mutableStateOf(true)
 
     // 新闻列表
-    var list = mutableListOf<ArticleListEntity>()
+    var list by mutableStateOf(mutableListOf<ArticleListEntity>())
 
     // 搜索列表
     var searchList = mutableListOf<ArticleListEntity>()
 
     // 临时列表
-    private var listTemp = mutableListOf<ArticleListEntity>()
+    private var listTemp by mutableStateOf(mutableListOf<ArticleListEntity>())
 
     // 主页新闻类型
     private val newsListType = mapOf(
@@ -73,7 +75,7 @@ class NewsViewModel : ViewModel() {
         isRefreshing = true
         try {
             for (type in newsListType) {
-                for (i in 1..10) {
+                for (i in 1..3) {
                     val htmlRes = newsListService.getNewsList(i.toString(), type.key)
                     listTemp = (listTemp + getNewsList(
                         str = htmlRes.body()?.string(),
@@ -83,7 +85,7 @@ class NewsViewModel : ViewModel() {
                 }
             }
             for (type in teacherNewsListType) {
-                for (i in 1..10) {
+                for (i in 1..3) {
                     val htmlRes = newsListService.getTeacherNewsList(i.toString(), type.key)
                     listTemp = (listTemp + getNewsList(
                         htmlRes.body()?.string(),
@@ -104,7 +106,7 @@ class NewsViewModel : ViewModel() {
     // 搜索列表请求
     suspend fun searchRes() {
         listTemp.clear()
-        for (i in 1..5) {
+        for (i in 1..3) {
             val searchKeys =
                 """[{"field":"pageIndex","value":1},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$content"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
             val searchKeyEncode = Base64.encodeToString(searchKeys.toByteArray(), 0)
