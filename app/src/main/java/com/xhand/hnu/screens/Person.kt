@@ -19,8 +19,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.Email
@@ -40,11 +40,14 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -73,6 +76,8 @@ import com.xhand.hnu.components.ShowLoginDialog
 import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.PersonViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -161,7 +166,7 @@ fun NavigationPersonScreen(viewModel: SettingsViewModel, personViewModel: Person
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun PersonScreen(
     navController: NavController, viewModel: SettingsViewModel, personViewModel: PersonViewModel
@@ -184,9 +189,20 @@ fun PersonScreen(
             viewModel.todaySchedule()
             viewModel.messageService()
             // viewModel.holidayService()
-            /*if (hasMessage.size != 0)
-                Toast.makeText(context, "您有${hasMessage.size}条未读消息", Toast.LENGTH_SHORT)
-                    .show()*/
+        }
+    }
+    var isRefreshing by remember { mutableStateOf(false) }
+    val state = rememberPullToRefreshState()
+    val coroutineScope = rememberCoroutineScope()
+    val onRefresh = {
+        isRefreshing = true
+        coroutineScope.launch {
+            delay(timeMillis = 1000)
+            if (viewModel.isLoginSuccess) {
+                viewModel.todaySchedule()
+                viewModel.messageService()
+            }
+            isRefreshing = false
         }
     }
     Scaffold(
@@ -253,231 +269,254 @@ fun PersonScreen(
             )
         }
     ) { values ->
-        Column(
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { onRefresh() },
+            state = state,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(values)
-                .padding(start = 15.dp, end = 15.dp)
-                .verticalScroll(scrollState)
+                .padding(values),
+            contentAlignment = Alignment.TopStart
         ) {
-            Spacer(modifier = Modifier.height(15.dp))
-            Card(
-                elevation = CardDefaults.cardElevation(4.dp),
-                onClick = {
-                    if (userInfo == null) {
-                        Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
-                        viewModel.isShowDialog = true
-                    } else {
-                        text = userInfo.name
-                    }
-                },
-                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(start = 15.dp, end = 15.dp)
             ) {
-                ListItem(
-                    leadingContent = {
+
+                Spacer(modifier = Modifier.height(15.dp))
+                Card(
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    onClick = {
+                        if (userInfo == null) {
+                            Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
+                            viewModel.isShowDialog = true
+                        } else {
+                            text = userInfo.name
+                        }
+                    },
+                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
+                ) {
+                    ListItem(
+                        leadingContent = {
+                            Image(
+                                painter = painterResource(id = ic_ids[9]),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(75.dp)
+                                    .clip(CircleShape)
+                            )
+                        },
+                        headlineContent = {
+                            Text(
+                                text = userInfo?.name ?: "未登录",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        },
+                        supportingContent = {
+                            if (viewModel.isLoginSuccess)
+                                Text(
+                                    text = "${userInfo?.studentID}\n${userInfo?.academy}",
+                                    fontSize = 15.sp,
+                                    color = Color.Gray
+                                )
+                        },
+                        colors = ListItemDefaults.colors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    )
+                    /*Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                    ) {
+                        // val random = Random(System.currentTimeMillis())
+                        // val randomNumber = random.nextInt(1, 12)
                         Image(
                             painter = painterResource(id = ic_ids[9]),
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .size(75.dp)
+                                .size(80.dp)
                                 .clip(CircleShape)
                         )
-                    },
-                    headlineContent = {
-                        Text(
-                            text = userInfo?.name ?: "未登录",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                    },
-                    supportingContent = {
-                        if (viewModel.isLoginSuccess)
-                            Text(
-                                text = "${userInfo?.studentID}\n${userInfo?.academy}",
-                                fontSize = 15.sp,
-                                color = Color.Gray
-                            )
-                    },
-                    colors = ListItemDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
-                )
-                /*Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp)
-                ) {
-                    // val random = Random(System.currentTimeMillis())
-                    // val randomNumber = random.nextInt(1, 12)
-                    Image(
-                        painter = painterResource(id = ic_ids[9]),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(80.dp)
-                            .clip(CircleShape)
-                    )
-                    Column(
-                        verticalArrangement = Arrangement.SpaceAround,
-                        modifier = Modifier
-                            .padding(horizontal = 8.dp)
-                            .height(75.dp)
-                            .padding(start = 15.dp)
-                    ) {
-                        if (viewModel.isLoginSuccess) {
-                            Text(
-                                text = userInfo?.name ?: "",
-                                style = MaterialTheme.typography.headlineSmall
-                            )
-                            Text(
-                                text = userInfo?.studentID ?: "",
-                                fontSize = 15.sp,
-                                color = Color.Gray
-                            )
-                            Text(
-                                text = userInfo?.academy ?: "", fontSize = 15.sp, color = Color.Gray
-                            )
-                        } else {
-                            Text(text = "未登录", fontSize = 25.sp)
-                        }
-                    }
-                }*/
-            }
-            Spacer(modifier = Modifier.height(14.dp))
-            PersonCardItem(
-                isChecked = true,
-                onclick = { },
-                text = "快捷方式",
-                rightText = null,
-                imageVector = Icons.Default.Home,
-                content = {
-                    Column(
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .padding(8.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            otherCards.forEach { functionCard ->
-                                PersonFunctionCardItem(
-                                    modifier = Modifier
-                                        .weight(0.2f),
-                                    title = functionCard.title,
-                                    painterResource = functionCard.painterResource,
-                                    onClick = {
-                                        if (userInfo == null) {
-                                            Toast.makeText(
-                                                context,
-                                                "请先登录",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        } else {
-                                            navController.navigate(functionCard.route)
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    }
-
-                }
-            )
-            Spacer(modifier = Modifier.height(14.dp))
-            val currentDate = LocalDate.now()
-            val dayOfMonth = currentDate.dayOfMonth
-            val month = currentDate.monthValue
-            val dayOfWeek =
-                currentDate.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.SIMPLIFIED_CHINESE)
-            PersonCardItem(
-                isChecked = checkboxes[0].isChecked,
-                onclick = {
-                    /*if (userInfo == null) {
-                        Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
-                    } else {*/
-                    checkboxes[0].route?.let { navController.navigate(it) }
-                    //  }
-                },
-                text = checkboxes[0].text,
-                rightText = "${month}月${dayOfMonth}日 $dayOfWeek",
-                imageVector = checkboxes[0].imageVector,
-                content = {
-                    if (schedule.size != 0)
                         Column(
+                            verticalArrangement = Arrangement.SpaceAround,
                             modifier = Modifier
-                                .fillMaxSize()
-                                .padding(start = 10.dp, top = 8.dp, end = 10.dp)
+                                .padding(horizontal = 8.dp)
+                                .height(75.dp)
+                                .padding(start = 15.dp)
                         ) {
-                            schedule.forEach { schedule ->
-                                CardCourseList(
-                                    schedule = schedule,
-                                    onClick = {
-                                        if (userInfo == null) {
-                                            Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT)
-                                                .show()
-                                        } else {
-                                            checkboxes[0].route?.let { navController.navigate(it) }
-                                        }
-                                    }
+                            if (viewModel.isLoginSuccess) {
+                                Text(
+                                    text = userInfo?.name ?: "",
+                                    style = MaterialTheme.typography.headlineSmall
                                 )
-                                Spacer(modifier = Modifier.height(10.dp))
+                                Text(
+                                    text = userInfo?.studentID ?: "",
+                                    fontSize = 15.sp,
+                                    color = Color.Gray
+                                )
+                                Text(
+                                    text = userInfo?.academy ?: "", fontSize = 15.sp, color = Color.Gray
+                                )
+                            } else {
+                                Text(text = "未登录", fontSize = 25.sp)
                             }
                         }
-                    else {
+                    }*/
+                }
+                Spacer(modifier = Modifier.height(14.dp))
+                PersonCardItem(
+                    isChecked = true,
+                    onclick = { },
+                    text = "快捷方式",
+                    rightText = null,
+                    imageVector = Icons.Default.Home,
+                    content = {
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .padding(8.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                otherCards.forEach { functionCard ->
+                                    PersonFunctionCardItem(
+                                        modifier = Modifier
+                                            .weight(0.2f),
+                                        title = functionCard.title,
+                                        painterResource = functionCard.painterResource,
+                                        onClick = {
+                                            if (userInfo == null) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "请先登录",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            } else {
+                                                navController.navigate(functionCard.route)
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+                val currentDate = LocalDate.now()
+                val dayOfMonth = currentDate.dayOfMonth
+                val month = currentDate.monthValue
+                val dayOfWeek =
+                    currentDate.dayOfWeek.getDisplayName(
+                        TextStyle.SHORT,
+                        Locale.SIMPLIFIED_CHINESE
+                    )
+                PersonCardItem(
+                    isChecked = checkboxes[0].isChecked,
+                    onclick = {
+                        /*if (userInfo == null) {
+                            Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
+                        } else {*/
+                        checkboxes[0].route?.let { navController.navigate(it) }
+                        //  }
+                    },
+                    text = checkboxes[0].text,
+                    rightText = "${month}月${dayOfMonth}日 $dayOfWeek",
+                    imageVector = checkboxes[0].imageVector,
+                    content = {
+                        if (schedule.size != 0)
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(start = 10.dp, top = 8.dp, end = 10.dp)
+                            ) {
+                                schedule.forEach { schedule ->
+                                    CardCourseList(
+                                        schedule = schedule,
+                                        onClick = {
+                                            if (userInfo == null) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "请先登录",
+                                                    Toast.LENGTH_SHORT
+                                                )
+                                                    .show()
+                                            } else {
+                                                checkboxes[0].route?.let {
+                                                    navController.navigate(
+                                                        it
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    )
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                }
+                            }
+                        else {
+                            Box(
+                                modifier = Modifier
+                                    .height(200.dp)
+                                    .fillMaxWidth()
+                                    .fillMaxHeight(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (viewModel.isLoginSuccess)
+                                    if (viewModel.isGettingCourse)
+                                        CircularProgressIndicator()
+                                    else
+                                        Text(text = "今日无课程", color = Color.Gray)
+                                else
+                                    Text(text = "暂无信息", color = Color.Gray)
+                            }
+                        }
+
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+                PersonCardItem(
+                    isChecked = checkboxes[1].isChecked,
+                    onclick = {
+                        if (userInfo == null) {
+                            Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
+                        } else {
+                            checkboxes[1].route?.let { navController.navigate(it) }
+                        }
+                    },
+                    text = checkboxes[1].text,
+                    rightText = null,
+                    imageVector = checkboxes[1].imageVector,
+                    content = {
                         Box(
+                            modifier = Modifier
+                                .padding(10.dp)
+                        ) {
+                            GPAChangeLineChart()
+                        }
+                        /*Box(
                             modifier = Modifier
                                 .height(200.dp)
                                 .fillMaxWidth()
                                 .fillMaxHeight(),
                             contentAlignment = Alignment.Center
                         ) {
-                            if (viewModel.isLoginSuccess)
-                                if (viewModel.isGettingCourse)
-                                    CircularProgressIndicator()
-                                else
-                                    Text(text = "今日无课程", color = Color.Gray)
-                            else
-                                Text(text = "暂无信息", color = Color.Gray)
-                        }
+                            Text(text = "暂无信息", color = Color.Gray)
+                        }*/
                     }
+                )
+                Spacer(modifier = Modifier.height(14.dp))
 
-                }
-            )
-            Spacer(modifier = Modifier.height(14.dp))
-            PersonCardItem(
-                isChecked = checkboxes[1].isChecked,
-                onclick = {
-                    if (userInfo == null) {
-                        Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
-                    } else {
-                        checkboxes[1].route?.let { navController.navigate(it) }
-                    }
-                },
-                text = checkboxes[1].text,
-                rightText = null,
-                imageVector = checkboxes[1].imageVector,
-                content = {
-                    Box(
-                        modifier = Modifier
-                            .padding(10.dp)
-                    ) {
-                        GPAChangeLineChart()
-                    }
-                    /*Box(
-                        modifier = Modifier
-                            .height(200.dp)
-                            .fillMaxWidth()
-                            .fillMaxHeight(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "暂无信息", color = Color.Gray)
-                    }*/
-                }
-            )
-            Spacer(modifier = Modifier.height(14.dp))
+            }
         }
     }
     if (viewModel.isShowDialog) {

@@ -30,7 +30,6 @@ fun ModalBottomSheet(
     val bottomSheetState = rememberModalBottomSheetState()
     if (showModalBottomSheet.value)
         ModalBottomSheet(
-            windowInsets = WindowInsets.navigationBars,
             onDismissRequest = { showModalBottomSheet.value = !showModalBottomSheet.value },
             sheetState = bottomSheetState,
         ) {

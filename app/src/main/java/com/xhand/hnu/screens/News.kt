@@ -25,21 +25,20 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,7 +50,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -139,56 +137,70 @@ fun NewsScreen(
     }
     val scrollState = rememberScrollState()
     var isSearch by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    val pullRefreshState = rememberPullRefreshState(
-        refreshing = newsViewModel.isRefreshing,
-        onRefresh = {
-            scope.launch {
-                newsViewModel.newsList()
-            }
+
+    var isRefreshing by remember { mutableStateOf(false) }
+    val state = rememberPullToRefreshState()
+    val coroutineScope = rememberCoroutineScope()
+    val onRefresh: () -> Unit = {
+        isRefreshing = true
+        coroutineScope.launch {
+            delay(1500)
+            newsViewModel.newsList()
+            isRefreshing = false
         }
-    )
+    }
+
     val pictures = newsViewModel.pictures
     LaunchedEffect(Unit) {
         newsViewModel.newsList()
         newsViewModel.imageLoad()
     }
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .background(color = Color.Transparent),
         topBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        color = colorScheme.primary
-                            .copy(alpha = 0.08f)
-                            .compositeOver(colorScheme.surface.copy())
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                SearchBar(
-                    colors = SearchBarDefaults.colors(
-                        colorScheme.surface
-                    ),
-                    leadingIcon = {
-                        Icon(Icons.Default.Search, contentDescription = "搜索")
-                    },
-                    query = "输入关键词...",
-                    onQueryChange = {},
-                    onSearch = {},
-                    active = false,
-                    onActiveChange = {},
-                    trailingIcon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.hnu),
-                            contentDescription = "hnu",
-                            modifier = Modifier.size(30.dp)
-                        )
-                    },
-                ) {
+            /*TopAppBar(
+                scrollBehavior = scrollBehavior,
+                title = { },
+                actions = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth().background(color = Color.Transparent),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        SearchBar(
+                            modifier = Modifier.fillMaxWidth(),
+                            inputField = {
+                                SearchBarDefaults.InputField(
+                                    query = "输入关键词搜索...",
+                                    onQueryChange = {},
+                                    onSearch = {},
+                                    expanded = false,
+                                    onExpandedChange = {},
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Search,
+                                            contentDescription = "搜索"
+                                        )
+                                    },
+                                    trailingIcon = {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.hnu),
+                                            contentDescription = "hnu",
+                                            modifier = Modifier.size(30.dp)
+                                        )
+                                    }
+                                )
+                            },
+                            expanded = false,
+                            onExpandedChange = {}
+                        ) {
+                        }
+                    }
                 }
-            }
+            )*/
 
             /*TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -288,16 +300,13 @@ fun NewsScreen(
         }
         val pagerState = rememberPagerState(pageCount = { pictures.size })
         LaunchedEffect(Unit) {
-            val delayTimeMillis = 3000L
             while (true) {
-                delay(delayTimeMillis)
+                delay(1000)
                 with(pagerState) {
                     animateScrollToPage((currentPage + 1) % pageCount)
                 }
             }
         }
-
-
         if (newsViewModel.newsIsLoading) {
             Box(
                 modifier = Modifier
@@ -307,17 +316,50 @@ fun NewsScreen(
                 CircularProgressIndicator()
             }
         } else {
-            Box(
+            PullToRefreshBox(
+                state = state,
+                onRefresh = onRefresh,
+                isRefreshing = isRefreshing,
+                contentAlignment = Alignment.TopStart,
                 modifier = Modifier
-                    .pullRefresh(pullRefreshState)
+                    .padding(paddingValues = it)
             ) {
                 Column(
                     modifier = Modifier
-                        .padding(paddingValues = it)
                         .verticalScroll(scrollState),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
+                    SearchBar(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 10.dp, end = 10.dp)
+                            .align(Alignment.CenterHorizontally),
+                        inputField = {
+                            SearchBarDefaults.InputField(
+                                query = "输入关键词搜索...",
+                                onQueryChange = {},
+                                onSearch = {},
+                                expanded = false,
+                                onExpandedChange = {},
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.Search,
+                                        contentDescription = "搜索"
+                                    )
+                                },
+                                trailingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.hnu),
+                                        contentDescription = "hnu",
+                                        modifier = Modifier.size(30.dp)
+                                    )
+                                }
+                            )
+                        },
+                        expanded = false,
+                        onExpandedChange = {}
+                    ) {
+                    }
                 if (!isShowSearchBar) {
                         HorizontalPager(
                             state = pagerState,
@@ -388,11 +430,6 @@ fun NewsScreen(
                         }
                     }
                 }
-                PullRefreshIndicator(
-                    modifier = Modifier.align(Alignment.TopCenter),
-                    refreshing = newsViewModel.isRefreshing,
-                    state = pullRefreshState
-                )
             }
         }
     }

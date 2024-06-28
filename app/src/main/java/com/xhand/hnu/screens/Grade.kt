@@ -54,6 +54,7 @@ import com.xhand.hnu.components.ShowAlert
 import com.xhand.hnu.model.entity.KccjList
 import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
@@ -102,6 +103,10 @@ fun GradeScreen(
     val pullRefreshState = rememberPullRefreshState(
         refreshing = viewModel.isRefreshing,
         onRefresh = {
+            scope.launch {
+                delay(1000)
+                viewModel.gradeService()
+            }
         }
     )
 
