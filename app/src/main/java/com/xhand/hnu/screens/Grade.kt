@@ -10,13 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +28,8 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,7 +40,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -57,7 +54,7 @@ import com.xhand.hnu.viewmodel.SettingsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GradeScreen(
     onBack: () -> Unit,
@@ -68,8 +65,9 @@ fun GradeScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
     val gradeList = viewModel.gradeList
+    Log.i("TAG666", gradeList.toString())
     var selectedIndex by remember { mutableIntStateOf(0) }
-    val options = listOf("默认", "成绩", "绩点")
+    val options = listOf("默认", "成绩", "学分")
     var cjdm by remember {
         mutableStateOf("")
     }
@@ -100,7 +98,7 @@ fun GradeScreen(
         mutableStateOf(false)
     }
     val scope = rememberCoroutineScope()
-    val pullRefreshState = rememberPullRefreshState(
+    /*val pullRefreshState = rememberPullRefreshState(
         refreshing = viewModel.isRefreshing,
         onRefresh = {
             scope.launch {
@@ -108,12 +106,25 @@ fun GradeScreen(
                 viewModel.gradeService()
             }
         }
-    )
-
-    if (viewModel.isLoginSuccess) {
-        LaunchedEffect(Unit) {
-            viewModel.gradeService()
+    )*/
+    var isRefreshing by remember { mutableStateOf(false) }
+    val state = rememberPullToRefreshState()
+    val coroutineScope = rememberCoroutineScope()
+    val onRefresh = {
+        isRefreshing = true
+        coroutineScope.launch {
+            delay(timeMillis = 1000)
+            if (viewModel.isLoginSuccess) {
+                viewModel.gradeService()
+                isRefreshing = false
+            }
         }
+    }
+    LaunchedEffect(Unit) {
+        viewModel.isGettingGrade = true
+        viewModel.gradeService()
+        delay(500)
+        viewModel.isGettingGrade = false
     }
     Scaffold(
         modifier = Modifier
@@ -122,10 +133,7 @@ fun GradeScreen(
         topBar = {
             MediumTopAppBar(
                 colors = TopAppBarDefaults.mediumTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-                        .compositeOver(
-                            MaterialTheme.colorScheme.surface.copy()
-                        )
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
                 ),
                 title = {
                     Text(text = "成绩")
@@ -168,7 +176,7 @@ fun GradeScreen(
             }
         },
         floatingActionButtonPosition = FabPosition.End
-    ) {
+    ) { values ->
         if (viewModel.isGettingGrade)
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -177,25 +185,28 @@ fun GradeScreen(
                 CircularProgressIndicator()
             }
         else {
-            LaunchedEffect(selectedIndex) {
-                gradeList.sortBy {
-                    when (selectedIndex) {
-                        0 -> null
-                        1 -> it.zcjfs.toString()
-                        2 -> it.cjjd.toString()
-                        else -> null
-                    }
-                }
-            }
-            Box(modifier = Modifier.pullRefresh(pullRefreshState)) {
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { onRefresh() },
+                state = state,
+                modifier = Modifier
+                    .padding(paddingValues = values),
+                contentAlignment = Alignment.TopStart
+            ) {
                 Column(
                     modifier = Modifier
-                        .padding(paddingValues = it)
                         .verticalScroll(scrollState)
-                        .pullRefresh(pullRefreshState)
                 ) {
                     val matchedElements = checkboxes.filter { it.isChecked }
                     Log.i("TAG62", matchedElements.toString())
+                    gradeList.sortBy {
+                        when (selectedIndex) {
+                            0 -> null
+                            1 -> it.zcjfs.toString()
+                            3 -> it.xf.toString()
+                            else -> null
+                        }
+                    }
                     gradeList.forEach { grade ->
                         Log.i("TAG62", grade.xnxqdm)
                         if (grade.xnxqmc in matchedElements.map { it.term })
@@ -210,12 +221,6 @@ fun GradeScreen(
                             )
                     }
                 }
-                PullRefreshIndicator(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter),
-                    refreshing = viewModel.isRefreshing,
-                    state = pullRefreshState
-                )
             }
         }
     }

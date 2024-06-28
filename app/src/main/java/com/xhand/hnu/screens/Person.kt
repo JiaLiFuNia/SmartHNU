@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
@@ -166,7 +165,7 @@ fun NavigationPersonScreen(viewModel: SettingsViewModel, personViewModel: Person
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonScreen(
     navController: NavController, viewModel: SettingsViewModel, personViewModel: PersonViewModel
@@ -186,8 +185,10 @@ fun PersonScreen(
     val hasMessage = viewModel.hasMessage
     LaunchedEffect(viewModel.isLoginSuccess) {
         if (viewModel.isLoginSuccess) {
+            viewModel.isGettingGrade = true
             viewModel.todaySchedule()
             viewModel.messageService()
+            viewModel.isGettingCourse = false
             // viewModel.holidayService()
         }
     }
@@ -212,10 +213,7 @@ fun PersonScreen(
         topBar = {
             MediumTopAppBar(
                 colors = TopAppBarDefaults.mediumTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-                        .compositeOver(
-                            MaterialTheme.colorScheme.surface.copy()
-                        )
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
                 ),
                 title = {
                     if (scrollBehavior.state.heightOffset < 0f) {
@@ -283,7 +281,6 @@ fun PersonScreen(
                     .verticalScroll(scrollState)
                     .padding(start = 15.dp, end = 15.dp)
             ) {
-
                 Spacer(modifier = Modifier.height(15.dp))
                 Card(
                     elevation = CardDefaults.cardElevation(4.dp),

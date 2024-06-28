@@ -17,17 +17,13 @@ import com.xhand.hnu.network.getPicList
 @SuppressLint("MutableCollectionMutableState")
 class NewsViewModel : ViewModel() {
 
-    // 是否正在加载
-    var newsIsLoading by mutableStateOf(true)
-
     // 新闻列表
     var list by mutableStateOf(mutableListOf<ArticleListEntity>())
 
     // 搜索列表
-    var searchList = mutableListOf<ArticleListEntity>()
-
-    // 临时列表
-    private var listTemp by mutableStateOf(mutableListOf<ArticleListEntity>())
+    var searchList by mutableStateOf(
+        mutableListOf<ArticleListEntity>()
+    )
 
     // 主页新闻类型
     private val newsListType = mapOf(
@@ -52,17 +48,8 @@ class NewsViewModel : ViewModel() {
     private val searchService = SearchService.instance()
 
     // 是否正在刷新
-    var isRefreshing by mutableStateOf(false)
-        private set
-
-    // 搜索内容
-    var content by mutableStateOf("")
-
-    // 是否正在搜索
-    val isSearching: Boolean
-        get() {
-            return content.isNotEmpty()
-        }
+    var isRefreshing by mutableStateOf(true)
+    var isSearching by mutableStateOf(false)
 
     // 是否点击搜索
     val isSearched: Boolean
@@ -72,55 +59,52 @@ class NewsViewModel : ViewModel() {
 
     // 新闻列表请求
     suspend fun newsList() {
-        isRefreshing = true
+        list.clear()
         try {
             for (type in newsListType) {
                 for (i in 1..3) {
                     val htmlRes = newsListService.getNewsList(i.toString(), type.key)
-                    listTemp = (listTemp + getNewsList(
+                    list.addAll(
+                        getNewsList(
                         str = htmlRes.body()?.string(),
                         type = type.value,
                         rule = if (type.key == "8955") 4 else 1
-                    )).toMutableList()
+                        )
+                    )
                 }
             }
             for (type in teacherNewsListType) {
                 for (i in 1..3) {
                     val htmlRes = newsListService.getTeacherNewsList(i.toString(), type.key)
-                    listTemp = (listTemp + getNewsList(
+                    list.addAll(
+                        getNewsList(
                         htmlRes.body()?.string(),
                         type.value,
                         3
-                    )).toMutableList()
+                        )
+                    )
                 }
             }
-            list = listTemp
-            listTemp = mutableListOf() // 避免刷新时重复增加
-            newsIsLoading = false
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
         }
-        isRefreshing = false
     }
 
     // 搜索列表请求
-    suspend fun searchRes() {
-        listTemp.clear()
+    suspend fun searchRes(content: String) {
+        searchList.clear()
         for (i in 1..3) {
             val searchKeys =
                 """[{"field":"pageIndex","value":1},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$content"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
             val searchKeyEncode = Base64.encodeToString(searchKeys.toByteArray(), 0)
             try {
                 val searchRes = searchService.pushPost(searchKeyEncode)
-                listTemp =
-                    (listTemp + getNewsList(searchRes.body()?.data, "搜索", 2)).toMutableList()
-                newsIsLoading = false
+                searchList.addAll(getNewsList(searchRes.body()?.data, "搜索", 2))
+                Log.i("TAG666", "$searchList")
             } catch (e: Exception) {
                 Log.i("TAG666", "$e")
             }
         }
-        searchList = listTemp
-        listTemp = mutableListOf()
     }
 
     // 主页图片加载

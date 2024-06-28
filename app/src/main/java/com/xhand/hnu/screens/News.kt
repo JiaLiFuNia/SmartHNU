@@ -1,9 +1,8 @@
 package com.xhand.hnu.screens
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,26 +21,25 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -49,7 +47,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -116,8 +113,7 @@ fun NavigationScreen(viewModel: SettingsViewModel, newsViewModel: NewsViewModel)
 }
 
 @OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
-    ExperimentalFoundationApi::class
+    ExperimentalMaterial3Api::class
 )
 @Composable
 fun NewsScreen(
@@ -131,7 +127,7 @@ fun NewsScreen(
     val options = listOf(
         "通知公告", "师大要闻", "新闻速递", "教务通知", "公示公告", "考务管理"
     )
-    var selectedOption by remember { mutableStateOf(options[0]) }
+    var selectedOption by remember { mutableIntStateOf(0) }
     var isShowSearchBar by remember {
         mutableStateOf(false)
     }
@@ -152,11 +148,14 @@ fun NewsScreen(
 
     val pictures = newsViewModel.pictures
     LaunchedEffect(Unit) {
+        newsViewModel.isRefreshing = true
         newsViewModel.newsList()
         newsViewModel.imageLoad()
+        newsViewModel.isRefreshing = false
     }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    Scaffold(
+
+    // val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    /*Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color.Transparent),
@@ -292,12 +291,7 @@ fun NewsScreen(
             }
         },
         floatingActionButtonPosition = FabPosition.End
-    ) {
-        if (isSearch or newsViewModel.isSearching) {
-            LaunchedEffect(Unit) {
-                newsViewModel.searchRes()
-            }
-        }
+    ) {*/
         val pagerState = rememberPagerState(pageCount = { pictures.size })
         LaunchedEffect(Unit) {
             while (true) {
@@ -307,7 +301,71 @@ fun NewsScreen(
                 }
             }
         }
-        if (newsViewModel.newsIsLoading) {
+    var searchBarExpand by remember {
+        mutableStateOf(false)
+    }
+    var searchText by remember {
+        mutableStateOf("")
+    }
+    LaunchedEffect(searchText) {
+        if (searchText.isNotEmpty())
+            newsViewModel.searchRes(searchText)
+    }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        SearchBar(
+            modifier = Modifier,
+            inputField = {
+                SearchBarDefaults.InputField(
+                    query = searchText,
+                    onQueryChange = { searchText = it },
+                    onSearch = { searchBarExpand = false },
+                    expanded = searchBarExpand,
+                    onExpandedChange = {
+                        searchBarExpand = it
+                        newsViewModel.isSearching = true
+                    },
+                    placeholder = { Text("搜索新闻和通知") },
+                    leadingIcon = {
+                        IconButton(onClick = { searchBarExpand = true }) {
+                            Icon(
+                                Icons.Default.Search,
+                                contentDescription = "搜索"
+                            )
+                        }
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = { /*TODO*/ }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.hnu),
+                                contentDescription = "hnu",
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+
+                    }
+                )
+            },
+            expanded = searchBarExpand,
+            onExpandedChange = {
+                searchBarExpand = it
+                newsViewModel.isSearching = true
+            }
+        ) {
+        }
+        var selectedTabIndex by remember { mutableIntStateOf(0) }
+        PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
+            options.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTabIndex == index,
+                    onClick = { selectedTabIndex = index },
+                    text = { Text(text = title.substring(0, 2)) }
+                )
+            }
+        }
+        Log.i("TAG6667", "${newsViewModel.searchList}")
+        if (newsViewModel.isRefreshing) {
             Box(
                 modifier = Modifier
                     .fillMaxSize(),
@@ -316,118 +374,82 @@ fun NewsScreen(
                 CircularProgressIndicator()
             }
         } else {
-            PullToRefreshBox(
-                state = state,
-                onRefresh = onRefresh,
-                isRefreshing = isRefreshing,
-                contentAlignment = Alignment.TopStart,
-                modifier = Modifier
-                    .padding(paddingValues = it)
-            ) {
+            if (!newsViewModel.isSearching) {
+                PullToRefreshBox(
+                    state = state,
+                    onRefresh = onRefresh,
+                    isRefreshing = isRefreshing,
+                    contentAlignment = Alignment.TopStart
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .verticalScroll(scrollState),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // if (!isShowSearchBar) {
+                        if (selectedTabIndex == 0)
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                            ) { index ->
+                                Box {
+                                    AsyncImage(
+                                        model = pictures[index],
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .aspectRatio(16 / 9f),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Card(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomEnd)
+                                            .padding(5.dp)
+                                            .height(25.dp)
+                                            .width(50.dp)
+                                    ) {
+                                        Box(
+                                            contentAlignment = Alignment.Center,
+                                            modifier = Modifier.fillMaxSize()
+                                        ) {
+                                            Text(
+                                                text = "${index + 1}/${pictures.size}"
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        newsViewModel.list.forEach { article ->
+                            if (article.type == options[selectedTabIndex]) {
+                                ArticleListItem(
+                                    article = article,
+                                    modifier = Modifier
+                                        .clickable {
+                                            navController.navigate("detail_screen")
+                                            viewModel.url = article.url
+                                        }
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
                 Column(
                     modifier = Modifier
                         .verticalScroll(scrollState),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    SearchBar(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 10.dp, end = 10.dp)
-                            .align(Alignment.CenterHorizontally),
-                        inputField = {
-                            SearchBarDefaults.InputField(
-                                query = "输入关键词搜索...",
-                                onQueryChange = {},
-                                onSearch = {},
-                                expanded = false,
-                                onExpandedChange = {},
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.Search,
-                                        contentDescription = "搜索"
-                                    )
-                                },
-                                trailingIcon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.hnu),
-                                        contentDescription = "hnu",
-                                        modifier = Modifier.size(30.dp)
-                                    )
-                                }
-                            )
-                        },
-                        expanded = false,
-                        onExpandedChange = {}
-                    ) {
-                    }
-                if (!isShowSearchBar) {
-                        HorizontalPager(
-                            state = pagerState,
+                    newsViewModel.searchList.forEach { article ->
+                        ArticleListItem(
+                            article = article,
                             modifier = Modifier
-                                .padding(10.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                        ) { index ->
-                            Box {
-                                AsyncImage(
-                                    model = pictures[index],
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .aspectRatio(16 / 9f),
-                                    contentScale = ContentScale.Crop
-                                )
-                                Card(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .padding(5.dp)
-                                        .height(25.dp)
-                                        .width(50.dp)
-                                ) {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier.fillMaxSize()
-                                    ) {
-                                        Text(
-                                            text = "${index + 1}/${pictures.size}"
-                                        )
-                                    }
+                                .clickable {
+                                    navController.navigate("detail_screen")
+                                    viewModel.url = article.url
                                 }
-                            }
-                        }
-                        newsViewModel.list.forEach { article ->
-                            if (article.type == selectedOption) {
-                                ArticleListItem(
-                                    article = article,
-                                    modifier = Modifier
-                                        .clickable {
-                                            navController.navigate("detail_screen")
-                                            viewModel.url = article.url
-                                        }
-                                )
-                            }
-                        }
-                    } else {
-                        if (!newsViewModel.isSearched) {
-                            newsViewModel.searchList.forEach { article ->
-                                ArticleListItem(
-                                    article = article,
-                                    modifier = Modifier
-                                        .clickable {
-                                            navController.navigate("detail_screen")
-                                            viewModel.url = article.url
-                                        }
-                                )
-                            }
-                        } else {
-                            if (newsViewModel.content.isNotEmpty() and newsViewModel.isSearched and isSearch) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 10.dp),
-                                    contentAlignment = Alignment.Center
-                                ) { Text(text = "未检索到相关新闻") }
-                            }
-                        }
+                        )
                     }
                 }
             }
@@ -438,20 +460,20 @@ fun NewsScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.Center
         ) {
-            options.forEach { option ->
+            options.forEachIndexed() { index, option ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
                         .selectable(
-                            selected = selectedOption == option,
-                            onClick = { selectedOption = option }
+                            selected = options[selectedOption] == option,
+                            onClick = { selectedOption = index }
                         )
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
-                        selected = selectedOption == option,
+                        selected = options[selectedOption] == option,
                         onClick = null
                     )
                     Text(

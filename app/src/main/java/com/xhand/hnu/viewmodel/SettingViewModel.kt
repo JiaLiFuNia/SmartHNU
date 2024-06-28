@@ -10,21 +10,16 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.patrykandpatrick.vico.compose.axis.vertical.rememberEndAxis
 import com.xhand.hnu.R
 import com.xhand.hnu.components.RSAEncryptionHelper
 import com.xhand.hnu.model.entity.AllPjxxList
-import com.xhand.hnu.model.entity.BuildingEntiy
 import com.xhand.hnu.model.entity.ClassroomPost
 import com.xhand.hnu.model.entity.GradeDetailPost
 import com.xhand.hnu.model.entity.GradeInfo
 import com.xhand.hnu.model.entity.GradePost
-import com.xhand.hnu.model.entity.HolidayEntity
 import com.xhand.hnu.model.entity.Jszylist
 import com.xhand.hnu.model.entity.Jxllist
 import com.xhand.hnu.model.entity.KbList
@@ -33,23 +28,21 @@ import com.xhand.hnu.model.entity.LoginPostEntity
 import com.xhand.hnu.model.entity.MessageDetail
 import com.xhand.hnu.model.entity.MessagePost
 import com.xhand.hnu.model.entity.SchedulePost
-import com.xhand.hnu.model.entity.Type
 import com.xhand.hnu.model.entity.Update
 import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.model.entity.Xscj
 import com.xhand.hnu.model.entity.teacherPost
 import com.xhand.hnu.network.GradeService
-import com.xhand.hnu.network.HolidayService
 import com.xhand.hnu.network.LoginService
 import com.xhand.hnu.network.NewsDetailService
 import com.xhand.hnu.network.ScheduleService
 import com.xhand.hnu.network.UpdateService
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 
+@SuppressLint("MutableCollectionMutableState")
 class SettingsViewModel : ViewModel() {
 
     var readNotice by mutableStateOf(false)
@@ -96,7 +89,7 @@ class SettingsViewModel : ViewModel() {
     )
 
     // 今日课程
-    var todaySchedule = mutableListOf<KbList>()
+    var todaySchedule by mutableStateOf(mutableListOf<KbList>())
 
     // 成绩详情
     var gradeDetail by mutableStateOf(GradeInfo(0.0, "", "", "", "", "", "", "", "", "", 0, ""))
@@ -144,8 +137,8 @@ class SettingsViewModel : ViewModel() {
     var isGettingGrade by mutableStateOf(true)
 
     // 是否有消息
-    var hasMessage = mutableListOf<MessageDetail>()
-    var bulidingsData = mutableListOf<Jxllist>()
+    var hasMessage by mutableStateOf(mutableListOf<MessageDetail>())
+    private var bulidingsData = mutableListOf<Jxllist>()
     // var holidayData = mutableStateOf(HolidayEntity(-1, Type(0, "", 0), ""))
 
     // 成绩列表
@@ -157,8 +150,6 @@ class SettingsViewModel : ViewModel() {
     private var teacherListTemp = mutableListOf<AllPjxxList>()
 
     // 是否正在刷新
-    var isRefreshing by mutableStateOf(false)
-        private set
 
     // 网页源码请求
     var htmlParsing by mutableStateOf("")
@@ -189,17 +180,17 @@ class SettingsViewModel : ViewModel() {
         }
 
     // 学期
-    val gradeTerm: MutableList<String>
+    private val gradeTerm: MutableList<String>
         get() {
             return mutableListOf(
-                "20${gradeInt}01",
-                "20${gradeInt}02",
-                "20${gradeInt + 1}01",
-                "20${gradeInt + 1}02",
-                "20${gradeInt + 2}01",
-                "20${gradeInt + 2}02",
+                "20${gradeInt + 3}02",
                 "20${gradeInt + 3}01",
-                "20${gradeInt + 3}02"
+                "20${gradeInt + 2}02",
+                "20${gradeInt + 2}01",
+                "20${gradeInt + 1}02",
+                "20${gradeInt + 1}01",
+                "20${gradeInt}02",
+                "20${gradeInt}01",
             )
         }
 
@@ -243,11 +234,9 @@ class SettingsViewModel : ViewModel() {
     }
 
     // 成绩请求
-    fun gradeService() = viewModelScope.launch {
-        isGettingGrade = true
-        gradeListTemp.clear() // 下拉刷新时置空
+    suspend fun gradeService() {
+        gradeList.clear() // 下拉刷新时置空
         for (term in gradeTerm) {
-            isRefreshing = true
             val res = userInfo?.let {
                 gradeService.gradePost(
                     GradePost(term),
@@ -256,15 +245,13 @@ class SettingsViewModel : ViewModel() {
             }
             if (res != null) {
                 if (res.code.toInt() == 200) {
-                    gradeListTemp = (res.kccjList + gradeListTemp).toMutableList()
+                    gradeList.addAll(res.kccjList)
+                    Log.i("TAG666", gradeList.toString())
                 } else {
                     Log.i("TAG666", "null")
                 }
             }
-            isRefreshing = false
         }
-        isGettingGrade = false
-        gradeList = gradeListTemp
     }
 
     // 成绩请求
@@ -308,7 +295,6 @@ class SettingsViewModel : ViewModel() {
                     res.kbList.sortedBy { it.qssj.substring(0, 2).toInt() }.toMutableList()
             }
         }
-        isGettingCourse = false
     }
 
     var isGettingTeacher by mutableStateOf(true)
@@ -316,7 +302,6 @@ class SettingsViewModel : ViewModel() {
     // 教师评价
     suspend fun teacherService() {
         try {
-            isGettingTeacher = true
             val res =
                 userInfo?.let {
                     gradeService.teacherDetails(
@@ -332,7 +317,6 @@ class SettingsViewModel : ViewModel() {
             Log.i("TAG666", "$e")
         }
         Log.i("TAG6654", "$teacherList")
-        isGettingTeacher = false
     }
 
     var isDetailLoad by mutableStateOf(true)

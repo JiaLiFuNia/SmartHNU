@@ -75,10 +75,7 @@ fun ArticleDetailScreen(
             topBar = {
                 TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-                            .compositeOver(
-                                MaterialTheme.colorScheme.surface.copy()
-                            )
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer
                     ),
                     title = { Text(text = "详情") },
                     navigationIcon = {

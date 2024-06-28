@@ -12,12 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +25,8 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,6 +44,7 @@ import com.xhand.hnu.components.GradeListItem
 import com.xhand.hnu.components.ModalBottomSheet
 import com.xhand.hnu.components.TeacherListItem
 import com.xhand.hnu.viewmodel.SettingsViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -58,7 +58,23 @@ fun TeacherScreen(
     val scrollState = rememberScrollState()
     val teacherList = viewModel.teacherList
     LaunchedEffect(Unit) {
+        viewModel.isGettingTeacher = true
         viewModel.teacherService()
+        delay(500)
+        viewModel.isGettingTeacher = false
+    }
+    var isRefreshing by remember { mutableStateOf(false) }
+    val state = rememberPullToRefreshState()
+    val coroutineScope = rememberCoroutineScope()
+    val onRefresh = {
+        isRefreshing = true
+        coroutineScope.launch {
+            delay(timeMillis = 1000)
+            if (viewModel.isLoginSuccess) {
+                viewModel.teacherService()
+                isRefreshing = false
+            }
+        }
     }
     Scaffold(
         modifier = Modifier
@@ -67,10 +83,7 @@ fun TeacherScreen(
         topBar = {
             MediumTopAppBar(
                 colors = TopAppBarDefaults.mediumTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-                        .compositeOver(
-                            MaterialTheme.colorScheme.surface.copy()
-                        )
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
                 ),
                 title = {
                     Text(text = "教学评价")
@@ -95,15 +108,23 @@ fun TeacherScreen(
                 CircularProgressIndicator()
             }
         else
-            Column(
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { onRefresh() },
+                state = state,
                 modifier = Modifier
-                    .padding(paddingValues = it)
-                    .verticalScroll(scrollState)
+                    .padding(paddingValues = it),
+                contentAlignment = Alignment.TopStart
             ) {
-                Log.i("TAG6657", viewModel.teacherList.toString())
-                teacherList.sortBy { it.wjkkp }
-                teacherList.forEach { teacherItem ->
-                    TeacherListItem(teacherItem = teacherItem, modifier = Modifier)
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(scrollState)
+                ) {
+                    Log.i("TAG6657", viewModel.teacherList.toString())
+                    teacherList.sortBy { it.wjkkp }
+                    teacherList.forEach { teacherItem ->
+                        TeacherListItem(teacherItem = teacherItem, modifier = Modifier)
+                    }
                 }
             }
     }

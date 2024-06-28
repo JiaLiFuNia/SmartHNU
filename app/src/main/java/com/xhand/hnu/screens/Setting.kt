@@ -55,8 +55,7 @@ fun SettingScreen(viewModel: SettingsViewModel) {
         topBar = {
             MediumTopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorScheme.primary.copy(alpha = 0.08f)
-                        .compositeOver(colorScheme.surface.copy())
+                    containerColor = colorScheme.surfaceContainer
                 ),
                 title = {
                     Text(text = "设置")
@@ -122,7 +121,7 @@ fun SettingScreen(viewModel: SettingsViewModel) {
             BasicListItem(leadingText = stringResource(R.string.about))
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.0.6.28_beta.7",
+                supportingText = "Copyright 2023-2024 Xhand v2.0.6.29_beta.8",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = {
                     Intent(Intent.ACTION_VIEW).also {

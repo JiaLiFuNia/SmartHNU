@@ -83,10 +83,7 @@ fun ClassroomScreen(
         topBar = {
             MediumTopAppBar(
                 colors = TopAppBarDefaults.mediumTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-                        .compositeOver(
-                            MaterialTheme.colorScheme.surface.copy()
-                        )
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
                 ),
                 title = {
                     Text(text = "教室查询")
