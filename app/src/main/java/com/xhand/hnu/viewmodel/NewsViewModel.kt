@@ -25,6 +25,10 @@ class NewsViewModel : ViewModel() {
         mutableListOf<ArticleListEntity>()
     )
 
+    var searchHistory by mutableStateOf(
+        mutableListOf<String>()
+    )
+
     // 主页新闻类型
     private val newsListType = mapOf(
         "8955" to "通知公告",
@@ -49,13 +53,7 @@ class NewsViewModel : ViewModel() {
 
     // 是否正在刷新
     var isRefreshing by mutableStateOf(true)
-    var isSearching by mutableStateOf(false)
-
-    // 是否点击搜索
-    val isSearched: Boolean
-        get() {
-            return searchList.isEmpty()
-        }
+    var isSearching by mutableStateOf(true)
 
     // 新闻列表请求
     suspend fun newsList() {
@@ -66,9 +64,9 @@ class NewsViewModel : ViewModel() {
                     val htmlRes = newsListService.getNewsList(i.toString(), type.key)
                     list.addAll(
                         getNewsList(
-                        str = htmlRes.body()?.string(),
-                        type = type.value,
-                        rule = if (type.key == "8955") 4 else 1
+                            str = htmlRes.body()?.string(),
+                            type = type.value,
+                            rule = if (type.key == "8955") 4 else 1
                         )
                     )
                 }
@@ -78,9 +76,9 @@ class NewsViewModel : ViewModel() {
                     val htmlRes = newsListService.getTeacherNewsList(i.toString(), type.key)
                     list.addAll(
                         getNewsList(
-                        htmlRes.body()?.string(),
-                        type.value,
-                        3
+                            htmlRes.body()?.string(),
+                            type.value,
+                            3
                         )
                     )
                 }
@@ -101,9 +99,16 @@ class NewsViewModel : ViewModel() {
                 val searchRes = searchService.pushPost(searchKeyEncode)
                 searchList.addAll(getNewsList(searchRes.body()?.data, "搜索", 2))
                 Log.i("TAG666", "$searchList")
+
             } catch (e: Exception) {
                 Log.i("TAG666", "$e")
             }
+        }
+        if (searchList.isNotEmpty()) {
+            if (content in searchHistory)
+                null
+            else
+                searchHistory.add(content)
         }
     }
 

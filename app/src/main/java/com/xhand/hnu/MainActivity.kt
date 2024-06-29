@@ -25,10 +25,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.xhand.hnu.screens.NavigationPersonScreen
 import com.xhand.hnu.screens.NavigationScreen
 import com.xhand.hnu.screens.SettingScreen
 import com.xhand.hnu.ui.theme.MyApplicationTheme
-import com.xhand.hnu.screens.NavigationPersonScreen
 import com.xhand.hnu.viewmodel.LocalUserViewModel
 import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.PersonViewModel

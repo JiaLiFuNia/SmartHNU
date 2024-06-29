@@ -97,7 +97,6 @@ fun GradeScreen(
     val showBottomSheetData = remember {
         mutableStateOf(false)
     }
-    val scope = rememberCoroutineScope()
     /*val pullRefreshState = rememberPullRefreshState(
         refreshing = viewModel.isRefreshing,
         onRefresh = {
@@ -148,7 +147,7 @@ fun GradeScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /*TODO*/ }) {
+                    IconButton(onClick = {  }) {
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = null

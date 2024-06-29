@@ -53,7 +53,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -139,9 +138,9 @@ fun NavigationPersonScreen(viewModel: SettingsViewModel, personViewModel: Person
             )
         }
         composable("search_screen") {
-            SearchCourseScreen(
+            ChooseBookScreen(
                 onBack = { navController.popBackStack() },
-                viewModel = SettingsViewModel()
+                viewModel = viewModel
             )
         }
         composable("task_screen") {
@@ -188,6 +187,7 @@ fun PersonScreen(
             viewModel.isGettingGrade = true
             viewModel.todaySchedule()
             viewModel.messageService()
+            viewModel.JDService()
             viewModel.isGettingCourse = false
             // viewModel.holidayService()
         }
@@ -316,7 +316,7 @@ fun PersonScreen(
                             if (viewModel.isLoginSuccess)
                                 Text(
                                     text = "${userInfo?.studentID}\n${userInfo?.academy}",
-                                    fontSize = 15.sp,
+                                    fontSize = 14.sp,
                                     color = Color.Gray
                                 )
                         },
@@ -462,7 +462,7 @@ fun PersonScreen(
                         else {
                             Box(
                                 modifier = Modifier
-                                    .height(200.dp)
+                                    .height(150.dp)
                                     .fillMaxWidth()
                                     .fillMaxHeight(),
                                 contentAlignment = Alignment.Center
@@ -494,21 +494,23 @@ fun PersonScreen(
                     rightText = null,
                     imageVector = checkboxes[1].imageVector,
                     content = {
-                        Box(
-                            modifier = Modifier
-                                .padding(10.dp)
-                        ) {
-                            GPAChangeLineChart()
-                        }
-                        /*Box(
-                            modifier = Modifier
-                                .height(200.dp)
-                                .fillMaxWidth()
-                                .fillMaxHeight(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "暂无信息", color = Color.Gray)
-                        }*/
+                        if (viewModel.jdList.isNotEmpty())
+                            Box(
+                                modifier = Modifier
+                                    .padding(10.dp)
+                            ) {
+                                GPAChangeLineChart(viewModel.jdList)
+                            }
+                        else
+                            Box(
+                                modifier = Modifier
+                                    .height(150.dp)
+                                    .fillMaxWidth()
+                                    .fillMaxHeight(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(text = "暂无信息", color = Color.Gray)
+                            }
                     }
                 )
                 Spacer(modifier = Modifier.height(14.dp))

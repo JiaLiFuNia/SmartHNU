@@ -17,11 +17,13 @@ data class ToggleableInfo(
     val imageVector: ImageVector,
     val route: String?
 )
+
 data class FunctionCard(
     var title: String,
     val painterResource: Int,
     val route: String
 )
+
 class PersonViewModel : ViewModel() {
     var hasMessage by mutableStateOf(true)
     var checkboxes = mutableStateListOf(
@@ -38,5 +40,4 @@ class PersonViewModel : ViewModel() {
             route = "grade_screen"
         )
     )
-
 }

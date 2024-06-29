@@ -3,9 +3,9 @@ package com.xhand.hnu.network
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.xhand.hnu.model.entity.ArticleListEntity
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import com.xhand.hnu.model.entity.ArticleListEntity
 
 fun getNewsList(str: String?, type: String, rule: Int): MutableList<ArticleListEntity> {
     val firstList: MutableList<ArticleListEntity> = when (rule) {

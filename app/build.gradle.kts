@@ -12,7 +12,7 @@ android {
         minSdk = 29
         targetSdk = 33
         versionCode = 1
-        versionName = "2.0.6.29_beta.8"
+        versionName = "2.0.6.29_beta.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -64,7 +64,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.02.02"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.06.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
@@ -85,15 +85,16 @@ dependencies {
     // datastore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
+    val chartVersion = "2.0.0-alpha.13"
     // Chart
     // For Jetpack Compose.
-    implementation("com.patrykandpatrick.vico:compose:2.0.0-alpha.13")
+    implementation("com.patrykandpatrick.vico:compose:$chartVersion")
     // For `compose`. Creates a `ChartStyle` based on an M3 Material Theme.
-    implementation("com.patrykandpatrick.vico:compose-m3:2.0.0-alpha.13")
+    implementation("com.patrykandpatrick.vico:compose-m3:$chartVersion")
     // Houses the core logic for charts and other elements. Included in all other modules.
-    implementation("com.patrykandpatrick.vico:core:2.0.0-alpha.13")
+    implementation("com.patrykandpatrick.vico:core:$chartVersion")
     // For the view system.
-    implementation("com.patrykandpatrick.vico:views:2.0.0-alpha.13")
+    implementation("com.patrykandpatrick.vico:views:$chartVersion")
     // 加载picture
     implementation("io.coil-kt:coil-compose:2.6.0")
 }

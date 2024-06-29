@@ -16,20 +16,26 @@ import androidx.lifecycle.ViewModel
 import com.xhand.hnu.R
 import com.xhand.hnu.components.RSAEncryptionHelper
 import com.xhand.hnu.model.entity.AllPjxxList
+import com.xhand.hnu.model.entity.BookDetailPost
+import com.xhand.hnu.model.entity.BookPost
 import com.xhand.hnu.model.entity.ClassroomPost
 import com.xhand.hnu.model.entity.GradeDetailPost
 import com.xhand.hnu.model.entity.GradeInfo
 import com.xhand.hnu.model.entity.GradePost
+import com.xhand.hnu.model.entity.JDList
+import com.xhand.hnu.model.entity.JDPost
 import com.xhand.hnu.model.entity.Jszylist
 import com.xhand.hnu.model.entity.Jxllist
 import com.xhand.hnu.model.entity.KbList
 import com.xhand.hnu.model.entity.KccjList
+import com.xhand.hnu.model.entity.Kxjcdata
 import com.xhand.hnu.model.entity.LoginPostEntity
 import com.xhand.hnu.model.entity.MessageDetail
 import com.xhand.hnu.model.entity.MessagePost
 import com.xhand.hnu.model.entity.SchedulePost
 import com.xhand.hnu.model.entity.Update
 import com.xhand.hnu.model.entity.UserInfoEntity
+import com.xhand.hnu.model.entity.Xdjcdata
 import com.xhand.hnu.model.entity.Xscj
 import com.xhand.hnu.model.entity.teacherPost
 import com.xhand.hnu.network.GradeService
@@ -67,8 +73,8 @@ class SettingsViewModel : ViewModel() {
             route = "classroom_screen"
         ),
         FunctionCard(
-            title = "课程查询",
-            painterResource = R.drawable.ic_outline_manage_search_24,
+            title = "选订教材",
+            painterResource = R.drawable.outline_menu_book_24,
             route = "search_screen"
         ),
         FunctionCard(
@@ -83,7 +89,7 @@ class SettingsViewModel : ViewModel() {
         ),
         FunctionCard(
             title = "教学评价",
-            painterResource = R.drawable.ic_baseline_menu_book_24,
+            painterResource = R.drawable.outline_assessment_24,
             route = "teacher_screen"
         )
     )
@@ -94,13 +100,29 @@ class SettingsViewModel : ViewModel() {
     // 成绩详情
     var gradeDetail by mutableStateOf(GradeInfo(0.0, "", "", "", "", "", "", "", "", "", 0, ""))
     var gradeDetails by mutableStateOf(Xscj("", 0, 0.0, 0, 0.0))
-    private var gradeOrder by mutableStateOf(GradeInfo(0.0, "", "", "", "", "", "", "", "", "", 0, ""))
+    private var gradeOrder by mutableStateOf(
+        GradeInfo(
+            0.0,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            0,
+            ""
+        )
+    )
 
     // 新闻链接
     var url by mutableStateOf("")
 
     // 展示登录框
     var showPersonAlert by mutableStateOf(false)
+    var showBookAlert by mutableStateOf(false)
 
     // 展示信息详情
     var showMessageDetail by mutableStateOf(false)
@@ -144,6 +166,7 @@ class SettingsViewModel : ViewModel() {
     // 成绩列表
     var gradeList = mutableListOf<KccjList>()
     var teacherList = mutableListOf<AllPjxxList>()
+    var jdList = mutableListOf<JDList>()
 
     // 成绩列表——临时
     private var gradeListTemp = mutableListOf<KccjList>()
@@ -279,6 +302,18 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    suspend fun JDService() {
+        try {
+            val res = userInfo?.let { gradeService.gradeJDDetail(JDPost("1", "01"), it.token) }
+            if (res != null) {
+                if (res.code == 200) {
+                    jdList = res.list.toMutableList()
+                }
+            }
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
+        }
+    }
 
     // 今日课程
     suspend fun todaySchedule() {
@@ -402,20 +437,50 @@ class SettingsViewModel : ViewModel() {
                     }
                 }
             }
-            /*for (i in allClassRoom) {
-                Log.i("TAG63",i.toString())
-                for (j in haveClassRoom) {
-                    Log.i("TAG63",j.toString())
-                    if (i.jxcdmc == j.jxcdmc) {
-                        allClassRoom.add(j)
-                    }
-                }
-                Log.i("TGA63", allClassRoom.toString())
-            }*/
         } catch (e: Exception) {
             Log.i("TAG667", "$e")
         }
         isGettingRoom = false
+    }
+
+    var booksList = mutableListOf<Xdjcdata>()
+    var isGettingBook by mutableStateOf(true)
+    suspend fun bookService() {
+        try {
+            val res =
+                userInfo?.let { gradeService.bookDetail(BookPost("", "202401"), token = it.token) }
+            if (res != null) {
+                Log.i("TAG667", "$res")
+                if (res.code == 200)
+                    booksList = res.xdjcdatas.toMutableList()
+                Log.i("TAG667", "$booksList")
+            }
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
+        }
+    }
+
+    var bookAbleList by mutableStateOf(mutableListOf<Kxjcdata>())
+    var isGettingBookDetail by mutableStateOf(true)
+    suspend fun bookDetailService(kcrwdm: String, xnxqdm: String) {
+        try {
+            isGettingBookDetail = true
+            val res = userInfo?.let {
+                gradeService.bookDetail2(
+                    BookDetailPost(kcrwdm, xnxqdm),
+                    token = it.token
+                )
+            }
+            if (res != null) {
+                Log.i("TAG667", "$res")
+                if (res.code == 200)
+                    bookAbleList = res.kxjcdatas.toMutableList()
+                Log.i("TAG667", "$bookAbleList")
+            }
+            isGettingBookDetail = false
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
+        }
     }
 
     private fun getCurrentDate(): String {

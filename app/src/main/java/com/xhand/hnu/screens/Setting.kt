@@ -18,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -27,9 +26,9 @@ import com.xhand.hnu.R
 import com.xhand.hnu.components.BasicListItem
 import com.xhand.hnu.components.DropdownListItem
 import com.xhand.hnu.components.SelectionItem
-import com.xhand.hnu.components.SwitchListItem
 import com.xhand.hnu.components.ShowAlert
 import com.xhand.hnu.components.ShowLoginDialog
+import com.xhand.hnu.components.SwitchListItem
 import com.xhand.hnu.model.entity.DarkMode
 import com.xhand.hnu.viewmodel.SettingsViewModel
 
@@ -121,7 +120,7 @@ fun SettingScreen(viewModel: SettingsViewModel) {
             BasicListItem(leadingText = stringResource(R.string.about))
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.0.6.29_beta.8",
+                supportingText = "Copyright 2023-2024 Xhand v2.0.6.29_beta.9",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = {
                     Intent(Intent.ACTION_VIEW).also {

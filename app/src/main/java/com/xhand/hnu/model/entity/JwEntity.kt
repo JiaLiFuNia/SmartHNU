@@ -279,3 +279,66 @@ data class Jszylist(
     val kcmc: String,
     var jzwdm: String
 )
+
+
+data class JDPost(
+    val ckfs: String,
+    val ckjh: String
+)
+
+data class JDEntity(
+    val msg: String,
+    val code: Int,
+    val list: List<JDList>,
+)
+
+data class JDList(
+    val mc: String,
+    val pjxfjd: String,
+)
+
+data class BookPost(
+    val kcmc: Any?,
+    val xnxqdm: String,
+)
+
+data class BookBooks(
+    val msg: String,
+    val code: Int,
+    val xdjcdatas: List<Xdjcdata>,
+)
+
+data class Xdjcdata(
+    val xnxqmc: String,
+    val kcdlmc: String,
+    val zdlxmc: String,
+    val zxs: Long,
+    val kcrwdm: String,
+    val kcmc: String,
+    val jxbmc: String
+)
+
+
+data class BookDetailPost(
+    val kcrwdm: String,
+    val xnxqdm: String,
+)
+
+data class BookDetailEntity(
+    val msg: String,
+    val code: Int,
+    val kxjcdatas: List<Kxjcdata>,
+)
+
+data class Kxjcdata(
+    val tbdm: String,
+    val isbn: String,
+    val pcdm: String,
+    val zb: String,
+    val jcbc: String,
+    val jcdm: String,
+    val cbs: String,
+    val kcrwdm: String,
+    val pcmc: String,
+    val jcmc: String,
+)

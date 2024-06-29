@@ -1,5 +1,9 @@
 package com.xhand.hnu.network
 
+import com.xhand.hnu.model.entity.BookBooks
+import com.xhand.hnu.model.entity.BookDetailEntity
+import com.xhand.hnu.model.entity.BookDetailPost
+import com.xhand.hnu.model.entity.BookPost
 import com.xhand.hnu.model.entity.BuildingEntiy
 import com.xhand.hnu.model.entity.ClassroomEntity
 import com.xhand.hnu.model.entity.ClassroomPost
@@ -8,6 +12,8 @@ import com.xhand.hnu.model.entity.GradeDetailPost
 import com.xhand.hnu.model.entity.GradeDetailsEntity
 import com.xhand.hnu.model.entity.GradeEntity
 import com.xhand.hnu.model.entity.GradePost
+import com.xhand.hnu.model.entity.JDEntity
+import com.xhand.hnu.model.entity.JDPost
 import com.xhand.hnu.model.entity.MessageEntity
 import com.xhand.hnu.model.entity.MessagePost
 import com.xhand.hnu.model.entity.TeacherEntity
@@ -58,6 +64,24 @@ interface GradeService {
         @Body body: ClassroomPost,
         @Header("Token") token: String
     ): ClassroomEntity
+
+    @POST("dev-api/appapi/Studentcj/cjjdDatas")
+    suspend fun gradeJDDetail(
+        @Body body: JDPost,
+        @Header("Token") token: String
+    ): JDEntity
+
+    @POST("dev-api/appapi/Studentxsxdjc/xdjcdatas")
+    suspend fun bookDetail(
+        @Body body: BookPost,
+        @Header("Token") token: String
+    ): BookBooks
+
+    @POST("dev-api/appapi/Studentxsxdjc/kxjcdatas")
+    suspend fun bookDetail2(
+        @Body body: BookDetailPost,
+        @Header("Token") token: String
+    ): BookDetailEntity
 
     companion object {
         fun instance(): GradeService {

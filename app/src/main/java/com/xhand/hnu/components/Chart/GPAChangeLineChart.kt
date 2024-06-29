@@ -10,17 +10,25 @@ import com.patrykandpatrick.vico.compose.chart.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.chart.rememberCartesianChart
 import com.patrykandpatrick.vico.core.model.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.model.lineSeries
+import com.xhand.hnu.model.entity.JDList
 
 @Composable
-fun GPAChangeLineChart() {
+fun GPAChangeLineChart(JDdata: List<JDList>) {
     val modelProducer = remember { CartesianChartModelProducer.build() }
-    LaunchedEffect(Unit) { modelProducer.tryRunTransaction { lineSeries { series(3.5,4.5,4.3,3.1,3.0,2.4) } } }
+    val gpaList: List<Number> = JDdata.map { it.pjxfjd.toFloat() }
+    LaunchedEffect(Unit) {
+        modelProducer.tryRunTransaction {
+            lineSeries {
+                series(gpaList)
+            }
+        }
+    }
     CartesianChartHost(
-        rememberCartesianChart(
+        chart = rememberCartesianChart(
             rememberLineCartesianLayer(),
             startAxis = rememberStartAxis(),
             bottomAxis = rememberBottomAxis(),
         ),
-        modelProducer,
+        modelProducer = modelProducer,
     )
 }
