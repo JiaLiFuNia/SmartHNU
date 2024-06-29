@@ -1,5 +1,11 @@
 name: Android CI
 
+# 触发器
+on:
+  push:
+    tags:
+        - '*'
+        
 jobs:
   build:
     runs-on: ubuntu-latest
