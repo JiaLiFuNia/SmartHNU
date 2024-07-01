@@ -234,11 +234,22 @@ data class MessageEntity(
 )
 
 data class MessageDetail(
-    val feedback: String,
-    val oprtime: String,
-    val subject: String,
+    val msg: String? = null,
+    val xxid: String,
     val type: String,
-    val status: String,
+    val feedback: String? = null,
+    val oprname: String? = null,
+    val oprtime: String? = null,
+    val oprnumber: String? = null,
+    val subject: String? = null,
+    val status: String? = null
+)
+
+data class MyClass(
+    val zcj: String,
+    val kcdm: String,
+    val jd: String,
+    val kcmc: String
 )
 
 data class BuildingEntiy(

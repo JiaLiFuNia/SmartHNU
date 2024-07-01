@@ -31,12 +31,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
@@ -51,6 +55,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -173,58 +178,144 @@ fun NewsScreen(
             newsViewModel.searchRes(searchText)
         newsViewModel.isSearching = false
     }
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                colors = TopAppBarDefaults.mediumTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
+                scrollBehavior = scrollBehavior,
+                title = { Text(text = "新闻") },
+            )
+        },
+        modifier = Modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) {
-        SearchBar(
-            modifier = Modifier,
-            inputField = {
-                SearchBarDefaults.InputField(
-                    query = searchText,
-                    onQueryChange = { searchText = it },
-                    onSearch = { searchBarExpand = false },
-                    expanded = searchBarExpand,
-                    onExpandedChange = {
-                        searchBarExpand = it
-                    },
-                    placeholder = { Text("搜索新闻和通知") },
-                    leadingIcon = {
-                        if (searchBarExpand)
-                            IconButton(onClick = {
-                                searchBarExpand = false
-                                searchText = ""
-                            }) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(paddingValues = it)
+        ) {
+            SearchBar(
+                modifier = Modifier,
+                inputField = {
+                    SearchBarDefaults.InputField(
+                        query = searchText,
+                        onQueryChange = { searchText = it },
+                        onSearch = { searchBarExpand = false },
+                        expanded = searchBarExpand,
+                        onExpandedChange = {
+                            searchBarExpand = it
+                        },
+                        placeholder = { Text("搜索新闻和通知") },
+                        leadingIcon = {
+                            if (searchBarExpand)
+                                IconButton(onClick = {
+                                    searchBarExpand = false
+                                    searchText = ""
+                                }) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "返回"
+                                    )
+                                }
+                            else
+                                IconButton(onClick = { searchBarExpand = true }) {
+                                    Icon(
+                                        Icons.Default.Search,
+                                        contentDescription = "搜索"
+                                    )
+                                }
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { }) {
                                 Icon(
-                                    Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "返回"
+                                    painter = painterResource(id = R.drawable.hnu),
+                                    contentDescription = "hnu",
+                                    modifier = Modifier.size(30.dp)
                                 )
+                            }
+
+                        }
+                    )
+                },
+                expanded = searchBarExpand,
+                onExpandedChange = {
+                    searchBarExpand = it
+                }
+            ) {
+                if (newsViewModel.isSearching && searchText.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    if (newsViewModel.searchList.isEmpty() && searchText.isNotEmpty())
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "没有找到相关新闻或通知", color = Color.Gray)
+                        }
+                    else {
+                        if (searchText.isNotEmpty())
+                            Column(
+                                modifier = Modifier
+                                    .verticalScroll(scrollState),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                newsViewModel.searchList.forEach { article ->
+                                    ArticleListItem(
+                                        article = article,
+                                        modifier = Modifier
+                                            .clickable {
+                                                navController.navigate("detail_screen")
+                                                viewModel.url = article.url
+                                            }
+                                    )
+                                }
                             }
                         else
-                            IconButton(onClick = { searchBarExpand = true }) {
-                                Icon(
-                                    Icons.Default.Search,
-                                    contentDescription = "搜索"
-                                )
+                            Column(
+                                modifier = Modifier
+                                    .verticalScroll(scrollState),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                newsViewModel.searchHistory.forEach { article ->
+                                    ListItem(
+                                        headlineContent = { Text(text = article) },
+                                        leadingContent = {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.baseline_history_24),
+                                                contentDescription = "历史"
+                                            )
+                                        },
+                                        colors = ListItemDefaults.colors(
+                                            containerColor = Color.Transparent
+                                        ),
+                                        modifier = Modifier
+                                            .clickable { searchText = article })
+                                }
                             }
-                    },
-                    trailingIcon = {
-                        IconButton(onClick = {  }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.hnu),
-                                contentDescription = "hnu",
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
-
                     }
-                )
-            },
-            expanded = searchBarExpand,
-            onExpandedChange = {
-                searchBarExpand = it
+                }
             }
-        ) {
-            if (newsViewModel.isSearching && searchText.isNotEmpty()) {
+            var selectedTabIndex by remember { mutableIntStateOf(0) }
+            PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
+                options.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(text = title.substring(0, 2)) }
+                    )
+                }
+            }
+            Log.i("TAG6667", "${newsViewModel.searchList}")
+            if (newsViewModel.isRefreshing) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize(),
@@ -233,22 +324,54 @@ fun NewsScreen(
                     CircularProgressIndicator()
                 }
             } else {
-                if (newsViewModel.searchList.isEmpty() && searchText.isNotEmpty())
-                    Box(
+                PullToRefreshBox(
+                    state = state,
+                    onRefresh = onRefresh,
+                    isRefreshing = isRefreshing,
+                    contentAlignment = Alignment.TopStart
+                ) {
+                    Column(
                         modifier = Modifier
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                            .verticalScroll(scrollState),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = "没有找到相关新闻或通知", color = Color.Gray)
-                    }
-                else {
-                    if (searchText.isNotEmpty())
-                        Column(
-                            modifier = Modifier
-                                .verticalScroll(scrollState),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            newsViewModel.searchList.forEach { article ->
+                        // if (!isShowSearchBar) {
+                        if (selectedTabIndex == 0)
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier
+                                    .padding(10.dp)
+                            ) { index ->
+                                Box {
+                                    AsyncImage(
+                                        model = pictures[index],
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .aspectRatio(16 / 9f),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Card(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomEnd)
+                                            .padding(5.dp)
+                                            .height(25.dp)
+                                            .width(50.dp)
+                                    ) {
+                                        Box(
+                                            contentAlignment = Alignment.Center,
+                                            modifier = Modifier.fillMaxSize()
+                                        ) {
+                                            Text(
+                                                text = "${index + 1}/${pictures.size}"
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        newsViewModel.list.forEach { article ->
+                            if (article.type == options[selectedTabIndex]) {
                                 ArticleListItem(
                                     article = article,
                                     modifier = Modifier
@@ -259,113 +382,12 @@ fun NewsScreen(
                                 )
                             }
                         }
-                    else
-                        Column(
-                            modifier = Modifier
-                                .verticalScroll(scrollState),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            newsViewModel.searchHistory.forEach { article ->
-                                ListItem(
-                                    headlineContent = { Text(text = article) },
-                                    leadingContent = {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.baseline_history_24),
-                                            contentDescription = "历史"
-                                        )
-                                    },
-                                    colors = ListItemDefaults.colors(
-                                        containerColor = Color.Transparent
-                                    ),
-                                    modifier = Modifier
-                                        .clickable { searchText = article })
-                            }
-                        }
-                }
-            }
-        }
-        var selectedTabIndex by remember { mutableIntStateOf(0) }
-        PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
-            options.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTabIndex == index,
-                    onClick = { selectedTabIndex = index },
-                    text = { Text(text = title.substring(0, 2)) }
-                )
-            }
-        }
-        Log.i("TAG6667", "${newsViewModel.searchList}")
-        if (newsViewModel.isRefreshing) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            PullToRefreshBox(
-                state = state,
-                onRefresh = onRefresh,
-                isRefreshing = isRefreshing,
-                contentAlignment = Alignment.TopStart
-            ) {
-                Column(
-                    modifier = Modifier
-                        .verticalScroll(scrollState),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // if (!isShowSearchBar) {
-                    if (selectedTabIndex == 0)
-                        HorizontalPager(
-                            state = pagerState,
-                            modifier = Modifier
-                                .padding(10.dp)
-                        ) { index ->
-                            Box {
-                                AsyncImage(
-                                    model = pictures[index],
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .aspectRatio(16 / 9f),
-                                    contentScale = ContentScale.Crop
-                                )
-                                Card(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .padding(5.dp)
-                                        .height(25.dp)
-                                        .width(50.dp)
-                                ) {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier.fillMaxSize()
-                                    ) {
-                                        Text(
-                                            text = "${index + 1}/${pictures.size}"
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    newsViewModel.list.forEach { article ->
-                        if (article.type == options[selectedTabIndex]) {
-                            ArticleListItem(
-                                article = article,
-                                modifier = Modifier
-                                    .clickable {
-                                        navController.navigate("detail_screen")
-                                        viewModel.url = article.url
-                                    }
-                            )
-                        }
                     }
                 }
             }
         }
     }
+    
     ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "选择新闻源") {
         Column(
             modifier = Modifier.fillMaxWidth(),

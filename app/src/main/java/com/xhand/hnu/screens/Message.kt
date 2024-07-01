@@ -19,12 +19,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import com.xhand.hnu.R
 import com.xhand.hnu.components.MessageDetailDialog
 import com.xhand.hnu.components.MessageListItem
+import com.xhand.hnu.model.entity.MessageDetail
 import com.xhand.hnu.viewmodel.SettingsViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -72,6 +76,9 @@ fun MessageScreen(
             )
         }
     ) {
+        val aMessageDetail = remember {
+            mutableStateOf(MessageDetail(xxid = "",type = ""))
+        }
         Column(
             modifier = Modifier
                 .padding(paddingValues = it)
@@ -82,11 +89,12 @@ fun MessageScreen(
                     messageDetail = messageDetail,
                     modifier = Modifier.clickable {
                         viewModel.showMessageDetail = true
+                        aMessageDetail.value = messageDetail
                     }
                 )
-                MessageDetailDialog(messageDetail = messageDetail, viewModel = viewModel)
                 HorizontalDivider()
             }
         }
+        MessageDetailDialog(messageDetail = aMessageDetail.value, viewModel = viewModel)
     }
 }
