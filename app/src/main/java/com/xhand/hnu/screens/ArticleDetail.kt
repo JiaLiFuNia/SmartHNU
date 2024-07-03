@@ -30,6 +30,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
 import com.xhand.hnu.viewmodel.SettingsViewModel
 import net.dankito.readability4j.Article
@@ -66,6 +68,14 @@ fun ArticleDetailScreen(
             webViewClient = WebViewClient()
             loadUrl(viewModel.url)
         }
+    }
+    // 获取SystemUiController
+    val systemUiController = rememberSystemUiController()
+    val useDarkIcons = isSystemInDarkTheme()
+    val statueBarColor = MaterialTheme.colorScheme.surfaceContainer
+    // 设置状态栏颜色
+    SideEffect {
+        systemUiController.setStatusBarColor(color = statueBarColor)
     }
     Surface(
         color = Color.White

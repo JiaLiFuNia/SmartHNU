@@ -3,6 +3,7 @@ package com.xhand.hnu.screens
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -22,6 +24,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
 import com.xhand.hnu.components.BasicListItem
 import com.xhand.hnu.components.DropdownListItem
@@ -47,6 +50,14 @@ fun SettingScreen(viewModel: SettingsViewModel) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     val cbManager = LocalClipboardManager.current
+    // 获取SystemUiController
+    val systemUiController = rememberSystemUiController()
+    val useDarkIcons = isSystemInDarkTheme()
+    val statueBarColor = colorScheme.surfaceContainer
+    // 设置状态栏颜色
+    SideEffect {
+        systemUiController.setStatusBarColor(color = statueBarColor)
+    }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()

@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +44,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,6 +66,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
 import com.xhand.hnu.components.CardCourseList
 import com.xhand.hnu.components.Chart.GPAChangeLineChart
@@ -205,6 +208,14 @@ fun PersonScreen(
             }
             isRefreshing = false
         }
+    }
+    // 获取SystemUiController
+    val systemUiController = rememberSystemUiController()
+    val useDarkIcons = isSystemInDarkTheme()
+    val statueBarColor = MaterialTheme.colorScheme.surfaceContainer
+    // 设置状态栏颜色
+    SideEffect {
+        systemUiController.setStatusBarColor(color = statueBarColor)
     }
     Scaffold(
         modifier = Modifier

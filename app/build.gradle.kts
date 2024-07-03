@@ -71,6 +71,9 @@ dependencies {
 
     // navigation
     implementation("androidx.navigation:navigation-compose:2.7.7")
+    
+    val accompanist_version = "0.34.0"
+    implementation("com.google.accompanist:accompanist-systemuicontroller:$accompanist_version")
 
     // html解析
     implementation("org.jsoup:jsoup:1.16.1")

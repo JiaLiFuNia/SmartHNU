@@ -18,10 +18,15 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
@@ -30,6 +35,8 @@ import com.xhand.hnu.components.MessageDetailDialog
 import com.xhand.hnu.components.MessageListItem
 import com.xhand.hnu.model.entity.MessageDetail
 import com.xhand.hnu.viewmodel.SettingsViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,6 +48,19 @@ fun MessageScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
     val messageDetails = viewModel.hasMessage
+    var isRefreshing by remember { mutableStateOf(false) }
+    val state = rememberPullToRefreshState()
+    val coroutineScope = rememberCoroutineScope()
+    val onRefresh = {
+        isRefreshing = true
+        coroutineScope.launch {
+            delay(timeMillis = 1000)
+            if (viewModel.isLoginSuccess) {
+                viewModel.messageService()
+                isRefreshing = false
+            }
+        }
+    }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -79,20 +99,28 @@ fun MessageScreen(
         val aMessageDetail = remember {
             mutableStateOf(MessageDetail(xxid = "",type = ""))
         }
-        Column(
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { onRefresh() },
+            state = state,
             modifier = Modifier
-                .padding(paddingValues = it)
-                .verticalScroll(scrollState)
+                .padding(paddingValues = it),
+            contentAlignment = Alignment.TopStart
         ) {
-            messageDetails.forEach { messageDetail ->
-                MessageListItem(
-                    messageDetail = messageDetail,
-                    modifier = Modifier.clickable {
-                        viewModel.showMessageDetail = true
-                        aMessageDetail.value = messageDetail
-                    }
-                )
-                HorizontalDivider()
+            Column(
+                modifier = Modifier
+                    .verticalScroll(scrollState)
+            ) {
+                messageDetails.forEach { messageDetail ->
+                    MessageListItem(
+                        messageDetail = messageDetail,
+                        modifier = Modifier.clickable {
+                            viewModel.showMessageDetail = true
+                            aMessageDetail.value = messageDetail
+                        }
+                    )
+                    HorizontalDivider()
+                }
             }
         }
         MessageDetailDialog(messageDetail = aMessageDetail.value, viewModel = viewModel)
