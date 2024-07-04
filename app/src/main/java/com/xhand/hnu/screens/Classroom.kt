@@ -326,9 +326,3 @@ fun getCurrentDates(): String {
     val formattedDate = currentDate.format(formatter)
     return formattedDate
 }
-
-@Preview
-@Composable
-fun pp() {
-    ClassroomScreen(onBack = { }, viewModel = SettingsViewModel())
-}

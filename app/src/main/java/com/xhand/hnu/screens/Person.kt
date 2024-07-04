@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -126,7 +125,7 @@ fun NavigationPersonScreen(viewModel: SettingsViewModel, personViewModel: Person
             GradeScreen(
                 onBack = { navController.popBackStack() },
                 viewModel = viewModel,
-                gradeViewModel = GradeViewModel()
+                gradeViewModel = GradeViewModel(viewModel)
             )
         }
         composable("schedule_screen") {
@@ -150,13 +149,13 @@ fun NavigationPersonScreen(viewModel: SettingsViewModel, personViewModel: Person
         composable("task_screen") {
             CourseTaskScreen(
                 onBack = { navController.popBackStack() },
-                viewModel = SettingsViewModel()
+                viewModel = viewModel
             )
         }
         composable("plan_screen") {
             StudyPlanScreen(
                 onBack = { navController.popBackStack() },
-                viewModel = SettingsViewModel()
+                viewModel = viewModel
             )
         }
         composable("teacher_screen") {
@@ -444,53 +443,52 @@ fun PersonScreen(
                     rightText = "${month}月${dayOfMonth}日 $dayOfWeek",
                     imageVector = checkboxes[0].imageVector,
                     content = {
-                        if (schedule.size != 0)
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(start = 10.dp, top = 8.dp, end = 10.dp)
-                            ) {
-                                schedule.forEach { schedule ->
-                                    CardCourseList(
-                                        schedule = schedule,
-                                        onClick = {
-                                            if (userInfo == null) {
-                                                Toast.makeText(
-                                                    context,
-                                                    "请先登录",
-                                                    Toast.LENGTH_SHORT
-                                                )
-                                                    .show()
-                                            } else {
-                                                /*checkboxes[0].route?.let {
-                                                    navController.navigate(
-                                                        it
-                                                    )
-                                                }*/
-                                            }
-                                        }
-                                    )
-                                    Spacer(modifier = Modifier.height(10.dp))
+                        if (viewModel.isLoginSuccess) {
+                            if (viewModel.isGettingCourse)
+                                Box(
+                                    modifier = Modifier
+                                        .height(150.dp)
+                                        .fillMaxWidth()
+                                        .fillMaxHeight(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
                                 }
-                            }
-                        else {
-                            Box(
-                                modifier = Modifier
-                                    .height(150.dp)
-                                    .fillMaxWidth()
-                                    .fillMaxHeight(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (viewModel.isLoginSuccess)
-                                    if (viewModel.isGettingCourse)
-                                        CircularProgressIndicator()
-                                    else
-                                        Text(text = "今日无课程", color = Color.Gray)
+                            else {
+                                if (schedule.size != 0)
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(start = 10.dp, top = 8.dp, end = 10.dp)
+                                    ) {
+                                        schedule.forEach { schedule ->
+                                            CardCourseList(
+                                                schedule = schedule,
+                                                onClick = {
+                                                    if (userInfo == null) {
+                                                        Toast.makeText(
+                                                            context,
+                                                            "请先登录",
+                                                            Toast.LENGTH_SHORT
+                                                        )
+                                                            .show()
+                                                    } else {
+                                                        /*checkboxes[0].route?.let {
+                                                            navController.navigate(
+                                                                it
+                                                            )
+                                                        }*/
+                                                    }
+                                                }
+                                            )
+                                            Spacer(modifier = Modifier.height(10.dp))
+                                        }
+                                    }
                                 else
-                                    Text(text = "暂无信息", color = Color.Gray)
+                                    Text(text = "今日无课程", color = Color.Gray)
                             }
-                        }
-
+                        } else
+                            Text(text = "暂无信息", color = Color.Gray)
                     }
                 )
                 Spacer(modifier = Modifier.height(14.dp))
@@ -507,14 +505,24 @@ fun PersonScreen(
                     rightText = null,
                     imageVector = checkboxes[1].imageVector,
                     content = {
-                        if (viewModel.jdList.isNotEmpty())
+                        if (viewModel.isLoginSuccess) {
                             Box(
                                 modifier = Modifier
-                                    .padding(10.dp)
+                                    .fillMaxSize()
+                                    .height(180.dp)
+                                    .padding(10.dp),
+                                contentAlignment = Alignment.Center
                             ) {
-                                GPAChangeLineChart(viewModel.jdList)
+                                if (viewModel.isGettingJD)
+                                    CircularProgressIndicator()
+                                else {
+                                    if (viewModel.jdList.size == 0)
+                                        Text(text = "未能获取你的成绩信息", color = Color.Gray)
+                                    else
+                                        GPAChangeLineChart(viewModel.jdList)
+                                }
                             }
-                        else
+                        } else
                             Box(
                                 modifier = Modifier
                                     .height(150.dp)

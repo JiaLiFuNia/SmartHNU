@@ -3,7 +3,6 @@ package com.xhand.hnu
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -24,8 +23,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import com.xhand.hnu.screens.NavigationPersonScreen
 import com.xhand.hnu.screens.NavigationScreen
 import com.xhand.hnu.screens.SettingScreen
@@ -64,7 +63,7 @@ class MainActivity : ComponentActivity() {
                         title = "设置",
                         selectedIcon = R.drawable.ic_filled_settings,
                         unselectedIcon = R.drawable.ic_outline_settings,
-                        hasNews = remember { mutableStateOf(SettingsViewModel().ifNeedUpdate) }
+                        hasNews = remember { mutableStateOf(false) }
                     )
                 )
                 var selectedItemIndex by rememberSaveable {
@@ -112,7 +111,7 @@ class MainActivity : ComponentActivity() {
                         }
                     ) {
                         CompositionLocalProvider(
-                            LocalUserViewModel provides SettingsViewModel()
+                            LocalUserViewModel provides SettingsViewModel(LocalContext.current)
                         ) {
                             val viewModel = LocalUserViewModel.current
                             /*val context = LocalContext.current

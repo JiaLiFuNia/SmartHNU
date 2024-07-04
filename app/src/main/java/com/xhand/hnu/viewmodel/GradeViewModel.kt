@@ -9,8 +9,8 @@ data class TermCheckBoxes(
     val term: String
 )
 
-class GradeViewModel : ViewModel() {
-    private val grade = SettingsViewModel().longGradeTerm
+class GradeViewModel(settingsViewModel: SettingsViewModel) : ViewModel() {
+    private val grade = settingsViewModel.longGradeTerm
     var checkboxes = mutableStateListOf(
         TermCheckBoxes(
             isChecked = false,

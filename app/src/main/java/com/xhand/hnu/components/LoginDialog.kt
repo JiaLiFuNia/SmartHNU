@@ -146,14 +146,6 @@ fun ShowLoginDialog(
                     // viewModel.isLogging = false
                 }
             }
-            TextButton(
-                onClick = {
-                    viewModel.username = "2201214001"
-                    viewModel.password = "xubohan2004819."
-                }
-            ) {
-                Text("临时")
-            }
         },
         dismissButton = {
             TextButton(onClick = {

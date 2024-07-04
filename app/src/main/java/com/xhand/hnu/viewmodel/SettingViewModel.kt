@@ -1,21 +1,23 @@
 package com.xhand.hnu.viewmodel
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.xhand.hnu.R
 import com.xhand.hnu.components.RSAEncryptionHelper
+import com.xhand.hnu.model.UserInfoManager
 import com.xhand.hnu.model.entity.AllPjxxList
 import com.xhand.hnu.model.entity.BookDetailPost
 import com.xhand.hnu.model.entity.BookPost
@@ -45,15 +47,23 @@ import com.xhand.hnu.network.NewsDetailService
 import com.xhand.hnu.network.ScheduleService
 import com.xhand.hnu.network.UpdateService
 import kotlinx.coroutines.delay
-import java.time.Instant
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 
 @SuppressLint("MutableCollectionMutableState")
-class SettingsViewModel : ViewModel() {
-
+class SettingsViewModel(context: Context) : ViewModel() {
+    private val userInfoManager = UserInfoManager(context)
+    init {
+        viewModelScope.launch {
+            val isLogged = userInfoManager.logged.firstOrNull()
+            val userInfoStore = userInfoManager.userInfo.firstOrNull()
+            userInfo = userInfoStore
+            loginCode = isLogged ?: 0
+        }
+    }
     var readNotice by mutableStateOf(false)
     var checkboxes = mutableStateListOf(
         ToggleableInfo(
@@ -252,6 +262,9 @@ class SettingsViewModel : ViewModel() {
             } else {
                 null
             }
+            viewModelScope.launch {
+                userInfo?.let { userInfoManager.save(it, res.code.toInt()) }
+            }
             loginCircle = false
             loginCode = res.code.toInt()
         } catch (e: Exception) {
@@ -310,6 +323,7 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
+    var isGettingJD by mutableStateOf(true)
     suspend fun JDService() {
         try {
             val res = userInfo?.let { gradeService.gradeJDDetail(JDPost("1", "01"), it.token) }
@@ -318,6 +332,7 @@ class SettingsViewModel : ViewModel() {
                     jdList = res.list.toMutableList()
                 }
             }
+            isGettingJD = false
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
         }

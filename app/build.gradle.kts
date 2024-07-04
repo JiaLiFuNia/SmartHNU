@@ -12,7 +12,7 @@ android {
         minSdk = 29
         targetSdk = 33
         versionCode = 1
-        versionName = "2.0.7.4_beta.12"
+        versionName = "2.0.7.4_beta.13"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -84,6 +84,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.google.code.gson:gson:2.11.0")
 
     // datastore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
@@ -100,4 +101,7 @@ dependencies {
     implementation("com.patrykandpatrick.vico:views:$chartVersion")
     // 加载picture
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // datastore
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 }
