@@ -3,7 +3,7 @@ package com.xhand.hnu.model.entity
 // 返回参数
 data class LoginEntity(
     val msg: String,
-    val code: Long,
+    val code: Int,
     val user: UserEntity? = null,
 )
 

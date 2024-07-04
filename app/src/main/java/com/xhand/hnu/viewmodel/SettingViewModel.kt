@@ -252,7 +252,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
             loginCircle = true
             val res = loginService.loginPost(loginPost)
             delay(1200)
-            userInfo = if (res.code.toInt() == 200) {
+            userInfo = if (res.code == 200) {
                 UserInfoEntity(
                     name = res.user!!.userxm,
                     studentID = res.user.userAccount,
@@ -263,10 +263,10 @@ class SettingsViewModel(context: Context) : ViewModel() {
                 null
             }
             viewModelScope.launch {
-                userInfo?.let { userInfoManager.save(it, res.code.toInt()) }
+                userInfo?.let { userInfoManager.save(it, res.code) }
             }
             loginCircle = false
-            loginCode = res.code.toInt()
+            loginCode = res.code
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
         }

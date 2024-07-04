@@ -61,14 +61,14 @@ fun ShowLoginDialog(
                     value = viewModel.username,
                     onValueChange = { viewModel.username = it },
                     label = { Text("学号") },
-                    isError = viewModel.loginCode != 200 && viewModel.username.isNotEmpty() && viewModel.loginCode != 0,
+                    isError = viewModel.loginCode != 200 && viewModel.loginCode != 0,
                     supportingText = {
-                        if (viewModel.loginCode != 200 && viewModel.username.isNotEmpty() && viewModel.loginCode != 0) {
+                        if (viewModel.loginCode != 200 && viewModel.loginCode != 0) {
                             Text(text = "学号或密码错误！", color = MaterialTheme.colorScheme.error)
                         }
                     },
                     trailingIcon = {
-                        if (viewModel.loginCode != 200 && viewModel.username.isNotEmpty() && viewModel.loginCode != 0) {
+                        if (viewModel.loginCode != 200 && viewModel.loginCode != 0) {
                             Icon(
                                 painterResource(id = R.drawable.ic_baseline_warning_24),
                                 contentDescription = null,
@@ -81,9 +81,9 @@ fun ShowLoginDialog(
                     value = viewModel.password,
                     onValueChange = { viewModel.password = it },
                     label = { Text("密码") },
-                    isError = viewModel.loginCode != 200 && viewModel.password.isNotEmpty() && viewModel.loginCode != 0,
+                    isError = viewModel.loginCode != 200 && viewModel.loginCode != 0,
                     supportingText = {
-                        if (viewModel.loginCode != 200 && viewModel.password.isNotEmpty() && viewModel.loginCode != 0) {
+                        if (viewModel.loginCode != 200 && viewModel.loginCode != 0) {
                             Text(text = "学号或密码错误！", color = MaterialTheme.colorScheme.error)
                         }
                     },

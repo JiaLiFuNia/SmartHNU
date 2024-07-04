@@ -448,8 +448,7 @@ fun PersonScreen(
                                 Box(
                                     modifier = Modifier
                                         .height(150.dp)
-                                        .fillMaxWidth()
-                                        .fillMaxHeight(),
+                                        .fillMaxSize(),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     CircularProgressIndicator()
@@ -485,10 +484,24 @@ fun PersonScreen(
                                         }
                                     }
                                 else
-                                    Text(text = "今日无课程", color = Color.Gray)
+                                    Box(
+                                        modifier = Modifier
+                                            .height(150.dp)
+                                            .fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(text = "今日无课程", color = Color.Gray)
+                                    }
                             }
                         } else
-                            Text(text = "暂无信息", color = Color.Gray)
+                            Box(
+                                modifier = Modifier
+                                    .height(150.dp)
+                                    .fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(text = "暂无信息", color = Color.Gray)
+                            }
                     }
                 )
                 Spacer(modifier = Modifier.height(14.dp))
@@ -506,22 +519,32 @@ fun PersonScreen(
                     imageVector = checkboxes[1].imageVector,
                     content = {
                         if (viewModel.isLoginSuccess) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .height(180.dp)
-                                    .padding(10.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
                                 if (viewModel.isGettingJD)
-                                    CircularProgressIndicator()
+                                    Box(
+                                        modifier = Modifier
+                                            .height(150.dp)
+                                            .fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
                                 else {
                                     if (viewModel.jdList.size == 0)
-                                        Text(text = "未能获取你的成绩信息", color = Color.Gray)
+                                        Box(
+                                            modifier = Modifier
+                                                .height(150.dp)
+                                                .fillMaxWidth()
+                                                .fillMaxHeight(),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "未能获取到你的成绩信息",
+                                                color = Color.Gray
+                                            )
+                                        }
                                     else
                                         GPAChangeLineChart(viewModel.jdList)
                                 }
-                            }
                         } else
                             Box(
                                 modifier = Modifier
