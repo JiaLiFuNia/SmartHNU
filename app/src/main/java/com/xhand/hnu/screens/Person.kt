@@ -30,6 +30,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -293,8 +294,10 @@ fun PersonScreen(
                     .padding(start = 15.dp, end = 15.dp)
             ) {
                 Spacer(modifier = Modifier.height(15.dp))
-                Card(
-                    elevation = CardDefaults.cardElevation(4.dp),
+                ElevatedCard(
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 6.dp
+                    ),
                     onClick = {
                         if (userInfo == null) {
                             Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
@@ -434,7 +437,7 @@ fun PersonScreen(
                         /*if (userInfo == null) {
                             Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
                         } else {*/
-                        checkboxes[0].route?.let { navController.navigate(it) }
+                        // checkboxes[0].route?.let { navController.navigate(it) }
                         //  }
                     },
                     text = checkboxes[0].text,
@@ -459,11 +462,11 @@ fun PersonScreen(
                                                 )
                                                     .show()
                                             } else {
-                                                checkboxes[0].route?.let {
+                                                /*checkboxes[0].route?.let {
                                                     navController.navigate(
                                                         it
                                                     )
-                                                }
+                                                }*/
                                             }
                                         }
                                     )
@@ -490,7 +493,6 @@ fun PersonScreen(
 
                     }
                 )
-
                 Spacer(modifier = Modifier.height(14.dp))
                 PersonCardItem(
                     isChecked = checkboxes[1].isChecked,

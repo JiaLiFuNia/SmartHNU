@@ -67,7 +67,7 @@ fun GradeScreen(
     val gradeList = viewModel.gradeList
     Log.i("TAG666", gradeList.toString())
     var selectedIndex by remember { mutableIntStateOf(0) }
-    val options = listOf("默认", "成绩", "学分")
+    val options = listOf("默认", "成绩")
     var cjdm by remember {
         mutableStateOf("")
     }
@@ -88,6 +88,7 @@ fun GradeScreen(
                 xnxqdm = "",
                 xdfsmc = "",
                 cjfsmc = "",
+                order = 0
             )
         )
     }
@@ -200,9 +201,8 @@ fun GradeScreen(
                     Log.i("TAG62", matchedElements.toString())
                     gradeList.sortBy {
                         when (selectedIndex) {
-                            0 -> null
+                            0 -> it.order.toString()
                             1 -> it.zcjfs.toString()
-                            3 -> it.xf.toString()
                             else -> null
                         }
                     }

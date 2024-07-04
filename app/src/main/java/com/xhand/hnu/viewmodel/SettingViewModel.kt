@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -44,7 +45,9 @@ import com.xhand.hnu.network.NewsDetailService
 import com.xhand.hnu.network.ScheduleService
 import com.xhand.hnu.network.UpdateService
 import kotlinx.coroutines.delay
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 
@@ -259,6 +262,7 @@ class SettingsViewModel : ViewModel() {
     // 成绩请求
     suspend fun gradeService() {
         gradeList.clear() // 下拉刷新时置空
+        var order = 0
         for (term in gradeTerm) {
             val res = userInfo?.let {
                 gradeService.gradePost(
@@ -268,6 +272,10 @@ class SettingsViewModel : ViewModel() {
             }
             if (res != null) {
                 if (res.code.toInt() == 200) {
+                    for (i in res.kccjList) {
+                        order += 1
+                        i.order = order
+                    }
                     gradeList.addAll(res.kccjList)
                     Log.i("TAG666", gradeList.toString())
                 } else {
@@ -402,24 +410,24 @@ class SettingsViewModel : ViewModel() {
     var haveClassRoom = mutableListOf<Jszylist>()
     var allClassRoom = mutableListOf<Jszylist>()
     var isGettingRoom by mutableStateOf(true)
-    private val currentDate = getCurrentDate()
     val buildingsSave = listOf(
-        ClassroomPost("104", "启智楼", currentDate),
-        ClassroomPost("107", "新五五四楼", currentDate),
+        ClassroomPost("104", "启智楼", ""),
+        ClassroomPost("107", "新五五四楼", ""),
         // ClassroomPost("119", "新联楼", currentDate),
         // ClassroomPost("301", "求是中楼（东区B楼）", currentDate),
         // ClassroomPost("302", "求是西楼（东区A楼）", currentDate),
         // ClassroomPost("307", "求是东楼", currentDate),
-        ClassroomPost("102", "文渊楼", currentDate),
+        ClassroomPost("102", "文渊楼", ""),
         // ClassroomPost("312", "综合实训楼", currentDate),
-        ClassroomPost("310", "文昌楼（东综）", currentDate)
+        ClassroomPost("310", "文昌楼（东综）", "")
     )
 
-    suspend fun classroomService() {
+    suspend fun classroomService(date: String) {
         haveClassRoom.clear()
         allClassRoom.clear()
         try {
             for (i in buildingsSave) {
+                i.rq = date
                 val res = userInfo?.let {
                     gradeService.classroomData(i, token = it.token)
                 }
@@ -483,7 +491,7 @@ class SettingsViewModel : ViewModel() {
         }
     }
 
-    private fun getCurrentDate(): String {
+    fun getCurrentDates(): String {
         val currentDate = LocalDate.now()
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val formattedDate = currentDate.format(formatter)

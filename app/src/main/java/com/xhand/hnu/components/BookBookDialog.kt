@@ -86,8 +86,7 @@ fun BookBookDialog(viewModel: SettingsViewModel, kcrwdm: String, xnxqdm: String)
         },
         onDismissRequest = {  },
         confirmButton = {
-            if (viewModel.bookAbleList.isNotEmpty())
-                TextButton(onClick = {  }) {
+            TextButton(onClick = { }, enabled = viewModel.bookAbleList.isNotEmpty()) {
                     Text(text = "选订")
                 }
         },

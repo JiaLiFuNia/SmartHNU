@@ -79,7 +79,8 @@ data class KccjList(
     val xnxqdm: String, // 学期
     val xdfsmc: String, // 类型
     val cjfsmc: String, // 成绩类型
-    val zcj: String // 成绩
+    val zcj: String, // 成绩
+    var order: Int
 )
 
 
@@ -269,7 +270,7 @@ data class Jxllist(
 data class ClassroomPost(
     val jzwdm: String,
     val jzwmc: String,
-    val rq: String,
+    var rq: String,
 )
 
 

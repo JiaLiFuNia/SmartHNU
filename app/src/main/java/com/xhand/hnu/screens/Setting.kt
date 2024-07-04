@@ -131,11 +131,11 @@ fun SettingScreen(viewModel: SettingsViewModel) {
             BasicListItem(leadingText = stringResource(R.string.about))
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.0.7.4_beta.11",
+                supportingText = "Copyright 2023-2024 Xhand v2.0.7.4_beta.12",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = {
                     Intent(Intent.ACTION_VIEW).also {
-                        it.data = Uri.parse("https://xhand.fun")
+                        it.data = Uri.parse("https://www.123pan.com/s/uyHuVv-dTdjH.html")
                         if (it.resolveActivity(context.packageManager) != null) {
                             context.startActivity(it)
                         }
@@ -153,7 +153,14 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                 headlineText = stringResource(R.string.dev_title),
                 supportingText = stringResource(R.string.dev_name),
                 leadingImageVector = R.drawable.ic_outline_person,
-                onClick = { }
+                onClick = {
+                    Intent(Intent.ACTION_VIEW).also {
+                        it.data = Uri.parse("https://xhand.fun")
+                        if (it.resolveActivity(context.packageManager) != null) {
+                            context.startActivity(it)
+                        }
+                    }
+                }
             )
             BasicListItem(
                 headlineText = stringResource(R.string.feedback_title),
@@ -162,19 +169,6 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                 onClick = {
                     viewModel.copyText(cbManager, "2695520089@qq.com")
                     Toast.makeText(context, "已复制邮件地址", Toast.LENGTH_SHORT).show()
-                }
-            )
-            BasicListItem(
-                headlineText = stringResource(R.string.open_source_code_title),
-                supportingText = stringResource(R.string.open_source_code_desc),
-                leadingImageVector = R.drawable.ic_code,
-                onClick = {
-                    Intent(Intent.ACTION_VIEW).also {
-                        it.data = Uri.parse("https://xhand.fun")
-                        if (it.resolveActivity(context.packageManager) != null) {
-                            context.startActivity(it)
-                        }
-                    }
                 }
             )
         }

@@ -111,6 +111,7 @@ fun pppp() {
             xnxqdm = "202301",
             xdfsmc = "必修",
             cjfsmc = "百分制",
+            order = 0
         ), viewModel = SettingsViewModel(),
         cjdm = ""
     )
@@ -135,6 +136,7 @@ fun ppppp() {
             xnxqdm = "202301",
             xdfsmc = "必修",
             cjfsmc = "百分制",
+            order = 0
         ), viewModel = SettingsViewModel(), cjdm = ""
     )
 }
@@ -158,6 +160,7 @@ fun pppppp() {
             xnxqdm = "202301",
             xdfsmc = "必修",
             cjfsmc = "五级制",
+            order = 0
         ), viewModel = SettingsViewModel(),
         cjdm = ""
     )

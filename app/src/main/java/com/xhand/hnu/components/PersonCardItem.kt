@@ -38,7 +38,9 @@ fun PersonCardItem(
 ) {
     if (isChecked)
         Card(
-            elevation = CardDefaults.cardElevation(4.dp),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 6.dp
+            ),
             modifier = Modifier
                 .fillMaxWidth(),
             onClick = onclick,

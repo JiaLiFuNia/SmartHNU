@@ -55,6 +55,7 @@ fun pp() {
             xnxqdm = "202301",
             xdfsmc = "类型",
             cjfsmc = "百分制",
+            order = 0
         ), modifier = Modifier.clickable { }
     )
 }

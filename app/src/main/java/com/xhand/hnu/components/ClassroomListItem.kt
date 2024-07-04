@@ -7,6 +7,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.xhand.hnu.model.entity.Jszylist
 
@@ -20,7 +21,8 @@ fun ClassroomListItem(
     ListItem(
         headlineContent = {
             Text(
-                text = text
+                text = text,
+                fontWeight = FontWeight.Bold
             )
         },
         trailingContent = {
