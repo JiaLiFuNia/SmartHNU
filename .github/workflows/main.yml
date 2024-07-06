@@ -34,7 +34,7 @@ jobs:
       env:
         BUILD_TOOLS_VERSION: "34.0.0"
         
-    - run: mv ${{steps.sign_app.outputs.signedReleaseFile}} LittleGooseOffice.apk
+    - run: mv ${{steps.sign_app.outputs.signedReleaseFile}} SmartHNU.apk
     - uses: ncipollo/release-action@v1
       with:
         artifacts: "*.apk"
