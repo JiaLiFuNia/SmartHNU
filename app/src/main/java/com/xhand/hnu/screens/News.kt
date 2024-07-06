@@ -25,8 +25,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -53,11 +55,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.graphics.alpha
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -115,11 +122,17 @@ fun NavigationScreen(viewModel: SettingsViewModel, newsViewModel: NewsViewModel)
         composable("detail_screen") {
             ArticleDetailScreen(
                 onBack = { navController.popBackStack() },
-                viewModel = viewModel
+                viewModel = viewModel,
+                newsViewModel = newsViewModel
             )
         }
     }
 }
+
+data class newsOptions(
+    val title: String,
+    val source: String
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -131,8 +144,13 @@ fun NewsScreen(
     val showBottomSheet = remember {
         mutableStateOf(false)
     }
-    val options = listOf(
-        "通知公告", "师大要闻", "新闻速递", "教务通知", "公示公告", "考务管理"
+    val newsOptions = listOf(
+        newsOptions("通知公告", "河南师范大学主页"),
+        newsOptions("师大要闻", "河南师范大学主页"),
+        newsOptions("新闻速递", "河南师范大学主页"),
+        newsOptions("教务通知", "河南师范大学教务处"),
+        newsOptions("公示公告", "河南师范大学教务处"),
+        newsOptions("考务管理", "河南师范大学教务处"),
     )
     var selectedOption by remember { mutableIntStateOf(0) }
     val scrollState = rememberScrollState()
@@ -169,6 +187,9 @@ fun NewsScreen(
     }
     var searchText by remember {
         mutableStateOf("")
+    }
+    var historyListIndex by remember {
+        mutableIntStateOf(0)
     }
     LaunchedEffect(searchText) {
         newsViewModel.isSearching = true
@@ -213,10 +234,10 @@ fun NewsScreen(
                                 )
                             }
                         else
-                            IconButton(onClick = { searchBarExpand = true }) {
+                            IconButton(onClick = { showBottomSheet.value = true }) {
                                 Icon(
-                                    Icons.Default.Search,
-                                    contentDescription = "搜索"
+                                    Icons.Default.Menu,
+                                    contentDescription = "其他"
                                 )
                             }
                     },
@@ -230,7 +251,12 @@ fun NewsScreen(
                                 )
                             }
                         else
-                            IconButton(onClick = { searchText = "" }) {
+                            IconButton(
+                                onClick = {
+                                    if (searchText == "") searchBarExpand = false else searchText =
+                                        ""
+                                }
+                            ) {
                                 Icon(
                                     Icons.Default.Close,
                                     contentDescription = "close"
@@ -285,7 +311,15 @@ fun NewsScreen(
                                 .verticalScroll(scrollState),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            newsViewModel.searchHistory.forEach { article ->
+                            Text(
+                                text = "近期搜索",
+                                fontSize = 13.sp,
+                                modifier = Modifier
+                                    .padding(start = 10.dp, top = 10.dp)
+                                    .fillMaxWidth(),
+                                textAlign = TextAlign.Left
+                            )
+                            newsViewModel.searchHistory.forEachIndexed { index, article ->
                                 ListItem(
                                     headlineContent = { Text(text = article) },
                                     leadingContent = {
@@ -298,7 +332,8 @@ fun NewsScreen(
                                         containerColor = Color.Transparent
                                     ),
                                     modifier = Modifier
-                                        .clickable { searchText = article })
+                                        .clickable { searchText = article }
+                                )
                             }
                         }
                 }
@@ -306,11 +341,11 @@ fun NewsScreen(
         }
         var selectedTabIndex by remember { mutableIntStateOf(0) }
         PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
-            options.forEachIndexed { index, title ->
+            newsOptions.forEachIndexed { index, newsOption ->
                 Tab(
                     selected = selectedTabIndex == index,
                     onClick = { selectedTabIndex = index },
-                    text = { Text(text = title.substring(0, 2)) }
+                    text = { Text(text = newsOption.title.substring(0, 2)) }
                 )
             }
         }
@@ -371,7 +406,7 @@ fun NewsScreen(
                             }
                         }
                     newsViewModel.list.forEach { article ->
-                        if (article.type == options[selectedTabIndex]) {
+                        if (article.type == newsOptions[selectedTabIndex].title) {
                             ArticleListItem(
                                 article = article,
                                 modifier = Modifier
@@ -392,24 +427,24 @@ fun NewsScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.Center
         ) {
-            options.forEachIndexed { index, option ->
+            newsOptions.forEachIndexed { index, newsOption ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
                         .selectable(
-                            selected = options[selectedOption] == option,
+                            selected = newsOptions[selectedOption] == newsOption,
                             onClick = { selectedOption = index }
                         )
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
-                        selected = options[selectedOption] == option,
+                        selected = newsOptions[selectedOption] == newsOption,
                         onClick = null
                     )
                     Text(
-                        text = option,
+                        text = newsOption.source,
                         modifier = Modifier.padding(start = 16.dp)
                     )
                 }

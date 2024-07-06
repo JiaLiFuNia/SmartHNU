@@ -13,17 +13,22 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
 import com.xhand.hnu.components.BasicListItem
@@ -33,6 +38,7 @@ import com.xhand.hnu.components.ShowAlert
 import com.xhand.hnu.components.ShowLoginDialog
 import com.xhand.hnu.components.SwitchListItem
 import com.xhand.hnu.model.entity.DarkMode
+import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
 
 fun DarkMode.toStringResourceId(): Int {
@@ -45,7 +51,7 @@ fun DarkMode.toStringResourceId(): Int {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingScreen(viewModel: SettingsViewModel) {
+fun SettingScreen(viewModel: SettingsViewModel, newsViewModel: NewsViewModel) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
     val context = LocalContext.current
@@ -128,10 +134,23 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                     darkModeIndex.value = index
                 }
             )
+            BasicListItem(leadingText = "新闻")
+            var sliderPosition = newsViewModel.sliderPosition
+            Column(
+                modifier = Modifier.padding(horizontal = 20.dp)
+            ) {
+                Slider(
+                    value = sliderPosition,
+                    onValueChange = { sliderPosition = it },
+                    steps = 3,
+                    valueRange = 2f..10f
+                )
+                Text(text = "${sliderPosition.toInt()}")
+            }
             BasicListItem(leadingText = stringResource(R.string.about))
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.0.7.4_beta.13",
+                supportingText = "Copyright 2023-2024 Xhand v2.0.7.6_beta.14",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = {
                     Intent(Intent.ACTION_VIEW).also {
@@ -142,12 +161,13 @@ fun SettingScreen(viewModel: SettingsViewModel) {
                     }
                 }
             )
-            SwitchListItem(
+            BasicListItem(
+                headlineText = "检查更新",
+                supportingText = "点击以检查更新",
                 leadingImageVector = R.drawable.ic_refresh,
-                headlineText = stringResource(R.string.update),
-                supportingText = "开启以自动检测更新",
-                value = viewModel.ifUpdate,
-                onValueChanged = { viewModel.ifUpdate = !viewModel.ifUpdate }
+                onClick = {
+                    viewModel.updateRes("2.0.7.6_beta.14")
+                }
             )
             BasicListItem(
                 headlineText = stringResource(R.string.dev_title),

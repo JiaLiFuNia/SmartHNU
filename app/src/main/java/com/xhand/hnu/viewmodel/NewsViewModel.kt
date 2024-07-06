@@ -1,21 +1,36 @@
 package com.xhand.hnu.viewmodel
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.util.Base64
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.xhand.hnu.model.DataManager
 import com.xhand.hnu.model.entity.ArticleListEntity
 import com.xhand.hnu.network.NewsListService
 import com.xhand.hnu.network.SearchService
 import com.xhand.hnu.network.getNewsList
 import com.xhand.hnu.network.getPicList
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 
 @SuppressLint("MutableCollectionMutableState")
-class NewsViewModel : ViewModel() {
+class NewsViewModel(context: Context) :
+    ViewModel() {
+    private val dataManager = DataManager(context)
+
+    init {
+        viewModelScope.launch {
+            val historyList = dataManager.historyList.firstOrNull()
+            searchHistory = historyList?.toMutableList() ?: mutableListOf()
+        }
+    }
 
     // 新闻列表
     var list by mutableStateOf(mutableListOf<ArticleListEntity>())
@@ -57,12 +72,14 @@ class NewsViewModel : ViewModel() {
     var isRefreshing by mutableStateOf(true)
     var isSearching by mutableStateOf(true)
 
+
+    var sliderPosition by mutableFloatStateOf(4f)
     // 新闻列表请求
     suspend fun newsList() {
         list.clear()
         try {
             for (type in newsListType) {
-                for (i in 1..3) {
+                for (i in 1..sliderPosition.toInt()) {
                     val htmlRes = newsListService.getNewsList(i.toString(), type.key)
                     list.addAll(
                         getNewsList(
@@ -74,7 +91,7 @@ class NewsViewModel : ViewModel() {
                 }
             }
             for (type in teacherNewsListType) {
-                for (i in 1..3) {
+                for (i in 1..sliderPosition.toInt()) {
                     val htmlRes = newsListService.getTeacherNewsList(i.toString(), type.key)
                     list.addAll(
                         getNewsList(
@@ -93,7 +110,7 @@ class NewsViewModel : ViewModel() {
     // 搜索列表请求
     suspend fun searchRes(content: String) {
         searchList.clear()
-        for (i in 1..3) {
+        for (i in 1..sliderPosition.toInt()) {
             val searchKeys =
                 """[{"field":"pageIndex","value":1},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$content"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
             val searchKeyEncode = Base64.encodeToString(searchKeys.toByteArray(), 0)
@@ -109,8 +126,12 @@ class NewsViewModel : ViewModel() {
         if (searchList.isNotEmpty()) {
             if (content in searchHistory)
                 null
-            else
+            else {
                 searchHistory.add(content)
+                viewModelScope.launch {
+                    dataManager.saveHistoryList(searchHistory)
+                }
+            }
         }
     }
 

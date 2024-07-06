@@ -37,7 +37,6 @@ import com.xhand.hnu.R
 import com.xhand.hnu.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ShowLoginDialog(
     viewModel: SettingsViewModel

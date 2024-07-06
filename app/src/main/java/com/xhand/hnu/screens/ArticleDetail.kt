@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
+import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
 import net.dankito.readability4j.Article
 import net.dankito.readability4j.Readability4J
@@ -54,7 +55,8 @@ import net.dankito.readability4j.Readability4J
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun ArticleDetailScreen(
-    viewModel: SettingsViewModel, onBack: () -> Unit
+    viewModel: SettingsViewModel, onBack: () -> Unit,
+    newsViewModel: NewsViewModel
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val context = LocalContext.current

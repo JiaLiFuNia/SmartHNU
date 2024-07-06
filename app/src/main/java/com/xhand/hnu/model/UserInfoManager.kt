@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.map
 class UserInfoManager(private val context: Context) {
 
     companion object {
-        private val Context.userStore: DataStore<Preferences> by preferencesDataStore("user_token")
+        private val Context.userStore: DataStore<Preferences> by preferencesDataStore("userStore")
         val LOGGED = intPreferencesKey("LOGGED")
         val USERINFO = stringPreferencesKey("USERINFO")
     }
@@ -34,5 +34,10 @@ class UserInfoManager(private val context: Context) {
         }
     }
 
-
+    suspend fun clear() {
+        context.userStore.edit {
+            it[LOGGED] = 0
+            it[USERINFO] = ""
+        }
+    }
 }

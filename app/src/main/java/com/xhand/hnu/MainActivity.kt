@@ -130,8 +130,8 @@ class MainActivity : ComponentActivity() {
                             Box(modifier = Modifier.padding(it)) {
                                 when (selectedItemIndex) {
                                     0 -> NavigationPersonScreen(viewModel, PersonViewModel())
-                                    1 -> NavigationScreen(viewModel, NewsViewModel())
-                                    2 -> SettingScreen(viewModel)
+                                    1 -> NavigationScreen(viewModel, NewsViewModel(LocalContext.current))
+                                    2 -> SettingScreen(viewModel, NewsViewModel(LocalContext.current))
                                 }
                             }
                         }

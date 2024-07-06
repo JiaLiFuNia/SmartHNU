@@ -518,43 +518,28 @@ fun PersonScreen(
                     rightText = null,
                     imageVector = checkboxes[1].imageVector,
                     content = {
+                        Box(
+                            modifier = Modifier
+                                .height(200.dp).padding(10.dp)
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
                         if (viewModel.isLoginSuccess) {
-                                if (viewModel.isGettingJD)
-                                    Box(
-                                        modifier = Modifier
-                                            .height(150.dp)
-                                            .fillMaxSize(),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        CircularProgressIndicator()
-                                    }
-                                else {
-                                    if (viewModel.jdList.size == 0)
-                                        Box(
-                                            modifier = Modifier
-                                                .height(150.dp)
-                                                .fillMaxWidth()
-                                                .fillMaxHeight(),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(
-                                                text = "未能获取到你的成绩信息",
-                                                color = Color.Gray
-                                            )
-                                        }
-                                    else
-                                        GPAChangeLineChart(viewModel.jdList)
-                                }
-                        } else
-                            Box(
-                                modifier = Modifier
-                                    .height(150.dp)
-                                    .fillMaxWidth()
-                                    .fillMaxHeight(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(text = "暂无信息", color = Color.Gray)
+                            if (viewModel.isGettingJD)
+
+                                CircularProgressIndicator()
+                            else {
+                                if (viewModel.jdList.size == 0)
+                                    Text(
+                                        text = "未能获取到你的成绩信息",
+                                        color = Color.Gray
+                                    )
+                                else
+                                    GPAChangeLineChart(viewModel.jdList)
                             }
+                        } else
+                                Text(text = "暂无信息", color = Color.Gray)
+                        }
                     }
                 )
                 Spacer(modifier = Modifier.height(14.dp))

@@ -64,6 +64,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
             loginCode = isLogged ?: 0
         }
     }
+
     var readNotice by mutableStateOf(false)
     var checkboxes = mutableStateListOf(
         ToggleableInfo(
@@ -269,6 +270,13 @@ class SettingsViewModel(context: Context) : ViewModel() {
             loginCode = res.code
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
+        }
+    }
+    fun clearUserInfo() {
+        viewModelScope.launch {
+            userInfoManager.clear()
+            userInfo = null
+            loginCode = 0
         }
     }
 
@@ -521,8 +529,9 @@ class SettingsViewModel(context: Context) : ViewModel() {
         }
     }*/
 
+
     // 软件更新请求
-    suspend fun updateRes(currentVersion: String) {
+    fun updateRes(currentVersion: String) = viewModelScope.launch {
         val res: Update
         try {
             res = updateService.update()

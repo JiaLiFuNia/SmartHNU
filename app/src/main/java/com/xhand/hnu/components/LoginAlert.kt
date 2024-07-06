@@ -22,6 +22,7 @@ fun ShowAlert(
                     viewModel.isShowAlert = false
                     viewModel.userInfo = null
                     viewModel.loginCode = 0
+                    viewModel.clearUserInfo()
                 }
             ) {
                 Text("确认")

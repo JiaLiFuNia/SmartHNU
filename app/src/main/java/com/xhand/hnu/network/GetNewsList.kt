@@ -12,9 +12,7 @@ fun getNewsList(str: String?, type: String, rule: Int): MutableList<ArticleListE
         2 -> getNewsList2(str, type) // 搜索
         3 -> getNewsList3(str, type) // 教务
         4 -> getNewsList4(str, type) // 通知公告
-        else -> {
-            getNewsList1(str, type) // 主页
-        }
+        else -> getNewsList1(str, type) // 主页
     }
     return firstList
 }
