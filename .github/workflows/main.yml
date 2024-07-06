@@ -28,3 +28,9 @@ jobs:
         alias: ${{ secrets.ALIAS }}
         keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
         keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "*.apk"
+        token: ${{ github.token }}
+        generateReleaseNotes: true
