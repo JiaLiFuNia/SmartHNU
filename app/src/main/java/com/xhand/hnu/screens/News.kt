@@ -26,9 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -36,8 +34,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Tab
@@ -53,18 +51,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.alpha
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -129,7 +125,7 @@ fun NavigationScreen(viewModel: SettingsViewModel, newsViewModel: NewsViewModel)
     }
 }
 
-data class newsOptions(
+data class NewsOptions(
     val title: String,
     val source: String
 )
@@ -145,12 +141,17 @@ fun NewsScreen(
         mutableStateOf(false)
     }
     val newsOptions = listOf(
-        newsOptions("通知公告", "河南师范大学主页"),
-        newsOptions("师大要闻", "河南师范大学主页"),
-        newsOptions("新闻速递", "河南师范大学主页"),
-        newsOptions("教务通知", "河南师范大学教务处"),
-        newsOptions("公示公告", "河南师范大学教务处"),
-        newsOptions("考务管理", "河南师范大学教务处"),
+        NewsOptions("通知公告", "河南师范大学主页"),
+        NewsOptions("师大要闻", "河南师范大学主页"),
+        NewsOptions("新闻速递", "河南师范大学主页"),
+        NewsOptions("教务通知", "河南师范大学教务处"),
+        NewsOptions("公示公告", "河南师范大学教务处"),
+        NewsOptions("考务管理", "河南师范大学教务处"),
+    )
+    val newsTypes = listOf(
+        "河南师范大学主页",
+        "河南师范大学教务处",
+        "数学与信息科学学院"
     )
     var selectedOption by remember { mutableIntStateOf(0) }
     val scrollState = rememberScrollState()
@@ -243,7 +244,7 @@ fun NewsScreen(
                     },
                     trailingIcon = {
                         if (!searchBarExpand)
-                            IconButton(onClick = { }) {
+                            IconButton(onClick = { onRefresh() }) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.hnu),
                                     contentDescription = "hnu",
@@ -253,8 +254,10 @@ fun NewsScreen(
                         else
                             IconButton(
                                 onClick = {
-                                    if (searchText == "") searchBarExpand = false else searchText =
-                                        ""
+                                    if (searchText == "")
+                                        searchBarExpand = false
+                                    else
+                                        searchText = ""
                                 }
                             ) {
                                 Icon(
@@ -339,85 +342,93 @@ fun NewsScreen(
                 }
             }
         }
+        val newsPagerState = rememberPagerState(pageCount = { newsOptions.size })
         var selectedTabIndex by remember { mutableIntStateOf(0) }
-        PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
+        LaunchedEffect(newsPagerState) {
+            snapshotFlow { newsPagerState.currentPage }.collect { page ->
+                selectedTabIndex = page
+            }
+        }
+        ScrollableTabRow(selectedTabIndex = selectedTabIndex) {
             newsOptions.forEachIndexed { index, newsOption ->
                 Tab(
                     selected = selectedTabIndex == index,
                     onClick = { selectedTabIndex = index },
-                    text = { Text(text = newsOption.title.substring(0, 2)) }
+                    text = { Text(text = newsOption.title) }
                 )
             }
         }
-        Log.i("TAG6667", "${newsViewModel.searchList}")
-        if (newsViewModel.isRefreshing) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            PullToRefreshBox(
-                state = state,
-                onRefresh = onRefresh,
-                isRefreshing = isRefreshing,
-                contentAlignment = Alignment.TopStart
-            ) {
-                Column(
+        HorizontalPager(state = newsPagerState) {
+            Log.i("TAG6667", "${newsViewModel.searchList}")
+            if (newsViewModel.isRefreshing) {
+                Box(
                     modifier = Modifier
-                        .verticalScroll(scrollState),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    // if (!isShowSearchBar) {
-                    if (selectedTabIndex == 0)
-                        HorizontalPager(
-                            state = pagerState,
-                            modifier = Modifier
-                                .padding(10.dp)
-                        ) { index ->
-                            Box {
-                                AsyncImage(
-                                    model = pictures[index],
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .aspectRatio(16 / 9f),
-                                    contentScale = ContentScale.Crop
-                                )
-                                Card(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .padding(5.dp)
-                                        .height(25.dp)
-                                        .width(50.dp)
-                                ) {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier.fillMaxSize()
+                    CircularProgressIndicator()
+                }
+            } else {
+                PullToRefreshBox(
+                    state = state,
+                    onRefresh = onRefresh,
+                    isRefreshing = isRefreshing,
+                    contentAlignment = Alignment.TopStart
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .verticalScroll(scrollState),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // if (!isShowSearchBar) {
+                        if (selectedTabIndex == 0)
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier
+                                    .padding(10.dp)
+                            ) { index ->
+                                Box {
+                                    AsyncImage(
+                                        model = pictures[index],
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .aspectRatio(16 / 9f),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Card(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomEnd)
+                                            .padding(5.dp)
+                                            .height(25.dp)
+                                            .width(50.dp)
                                     ) {
-                                        Text(
-                                            text = "${index + 1}/${pictures.size}"
-                                        )
+                                        Box(
+                                            contentAlignment = Alignment.Center,
+                                            modifier = Modifier.fillMaxSize()
+                                        ) {
+                                            Text(
+                                                text = "${index + 1}/${pictures.size}"
+                                            )
+                                        }
                                     }
                                 }
                             }
+                        newsViewModel.list.forEach { article ->
+                            if (article.type == newsOptions[selectedTabIndex].title) {
+                                ArticleListItem(
+                                    article = article,
+                                    modifier = Modifier
+                                        .clickable {
+                                            navController.navigate("detail_screen")
+                                            viewModel.url = article.url
+                                        }
+                                )
+                            }
                         }
-                    newsViewModel.list.forEach { article ->
-                        if (article.type == newsOptions[selectedTabIndex].title) {
-                            ArticleListItem(
-                                article = article,
-                                modifier = Modifier
-                                    .clickable {
-                                        navController.navigate("detail_screen")
-                                        viewModel.url = article.url
-                                    }
-                            )
                         }
                     }
-                }
             }
         }
     }
@@ -427,24 +438,24 @@ fun NewsScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.Center
         ) {
-            newsOptions.forEachIndexed { index, newsOption ->
+            newsTypes.forEachIndexed { index, newsType ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
                         .selectable(
-                            selected = newsOptions[selectedOption] == newsOption,
+                            selected = newsTypes[selectedOption] == newsType,
                             onClick = { selectedOption = index }
                         )
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
-                        selected = newsOptions[selectedOption] == newsOption,
+                        selected = newsTypes[selectedOption] == newsType,
                         onClick = null
                     )
                     Text(
-                        text = newsOption.source,
+                        text = newsType,
                         modifier = Modifier.padding(start = 16.dp)
                     )
                 }

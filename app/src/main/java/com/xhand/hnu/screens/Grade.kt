@@ -114,10 +114,8 @@ fun GradeScreen(
         isRefreshing = true
         coroutineScope.launch {
             delay(timeMillis = 1000)
-            if (viewModel.isLoginSuccess) {
                 viewModel.gradeService()
                 isRefreshing = false
-            }
         }
     }
     LaunchedEffect(Unit) {

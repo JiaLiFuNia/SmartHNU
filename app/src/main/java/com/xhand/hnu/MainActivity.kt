@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
             MyApplicationTheme {
                 val bottomNavigationItems = listOf(
                     BottomNavigationItem(
-                        title = "主页",
+                        title = "我的",
                         selectedIcon = R.drawable.ic_filled_person,
                         unselectedIcon = R.drawable.ic_outline_person,
                         hasNews = remember { mutableStateOf(false) }

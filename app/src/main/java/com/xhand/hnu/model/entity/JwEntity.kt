@@ -354,3 +354,39 @@ data class Kxjcdata(
     val pcmc: String,
     val jcmc: String,
 )
+
+data class HadBookDetailEntity(
+    val msg: String,
+    val code: Int,
+    val yxjcdatas: List<Yxjcdata>
+)
+
+data class Yxjcdata (
+    val ssmc: String,
+    val zkbl: Double,
+    val rownum: Int,
+    val hasfile: Int,
+    val isfs: String,
+    val isbn: String,
+    val xsxm: String,
+    val pcdm: String,
+    val cgfsmc: String,
+    val jcdj: Double,
+    val xsxydm: String,
+    val ists: String,
+    val kcmc: String,
+    val xsyxmc: String,
+    val iszd: String,
+    val lxr: String,
+    val zb: String,
+    val lxfs: String,
+    val jcimgdatas: List<Any?>,
+    val zymc: String,
+    val bjmc: String,
+    val jcdm: String,
+    val cbs: String,
+    val kzxqmc: String,
+    val xsbh: String,
+    val pcmc: String,
+    val jcmc: String
+)

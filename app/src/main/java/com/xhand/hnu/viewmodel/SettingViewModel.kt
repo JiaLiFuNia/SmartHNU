@@ -40,6 +40,7 @@ import com.xhand.hnu.model.entity.Update
 import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.model.entity.Xdjcdata
 import com.xhand.hnu.model.entity.Xscj
+import com.xhand.hnu.model.entity.Yxjcdata
 import com.xhand.hnu.model.entity.teacherPost
 import com.xhand.hnu.network.GradeService
 import com.xhand.hnu.network.LoginService
@@ -149,7 +150,6 @@ class SettingsViewModel(context: Context) : ViewModel() {
     var userInfo: UserInfoEntity? = null
 
     // 软件更新
-    var ifUpdate by mutableStateOf(true) // 用户是否选择自动更新
     var ifNeedUpdate by mutableStateOf(false) // 是否有更新
 
     // 展示登录弹窗
@@ -183,7 +183,6 @@ class SettingsViewModel(context: Context) : ViewModel() {
     var jdList = mutableListOf<JDList>()
 
     // 成绩列表——临时
-    private var gradeListTemp = mutableListOf<KccjList>()
     private var teacherListTemp = mutableListOf<AllPjxxList>()
 
     // 是否正在刷新
@@ -192,7 +191,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
     var htmlParsing by mutableStateOf("")
 
     // 学号 年级
-    val grade: String
+    private val grade: String
         get() {
             return userInfo?.studentID?.substring(0, 2) ?: "22"
         }
@@ -476,10 +475,10 @@ class SettingsViewModel(context: Context) : ViewModel() {
 
     var booksList = mutableListOf<Xdjcdata>()
     var isGettingBook by mutableStateOf(true)
-    suspend fun bookService() {
+    suspend fun bookService(xnxqdm: String) {
         try {
             val res =
-                userInfo?.let { gradeService.bookDetail(BookPost("", "202401"), token = it.token) }
+                userInfo?.let { gradeService.bookDetail(BookPost("", xnxqdm), token = it.token) }
             if (res != null) {
                 Log.i("TAG667", "$res")
                 if (res.code == 200)
@@ -491,6 +490,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
         }
     }
 
+    // 获取可选
     var bookAbleList by mutableStateOf(mutableListOf<Kxjcdata>())
     var isGettingBookDetail by mutableStateOf(true)
     suspend fun bookDetailService(kcrwdm: String, xnxqdm: String) {
@@ -514,6 +514,30 @@ class SettingsViewModel(context: Context) : ViewModel() {
         }
     }
 
+    // 获取已选
+    var bookSelectedList by mutableStateOf(mutableListOf<Yxjcdata>())
+    var isGettingBookSelected by mutableStateOf(true)
+    suspend fun bookSelectedService(kcrwdm: String, xnxqdm: String) {
+        try {
+            isGettingBookSelected = true
+            val res = userInfo?.let {
+                gradeService.bookDetail3(
+                    BookDetailPost(kcrwdm, xnxqdm),
+                    token = it.token
+                )
+            }
+            if (res != null) {
+                Log.i("TAG667", "$res")
+                if (res.code == 200)
+                    bookSelectedList = res.yxjcdatas.toMutableList()
+                Log.i("TAG667", "$bookSelectedList")
+            }
+            isGettingBookSelected = false
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
+        }
+    }
+
     fun getCurrentDates(): String {
         val currentDate = LocalDate.now()
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -530,13 +554,14 @@ class SettingsViewModel(context: Context) : ViewModel() {
     }*/
 
 
+    var updateMessage by mutableStateOf(Update("", "", ""))
+    var isShowUpdateDialog by mutableStateOf(false)
     // 软件更新请求
     fun updateRes(currentVersion: String) = viewModelScope.launch {
-        val res: Update
         try {
-            res = updateService.update()
-            ifNeedUpdate = res.version != currentVersion
-            Log.i("TAG666", "${res.version}${currentVersion}${ifNeedUpdate}")
+            updateMessage = updateService.update()
+            ifNeedUpdate = updateMessage.version != currentVersion
+            Log.i("TAG666", "${updateMessage.version}${currentVersion}${ifNeedUpdate}")
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
         }
@@ -546,6 +571,14 @@ class SettingsViewModel(context: Context) : ViewModel() {
     @SuppressLint("StaticFieldLeak")
     fun copyText(cbManager: ClipboardManager, text: String) {
         cbManager.setText(AnnotatedString(text))
+    }
+
+    // 学期转换
+    fun longToShort(xq: String): String {
+        return if (xq.length == 6) {
+            "${xq.substring(0, 4)}-${xq.substring(0, 4).toInt() + 1}-${xq.last()}"
+        } else
+            "${xq.substring(0, 4)}0${xq.last()}"
     }
 }
 

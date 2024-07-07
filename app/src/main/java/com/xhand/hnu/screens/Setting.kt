@@ -18,11 +18,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -37,6 +34,7 @@ import com.xhand.hnu.components.SelectionItem
 import com.xhand.hnu.components.ShowAlert
 import com.xhand.hnu.components.ShowLoginDialog
 import com.xhand.hnu.components.SwitchListItem
+import com.xhand.hnu.components.UpdateDialog
 import com.xhand.hnu.model.entity.DarkMode
 import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
@@ -135,22 +133,21 @@ fun SettingScreen(viewModel: SettingsViewModel, newsViewModel: NewsViewModel) {
                 }
             )
             BasicListItem(leadingText = "新闻")
-            var sliderPosition = newsViewModel.sliderPosition
             Column(
                 modifier = Modifier.padding(horizontal = 20.dp)
             ) {
                 Slider(
-                    value = sliderPosition,
-                    onValueChange = { sliderPosition = it },
+                    value = newsViewModel.sliderPosition,
+                    onValueChange = { newsViewModel.sliderPosition = it },
                     steps = 3,
                     valueRange = 2f..10f
                 )
-                Text(text = "${sliderPosition.toInt()}")
+                Text(text = "${newsViewModel.sliderPosition}")
             }
             BasicListItem(leadingText = stringResource(R.string.about))
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.0.7.6_beta.14",
+                supportingText = "Copyright 2023-2024 Xhand v2.0.7.7_beta.15",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = {
                     Intent(Intent.ACTION_VIEW).also {
@@ -166,7 +163,11 @@ fun SettingScreen(viewModel: SettingsViewModel, newsViewModel: NewsViewModel) {
                 supportingText = "点击以检查更新",
                 leadingImageVector = R.drawable.ic_refresh,
                 onClick = {
-                    viewModel.updateRes("2.0.7.6_beta.14")
+                    viewModel.updateRes("2.0.7.7_beta.15")
+                    if (viewModel.ifNeedUpdate)
+                        viewModel.isShowUpdateDialog = true
+                    else
+                        Toast.makeText(context, "已是最新版本", Toast.LENGTH_SHORT).show()
                 }
             )
             BasicListItem(
@@ -196,7 +197,10 @@ fun SettingScreen(viewModel: SettingsViewModel, newsViewModel: NewsViewModel) {
             ShowAlert(viewModel = viewModel, text = "确定要退出登录吗？")
         }
         if (viewModel.isShowDialog) {
-            ShowLoginDialog(viewModel)
+            ShowLoginDialog(viewModel = viewModel)
+        }
+        if (viewModel.isShowUpdateDialog) {
+            UpdateDialog(viewModel = viewModel)
         }
     }
 }
