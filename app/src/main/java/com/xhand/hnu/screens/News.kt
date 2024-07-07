@@ -397,6 +397,7 @@ fun NewsScreen(
                                             .aspectRatio(16 / 9f),
                                         contentScale = ContentScale.Crop
                                     )
+
                                     Card(
                                         modifier = Modifier
                                             .align(Alignment.BottomEnd)
