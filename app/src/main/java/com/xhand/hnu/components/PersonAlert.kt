@@ -54,12 +54,8 @@ fun ShowAlert(
                             Text(text = "成绩 ${grade.zcjfs} (${grade.zcj})")
                         else
                             Text(text = "成绩 ${grade.zcjfs}")
-                        Text(
-                            text = "期末 ${"%.2f".format(gradeDetail2.cj4)}（${gradeDetail2.bl4}%）"
-                        )
-                        Text(
-                            text = "平时 ${"%.2f".format(gradeDetail2.cj1)}（${gradeDetail2.bl1}%）"
-                        )
+                        Text(text = "期末 ${"%.2f".format(gradeDetail2.cj4)}（${gradeDetail2.bl4}%）")
+                        Text(text = "平时 ${"%.2f".format(gradeDetail2.cj1)}（${gradeDetail2.bl1}%）")
                     }
                     Column(
                         modifier = Modifier.weight(0.4f)
