@@ -342,7 +342,6 @@ fun NewsScreen(
                 }
             }
         }
-
         val newsPagerState = rememberPagerState(pageCount = { newsOptions.size })
         var selectedTabIndex by remember { mutableIntStateOf(0) }
         LaunchedEffect(newsPagerState) {
