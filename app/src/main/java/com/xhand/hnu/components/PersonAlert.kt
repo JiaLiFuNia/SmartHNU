@@ -14,9 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.xhand.hnu.model.entity.KccjList
 import com.xhand.hnu.viewmodel.SettingsViewModel
 
@@ -48,23 +48,24 @@ fun ShowAlert(
                     modifier = Modifier.padding(10.dp)
                 ) {
                     Column(
-                        modifier = Modifier.weight(0.5f)
+                        modifier = Modifier.weight(0.6f)
                     ) {
-                        if (grade.cjfsmc == "五级制") {
+                        if (grade.cjfsmc == "五级制")
                             Text(text = "成绩 ${grade.zcjfs} (${grade.zcj})")
-                        } else
+                        else
                             Text(text = "成绩 ${grade.zcjfs}")
                         Text(
-                            text = "*${gradeDetail2.cj4} ✕ ${gradeDetail2.bl4}% + ${gradeDetail2.cj1} ✕ ${gradeDetail2.bl1}%",
-                            fontSize = 8.sp
+                            text = "期末 ${"%.2f".format(gradeDetail2.cj4)}（${gradeDetail2.bl4}%）"
                         )
-                        Text(text = "绩点 ${grade.cjjd}")
-                        Text(text = "排名 ${gradeDetail.pm} / ${gradeDetail.rs}")
+                        Text(
+                            text = "平时 ${"%.2f".format(gradeDetail2.cj1)}（${gradeDetail2.bl1}%）"
+                        )
                     }
                     Column(
-                        modifier = Modifier.weight(0.5f),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        modifier = Modifier.weight(0.4f)
                     ) {
+                        Text(text = "绩点 ${grade.cjjd}")
+                        Text(text = "排名 ${gradeDetail.pm} / ${gradeDetail.rs}")
                         if (grade.kcdlmc != "博约通识")
                             Text(
                                 text = grade.kcdlmc
@@ -89,5 +90,17 @@ fun ShowAlert(
         confirmButton = {
 
         }
+    )
+}
+
+
+@Preview
+@Composable
+fun ppppp() {
+    val context = LocalContext.current
+    ShowAlert(
+        grade = KccjList("", 0.0, "", "", "", 4.0, "", "形式与政策", "", 2, "", "必修", "", "", 2),
+        viewModel = SettingsViewModel(context),
+        cjdm = "563"
     )
 }
