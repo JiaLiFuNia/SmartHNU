@@ -123,6 +123,6 @@ fun MessageScreen(
                 }
             }
         }
-        MessageDetailDialog(messageDetail = aMessageDetail.value, viewModel = viewModel)
+        MessageDetailDialog(messageDetail = aMessageDetail.value, viewModel = viewModel, cjdm = "")
     }
 }
