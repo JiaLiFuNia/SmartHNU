@@ -93,30 +93,3 @@ fun ShowAlert(
     )
 }
 
-
-@Preview
-@Composable
-fun ppppp() {
-    val context = LocalContext.current
-    ShowAlert(
-        grade = KccjList(
-            "",
-            0.0,
-            "",
-            "博约通识（博约通识）",
-            "约通识",
-            4.0,
-            "",
-            "形式与政策",
-            "",
-            2,
-            "",
-            "必修",
-            "",
-            "",
-            2
-        ),
-        viewModel = SettingsViewModel(context),
-        cjdm = "563"
-    )
-}
