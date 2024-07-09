@@ -43,7 +43,7 @@ data class GradeDetailEntity(
 )
 
 data class GradeInfo(
-    val zcj: Double,
+    val zcj: Number,
     val rs: String,
     val mc: String,
     val z1: String,
@@ -93,10 +93,10 @@ data class GradeDetailsEntity(
 
 data class Xscj(
     val zcj: String, // 总成绩
-    val bl1: Int? = 100, // 平时占比
-    val cj1: Double? = 100.0, // 平时
-    val bl4: Int? = 100, // 期末占比
-    val cj4: Double? = 100.0, // 期末
+    val bl1: Any? = 100, // 平时占比
+    val cj1: Any? = 100.0, // 平时
+    val bl4: Any? = 100, // 期末占比
+    val cj4: Any? = 100.0, // 期末
 )
 
 

@@ -1,5 +1,6 @@
 package com.xhand.hnu.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,32 +45,35 @@ fun ShowAlert(
                     CircularProgressIndicator()
                 }
             } else
-                Row(
+                Column(
                     modifier = Modifier.padding(10.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.weight(0.6f)
-                    ) {
-                        if (grade.cjfsmc == "五级制")
-                            Text(text = "成绩 ${grade.zcjfs} (${grade.zcj})")
-                        else
-                            Text(text = "成绩 ${grade.zcjfs}")
-                        Text(text = "期末 ${"%.2f".format(gradeDetail2.cj4)}（${gradeDetail2.bl4}%）")
-                        Text(text = "平时 ${"%.2f".format(gradeDetail2.cj1)}（${gradeDetail2.bl1}%）")
+                    Row {
+                        Column(
+                            modifier = Modifier.weight(0.48f)
+                        ) {
+                            if (grade.cjfsmc == "五级制")
+                                Text(text = "成绩 ${grade.zcjfs} (${grade.zcj})")
+                            else
+                                Text(text = "成绩 ${grade.zcjfs}")
+
+                            Text(text = "绩点 ${grade.cjjd}")
+                            Text(text = "排名 ${gradeDetail.pm} / ${gradeDetail.rs}")
+                        }
+                        Column(
+                            modifier = Modifier.weight(0.52f),
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            if (gradeDetail2.cj4.toString().isNotEmpty()) {
+                                Text(text = "期末 ${gradeDetail2.cj4}（${gradeDetail2.bl4.toString().split(".")[0]}%）")
+                                Text(text = "平时 ${gradeDetail2.cj1}（${gradeDetail2.bl1.toString().split(".")[0]}%）")
+                            }
+                        }
                     }
-                    Column(
-                        modifier = Modifier.weight(0.4f)
-                    ) {
-                        Text(text = "绩点 ${grade.cjjd}")
-                        Text(text = "排名 ${gradeDetail.pm} / ${gradeDetail.rs}")
-                        if (grade.kcdlmc != "博约通识")
-                            Text(
-                                text = grade.kcdlmc
-                            )
-                        Text(
-                            text = grade.kcflmc.replace("（", "\n").replace("）", "")
-                        )
-                    }
+                    if (grade.kcdlmc != "博约通识")
+                        Text(text = "类型 ${grade.kcdlmc}")
+                    else
+                        Text(text = "类型 ${grade.kcflmc.replace("（", "-").replace("）", "")}")
                 }
         },
         onDismissRequest = {
@@ -95,7 +99,23 @@ fun ShowAlert(
 fun ppppp() {
     val context = LocalContext.current
     ShowAlert(
-        grade = KccjList("", 0.0, "", "", "", 4.0, "", "形式与政策", "", 2, "", "必修", "", "", 2),
+        grade = KccjList(
+            "",
+            0.0,
+            "",
+            "博约通识（博约通识）",
+            "约通识",
+            4.0,
+            "",
+            "形式与政策",
+            "",
+            2,
+            "",
+            "必修",
+            "",
+            "",
+            2
+        ),
         viewModel = SettingsViewModel(context),
         cjdm = "563"
     )

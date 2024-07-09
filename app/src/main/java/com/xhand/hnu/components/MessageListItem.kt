@@ -5,6 +5,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import com.google.gson.Gson
@@ -30,7 +31,7 @@ fun MessageListItem(messageDetail: MessageDetail, modifier: Modifier) {
             },
             modifier = modifier
         )
-    if (messageDetail.type == "cycjtz") {
+    if (messageDetail.type == "cycjtz" || messageDetail.type == "cjtz") {
         val jsonString = messageDetail.msg
         val gson = Gson()
         val myObject = gson.fromJson(jsonString, MyClass::class.java)
@@ -55,7 +56,7 @@ fun MessageListItem(messageDetail: MessageDetail, modifier: Modifier) {
 }
 
 @Composable
-fun MessageDetailDialog(messageDetail: MessageDetail, viewModel: SettingsViewModel) {
+fun MessageDetailDialog(messageDetail: MessageDetail, viewModel: SettingsViewModel, cjdm: String?) {
     if (viewModel.showMessageDetail) {
         if (messageDetail.type == "tksh")
             AlertDialog(
@@ -84,16 +85,21 @@ fun MessageDetailDialog(messageDetail: MessageDetail, viewModel: SettingsViewMod
                     }
                 }
             )
-        if (messageDetail.type == "cycjtz") {
+        if (messageDetail.type == "cycjtz" || messageDetail.type == "cjtz") {
             val jsonString = messageDetail.msg
             val gson = Gson()
             val myObject = gson.fromJson(jsonString, MyClass::class.java)
+            LaunchedEffect(Unit) {
+                if (cjdm != null) {
+                    viewModel.gradeDetailService(cjdm)
+                }
+            }
             AlertDialog(
                 title = {
                     Text(text = "详情")
                 },
                 text = {
-                    Text(text = "${myObject.kcmc}的成绩为：${myObject.zcj}")
+                    Text(text = "${myObject.kcmc} 的成绩为：${myObject.zcj}")
                 },
                 onDismissRequest = {
                 },

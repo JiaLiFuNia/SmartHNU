@@ -132,22 +132,10 @@ fun SettingScreen(viewModel: SettingsViewModel, newsViewModel: NewsViewModel) {
                     darkModeIndex.value = index
                 }
             )
-            BasicListItem(leadingText = "新闻")
-            Column(
-                modifier = Modifier.padding(horizontal = 20.dp)
-            ) {
-                Slider(
-                    value = newsViewModel.sliderPosition,
-                    onValueChange = { newsViewModel.sliderPosition = it },
-                    steps = 3,
-                    valueRange = 2f..10f
-                )
-                Text(text = "${newsViewModel.sliderPosition}")
-            }
             BasicListItem(leadingText = stringResource(R.string.about))
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.0.7.7_beta.15",
+                supportingText = "Copyright 2023-2024 Xhand v2.0.7.9_beta.17",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = {
                     Intent(Intent.ACTION_VIEW).also {
@@ -163,7 +151,7 @@ fun SettingScreen(viewModel: SettingsViewModel, newsViewModel: NewsViewModel) {
                 supportingText = "点击以检查更新",
                 leadingImageVector = R.drawable.ic_refresh,
                 onClick = {
-                    viewModel.updateRes("2.0.7.7_beta.15")
+                    viewModel.updateRes("2.0.7.9_beta.17")
                     if (viewModel.ifNeedUpdate)
                         viewModel.isShowUpdateDialog = true
                     else

@@ -138,7 +138,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
     // 展示登录框
     var showPersonAlert by mutableStateOf(false)
     var showBookAlert by mutableStateOf(false)
-
+    var showBookSelect by mutableStateOf(false)
     // 展示信息详情
     var showMessageDetail by mutableStateOf(false)
 
@@ -216,7 +216,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
         }
 
     // 学期
-    private val gradeTerm: MutableList<String>
+    val gradeTerm: MutableList<String>
         get() {
             return mutableListOf(
                 "20${gradeInt + 3}02",
@@ -475,10 +475,11 @@ class SettingsViewModel(context: Context) : ViewModel() {
 
     var booksList = mutableListOf<Xdjcdata>()
     var isGettingBook by mutableStateOf(true)
+    var selectTerm by mutableIntStateOf(4)
     suspend fun bookService(xnxqdm: String) {
         try {
             val res =
-                userInfo?.let { gradeService.bookDetail(BookPost("", xnxqdm), token = it.token) }
+                userInfo?.let { gradeService.bookDetail(BookPost("", longToShort(xnxqdm)), token = it.token) }
             if (res != null) {
                 Log.i("TAG667", "$res")
                 if (res.code == 200)

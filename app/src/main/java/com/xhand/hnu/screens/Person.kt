@@ -490,7 +490,7 @@ fun PersonScreen(
                                             .fillMaxSize(),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(text = "今日无课程", color = Color.Gray)
+                                        Text(text = "今天没课啦！", color = Color.Gray)
                                     }
                             }
                         } else
