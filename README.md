@@ -40,4 +40,4 @@
 
 ## 下载链接
 
-师韵：[123云盘](https://www.123pan.com/s/uyHuVv-dTdjH.html)
+师韵：[GitHub]([https://www.123pan.com/s/uyHuVv-dTdjH.html](https://github.com/JiaLiFuNia/SmartHNU/releases/latest))
