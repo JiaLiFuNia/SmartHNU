@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.xhand.hnu.screens.NavigationPersonScreen
 import com.xhand.hnu.screens.NavigationScreen
+import com.xhand.hnu.screens.NavigationSettingScreen
 import com.xhand.hnu.screens.SettingScreen
 import com.xhand.hnu.ui.theme.MyApplicationTheme
 import com.xhand.hnu.viewmodel.LocalUserViewModel
@@ -118,7 +119,7 @@ class MainActivity : ComponentActivity() {
                                 when (selectedItemIndex) {
                                     0 -> NavigationPersonScreen(viewModel, PersonViewModel())
                                     1 -> NavigationScreen(viewModel, NewsViewModel(LocalContext.current))
-                                    2 -> SettingScreen(viewModel, NewsViewModel(LocalContext.current))
+                                    2 -> NavigationSettingScreen(viewModel = viewModel)
                                 }
                             }
                         }

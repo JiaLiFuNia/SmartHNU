@@ -140,6 +140,11 @@ fun NavigationPersonScreen(viewModel: SettingsViewModel, personViewModel: Person
                 viewModel = viewModel
             )
         }
+        composable("courseSearch_screen") {
+            CourseSearchScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
         composable("search_screen") {
             ChooseBookScreen(
                 onBack = { navController.popBackStack() },
@@ -148,12 +153,6 @@ fun NavigationPersonScreen(viewModel: SettingsViewModel, personViewModel: Person
         }
         composable("task_screen") {
             CourseTaskScreen(
-                onBack = { navController.popBackStack() },
-                viewModel = viewModel
-            )
-        }
-        composable("plan_screen") {
-            StudyPlanScreen(
                 onBack = { navController.popBackStack() },
                 viewModel = viewModel
             )

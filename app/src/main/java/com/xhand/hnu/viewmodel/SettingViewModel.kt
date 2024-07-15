@@ -98,9 +98,9 @@ class SettingsViewModel(context: Context) : ViewModel() {
             route = "task_screen"
         ),
         FunctionCard(
-            title = "学习计划",
-            painterResource = R.drawable.ic_outline_schedule_24,
-            route = "plan_screen"
+            title = "课程查询",
+            painterResource = R.drawable.ic_outline_manage_search_24,
+            route = "courseSearch_screen"
         ),
         FunctionCard(
             title = "教学评价",

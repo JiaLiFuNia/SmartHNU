@@ -19,14 +19,12 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import com.xhand.hnu.viewmodel.SettingsViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StudyPlanScreen(
-    onBack: () -> Unit,
-    viewModel: SettingsViewModel
+fun CourseSearchScreen(
+    onBack: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
@@ -40,7 +38,7 @@ fun StudyPlanScreen(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 ),
                 title = {
-                    Text(text = "学习计划")
+                    Text(text = "课程查询")
                 },
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {

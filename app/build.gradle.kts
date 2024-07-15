@@ -104,4 +104,6 @@ dependencies {
 
     // datastore
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    implementation("com.github.jeziellago:compose-markdown:0.5.1")
 }
