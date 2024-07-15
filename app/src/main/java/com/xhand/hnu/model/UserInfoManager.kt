@@ -33,10 +33,11 @@ class UserInfoManager(private val context: Context) {
         gson.fromJson(json, LoginPostEntity::class.java)
     }
 
-    suspend fun save(userInfo: UserInfoEntity, loginCode: Int) {
+    suspend fun save(userInfo: UserInfoEntity, loginCode: Int, logInfo: LoginPostEntity) {
         context.userStore.edit {
             it[LOGGED] = loginCode
             it[USERINFO] = gson.toJson(userInfo)
+            it[LOGINFO] = gson.toJson(logInfo)
         }
     }
 

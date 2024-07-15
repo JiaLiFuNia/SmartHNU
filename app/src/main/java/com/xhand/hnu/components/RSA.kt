@@ -23,7 +23,18 @@ object RSAEncryptionHelper {
     }
 
     fun encryptText(plainText: String, publicKey: PublicKey): String {
-        cipher.init(Cipher.ENCRYPT_MODE, publicKey)
-        return Base64.encodeToString(cipher.doFinal(plainText.toByteArray()), Base64.DEFAULT)
+        try {
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey)
+            return Base64.encodeToString(cipher.doFinal(plainText.toByteArray()), Base64.DEFAULT)
+        } catch (e: Exception) {
+            return "error"
+        }
     }
+
+    fun decryptText(encryptedText: String, publicKey: PublicKey): String {
+        cipher.init(Cipher.DECRYPT_MODE, publicKey)
+        return String(cipher.doFinal(Base64.decode(encryptedText.toByteArray(), Base64.DEFAULT)))
+    }
+
+
 }

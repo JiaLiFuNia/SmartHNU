@@ -7,6 +7,8 @@ import com.xhand.hnu.model.entity.BookPost
 import com.xhand.hnu.model.entity.BuildingEntiy
 import com.xhand.hnu.model.entity.ClassroomEntity
 import com.xhand.hnu.model.entity.ClassroomPost
+import com.xhand.hnu.model.entity.CourseSearchEntity
+import com.xhand.hnu.model.entity.CourseSearchPost
 import com.xhand.hnu.model.entity.GradeDetailEntity
 import com.xhand.hnu.model.entity.GradeDetailPost
 import com.xhand.hnu.model.entity.GradeDetailsEntity
@@ -89,6 +91,12 @@ interface GradeService {
         @Body body: BookDetailPost,
         @Header("Token") token: String
     ): HadBookDetailEntity
+
+    @POST("dev-api/appapi/appqxkb/data")
+    suspend fun courseSearch(
+        @Body body: CourseSearchPost,
+        @Header("Token") token: String
+    ): CourseSearchEntity
 
     companion object {
         fun instance(): GradeService {

@@ -160,6 +160,5 @@ fun ChooseBookScreen(
             BookBottomSheet(viewModel = viewModel, kcrwdm = kcrwdm, xnxqdm = xnxqdm, kcmc = kcmc)
         if (viewModel.showBookSelect)
             BookSelectBottomSheet(viewModel = viewModel)
-
     }
 }

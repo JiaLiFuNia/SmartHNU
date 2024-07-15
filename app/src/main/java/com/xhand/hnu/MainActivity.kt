@@ -30,6 +30,7 @@ import com.xhand.hnu.screens.NavigationScreen
 import com.xhand.hnu.screens.NavigationSettingScreen
 import com.xhand.hnu.screens.SettingScreen
 import com.xhand.hnu.ui.theme.MyApplicationTheme
+import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import com.xhand.hnu.viewmodel.LocalUserViewModel
 import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.PersonViewModel
@@ -117,7 +118,7 @@ class MainActivity : ComponentActivity() {
                             val viewModel = LocalUserViewModel.current
                             Box(modifier = Modifier.padding(it)) {
                                 when (selectedItemIndex) {
-                                    0 -> NavigationPersonScreen(viewModel, PersonViewModel())
+                                    0 -> NavigationPersonScreen(viewModel, PersonViewModel(), CourseSearchViewModel(LocalContext.current))
                                     1 -> NavigationScreen(viewModel, NewsViewModel(LocalContext.current))
                                     2 -> NavigationSettingScreen(viewModel = viewModel)
                                 }

@@ -61,8 +61,13 @@ class SettingsViewModel(context: Context) : ViewModel() {
         viewModelScope.launch {
             val isLogged = userInfoManager.logged.firstOrNull()
             val userInfoStore = userInfoManager.userInfo.firstOrNull()
+            val logInfo = userInfoManager.logInfo.firstOrNull()
             userInfo = userInfoStore
             loginCode = isLogged ?: 0
+            if (logInfo != null) {
+                password = logInfo.password
+                username = logInfo.username
+            }
         }
     }
 
@@ -263,7 +268,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
                 null
             }
             viewModelScope.launch {
-                userInfo?.let { userInfoManager.save(it, res.code) }
+                userInfo?.let { userInfoManager.save(it, res.code, loginPost) }
             }
             loginCircle = false
             loginCode = res.code

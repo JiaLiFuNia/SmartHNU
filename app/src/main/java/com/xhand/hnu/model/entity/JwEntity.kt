@@ -390,3 +390,64 @@ data class Yxjcdata (
     val pcmc: String,
     val jcmc: String
 )
+
+
+data class CourseSearchPost(
+    val pageNumber: Long,
+    val pageSize: Long,
+    val xnxqdm: String,
+    val xqdm: Any? = null,
+    val zydm: Any? = null,
+    val kcmc: String,
+    val kcywmc: Any? = null,
+    val teaxm: String,
+    val jxbmc: String,
+    val jzwdm: Any? = null,
+    val gnqdm: Any? = null,
+    val rq: String,
+    val zc: Any? = null,
+    val xq: Any? = null,
+    val jcdm: String,
+    val kkyxdm: Any? = null,
+    val kkjysdm: Any? = null,
+    val xsyxdm: Any? = null,
+    val xsnj: String,
+    val jhlxdm: Any? = null,
+    val jxcdmc: String
+)
+
+
+data class CourseSearchEntity(
+    val msg: String,
+    val code: Long,
+    val isOpen: Boolean,
+    val kbList: List<CourseSearchKBList>
+)
+
+data class CourseSearchKBList(
+    val flfzmc: String,
+    val rownum: Long,
+    val pkrs: Long,
+    val sknrjj: String,
+    val jxhjmc: String,
+    val xnxqmc: String,
+    val kcywmc: String,
+    val pkrq: String,
+    val lch: Long,
+    val jxbrs: Long,
+    val kcrwdm: String,
+    val kxh: Long,
+    val kcmc: String,
+    val teaxms: String,
+    val jxbmc: String,
+    val zc: String,
+    val jxcdmc: String,
+    val jcdm: String,
+    val xnxqdm: String,
+    val jzwmc: String,
+    val xmmc: String,
+    val dgksdm: String,
+    val xqmc: String,
+    val xq: String,
+    val bjdm: String
+)

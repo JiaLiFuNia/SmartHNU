@@ -11,7 +11,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
@@ -184,11 +188,17 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = {
                     navController.navigate("guide_screen")
+                },
+                trailingContent = {
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null
+                    )
                 }
             )
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.0.7.9_beta.17",
+                supportingText = "Copyright 2023-2024 Xhand v2.1.0_beta.21",
                 leadingImageVector = R.drawable.ic_outline_article,
                 onClick = {
                     Intent(Intent.ACTION_VIEW).also {
@@ -204,7 +214,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 supportingText = "点击以检查更新",
                 leadingImageVector = R.drawable.ic_refresh,
                 onClick = {
-                    viewModel.updateRes("2.0.7.9_beta.17")
+                    viewModel.updateRes("2.1.0_beta.21")
                     if (viewModel.ifNeedUpdate)
                         viewModel.isShowUpdateDialog = true
                     else

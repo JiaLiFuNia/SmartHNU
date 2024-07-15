@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -61,7 +60,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -74,6 +72,7 @@ import com.xhand.hnu.components.ModalBottomSheet
 import com.xhand.hnu.components.PersonCardItem
 import com.xhand.hnu.components.PersonFunctionCardItem
 import com.xhand.hnu.components.ShowLoginDialog
+import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.PersonViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
@@ -88,7 +87,11 @@ import java.util.Locale
 
 
 @Composable
-fun NavigationPersonScreen(viewModel: SettingsViewModel, personViewModel: PersonViewModel) {
+fun NavigationPersonScreen(
+    viewModel: SettingsViewModel,
+    personViewModel: PersonViewModel,
+    courseSearchViewModel: CourseSearchViewModel
+) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -142,7 +145,8 @@ fun NavigationPersonScreen(viewModel: SettingsViewModel, personViewModel: Person
         }
         composable("courseSearch_screen") {
             CourseSearchScreen(
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                courseSearchViewModel = courseSearchViewModel
             )
         }
         composable("search_screen") {
@@ -313,7 +317,7 @@ fun PersonScreen(
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
-                                    .size(75.dp)
+                                    .size(70.dp)
                                     .clip(CircleShape)
                             )
                         },
@@ -327,8 +331,7 @@ fun PersonScreen(
                         supportingContent = {
                             if (viewModel.isLoginSuccess)
                                 Text(
-                                    text = "${userInfo?.studentID}\n${userInfo?.academy}",
-                                    fontSize = 14.sp,
+                                    text = "${userInfo?.academy}",
                                     color = Color.Gray
                                 )
                         },
@@ -514,18 +517,18 @@ fun PersonScreen(
                         }
                     },
                     text = checkboxes[1].text,
-                    rightText = null,
+                    rightText = "详情 ->",
                     imageVector = checkboxes[1].imageVector,
                     content = {
                         Box(
                             modifier = Modifier
-                                .height(200.dp).padding(10.dp)
+                                .height(200.dp)
+                                .padding(10.dp)
                                 .fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
                         if (viewModel.isLoginSuccess) {
                             if (viewModel.isGettingJD)
-
                                 CircularProgressIndicator()
                             else {
                                 if (viewModel.jdList.size == 0)
