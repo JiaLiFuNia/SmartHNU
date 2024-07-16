@@ -61,7 +61,7 @@ class CourseSearchViewModel(context: Context) : ViewModel() {
             searchResult = res.kbList.toMutableList()
             Log.i("TAG2310", res.toString())
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.i("TAG2310", e.toString())
         }
     }
 }

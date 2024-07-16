@@ -73,6 +73,7 @@ import com.xhand.hnu.components.PersonCardItem
 import com.xhand.hnu.components.PersonFunctionCardItem
 import com.xhand.hnu.components.ShowLoginDialog
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
+import com.xhand.hnu.viewmodel.CourseTaskViewModel
 import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.PersonViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
@@ -90,7 +91,8 @@ import java.util.Locale
 fun NavigationPersonScreen(
     viewModel: SettingsViewModel,
     personViewModel: PersonViewModel,
-    courseSearchViewModel: CourseSearchViewModel
+    courseSearchViewModel: CourseSearchViewModel,
+    courseTaskViewModel: CourseTaskViewModel
 ) {
     val navController = rememberNavController()
     NavHost(
@@ -158,7 +160,7 @@ fun NavigationPersonScreen(
         composable("task_screen") {
             CourseTaskScreen(
                 onBack = { navController.popBackStack() },
-                viewModel = viewModel
+                viewModel = courseTaskViewModel
             )
         }
         composable("teacher_screen") {

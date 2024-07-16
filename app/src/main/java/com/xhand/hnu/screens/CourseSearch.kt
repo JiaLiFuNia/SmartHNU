@@ -145,6 +145,73 @@ fun CourseSearchScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp)
             )
+            OutlinedTextField(
+                value = courseSearchViewModel.searchContent.value.rq,
+                onValueChange = {
+                    courseSearchViewModel.searchContent.value =
+                        courseSearchViewModel.searchContent.value.copy(rq = it)
+                },
+                label = { Text(text = "rq") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+            )
+            OutlinedTextField(
+                value = courseSearchViewModel.searchContent.value.zc.toString(),
+                onValueChange = {
+                    courseSearchViewModel.searchContent.value =
+                        courseSearchViewModel.searchContent.value.copy(zc = it)
+                },
+                label = { Text(text = "zc") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+            )
+            OutlinedTextField(
+                value = courseSearchViewModel.searchContent.value.xq.toString(),
+                onValueChange = {
+                    courseSearchViewModel.searchContent.value =
+                        courseSearchViewModel.searchContent.value.copy(xq = it)
+                },
+                label = { Text(text = "xq") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+            )
+            OutlinedTextField(
+                value = courseSearchViewModel.searchContent.value.kkyxdm.toString(),
+                onValueChange = {
+                    courseSearchViewModel.searchContent.value =
+                        courseSearchViewModel.searchContent.value.copy(kkyxdm = it)
+                },
+                label = { Text(text = "kkyxdm") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+            )
+            OutlinedTextField(
+                value = courseSearchViewModel.searchContent.value.kkjysdm.toString(),
+                onValueChange = {
+                    courseSearchViewModel.searchContent.value =
+                        courseSearchViewModel.searchContent.value.copy(kkjysdm = it)
+                },
+                label = { Text(text = "kkjysdm") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+            )
+            OutlinedTextField(
+                value = courseSearchViewModel.searchContent.value.xsyxdm.toString(),
+                onValueChange = {
+                    courseSearchViewModel.searchContent.value =
+                        courseSearchViewModel.searchContent.value.copy(xsyxdm = it)
+                },
+                label = { Text(text = "xsyxdm") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+            )
+
             TextButton(onClick = { courseSearchViewModel.courseSearch() }) {
                 Text(text = "搜索")
             }

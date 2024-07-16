@@ -451,3 +451,34 @@ data class CourseSearchKBList(
     val xq: String,
     val bjdm: String
 )
+
+
+data class CourseTaskEntity(
+    val msg: String,
+    val skrwlist: List<Skrwlist>,
+    val code: Int,
+)
+
+data class Skrwlist(
+    val skjsxm: String,
+    val jxbmc: String,
+    val skjsdms: String,
+    val xsxm: String,
+    val kcbh: String,
+    val kcflmc: String,
+    val xnxqmc: String,
+    val kcywmc: String,
+    val xf: Int,
+    val kcdlmc: String,
+    val jxbdm: String,
+    val xid: String,
+    val zxs: String,
+    val xdfsmc: String,
+    val xsbh: String,
+    val kcrwdm: String,
+    val kcmc: String,
+    val xsdm: String,
+    val xxpt: String,
+    val lcjteadm: String,
+    val cjfsmc: String,
+)
