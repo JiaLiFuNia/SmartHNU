@@ -22,6 +22,7 @@ fun BasicListItem(
     supportingText: String? = null,
     leadingImageVector: Int? = null,
     leadingPainter: Painter? = null,
+    leadingContent: @Composable() (() -> Unit)? = null,
     leadingText: String? = null,
     trailingContent: @Composable () -> Unit = {},
     onClick: (() -> Unit)? = null,
@@ -59,6 +60,8 @@ fun BasicListItem(
                         )
                         .size(24.dp)
                 )
+            } else if (leadingContent != null) {
+                leadingContent()
             }
         },
         trailingContent = trailingContent

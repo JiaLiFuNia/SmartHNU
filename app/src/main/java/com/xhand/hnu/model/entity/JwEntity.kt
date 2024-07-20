@@ -413,7 +413,7 @@ data class CourseSearchPost(
     val xsyxdm: Any? = null,
     val xsnj: String,
     val jhlxdm: Any? = null,
-    val jxcdmc: String
+    var jxcdmc: String
 )
 
 
@@ -481,4 +481,18 @@ data class Skrwlist(
     val xxpt: String,
     val lcjteadm: String,
     val cjfsmc: String,
+)
+
+
+data class CheckTokenEntity (
+    val msg: String,
+    val code: Int,
+    val user: User
+)
+
+data class User (
+    val userAccount: String,
+    val userdwmc: String,
+    val userxm: String,
+    val token: String
 )

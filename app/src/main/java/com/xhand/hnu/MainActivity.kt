@@ -47,7 +47,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyApplicationTheme {
+            CompositionLocalProvider(
+                LocalUserViewModel provides SettingsViewModel(LocalContext.current)
+            ) {
+                val viewModel = LocalUserViewModel.current
+                MyApplicationTheme(
+                    viewModel = viewModel
+                ) {
                 val bottomNavigationItems = listOf(
                     BottomNavigationItem(
                         title = "我的",
@@ -112,11 +118,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     ) {
-                        CompositionLocalProvider(
-                            LocalUserViewModel provides SettingsViewModel(LocalContext.current)
-                        ) {
-                            val viewModel = LocalUserViewModel.current
-                            Box(modifier = Modifier.padding(it)) {
+                        Box(modifier = Modifier.padding(it)) {
                                 when (selectedItemIndex) {
                                     0 -> NavigationPersonScreen(
                                         viewModel,
@@ -125,7 +127,7 @@ class MainActivity : ComponentActivity() {
                                         CourseTaskViewModel(LocalContext.current)
                                     )
                                     1 -> NavigationScreen(viewModel, NewsViewModel(LocalContext.current))
-                                    2 -> NavigationSettingScreen(viewModel = viewModel)
+                                    2 -> NavigationSettingScreen(viewModel)
                                 }
                             }
                         }

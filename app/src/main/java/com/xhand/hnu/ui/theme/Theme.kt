@@ -14,6 +14,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.xhand.hnu.model.entity.DarkMode
+import com.xhand.hnu.viewmodel.SettingsViewModel
 
 private val darkColorScheme = darkColorScheme(
     primary = md_theme_dark_primary,
@@ -81,17 +83,20 @@ private val lightColorScheme = lightColorScheme(
 
 @Composable
 fun MyApplicationTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
+    viewModel: SettingsViewModel,
+    content: @Composable () -> Unit,
 ) {
+    val darkTheme = when (viewModel.darkModeIndex) {
+        DarkMode.ON.ordinal -> true
+        DarkMode.OFF.ordinal -> false
+        else -> isSystemInDarkTheme()
+    }
     val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+        viewModel.isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> darkColorScheme
         else -> lightColorScheme
     }

@@ -1,5 +1,6 @@
 package com.xhand.hnu.viewmodel
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -15,6 +16,7 @@ import com.xhand.hnu.network.GradeService
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
+@SuppressLint("MutableCollectionMutableState")
 class CourseSearchViewModel(context: Context) : ViewModel() {
 
     private val userInfoManager = UserInfoManager(context)
@@ -28,6 +30,8 @@ class CourseSearchViewModel(context: Context) : ViewModel() {
 
     private var userInfo: UserInfoEntity? = null
     private val searchService = GradeService.instance()
+
+    var showRoomSheet by mutableStateOf(false)
 
     var searchContent = mutableStateOf(
         CourseSearchPost(
@@ -55,13 +59,20 @@ class CourseSearchViewModel(context: Context) : ViewModel() {
         )
     )
     var searchResult by mutableStateOf(mutableListOf<CourseSearchKBList>())
-    fun courseSearch() = viewModelScope.launch {
+    var isGettingCourse by mutableStateOf(true)
+    suspend fun getCourse(searchContent: CourseSearchPost) {
         try {
-            val res = searchService.courseSearch(searchContent.value, userInfo?.token ?: "")
+            isGettingCourse = true
+            val res = searchService.courseSearch(searchContent, userInfo?.token ?: "")
             searchResult = res.kbList.toMutableList()
+            isGettingCourse = false
+            Log.i("TAG2310", searchContent.toString())
             Log.i("TAG2310", res.toString())
         } catch (e: Exception) {
             Log.i("TAG2310", e.toString())
         }
+    }
+    fun courseSearch(searchContent: CourseSearchPost) = viewModelScope.launch {
+        getCourse(searchContent)
     }
 }

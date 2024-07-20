@@ -21,6 +21,7 @@ import com.xhand.hnu.model.UserInfoManager
 import com.xhand.hnu.model.entity.AllPjxxList
 import com.xhand.hnu.model.entity.BookDetailPost
 import com.xhand.hnu.model.entity.BookPost
+import com.xhand.hnu.model.entity.CheckTokenEntity
 import com.xhand.hnu.model.entity.ClassroomPost
 import com.xhand.hnu.model.entity.GradeDetailPost
 import com.xhand.hnu.model.entity.GradeInfo
@@ -70,8 +71,8 @@ class SettingsViewModel(context: Context) : ViewModel() {
             }
         }
     }
-
-    var readNotice by mutableStateOf(false)
+    var isDynamicColor by mutableStateOf(true)
+    var darkModeIndex by mutableIntStateOf(0)
     var checkboxes = mutableStateListOf(
         ToggleableInfo(
             isChecked = true,
@@ -256,6 +257,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
         try {
             loginCircle = true
             val res = loginService.loginPost(loginPost)
+            Log.i("TAG666", "${res}")
             delay(1200)
             userInfo = if (res.code == 200) {
                 UserInfoEntity(
@@ -267,8 +269,14 @@ class SettingsViewModel(context: Context) : ViewModel() {
             } else {
                 null
             }
+            val logInfo = LoginPostEntity(
+                username = username,
+                password = password,
+                code = "",
+                appid = null
+            )
             viewModelScope.launch {
-                userInfo?.let { userInfoManager.save(it, res.code, loginPost) }
+                userInfo?.let { userInfoManager.save(it, res.code, logInfo) }
             }
             loginCircle = false
             loginCode = res.code
@@ -276,6 +284,22 @@ class SettingsViewModel(context: Context) : ViewModel() {
             Log.i("TAG666", "$e")
         }
     }
+
+    fun checkToken() = viewModelScope.launch {
+        val token = userInfo?.token ?: ""
+        var res: CheckTokenEntity? = null
+        if (loginCode != 0) {
+            res = gradeService.checkToken(token)
+        }
+        if (res != null) {
+            if (res.code != 200) {
+                if (password.isNotEmpty() and username.isNotEmpty()) {
+                    login()
+                }
+            }
+        }
+    }
+
     fun clearUserInfo() {
         viewModelScope.launch {
             userInfoManager.clear()
@@ -562,11 +586,15 @@ class SettingsViewModel(context: Context) : ViewModel() {
 
     var updateMessage by mutableStateOf(Update("", "", ""))
     var isShowUpdateDialog by mutableStateOf(false)
+    var isGettingUpdate by mutableStateOf(false)
     // 软件更新请求
     fun updateRes(currentVersion: String) = viewModelScope.launch {
         try {
+            isGettingUpdate = true
+            delay(1500)
             updateMessage = updateService.update()
             ifNeedUpdate = updateMessage.version != currentVersion
+            isGettingUpdate = false
             Log.i("TAG666", "${updateMessage.version}${currentVersion}${ifNeedUpdate}")
         } catch (e: Exception) {
             Log.i("TAG666", "$e")

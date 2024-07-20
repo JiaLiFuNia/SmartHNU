@@ -48,10 +48,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.xhand.hnu.components.ClassroomEmptyListItem
 import com.xhand.hnu.components.ClassroomListItem
+import com.xhand.hnu.components.RoomBottomSheet
+import com.xhand.hnu.model.entity.CourseSearchPost
+import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -65,7 +67,8 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ClassroomScreen(
     onBack: () -> Unit,
-    viewModel: SettingsViewModel
+    viewModel: SettingsViewModel,
+    roomSearchViewModel: CourseSearchViewModel,
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
@@ -94,10 +97,40 @@ fun ClassroomScreen(
     var showDatePicker by remember {
         mutableStateOf(false)
     }
+    var room by remember {
+        mutableStateOf("")
+    }
     LaunchedEffect(currentDate) {
         viewModel.isGettingRoom = true
         // viewModel.buildingService()
         viewModel.classroomService(currentDate)
+    }
+    LaunchedEffect(room, currentDate) {
+        roomSearchViewModel.getCourse(
+            CourseSearchPost(
+                1,
+                50,
+                "202302",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                currentDate,
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                room
+            )
+        )
     }
     Scaffold(
         modifier = Modifier
@@ -274,9 +307,10 @@ fun ClassroomScreen(
                                                 .clickable {
                                                     isShowSubSubList[timeIndex] =
                                                         !isShowSubSubList[timeIndex]
+
                                                 },
                                             iconModifier = Modifier
-                                                .rotate(subArrowRotateDegrees)
+                                                .rotate(subArrowRotateDegrees),
                                         ) {
                                             if (isShowSubSubList[timeIndex])
                                                 Column(modifier = Modifier.padding(start = 10.dp)) {
@@ -289,7 +323,11 @@ fun ClassroomScreen(
                                                             )
                                                                 ClassroomEmptyListItem(
                                                                     classroom = classroom,
-                                                                    modifier = Modifier.clickable { },
+                                                                    modifier = Modifier.clickable {
+                                                                        room = classroom.jxcdmc
+                                                                        roomSearchViewModel.showRoomSheet =
+                                                                            true
+                                                                    },
                                                                     roomAndCourseList = haveClassroom,
                                                                     jcdm = timeList[timeDivide].toString(),
                                                                     isShowHadClassRoom = checkedState
@@ -306,6 +344,9 @@ fun ClassroomScreen(
             }
 
         }
+    }
+    if (roomSearchViewModel.showRoomSheet) {
+        RoomBottomSheet(viewModel = roomSearchViewModel, room = room)
     }
 }
 

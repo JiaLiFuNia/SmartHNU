@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import com.xhand.hnu.components.CourseSearchListItem
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -212,11 +213,12 @@ fun CourseSearchScreen(
                     .padding(horizontal = 20.dp)
             )
 
-            TextButton(onClick = { courseSearchViewModel.courseSearch() }) {
+            TextButton(onClick = { courseSearchViewModel.courseSearch(courseSearchViewModel.searchContent.value) }) {
                 Text(text = "搜索")
             }
-
-            Text(text = courseSearchViewModel.searchResult.toString())
+            courseSearchViewModel.searchResult.forEach { room ->
+                CourseSearchListItem(course = room)
+            }
         }
     }
 }

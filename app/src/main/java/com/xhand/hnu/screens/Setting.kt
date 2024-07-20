@@ -9,11 +9,13 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -30,6 +32,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -165,20 +168,19 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 leadingImageVector = R.drawable.ic_palette,
                 headlineText = "系统主题色",
                 supportingText = "开启后将跟随系统主题色",
-                value = true,
-                onValueChanged = { }
+                value = viewModel.isDynamicColor,
+                onValueChanged = {
+                    viewModel.isDynamicColor = it
+                }
             )
-            val darkModeIndex = remember {
-                mutableIntStateOf(0)
-            }
             DropdownListItem(
                 leadingImageVector = R.drawable.ic_nightlight,
                 headlineText = "深色模式",
-                value = DarkMode.values()[darkModeIndex.intValue],
+                value = DarkMode.values()[viewModel.darkModeIndex],
                 selections = DarkMode.values()
                     .map { SelectionItem(stringResource(it.toStringResourceId()), it) },
                 onValueChanged = { index, _ ->
-                    darkModeIndex.intValue = index
+                    viewModel.darkModeIndex = index
                 }
             )
             BasicListItem(leadingText = stringResource(R.string.about))
@@ -212,7 +214,15 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
             BasicListItem(
                 headlineText = "检查更新",
                 supportingText = "点击以检查更新",
-                leadingImageVector = R.drawable.ic_refresh,
+                leadingContent = {
+                    if (viewModel.isGettingUpdate)
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 3.dp
+                        )
+                    else
+                        Icon(Icons.Default.Refresh, contentDescription = null)
+                },
                 onClick = {
                     viewModel.updateRes("2.1.0_beta.22")
                     if (viewModel.ifNeedUpdate)

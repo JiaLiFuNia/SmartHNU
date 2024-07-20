@@ -5,6 +5,7 @@ import com.xhand.hnu.model.entity.BookDetailEntity
 import com.xhand.hnu.model.entity.BookDetailPost
 import com.xhand.hnu.model.entity.BookPost
 import com.xhand.hnu.model.entity.BuildingEntiy
+import com.xhand.hnu.model.entity.CheckTokenEntity
 import com.xhand.hnu.model.entity.ClassroomEntity
 import com.xhand.hnu.model.entity.ClassroomPost
 import com.xhand.hnu.model.entity.CourseSearchEntity
@@ -104,6 +105,11 @@ interface GradeService {
         @Body body: GradePost,
         @Header("Token") token: String
     ): CourseTaskEntity
+
+    @GET("dev-api/appapi/getIstoken")
+    suspend fun checkToken(
+        @Header("Token") token: String
+    ): CheckTokenEntity
 
     companion object {
         fun instance(): GradeService {

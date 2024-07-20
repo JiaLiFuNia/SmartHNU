@@ -72,8 +72,7 @@ class NewsViewModel(context: Context) :
     var isRefreshing by mutableStateOf(true)
     var isSearching by mutableStateOf(true)
 
-
-    var sliderPosition by mutableFloatStateOf(4f)
+    private var sliderPosition by mutableFloatStateOf(4f)
     // 新闻列表请求
     suspend fun newsList() {
         list.clear()

@@ -142,7 +142,8 @@ fun NavigationPersonScreen(
         composable("classroom_screen") {
             ClassroomScreen(
                 onBack = { navController.popBackStack() },
-                viewModel = viewModel
+                viewModel = viewModel,
+                roomSearchViewModel = courseSearchViewModel
             )
         }
         composable("courseSearch_screen") {
@@ -191,6 +192,7 @@ fun PersonScreen(
     val schedule = viewModel.todaySchedule
     val hasMessage = viewModel.hasMessage
     LaunchedEffect(viewModel.isLoginSuccess) {
+        viewModel.checkToken()
         if (viewModel.isLoginSuccess) {
             viewModel.isGettingGrade = true
             viewModel.todaySchedule()

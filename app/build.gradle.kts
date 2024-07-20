@@ -87,7 +87,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.11.0")
 
     // datastore
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     val chartVersion = "2.0.0-alpha.13"
     // Chart

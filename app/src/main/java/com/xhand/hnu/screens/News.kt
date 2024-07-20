@@ -78,7 +78,7 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun NavigationScreen(viewModel: SettingsViewModel, newsViewModel: NewsViewModel) {
+fun NavigationScreen(viewModel: SettingsViewModel, newsViewModel: NewsViewModel = viewModel()) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -134,7 +134,7 @@ data class NewsOptions(
 @Composable
 fun NewsScreen(
     navController: NavController,
-    newsViewModel: NewsViewModel = viewModel(),
+    newsViewModel: NewsViewModel,
     viewModel: SettingsViewModel
 ) {
     val showBottomSheet = remember {
@@ -189,9 +189,6 @@ fun NewsScreen(
     var searchText by remember {
         mutableStateOf("")
     }
-    var historyListIndex by remember {
-        mutableIntStateOf(0)
-    }
     LaunchedEffect(searchText) {
         newsViewModel.isSearching = true
         if (searchText.isNotEmpty())
@@ -200,7 +197,6 @@ fun NewsScreen(
     }
     // 获取SystemUiController
     val systemUiController = rememberSystemUiController()
-    val useDarkIcons = isSystemInDarkTheme()
     val statueBarColor = colorScheme.background
     // 设置状态栏颜色
     SideEffect {
@@ -322,7 +318,7 @@ fun NewsScreen(
                                     .fillMaxWidth(),
                                 textAlign = TextAlign.Left
                             )
-                            newsViewModel.searchHistory.forEachIndexed { index, article ->
+                            newsViewModel.searchHistory.forEach { article ->
                                 ListItem(
                                     headlineContent = { Text(text = article) },
                                     leadingContent = {
@@ -380,7 +376,6 @@ fun NewsScreen(
                             .verticalScroll(scrollState),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // if (!isShowSearchBar) {
                         if (selectedTabIndex == 0)
                             HorizontalPager(
                                 state = pagerState,
@@ -434,7 +429,7 @@ fun NewsScreen(
         }
     }
 
-    ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "选择新闻源") {
+    ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "配置新闻源") {
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.Center
