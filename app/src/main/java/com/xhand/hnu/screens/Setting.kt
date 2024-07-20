@@ -200,7 +200,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
             )
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.1.0_beta.22",
+                supportingText = "Copyright 2023-2024 Xhand v2.1.0_beta.23",
                 leadingImageVector = R.drawable.ic_outline_article,
                 onClick = {
                     Intent(Intent.ACTION_VIEW).also {
@@ -224,7 +224,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                         Icon(Icons.Default.Refresh, contentDescription = null)
                 },
                 onClick = {
-                    viewModel.updateRes("2.1.0_beta.22")
+                    viewModel.updateRes("2.1.0_beta.23")
                     if (viewModel.ifNeedUpdate)
                         viewModel.isShowUpdateDialog = true
                     else
