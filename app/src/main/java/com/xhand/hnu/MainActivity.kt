@@ -15,6 +15,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -25,6 +26,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import com.xhand.hnu.components.UpdateDialog
 import com.xhand.hnu.screens.NavigationPersonScreen
 import com.xhand.hnu.screens.NavigationScreen
 import com.xhand.hnu.screens.NavigationSettingScreen
@@ -51,6 +54,12 @@ class MainActivity : ComponentActivity() {
                 LocalUserViewModel provides SettingsViewModel(LocalContext.current)
             ) {
                 val viewModel = LocalUserViewModel.current
+                val currentVersion = stringResource(id = R.string.version)
+                LaunchedEffect(Unit) {
+                    viewModel.updateService(currentVersion)
+                    if (viewModel.ifNeedUpdate)
+                        viewModel.isShowUpdateDialog = true
+                }
                 MyApplicationTheme(
                     viewModel = viewModel
                 ) {
@@ -65,7 +74,7 @@ class MainActivity : ComponentActivity() {
                         title = "新闻",
                         selectedIcon = R.drawable.ic_filled_article,
                         unselectedIcon = R.drawable.ic_outline_article,
-                        hasNews = remember { mutableStateOf(true) }
+                        hasNews = remember { mutableStateOf(false) }
                     ),
                     BottomNavigationItem(
                         title = "设置",
@@ -131,6 +140,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         }
+                    UpdateDialog(viewModel = viewModel)
                     }
                 }
             }

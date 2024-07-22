@@ -12,35 +12,36 @@ import com.xhand.hnu.viewmodel.SettingsViewModel
 @Composable
 fun UpdateDialog(viewModel: SettingsViewModel) {
     val context = LocalContext.current
-    AlertDialog(
-        title = {
-            Text("发现新版本 v${viewModel.updateMessage.version}")
-        },
-        onDismissRequest = { viewModel.isShowUpdateDialog = false },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    viewModel.isShowUpdateDialog = false
-                    Intent(Intent.ACTION_VIEW).also {
-                        it.data = Uri.parse(viewModel.updateMessage.confirm)
-                        if (it.resolveActivity(context.packageManager) != null) {
-                            context.startActivity(it)
+    if (viewModel.isShowUpdateDialog)
+        AlertDialog(
+            title = {
+                Text("发现新版本 v${viewModel.updateMessage.version}")
+            },
+            onDismissRequest = { viewModel.isShowUpdateDialog = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.isShowUpdateDialog = false
+                        Intent(Intent.ACTION_VIEW).also {
+                            it.data = Uri.parse(viewModel.updateMessage.confirm)
+                            if (it.resolveActivity(context.packageManager) != null) {
+                                context.startActivity(it)
+                            }
                         }
                     }
+                ) {
+                    Text(text = "更新")
                 }
-            ) {
-                Text(text = "更新")
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { viewModel.isShowUpdateDialog = false }
+                ) {
+                    Text(text = "关闭")
+                }
+            },
+            text = {
+                Text(text = viewModel.updateMessage.message)
             }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = { viewModel.isShowUpdateDialog = false }
-            ) {
-                Text(text = "关闭")
-            }
-        },
-        text = {
-            Text(text = viewModel.updateMessage.message)
-        }
-    )
+        )
 }

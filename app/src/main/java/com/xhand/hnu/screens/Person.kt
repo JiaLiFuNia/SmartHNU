@@ -4,7 +4,6 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,11 +20,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,7 +46,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,7 +65,6 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
 import com.xhand.hnu.components.CardCourseList
 import com.xhand.hnu.components.Chart.GPAChangeLineChart
-import com.xhand.hnu.components.ModalBottomSheet
 import com.xhand.hnu.components.PersonCardItem
 import com.xhand.hnu.components.PersonFunctionCardItem
 import com.xhand.hnu.components.ShowLoginDialog
@@ -179,14 +175,9 @@ fun PersonScreen(
     navController: NavController, viewModel: SettingsViewModel, personViewModel: PersonViewModel
 ) {
     val context = LocalContext.current
-    val showModalBottomSheet = rememberSaveable { mutableStateOf(false) }
-    val showModalBottomSheetEdit = rememberSaveable { mutableStateOf(false) }
     val checkboxes = viewModel.checkboxes
     val otherCards = viewModel.functionCards
     val scrollState = rememberScrollState()
-    var text by remember {
-        mutableStateOf("")
-    }
     val userInfo = viewModel.userInfo
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val schedule = viewModel.todaySchedule
@@ -259,7 +250,7 @@ fun PersonScreen(
                             badge = {
                                 if (viewModel.hasMessage.size != 0) {
                                     Badge {
-                                        Text(text = "${viewModel.hasMessage.size}")
+                                        Text(text = if (viewModel.hasMessage.size <= 9) "${viewModel.hasMessage.size}" else "9+")
                                     }
                                 }
                             }
@@ -308,8 +299,6 @@ fun PersonScreen(
                         if (userInfo == null) {
                             Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
                             viewModel.isShowDialog = true
-                        } else {
-                            text = userInfo.name
                         }
                     },
                     colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
@@ -338,6 +327,14 @@ fun PersonScreen(
                                     text = "${userInfo?.academy}",
                                     color = Color.Gray
                                 )
+                        },
+                        trailingContent = {
+                            IconButton(onClick = { /*TODO*/ }) {
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null
+                                )
+                            }
                         },
                         colors = ListItemDefaults.colors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer
@@ -387,7 +384,6 @@ fun PersonScreen(
                 }
                 Spacer(modifier = Modifier.height(14.dp))
                 PersonCardItem(
-                    isChecked = true,
                     onclick = { },
                     text = "快捷方式",
                     rightText = null,
@@ -426,7 +422,6 @@ fun PersonScreen(
 
                     }
                 )
-
                 Spacer(modifier = Modifier.height(14.dp))
                 val currentDate = LocalDate.now()
                 val dayOfMonth = currentDate.dayOfMonth
@@ -437,7 +432,6 @@ fun PersonScreen(
                         Locale.SIMPLIFIED_CHINESE
                     )
                 PersonCardItem(
-                    isChecked = checkboxes[0].isChecked,
                     onclick = {
                         /*if (userInfo == null) {
                             Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
@@ -512,7 +506,6 @@ fun PersonScreen(
                 )
                 Spacer(modifier = Modifier.height(14.dp))
                 PersonCardItem(
-                    isChecked = checkboxes[1].isChecked,
                     onclick = {
                         if (userInfo == null) {
                             Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
@@ -555,48 +548,6 @@ fun PersonScreen(
     }
     if (viewModel.isShowDialog) {
         ShowLoginDialog(viewModel)
-    }
-    ModalBottomSheet(showModalBottomSheet, text) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 16.dp)
-        ) {
-            Text(
-                text = "个人信息",
-                fontWeight = FontWeight.W900,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-    }
-    ModalBottomSheet(showModalBottomSheetEdit, text) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 16.dp)
-        ) {
-            Text(
-                text = "显示板块",
-                fontWeight = FontWeight.W900,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-        checkboxes.forEachIndexed { index, info ->
-            Row(verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 32.dp)
-                    .clickable {
-                        checkboxes[index] = info.copy(
-                            isChecked = !info.isChecked
-                        )
-                    }) {
-                Checkbox(checked = info.isChecked, onCheckedChange = { isChecked ->
-                    checkboxes[index] = info.copy(
-                        isChecked = isChecked
-                    )
-                })
-                Text(text = info.text)
-            }
-        }
     }
 }
 

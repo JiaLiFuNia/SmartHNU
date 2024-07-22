@@ -587,11 +587,12 @@ class SettingsViewModel(context: Context) : ViewModel() {
     var updateMessage by mutableStateOf(Update("", "", ""))
     var isShowUpdateDialog by mutableStateOf(false)
     var isGettingUpdate by mutableStateOf(false)
+    var hasReceiveUpdate by mutableStateOf(false)
     // 软件更新请求
-    fun updateRes(currentVersion: String) = viewModelScope.launch {
+    suspend fun updateService(currentVersion: String) {
         try {
             isGettingUpdate = true
-            delay(1500)
+            delay(500)
             updateMessage = updateService.update()
             ifNeedUpdate = updateMessage.version != currentVersion
             isGettingUpdate = false
@@ -599,6 +600,9 @@ class SettingsViewModel(context: Context) : ViewModel() {
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
         }
+    }
+    fun updateRes(currentVersion: String) = viewModelScope.launch {
+        updateService(currentVersion)
     }
 
     // 复制内容到剪切板

@@ -30,14 +30,12 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun PersonCardItem(
-    isChecked: Boolean,
     onclick: () -> Unit,
     text: String,
     rightText: String?,
     imageVector: ImageVector,
     content: @Composable () -> Unit = {}
 ) {
-    if (isChecked)
         Card(
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 6.dp
@@ -55,11 +53,13 @@ fun PersonCardItem(
                 Icon(
                     imageVector = imageVector,
                     contentDescription = null,
-                    modifier = Modifier.padding(end = 3.dp)
+                    modifier = Modifier.padding(end = 3.dp),
+                    tint = colorScheme.primary
                 )
                 Text(
                     text = text,
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colorScheme.primary
                 )
                 if (rightText != null) {
                     Text(

@@ -198,9 +198,10 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                     )
                 }
             )
+            val currentVersion = stringResource(R.string.version)
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand v2.1.0_beta.23",
+                supportingText = "Copyright 2023-2024 Xhand v${currentVersion}",
                 leadingImageVector = R.drawable.ic_outline_article,
                 onClick = {
                     Intent(Intent.ACTION_VIEW).also {
@@ -224,7 +225,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                         Icon(Icons.Default.Refresh, contentDescription = null)
                 },
                 onClick = {
-                    viewModel.updateRes("2.1.0_beta.23")
+                    viewModel.updateRes(currentVersion)
                     if (viewModel.ifNeedUpdate)
                         viewModel.isShowUpdateDialog = true
                     else
@@ -260,8 +261,6 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
         if (viewModel.isShowDialog) {
             ShowLoginDialog(viewModel = viewModel)
         }
-        if (viewModel.isShowUpdateDialog) {
             UpdateDialog(viewModel = viewModel)
-        }
     }
 }
