@@ -12,30 +12,30 @@ fun ShowAlert(
     text: String
 ) {
     if (viewModel.isShowAlert)
-    AlertDialog(
-        title = { Text(text = "提示") },
-        text = { Text(text = text) },
-        onDismissRequest = { viewModel.isShowDialog = false },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    viewModel.isShowAlert = false
-                    viewModel.userInfo = null
-                    viewModel.loginCode = 0
-                    viewModel.clearUserInfo()
+        AlertDialog(
+            title = { Text(text = "提示") },
+            text = { Text(text = text) },
+            onDismissRequest = { viewModel.isShowDialog = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.isShowAlert = false
+                        viewModel.userInfo = null
+                        viewModel.loginCode = 0
+                        viewModel.clearUserInfo()
+                    }
+                ) {
+                    Text("确认")
                 }
-            ) {
-                Text("确认")
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    viewModel.isShowAlert = false
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.isShowAlert = false
+                    }
+                ) {
+                    Text("取消")
                 }
-            ) {
-                Text("取消")
             }
-        }
-    )
+        )
 }
