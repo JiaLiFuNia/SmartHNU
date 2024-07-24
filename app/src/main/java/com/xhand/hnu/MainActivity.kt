@@ -34,6 +34,7 @@ import com.xhand.hnu.screens.NavigationSettingScreen
 import com.xhand.hnu.ui.theme.MyApplicationTheme
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import com.xhand.hnu.viewmodel.CourseTaskViewModel
+import com.xhand.hnu.viewmodel.LocalNewsViewModel
 import com.xhand.hnu.viewmodel.LocalUserViewModel
 import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.PersonViewModel
@@ -51,9 +52,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             CompositionLocalProvider(
-                LocalUserViewModel provides SettingsViewModel(LocalContext.current)
+                LocalUserViewModel provides SettingsViewModel(LocalContext.current),
+                LocalNewsViewModel provides NewsViewModel(LocalContext.current),
             ) {
                 val viewModel = LocalUserViewModel.current
+                val newsViewModel = LocalNewsViewModel.current
                 val currentVersion = stringResource(id = R.string.version)
                 LaunchedEffect(Unit) {
                     viewModel.updateService(currentVersion)
@@ -135,7 +138,7 @@ class MainActivity : ComponentActivity() {
                                         CourseSearchViewModel(LocalContext.current),
                                         CourseTaskViewModel(LocalContext.current)
                                     )
-                                    1 -> NavigationScreen(viewModel, NewsViewModel(LocalContext.current))
+                                    1 -> NavigationScreen(viewModel, newsViewModel)
                                     2 -> NavigationSettingScreen(viewModel)
                                 }
                             }

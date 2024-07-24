@@ -25,8 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -49,11 +47,11 @@ import com.xhand.hnu.components.UpdateDialog
 import com.xhand.hnu.model.entity.DarkMode
 import com.xhand.hnu.viewmodel.SettingsViewModel
 
-fun DarkMode.toStringResourceId(): Int {
+fun DarkMode.toStringResourceId(): String {
     return when (this) {
-        DarkMode.SYSTEM -> R.string.follow_system
-        DarkMode.ON -> R.string.turn_on
-        DarkMode.OFF -> R.string.turn_off
+        DarkMode.SYSTEM -> "跟随系统"
+        DarkMode.ON -> "开启"
+        DarkMode.OFF -> "关闭"
     }
 }
 
@@ -138,25 +136,13 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
         ) {
             BasicListItem(leadingText = "账户")
             BasicListItem(
-                headlineText = if (viewModel.isLoginSuccess) {
-                    "退出"
-                } else {
-                    "登录"
-                },
-                supportingText = if (viewModel.isLoginSuccess) {
-                    "点击退出登录"
-                } else {
-                    "请先登录"
-                },
-                leadingImageVector = if (viewModel.isLoginSuccess) {
-                    R.drawable.ic_outline_account_circle
-                } else {
-                    R.drawable.ic_outline_no_accounts_24
-                },
+                headlineText = if (viewModel.isLoginSuccess) "退出" else "登录",
+                supportingText = if (viewModel.isLoginSuccess) "点击退出登录" else "请先登录",
+                leadingImageVector = if (viewModel.isLoginSuccess) R.drawable.ic_outline_account_circle else R.drawable.ic_outline_no_accounts_24,
                 onClick = {
-                    if (viewModel.isLoginSuccess) {
+                    if (viewModel.isLoginSuccess)
                         viewModel.isShowAlert = true
-                    } else {
+                    else {
                         viewModel.isShowDialog = true
                         viewModel.username = ""
                         viewModel.password = ""
@@ -178,15 +164,15 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 headlineText = "深色模式",
                 value = DarkMode.values()[viewModel.darkModeIndex],
                 selections = DarkMode.values()
-                    .map { SelectionItem(stringResource(it.toStringResourceId()), it) },
+                    .map { SelectionItem(it.toStringResourceId(), it) },
                 onValueChanged = { index, _ ->
                     viewModel.darkModeIndex = index
                 }
             )
-            BasicListItem(leadingText = stringResource(R.string.about))
+            BasicListItem(leadingText = "关于")
             BasicListItem(
-                headlineText = "使用引导",
-                supportingText = "功能向导与说明",
+                headlineText = "帮助",
+                supportingText = "功能向导与使用说明",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = {
                     navController.navigate("guide_screen")
@@ -233,8 +219,8 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 }
             )
             BasicListItem(
-                headlineText = stringResource(R.string.dev_title),
-                supportingText = stringResource(R.string.dev_name),
+                headlineText = "开发人员",
+                supportingText = "Xhand",
                 leadingImageVector = R.drawable.ic_outline_person,
                 onClick = {
                     Intent(Intent.ACTION_VIEW).also {
@@ -246,8 +232,8 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 }
             )
             BasicListItem(
-                headlineText = stringResource(R.string.feedback_title),
-                supportingText = stringResource(R.string.feedback_desc),
+                headlineText = "反馈",
+                supportingText = "发送邮件提供你的意见及建议",
                 leadingImageVector = R.drawable.ic_outline_chat,
                 onClick = {
                     viewModel.copyText(cbManager, "2695520089@qq.com")
@@ -255,12 +241,10 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 }
             )
         }
-        if (viewModel.isShowAlert) {
-            ShowAlert(viewModel = viewModel, text = "确定要退出登录吗？")
-        }
+        ShowAlert(viewModel = viewModel, text = "确定要退出登录吗？")
         if (viewModel.isShowDialog) {
             ShowLoginDialog(viewModel = viewModel)
         }
-            UpdateDialog(viewModel = viewModel)
+        UpdateDialog(viewModel = viewModel)
     }
 }

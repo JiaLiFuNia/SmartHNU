@@ -8,9 +8,11 @@ import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -44,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
 import com.xhand.hnu.viewmodel.NewsViewModel
@@ -55,8 +58,7 @@ import net.dankito.readability4j.Readability4J
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun ArticleDetailScreen(
-    viewModel: SettingsViewModel, onBack: () -> Unit,
-    newsViewModel: NewsViewModel
+    viewModel: SettingsViewModel, newsViewModel: NewsViewModel, navController: NavController
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -68,13 +70,16 @@ fun ArticleDetailScreen(
         WebView(context).apply {
             settings.javaScriptEnabled = true
             webViewClient = WebViewClient()
-            loadUrl(viewModel.url)
+            loadUrl(newsViewModel.url)
         }
     }
     // 获取SystemUiController
     val systemUiController = rememberSystemUiController()
-    val useDarkIcons = isSystemInDarkTheme()
     val statueBarColor = MaterialTheme.colorScheme.surfaceContainer
+    val scrollState = rememberScrollState()
+    LaunchedEffect(Unit) {
+        newsViewModel.detailService()
+    }
     // 设置状态栏颜色
     SideEffect {
         systemUiController.setStatusBarColor(color = statueBarColor)
@@ -90,8 +95,7 @@ fun ArticleDetailScreen(
                     ),
                     title = { Text(text = "详情") },
                     navigationIcon = {
-                        IconButton(
-                            onClick = { onBack() }) {
+                        IconButton(onClick = { navController.popBackStack() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "返回"
@@ -102,7 +106,7 @@ fun ArticleDetailScreen(
                         IconButton(
                             onClick = {
                                 Intent(Intent.ACTION_SEND).also {
-                                    it.putExtra(Intent.EXTRA_TEXT, viewModel.url)
+                                    it.putExtra(Intent.EXTRA_TEXT, newsViewModel.url)
                                     it.type = "text/plain"
                                     if (it.resolveActivity(context.packageManager) != null) {
                                         context.startActivity(it)
@@ -128,8 +132,6 @@ fun ArticleDetailScreen(
                             expanded = showMenu,
                             onDismissRequest = { showMenu = false }
                         ) {
-                            val ifStar = remember { mutableStateOf(false) }
-                            val ifStarText = remember { mutableStateOf("收藏") }
                             DropdownMenuItem(
                                 text = { Text(text = "刷新页面") },
                                 onClick = {
@@ -157,7 +159,7 @@ fun ArticleDetailScreen(
                             DropdownMenuItem(
                                 text = { Text(text = "复制文章链接") },
                                 onClick = {
-                                    viewModel.copyText(cbManager, viewModel.url)
+                                    viewModel.copyText(cbManager, newsViewModel.url)
                                     Toast.makeText(context, "已复制", Toast.LENGTH_SHORT).show()
                                 },
                                 leadingIcon = {
@@ -171,7 +173,7 @@ fun ArticleDetailScreen(
                                 text = { Text(text = "使用外部浏览器") },
                                 onClick = {
                                     Intent(Intent.ACTION_VIEW).also {
-                                        it.data = Uri.parse(viewModel.url)
+                                        it.data = Uri.parse(newsViewModel.url)
                                         if (it.resolveActivity(context.packageManager) != null) {
                                             context.startActivity(it)
                                         }
@@ -192,11 +194,7 @@ fun ArticleDetailScreen(
                 )
             }
         ) {
-            // Create a reusable object configured with the default set of plugins.
-            LaunchedEffect(Unit) {
-                viewModel.detailService()
-            }
-            val readability4J = Readability4J(viewModel.url, viewModel.htmlParsing)
+            val readability4J = Readability4J(newsViewModel.url, newsViewModel.htmlParsing)
             val article: Article = readability4J.parse()
 
             // 标题
@@ -232,32 +230,30 @@ fun ArticleDetailScreen(
         </body>
         </html>
     """
-            if (viewModel.isDetailLoad)
+            if (newsViewModel.isDetailLoad)
                 Box(modifier = Modifier.fillMaxSize()) {
                     CircularProgressIndicator()
                 }
             else
-                LazyColumn(
+                Column(
                     Modifier
                         .fillMaxSize()
                         .padding(paddingValues = it)
+                        .verticalScroll(scrollState)
                 ) {
-                    item {
-                        if (!showHtml) {
-                            Text(
-                                text = title,
-                                fontSize = 25.sp,
-                                fontWeight = FontWeight.W700,
-                                lineHeight = 35.sp,
-                                modifier = Modifier.padding(10.dp)
+                    if (!showHtml) {
+                        Text(
+                            text = title,
+                            fontSize = 25.sp,
+                            fontWeight = FontWeight.W700,
+                            lineHeight = 35.sp,
+                            modifier = Modifier.padding(10.dp)
                             )
                             // HorizontalDivider(modifier = Modifier.padding(10.dp))
                         }
-                    }
-                    item {
-                        if (!showHtml) {
-                            AndroidView(
-                                factory = { context ->
+                    if (!showHtml) {
+                        AndroidView(
+                            factory = { context ->
                                     WebView(context)
                                 },
                                 modifier = Modifier.padding(5.dp)
@@ -269,7 +265,6 @@ fun ArticleDetailScreen(
                         } else {
                             AndroidView(factory = { webView })
                         }
-                    }
                 }
         }
     }

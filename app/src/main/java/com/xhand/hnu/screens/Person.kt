@@ -133,7 +133,11 @@ fun NavigationPersonScreen(
             ScheduleScreen(onBack = { navController.popBackStack() })
         }
         composable("message_screen") {
-            MessageScreen(onBack = { navController.popBackStack() }, viewModel = viewModel)
+            MessageScreen(
+                onBack = { navController.popBackStack() },
+                viewModel = viewModel,
+                navController = navController
+            )
         }
         composable("classroom_screen") {
             ClassroomScreen(
@@ -240,10 +244,12 @@ fun PersonScreen(
                 actions = {
                     IconButton(
                         onClick = {
-                            if (viewModel.hasMessage.size == 0)
-                                Toast.makeText(context, "没有消息", Toast.LENGTH_SHORT).show()
-                            else
-                                navController.navigate("message_screen")
+                            if (viewModel.isLoginSuccess) {
+                                if (viewModel.hasMessage.size == 0)
+                                    Toast.makeText(context, "没有消息", Toast.LENGTH_SHORT).show()
+                                else
+                                    navController.navigate("message_screen")
+                            }
                         }
                     ) {
                         BadgedBox(
@@ -261,16 +267,6 @@ fun PersonScreen(
                             )
                         }
                     }
-                    /*IconButton(
-                        onClick = {
-                            showModalBottomSheetEdit.value = !showModalBottomSheetEdit.value
-                            text = "编辑"
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit, contentDescription = "编辑"
-                        )
-                    }*/
                 },
                 scrollBehavior = scrollBehavior
             )
@@ -301,7 +297,7 @@ fun PersonScreen(
                             viewModel.isShowDialog = true
                         }
                     },
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
+                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiary)
                 ) {
                     ListItem(
                         leadingContent = {

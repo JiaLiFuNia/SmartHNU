@@ -246,6 +246,15 @@ data class MessageDetail(
     val status: String? = null
 )
 
+data class ReadMessagePost(
+    val xxids: String
+)
+
+data class ReadMessageEntity(
+    val msg: String,
+    val code: Int
+)
+
 data class MyClass(
     val zcj: String,
     val kcdm: String,

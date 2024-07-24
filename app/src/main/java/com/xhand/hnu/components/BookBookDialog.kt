@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,11 +31,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.xhand.hnu.model.entity.Yxjcdata
 import com.xhand.hnu.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -189,122 +190,134 @@ fun BookBottomSheet(viewModel: SettingsViewModel, kcrwdm: String, xnxqdm: String
                                 }
                             }
                 } else {
-                    if (viewModel.isGettingBookSelected)
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(180.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    else
-                        if (viewModel.bookSelectedList.isEmpty())
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(180.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(text = "没有已选教材", color = Color.Gray)
-                            }
-                        else
-                            viewModel.bookSelectedList.forEach { book ->
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 10.dp),
-                                    onClick = {
-                                        viewModel.copyText(
-                                            cbManager,
-                                            book.isbn
-                                        )
-                                    },
-                                    colors = CardDefaults.cardColors(Color.Transparent)
-                                ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(10.dp)
-                                    ) {
-                                        Row {
-                                            Text(
-                                                text = "学期",
-                                                modifier = Modifier.weight(0.25f),
-                                                textAlign = TextAlign.Left,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Text(text = book.pcmc, Modifier.weight(0.75f))
-                                        }
-                                        Row {
-                                            Text(
-                                                text = "课程名称",
-                                                modifier = Modifier.weight(0.25f),
-                                                textAlign = TextAlign.Left,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Text(text = book.kcmc, Modifier.weight(0.75f))
-                                        }
-                                        Row {
-                                            Text(
-                                                text = "书名",
-                                                modifier = Modifier.weight(0.25f),
-                                                textAlign = TextAlign.Left,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Text(text = book.jcmc, Modifier.weight(0.75f))
-                                        }
-                                        Row {
-                                            Text(
-                                                text = "编著",
-                                                modifier = Modifier.weight(0.25f),
-                                                textAlign = TextAlign.Left,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Text(text = book.zb, Modifier.weight(0.75f))
-                                        }
-                                        Row {
-                                            Text(
-                                                text = "出版社",
-                                                modifier = Modifier.weight(0.25f),
-                                                textAlign = TextAlign.Left,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Text(text = book.cbs, Modifier.weight(0.75f))
-                                        }
-                                        Row {
-                                            Text(
-                                                text = "ISBN",
-                                                modifier = Modifier.weight(0.25f),
-                                                textAlign = TextAlign.Left,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Text(text = book.isbn, Modifier.weight(0.75f))
-                                        }
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.End
-                                        ) {
-                                            TextButton(onClick = {
-                                                viewModel.copyText(
-                                                    cbManager,
-                                                    book.isbn
-                                                )
-                                            }) {
-                                                Text(text = "复制")
-                                            }
-                                            TextButton(onClick = { /*TODO*/ }) {
-                                                Text(text = "退订")
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                    BookList(
+                        viewModel = viewModel,
+                        cbManager = cbManager,
+                        bookList = viewModel.bookSelectedList
+                    )
                 }
             }
 
         }
     }
+}
+
+
+@Composable
+fun BookList(viewModel: SettingsViewModel, cbManager: ClipboardManager, bookList: List<Yxjcdata>) {
+    if (viewModel.isGettingBookSelected)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    else
+        if (bookList.isEmpty())
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "没有已选教材", color = Color.Gray)
+            }
+        else
+            bookList.forEach { book ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp),
+                    onClick = {
+                        viewModel.copyText(
+                            cbManager,
+                            book.isbn
+                        )
+                    },
+                    colors = CardDefaults.cardColors(Color.Transparent)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                    ) {
+                        Row {
+                            Text(
+                                text = "学期",
+                                modifier = Modifier.weight(0.25f),
+                                textAlign = TextAlign.Left,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(text = book.pcmc, Modifier.weight(0.75f))
+                        }
+                        Row {
+                            Text(
+                                text = "课程名称",
+                                modifier = Modifier.weight(0.25f),
+                                textAlign = TextAlign.Left,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(text = book.kcmc, Modifier.weight(0.75f))
+                        }
+                        Row {
+                            Text(
+                                text = "书名",
+                                modifier = Modifier.weight(0.25f),
+                                textAlign = TextAlign.Left,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(text = book.jcmc, Modifier.weight(0.75f))
+                        }
+                        Row {
+                            Text(
+                                text = "编著",
+                                modifier = Modifier.weight(0.25f),
+                                textAlign = TextAlign.Left,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(text = book.zb, Modifier.weight(0.75f))
+                        }
+                        Row {
+                            Text(
+                                text = "出版社",
+                                modifier = Modifier.weight(0.25f),
+                                textAlign = TextAlign.Left,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(text = book.cbs, Modifier.weight(0.75f))
+                        }
+                        Row {
+                            Text(
+                                text = "ISBN",
+                                modifier = Modifier.weight(0.25f),
+                                textAlign = TextAlign.Left,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(text = book.isbn, Modifier.weight(0.75f))
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            TextButton(
+                                onClick = {
+                                    viewModel.copyText(
+                                        cbManager,
+                                        book.isbn
+                                    )
+                                }
+                            ) {
+                                Text(text = "复制")
+                            }
+                            TextButton(onClick = { /*TODO*/ }) {
+                                Text(text = "退订")
+                            }
+                        }
+                    }
+                }
+            }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -61,7 +60,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -78,7 +76,10 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun NavigationScreen(viewModel: SettingsViewModel, newsViewModel: NewsViewModel = viewModel()) {
+fun NavigationScreen(
+    viewModel: SettingsViewModel,
+    newsViewModel: NewsViewModel
+) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -111,15 +112,14 @@ fun NavigationScreen(viewModel: SettingsViewModel, newsViewModel: NewsViewModel 
         composable("newsList_screen") {
             NewsScreen(
                 navController = navController,
-                newsViewModel = newsViewModel,
-                viewModel = viewModel
+                newsViewModel = newsViewModel
             )
         }
         composable("detail_screen") {
             ArticleDetailScreen(
-                onBack = { navController.popBackStack() },
                 viewModel = viewModel,
-                newsViewModel = newsViewModel
+                newsViewModel = newsViewModel,
+                navController = navController
             )
         }
     }
@@ -134,8 +134,7 @@ data class NewsOptions(
 @Composable
 fun NewsScreen(
     navController: NavController,
-    newsViewModel: NewsViewModel,
-    viewModel: SettingsViewModel
+    newsViewModel: NewsViewModel
 ) {
     val showBottomSheet = remember {
         mutableStateOf(false)
@@ -299,7 +298,7 @@ fun NewsScreen(
                                     modifier = Modifier
                                         .clickable {
                                             navController.navigate("detail_screen")
-                                            viewModel.url = article.url
+                                            newsViewModel.url = article.url
                                         }
                                 )
                             }
@@ -392,7 +391,6 @@ fun NewsScreen(
                                             .aspectRatio(16 / 9f),
                                         contentScale = ContentScale.Crop
                                     )
-
                                     Card(
                                         modifier = Modifier
                                             .align(Alignment.BottomEnd)
@@ -418,7 +416,7 @@ fun NewsScreen(
                                     modifier = Modifier
                                         .clickable {
                                             navController.navigate("detail_screen")
-                                            viewModel.url = article.url
+                                            newsViewModel.url = article.url
                                         }
                                 )
                             }
@@ -428,7 +426,6 @@ fun NewsScreen(
             }
         }
     }
-
     ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "配置新闻源") {
         Column(
             modifier = Modifier.fillMaxWidth(),

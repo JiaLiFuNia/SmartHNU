@@ -4,7 +4,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import com.xhand.hnu.model.UserInfoManager
 import com.xhand.hnu.viewmodel.SettingsViewModel
 
 @Composable
@@ -12,6 +11,7 @@ fun ShowAlert(
     viewModel: SettingsViewModel,
     text: String
 ) {
+    if (viewModel.isShowAlert)
     AlertDialog(
         title = { Text(text = "提示") },
         text = { Text(text = text) },

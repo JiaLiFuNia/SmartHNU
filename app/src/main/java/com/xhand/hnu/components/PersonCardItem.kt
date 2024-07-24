@@ -53,13 +53,11 @@ fun PersonCardItem(
                 Icon(
                     imageVector = imageVector,
                     contentDescription = null,
-                    modifier = Modifier.padding(end = 3.dp),
-                    tint = colorScheme.primary
+                    modifier = Modifier.padding(end = 3.dp)
                 )
                 Text(
                     text = text,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = colorScheme.primary
+                    style = MaterialTheme.typography.titleMedium
                 )
                 if (rightText != null) {
                     Text(

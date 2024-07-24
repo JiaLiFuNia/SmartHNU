@@ -48,7 +48,7 @@ fun ChooseBookScreen(
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
-    var xnxqdm by remember { mutableStateOf("202401") }
+    var xnxqdm by remember { mutableStateOf("") }
     LaunchedEffect(viewModel.selectTerm) {
         viewModel.isGettingBook = true
         viewModel.bookService(viewModel.longGradeTerm[viewModel.selectTerm])
@@ -61,7 +61,7 @@ fun ChooseBookScreen(
         isRefreshing = true
         coroutineScope.launch {
             delay(timeMillis = 1000)
-            viewModel.bookService(xnxqdm)
+            viewModel.bookService(viewModel.longGradeTerm[viewModel.selectTerm])
             isRefreshing = false
         }
     }

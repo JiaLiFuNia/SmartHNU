@@ -36,6 +36,7 @@ import com.xhand.hnu.model.entity.Kxjcdata
 import com.xhand.hnu.model.entity.LoginPostEntity
 import com.xhand.hnu.model.entity.MessageDetail
 import com.xhand.hnu.model.entity.MessagePost
+import com.xhand.hnu.model.entity.ReadMessagePost
 import com.xhand.hnu.model.entity.SchedulePost
 import com.xhand.hnu.model.entity.Update
 import com.xhand.hnu.model.entity.UserInfoEntity
@@ -138,15 +139,13 @@ class SettingsViewModel(context: Context) : ViewModel() {
         )
     )
 
-    // 新闻链接
-    var url by mutableStateOf("")
-
     // 展示登录框
     var showPersonAlert by mutableStateOf(false)
     var showBookAlert by mutableStateOf(false)
     var showBookSelect by mutableStateOf(false)
     // 展示信息详情
     var showMessageDetail by mutableStateOf(false)
+    var showHaveReadAlert by mutableStateOf(false)
 
     // TextFiled
     var username by mutableStateOf("")
@@ -185,11 +184,8 @@ class SettingsViewModel(context: Context) : ViewModel() {
 
     // 成绩列表
     var gradeList = mutableListOf<KccjList>()
-    var teacherList = mutableListOf<AllPjxxList>()
+    var teacherList by mutableStateOf(mutableListOf<AllPjxxList>())
     var jdList = mutableListOf<JDList>()
-
-    // 成绩列表——临时
-    private var teacherListTemp = mutableListOf<AllPjxxList>()
 
     // 是否正在刷新
 
@@ -392,40 +388,26 @@ class SettingsViewModel(context: Context) : ViewModel() {
     }
 
     var isGettingTeacher by mutableStateOf(true)
-
+    var pjSelectTerm by mutableIntStateOf(3)
     // 教师评价
-    suspend fun teacherService() {
+    suspend fun teacherService(xnxqdm: String) {
         try {
             val res =
                 userInfo?.let {
                     gradeService.teacherDetails(
-                        teacherPost("202302"),
+                        teacherPost(longToShort(xnxqdm)),
                         token = it.token
                     )
                 }
             if (res != null) {
-                teacherListTemp = res.allPjxxList.toMutableList()
+                teacherList = res.allPjxxList.toMutableList()
             }
-            teacherList = teacherListTemp
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
         }
+        Log.i("TAG6654",longToShort(xnxqdm))
         Log.i("TAG6654", "$teacherList")
     }
-
-    var isDetailLoad by mutableStateOf(true)
-
-    // 新闻页面详情请求
-    suspend fun detailService() {
-        htmlParsing = try {
-            val res = detailService.getNewsDetail(url)
-            res.body()?.string() ?: ""
-        } catch (e: Exception) {
-            ""
-        }
-        isDetailLoad = false
-    }
-
     suspend fun messageService() {
         try {
             val res = userInfo?.let {
@@ -439,6 +421,21 @@ class SettingsViewModel(context: Context) : ViewModel() {
                 if (res.code == 200) {
                     hasMessage = res.data.toMutableList()
                 }
+            }
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
+        }
+    }
+
+
+    fun readMessage(xxids: String) = viewModelScope.launch {
+        try {
+            val res = gradeService.readMessage(
+                ReadMessagePost(xxids),
+                token = userInfo?.token ?: ""
+            )
+            if (res.code == 200 && res.msg.contains("success")) {
+                messageService()
             }
         } catch (e: Exception) {
             Log.i("TAG666", "$e")

@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,6 +33,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import com.xhand.hnu.components.BookSelectBottomSheet
+import com.xhand.hnu.components.TeacherBottomSheet
 import com.xhand.hnu.components.TeacherListItem
 import com.xhand.hnu.viewmodel.SettingsViewModel
 import kotlinx.coroutines.delay
@@ -47,9 +50,9 @@ fun TeacherScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
     val teacherList = viewModel.teacherList
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewModel.pjSelectTerm) {
         viewModel.isGettingTeacher = true
-        viewModel.teacherService()
+        viewModel.teacherService(viewModel.longGradeTerm[viewModel.pjSelectTerm])
         delay(500)
         viewModel.isGettingTeacher = false
     }
@@ -61,7 +64,7 @@ fun TeacherScreen(
         coroutineScope.launch {
             delay(timeMillis = 1000)
             if (viewModel.isLoginSuccess) {
-                viewModel.teacherService()
+                viewModel.teacherService(viewModel.longGradeTerm[viewModel.pjSelectTerm])
                 isRefreshing = false
             }
         }
@@ -84,6 +87,14 @@ fun TeacherScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "返回"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { viewModel.showBookSelect = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "more"
                         )
                     }
                 }
@@ -112,6 +123,7 @@ fun TeacherScreen(
                 ) {
                     Log.i("TAG6657", viewModel.teacherList.toString())
                     teacherList.sortBy { it.wjkkp }
+                    teacherList.sortBy { it.kcmc.first() }
                     teacherList.forEach { teacherItem ->
                         TeacherListItem(
                             teacherItem = teacherItem,
@@ -119,5 +131,7 @@ fun TeacherScreen(
                     }
                 }
             }
+        if (viewModel.showBookSelect)
+            TeacherBottomSheet(viewModel = viewModel)
     }
 }

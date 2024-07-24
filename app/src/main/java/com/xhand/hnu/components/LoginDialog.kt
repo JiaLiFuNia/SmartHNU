@@ -6,12 +6,13 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -55,6 +56,8 @@ fun ShowLoginDialog(
         },
         text = {
             Column(verticalArrangement = Arrangement.SpaceAround) {
+                if (viewModel.loginCircle)
+                    LinearProgressIndicator(modifier = Modifier.padding(bottom = 5.dp).fillMaxWidth())
                 TextField(
                     value = viewModel.username,
                     onValueChange = { viewModel.username = it },
@@ -133,11 +136,6 @@ fun ShowLoginDialog(
                 }
             ) {
                 Text("登录")
-                if (viewModel.loginCircle) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(14.dp), strokeWidth = 2.dp
-                    )
-                }
                 if (viewModel.isLoginSuccess) {
                     Toast.makeText(context, "登录成功！", Toast.LENGTH_SHORT).show()
                     viewModel.isShowDialog = false

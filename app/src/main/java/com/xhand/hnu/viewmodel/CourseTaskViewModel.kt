@@ -77,7 +77,6 @@ class CourseTaskViewModel(context: Context) : ViewModel() {
     var isGettingTask by mutableStateOf(true)
     suspend fun getTask(xnxqdm: String) {
         try {
-
             val res =
                 taskService.courseTask(GradePost(xnxqdm), token = userInfo?.token ?: "")
             if (res.code == 200) {

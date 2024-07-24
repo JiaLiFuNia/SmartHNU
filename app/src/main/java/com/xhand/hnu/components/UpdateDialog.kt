@@ -37,7 +37,7 @@ fun UpdateDialog(viewModel: SettingsViewModel) {
                 TextButton(
                     onClick = { viewModel.isShowUpdateDialog = false }
                 ) {
-                    Text(text = "关闭")
+                    Text(text = "暂不更新")
                 }
             },
             text = {

@@ -30,7 +30,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.navigation.NavController
 import com.xhand.hnu.R
+import com.xhand.hnu.components.AllMessageRead
 import com.xhand.hnu.components.MessageDetailDialog
 import com.xhand.hnu.components.MessageListItem
 import com.xhand.hnu.model.entity.MessageDetail
@@ -43,7 +45,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun MessageScreen(
     onBack: () -> Unit,
-    viewModel: SettingsViewModel
+    viewModel: SettingsViewModel,
+    navController: NavController
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
@@ -85,6 +88,7 @@ fun MessageScreen(
                 actions = {
                     IconButton(
                         onClick = {
+                            viewModel.showHaveReadAlert = true
                         }
                     ) {
                         Icon(
@@ -96,7 +100,7 @@ fun MessageScreen(
             )
         }
     ) {
-        val aMessageDetail = remember {
+        var aMessageDetail by remember {
             mutableStateOf(MessageDetail(xxid = "",type = ""))
         }
         PullToRefreshBox(
@@ -116,13 +120,17 @@ fun MessageScreen(
                         messageDetail = messageDetail,
                         modifier = Modifier.clickable {
                             viewModel.showMessageDetail = true
-                            aMessageDetail.value = messageDetail
-                        }
+                            aMessageDetail = messageDetail
+                            if (messageDetail.type == "cycjtz" || messageDetail.type == "cjtz")
+                                navController.navigate("grade_screen")
+                        },
+                        viewModel = viewModel
                     )
                     HorizontalDivider()
                 }
             }
         }
-        MessageDetailDialog(messageDetail = aMessageDetail.value, viewModel = viewModel, cjdm = "")
+        MessageDetailDialog(messageDetail = aMessageDetail, viewModel = viewModel)
+        AllMessageRead(viewModel = viewModel)
     }
 }

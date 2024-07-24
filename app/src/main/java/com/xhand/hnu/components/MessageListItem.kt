@@ -5,7 +5,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import com.google.gson.Gson
@@ -14,7 +13,7 @@ import com.xhand.hnu.model.entity.MyClass
 import com.xhand.hnu.viewmodel.SettingsViewModel
 
 @Composable
-fun MessageListItem(messageDetail: MessageDetail, modifier: Modifier) {
+fun MessageListItem(messageDetail: MessageDetail, modifier: Modifier, viewModel: SettingsViewModel) {
     if (messageDetail.type == "tksh")
         ListItem(
             headlineContent = {
@@ -36,10 +35,11 @@ fun MessageListItem(messageDetail: MessageDetail, modifier: Modifier) {
         val gson = Gson()
         val myObject = gson.fromJson(jsonString, MyClass::class.java)
         val className = myObject.kcmc.split('[')[0]
+        val xxids = messageDetail.xxid
         ListItem(
             headlineContent = {
                 Text(
-                    text = "你的 $className 成绩已公布"
+                    text = "$className 成绩已公布"
                 )
             },
             supportingContent = {
@@ -49,6 +49,11 @@ fun MessageListItem(messageDetail: MessageDetail, modifier: Modifier) {
                     overflow = TextOverflow.Ellipsis
                 )
             },
+            trailingContent = {
+                TextButton(onClick = { viewModel.readMessage(xxids) }) {
+                    Text(text = "已读")
+                }
+            },
             modifier = modifier
         )
     }
@@ -56,7 +61,7 @@ fun MessageListItem(messageDetail: MessageDetail, modifier: Modifier) {
 }
 
 @Composable
-fun MessageDetailDialog(messageDetail: MessageDetail, viewModel: SettingsViewModel, cjdm: String?) {
+fun MessageDetailDialog(messageDetail: MessageDetail, viewModel: SettingsViewModel) {
     if (viewModel.showMessageDetail) {
         if (messageDetail.type == "tksh")
             AlertDialog(
@@ -85,15 +90,10 @@ fun MessageDetailDialog(messageDetail: MessageDetail, viewModel: SettingsViewMod
                     }
                 }
             )
-        if (messageDetail.type == "cycjtz" || messageDetail.type == "cjtz") {
+        /*if (messageDetail.type == "cycjtz" || messageDetail.type == "cjtz") {
             val jsonString = messageDetail.msg
             val gson = Gson()
             val myObject = gson.fromJson(jsonString, MyClass::class.java)
-            LaunchedEffect(Unit) {
-                if (cjdm != null) {
-                    viewModel.gradeDetailService(cjdm)
-                }
-            }
             AlertDialog(
                 title = {
                     Text(text = "详情")
@@ -120,6 +120,39 @@ fun MessageDetailDialog(messageDetail: MessageDetail, viewModel: SettingsViewMod
                     }
                 }
             )
-        }
+        }*/
     }
+}
+
+
+@Composable
+fun AllMessageRead(viewModel: SettingsViewModel) {
+    if (viewModel.showHaveReadAlert)
+        AlertDialog(
+            title = {
+                Text(text = "提示")
+            },
+            text = {
+                Text(text = "是否将所有消息标记为已读？")
+            },
+            onDismissRequest = {
+                viewModel.showHaveReadAlert = false
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.showHaveReadAlert = false
+                    }
+                ) {
+                    Text("确定")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { viewModel.showHaveReadAlert = false }
+                ) {
+                    Text("取消")
+                }
+            }
+        )
 }

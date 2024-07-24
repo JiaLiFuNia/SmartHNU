@@ -21,6 +21,8 @@ import com.xhand.hnu.model.entity.JDEntity
 import com.xhand.hnu.model.entity.JDPost
 import com.xhand.hnu.model.entity.MessageEntity
 import com.xhand.hnu.model.entity.MessagePost
+import com.xhand.hnu.model.entity.ReadMessageEntity
+import com.xhand.hnu.model.entity.ReadMessagePost
 import com.xhand.hnu.model.entity.TeacherEntity
 import com.xhand.hnu.model.entity.teacherPost
 import retrofit2.http.Body
@@ -110,6 +112,12 @@ interface GradeService {
     suspend fun checkToken(
         @Header("Token") token: String
     ): CheckTokenEntity
+
+    @POST("dev-api/appapi/readed")
+    suspend fun readMessage(
+        @Body body: ReadMessagePost,
+        @Header("Token") token: String
+    ): ReadMessageEntity
 
     companion object {
         fun instance(): GradeService {

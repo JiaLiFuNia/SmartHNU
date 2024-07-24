@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.xhand.hnu.model.DataManager
 import com.xhand.hnu.model.entity.ArticleListEntity
+import com.xhand.hnu.network.NewsDetailService
 import com.xhand.hnu.network.NewsListService
 import com.xhand.hnu.network.SearchService
 import com.xhand.hnu.network.getNewsList
@@ -21,8 +22,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 @SuppressLint("MutableCollectionMutableState")
-class NewsViewModel(context: Context) :
-    ViewModel() {
+class NewsViewModel(context: Context) : ViewModel() {
     private val dataManager = DataManager(context)
 
     init {
@@ -67,10 +67,29 @@ class NewsViewModel(context: Context) :
     // 网络请求
     private val newsListService = NewsListService.instance()
     private val searchService = SearchService.instance()
+    private val detailService = NewsDetailService.instance()
 
     // 是否正在刷新
     var isRefreshing by mutableStateOf(true)
     var isSearching by mutableStateOf(true)
+
+    // 网页源码请求
+    var htmlParsing by mutableStateOf("")
+    var isDetailLoad by mutableStateOf(true)
+
+    // 新闻链接
+    var url by mutableStateOf("")
+
+    // 新闻页面详情请求
+    suspend fun detailService() {
+        try {
+            val res = detailService.getNewsDetail(url)
+            htmlParsing = res.body()?.string() ?: ""
+            isDetailLoad = false
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
+        }
+    }
 
     private var sliderPosition by mutableFloatStateOf(4f)
     // 新闻列表请求
