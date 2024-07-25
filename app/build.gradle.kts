@@ -12,7 +12,7 @@ android {
         minSdk = 29
         targetSdk = 33
         versionCode = 1
-        versionName = "2.1.1"
+        versionName = "2.1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -72,8 +72,10 @@ dependencies {
     // navigation
     implementation("androidx.navigation:navigation-compose:2.7.7")
     
-    val accompanist_version = "0.34.0"
-    implementation("com.google.accompanist:accompanist-systemuicontroller:$accompanist_version")
+    val accompanistVersion = "0.34.0"
+    implementation("com.google.accompanist:accompanist-systemuicontroller:$accompanistVersion")
+    implementation("com.google.accompanist:accompanist-placeholder-material:0.35.1-alpha")
+    // runtimeOnly("com.google.accompanist:accompanist-permissions:0.35.1-alpha")
 
     // html解析
     implementation("org.jsoup:jsoup:1.16.1")
@@ -106,4 +108,5 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     implementation("com.github.jeziellago:compose-markdown:0.5.1")
+
 }

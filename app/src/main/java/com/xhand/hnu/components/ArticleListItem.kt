@@ -1,11 +1,16 @@
 package com.xhand.hnu.components
 
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemColors
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 import com.xhand.hnu.model.entity.ArticleListEntity
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -13,23 +18,34 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ArticleListItem(
     article: ArticleListEntity,
-    modifier: Modifier
+    modifier: Modifier,
+    loaded: Boolean,
+    color: ListItemColors = ListItemDefaults.colors(),
 ) {
     ListItem(
         headlineContent = {
             Text(
                 text = if (article.isTop) "[置顶] ${article.title}" else article.title,
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.placeholder(
+                    visible = loaded,
+                    highlight = PlaceholderHighlight.shimmer()
+                )
             )
         },
         supportingContent = {
             Text(
                 text = if (article.time == "") "" else timeSwitch(dateString = article.time),
-                color = Color.Gray
+                color = Color.Gray,
+                modifier = Modifier.placeholder(
+                    visible = loaded,
+                    highlight = PlaceholderHighlight.shimmer()
+                )
             )
         },
-        modifier = modifier
+        modifier = modifier,
+        colors = color
     )
     // HorizontalDivider()
 }

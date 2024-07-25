@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -44,13 +46,13 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -154,7 +156,6 @@ fun NewsScreen(
     )
     var selectedOption by remember { mutableIntStateOf(0) }
     val scrollState = rememberScrollState()
-
     var isRefreshing by remember { mutableStateOf(false) }
     val state = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
@@ -166,14 +167,16 @@ fun NewsScreen(
             isRefreshing = false
         }
     }
+    val newsPagerState = rememberPagerState(pageCount = { newsOptions.size })
+    val selectedTabIndex = remember { derivedStateOf { newsPagerState.currentPage } }
+    val scope = rememberCoroutineScope()
     val pictures = newsViewModel.pictures
+    val pagerState = rememberPagerState(pageCount = { pictures.size })
     LaunchedEffect(Unit) {
-        newsViewModel.isRefreshing = true
         newsViewModel.newsList()
         newsViewModel.imageLoad()
         newsViewModel.isRefreshing = false
     }
-    val pagerState = rememberPagerState(pageCount = { pictures.size })
     LaunchedEffect(Unit) {
         while (true) {
             delay(2000)
@@ -182,16 +185,11 @@ fun NewsScreen(
             }
         }
     }
-    var searchBarExpand by remember {
-        mutableStateOf(false)
-    }
-    var searchText by remember {
-        mutableStateOf("")
-    }
-    LaunchedEffect(searchText) {
+
+    LaunchedEffect(newsViewModel.searchText) {
         newsViewModel.isSearching = true
-        if (searchText.isNotEmpty())
-            newsViewModel.searchRes(searchText)
+        if (newsViewModel.searchText.isNotEmpty())
+            newsViewModel.searchRes(newsViewModel.searchText)
         newsViewModel.isSearching = false
     }
     // 获取SystemUiController
@@ -208,20 +206,21 @@ fun NewsScreen(
             modifier = Modifier,
             inputField = {
                 SearchBarDefaults.InputField(
-                    query = searchText,
-                    onQueryChange = { searchText = it },
-                    onSearch = { searchBarExpand = false },
-                    expanded = searchBarExpand,
+                    query = newsViewModel.searchText,
+                    onQueryChange = { newsViewModel.searchText = it },
+                    onSearch = { newsViewModel.searchBarExpand = false },
+                    expanded = newsViewModel.searchBarExpand,
                     onExpandedChange = {
-                        searchBarExpand = it
+                        newsViewModel.searchBarExpand = it
                     },
                     placeholder = { Text("搜索新闻和通知") },
                     leadingIcon = {
-                        if (searchBarExpand)
+                        if (newsViewModel.searchBarExpand)
                             IconButton(
                                 onClick = {
-                                    searchBarExpand = false
-                                    searchText = ""
+                                    newsViewModel.searchBarExpand = false
+                                    newsViewModel.searchText = ""
+                                    newsViewModel.searchList.clear()
                                 }
                             ) {
                                 Icon(
@@ -238,7 +237,7 @@ fun NewsScreen(
                             }
                     },
                     trailingIcon = {
-                        if (!searchBarExpand)
+                        if (!newsViewModel.searchBarExpand)
                             IconButton(onClick = { onRefresh() }) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.hnu),
@@ -249,10 +248,11 @@ fun NewsScreen(
                         else
                             IconButton(
                                 onClick = {
-                                    if (searchText == "")
-                                        searchBarExpand = false
+                                    if (newsViewModel.searchText == "")
+                                        newsViewModel.searchBarExpand = false
                                     else
-                                        searchText = ""
+                                        newsViewModel.searchText = ""
+                                    newsViewModel.searchList.clear()
                                 }
                             ) {
                                 Icon(
@@ -263,12 +263,12 @@ fun NewsScreen(
                     }
                 )
             },
-            expanded = searchBarExpand,
+            expanded = newsViewModel.searchBarExpand,
             onExpandedChange = {
-                searchBarExpand = it
+                newsViewModel.searchBarExpand = it
             }
         ) {
-            if (newsViewModel.isSearching && searchText.isNotEmpty()) {
+            if (newsViewModel.isSearching && newsViewModel.searchText.isNotEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize(),
@@ -277,7 +277,7 @@ fun NewsScreen(
                     CircularProgressIndicator()
                 }
             } else {
-                if (newsViewModel.searchList.isEmpty() && searchText.isNotEmpty())
+                if (newsViewModel.searchList.isEmpty() && newsViewModel.searchText.isNotEmpty())
                     Box(
                         modifier = Modifier
                             .fillMaxSize(),
@@ -286,7 +286,7 @@ fun NewsScreen(
                         Text(text = "没有找到相关新闻或通知", color = Color.Gray)
                     }
                 else {
-                    if (searchText.isNotEmpty())
+                    if (newsViewModel.searchText.isNotEmpty())
                         Column(
                             modifier = Modifier
                                 .verticalScroll(scrollState),
@@ -295,11 +295,15 @@ fun NewsScreen(
                             newsViewModel.searchList.forEach { article ->
                                 ArticleListItem(
                                     article = article,
+                                    loaded = false,
                                     modifier = Modifier
                                         .clickable {
                                             navController.navigate("detail_screen")
                                             newsViewModel.url = article.url
-                                        }
+                                        },
+                                    color = ListItemDefaults.colors(
+                                        Color.Transparent
+                                    )
                                 )
                             }
                         }
@@ -330,100 +334,106 @@ fun NewsScreen(
                                         containerColor = Color.Transparent
                                     ),
                                     modifier = Modifier
-                                        .clickable { searchText = article }
+                                        .clickable { newsViewModel.searchText = article }
                                 )
                             }
                         }
                 }
             }
         }
-        val newsPagerState = rememberPagerState(pageCount = { newsOptions.size })
-        var selectedTabIndex by remember { mutableIntStateOf(0) }
-        LaunchedEffect(newsPagerState) {
-            snapshotFlow { newsPagerState.currentPage }.collect { page ->
-                selectedTabIndex = page
-            }
-        }
-        ScrollableTabRow(selectedTabIndex = selectedTabIndex) {
+        ScrollableTabRow(selectedTabIndex = selectedTabIndex.value) {
             newsOptions.forEachIndexed { index, newsOption ->
                 Tab(
-                    selected = selectedTabIndex == index,
-                    onClick = { selectedTabIndex = index },
+                    selected = selectedTabIndex.value == index,
+                    onClick = {
+                        scope.launch {
+                            newsPagerState.animateScrollToPage(index)
+                        }
+                    },
                     text = { Text(text = newsOption.title) }
                 )
             }
         }
         HorizontalPager(state = newsPagerState) {
             Log.i("TAG6667", "${newsViewModel.searchList}")
-            if (newsViewModel.isRefreshing) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            } else {
                 PullToRefreshBox(
                     state = state,
                     onRefresh = onRefresh,
                     isRefreshing = isRefreshing,
                     contentAlignment = Alignment.TopStart
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .verticalScroll(scrollState),
+                    LazyColumn(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        if (selectedTabIndex == 0)
-                            HorizontalPager(
-                                state = pagerState,
-                                modifier = Modifier
-                                    .padding(10.dp)
-                            ) { index ->
-                                Box {
-                                    AsyncImage(
-                                        model = pictures[index],
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .aspectRatio(16 / 9f),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                    Card(
-                                        modifier = Modifier
-                                            .align(Alignment.BottomEnd)
-                                            .padding(5.dp)
-                                            .height(25.dp)
-                                            .width(50.dp)
-                                    ) {
-                                        Box(
-                                            contentAlignment = Alignment.Center,
-                                            modifier = Modifier.fillMaxSize()
+                        if (selectedTabIndex.value == 0) {
+                            item {
+                                HorizontalPager(
+                                    state = pagerState,
+                                    modifier = Modifier
+                                        .padding(10.dp)
+                                ) { index ->
+                                    Box {
+                                        AsyncImage(
+                                            model = pictures[index],
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .aspectRatio(16 / 9f),
+                                            //.placeholder(
+                                            //  visible = newsViewModel.isRefreshing,
+                                            //highlight = PlaceholderHighlight.shimmer()
+                                            //),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                        Card(
+                                            modifier = Modifier
+                                                .align(Alignment.BottomEnd)
+                                                .padding(5.dp)
+                                                .height(25.dp)
+                                                .width(50.dp)
                                         ) {
-                                            Text(
-                                                text = "${index + 1}/${pictures.size}"
-                                            )
+                                            Box(
+                                                contentAlignment = Alignment.Center,
+                                                modifier = Modifier.fillMaxSize()
+                                            ) {
+                                                Text(
+                                                    text = "${index + 1}/${pictures.size}"
+                                                )
+                                            }
                                         }
                                     }
                                 }
                             }
-                        newsViewModel.list.forEach { article ->
-                            if (article.type == newsOptions[selectedTabIndex].title) {
-                                ArticleListItem(
-                                    article = article,
+                        }
+                        if (newsViewModel.isRefreshing) {
+                            item {
+                                Box(
                                     modifier = Modifier
-                                        .clickable {
-                                            navController.navigate("detail_screen")
-                                            newsViewModel.url = article.url
-                                        }
-                                )
+                                        .padding(top = 40.dp)
+                                        .fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        } else {
+                            items(newsViewModel.list) { article ->
+                                if (article.type == newsOptions[selectedTabIndex.value].title) {
+                                    ArticleListItem(
+                                        article = article,
+                                        loaded = newsViewModel.isRefreshing,
+                                        modifier = Modifier
+                                            .clickable {
+                                                navController.navigate("detail_screen")
+                                                newsViewModel.url = article.url
+                                            }
+                                    )
+                                }
                             }
                         }
-                        }
                     }
-            }
+                }
         }
     }
     ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "配置新闻源") {

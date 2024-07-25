@@ -32,6 +32,10 @@ class NewsViewModel(context: Context) : ViewModel() {
         }
     }
 
+    var searchText by mutableStateOf("")
+
+    var searchBarExpand by mutableStateOf(false)
+
     // 新闻列表
     var list by mutableStateOf(mutableListOf<ArticleListEntity>())
 
@@ -60,7 +64,9 @@ class NewsViewModel(context: Context) : ViewModel() {
 
     var pictures by mutableStateOf(
         mutableStateListOf(
-        "https://www.htu.edu.cn/_upload/article/images/8e/e2/89a1dd094963be08db2bbb450694/9d8d9587-47d0-4814-a45c-bd96e47005a2.jpg"
+            "https://gitee.com/xhand_xbh/hnu/raw/master/placeholder.png",
+            "https://gitee.com/xhand_xbh/hnu/raw/master/placeholder.png",
+            "https://gitee.com/xhand_xbh/hnu/raw/master/placeholder.png"
         )
     )
 

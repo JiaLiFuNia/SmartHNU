@@ -595,11 +595,10 @@ class SettingsViewModel(context: Context) : ViewModel() {
     suspend fun updateService(currentVersion: String) {
         try {
             isGettingUpdate = true
-            delay(500)
             updateMessage = updateService.update()
-            ifNeedUpdate = updateMessage.version != currentVersion
+            ifNeedUpdate = convertVersion(updateMessage.version) > convertVersion(currentVersion)
             isGettingUpdate = false
-            Log.i("TAG666", "${updateMessage.version}${currentVersion}${ifNeedUpdate}")
+            Log.i("TAG666", "${updateMessage.version}${convertVersion(currentVersion)}${ifNeedUpdate}")
         } catch (e: Exception) {
             isGettingUpdate = false
             Log.i("TAG666", "$e")
@@ -607,6 +606,12 @@ class SettingsViewModel(context: Context) : ViewModel() {
     }
     fun updateRes(currentVersion: String) = viewModelScope.launch {
         updateService(currentVersion)
+    }
+
+
+    private fun convertVersion(version: String): Int {
+        val versionInt = version.split('.').joinToString("")
+        return versionInt.toInt()
     }
 
     // 复制内容到剪切板

@@ -204,7 +204,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 leadingContent = {
                     if (viewModel.isGettingUpdate)
                         CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
+                            modifier = Modifier.size(22.dp),
                             strokeWidth = 3.dp
                         )
                     else

@@ -56,7 +56,7 @@ fun GuideScreen(
                 .verticalScroll(scrollState)
         ) {
             val markdownContent = """  
-# 功能指导与使用说明
+# 功能向导与使用说明
 
 ## 简介
 
