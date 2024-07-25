@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -86,7 +87,13 @@ class SettingsViewModel(context: Context) : ViewModel() {
             text = "课程成绩",
             imageVector = Icons.Default.Edit,
             route = "grade_screen"
-        )
+        ),
+        ToggleableInfo(
+            isChecked = true,
+            text = "第二课堂",
+            imageVector = Icons.Default.Star,
+            route = "teacher_screen"
+        ),
     )
     var functionCards = mutableStateListOf(
         FunctionCard(
@@ -581,10 +588,9 @@ class SettingsViewModel(context: Context) : ViewModel() {
     }*/
 
 
-    var updateMessage by mutableStateOf(Update("", "", ""))
+    var updateMessage by mutableStateOf(Update("", "", "",""))
     var isShowUpdateDialog by mutableStateOf(false)
     var isGettingUpdate by mutableStateOf(false)
-    var hasReceiveUpdate by mutableStateOf(false)
     // 软件更新请求
     suspend fun updateService(currentVersion: String) {
         try {
@@ -595,6 +601,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
             isGettingUpdate = false
             Log.i("TAG666", "${updateMessage.version}${currentVersion}${ifNeedUpdate}")
         } catch (e: Exception) {
+            isGettingUpdate = false
             Log.i("TAG666", "$e")
         }
     }

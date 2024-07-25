@@ -70,6 +70,7 @@ fun ArticleDetailScreen(
         WebView(context).apply {
             settings.javaScriptEnabled = true
             webViewClient = WebViewClient()
+            settings.builtInZoomControls = true
             loadUrl(newsViewModel.url)
         }
     }
@@ -253,18 +254,20 @@ fun ArticleDetailScreen(
                         }
                     if (!showHtml) {
                         AndroidView(
-                            factory = { context ->
-                                    WebView(context)
-                                },
-                                modifier = Modifier.padding(5.dp)
-                            ) { view ->
-                                view.loadDataWithBaseURL(
-                                    "", "$htmlHeader$content$htmlFooter", null, "utf-8", null
-                                )
-                            }
-                        } else {
-                            AndroidView(factory = { webView })
+                            factory = { context -> WebView(context) },
+                            modifier = Modifier.padding(5.dp)
+                        ) { view ->
+                            view.loadDataWithBaseURL(
+                                "",
+                                "$htmlHeader$content$htmlFooter",
+                                null,
+                                "utf-8",
+                                null
+                            )
                         }
+                    } else {
+                        AndroidView(factory = { webView })
+                    }
                 }
         }
     }

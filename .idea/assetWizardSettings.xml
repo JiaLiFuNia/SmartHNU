@@ -327,7 +327,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="file:/$PROJECT_DIR$/../../../SDK/icons/material/materialiconsoutlined/assessment/outline_assessment_24.xml" />
+                                      <entry key="url" value="file:/$PROJECT_DIR$/../../../SDK/icons/material/materialiconsoutlined/looks_two/outline_looks_two_24.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -338,7 +338,7 @@
                         <option name="values">
                           <map>
                             <entry key="autoMirrored" value="true" />
-                            <entry key="outputName" value="outline_assessment_24" />
+                            <entry key="outputName" value="outline_looks_two_24" />
                             <entry key="sourceFile" value="D:\MY\Kotlin\xhand2\app\src\main\res\drawable\HNU.svg" />
                           </map>
                         </option>

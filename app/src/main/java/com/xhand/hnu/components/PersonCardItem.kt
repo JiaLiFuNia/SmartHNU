@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 fun PersonCardItem(
     onclick: () -> Unit,
     text: String,
-    rightText: String?,
+    rightText: String? = "",
     imageVector: ImageVector,
     content: @Composable () -> Unit = {}
 ) {

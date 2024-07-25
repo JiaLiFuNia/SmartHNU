@@ -133,7 +133,8 @@ fun ShowLoginDialog(
                     coroutineScope.launch {
                         viewModel.login()
                     }
-                }
+                },
+                enabled = !viewModel.loginCircle
             ) {
                 Text("登录")
                 if (viewModel.isLoginSuccess) {

@@ -15,7 +15,10 @@ fun UpdateDialog(viewModel: SettingsViewModel) {
     if (viewModel.isShowUpdateDialog)
         AlertDialog(
             title = {
-                Text("发现新版本 v${viewModel.updateMessage.version}")
+                if (viewModel.updateMessage.type == "update")
+                    Text("发现新版本 v${viewModel.updateMessage.version}")
+                else
+                    Text("公告")
             },
             onDismissRequest = { viewModel.isShowUpdateDialog = false },
             confirmButton = {

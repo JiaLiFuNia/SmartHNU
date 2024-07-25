@@ -36,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -168,6 +169,11 @@ fun NavigationPersonScreen(
             TeacherScreen(
                 onBack = { navController.popBackStack() },
                 viewModel = viewModel
+            )
+        }
+        composable("secondClass_screen") {
+            SecondClassScreen(
+                onBack = { navController.popBackStack() }
             )
         }
     }
@@ -534,6 +540,30 @@ fun PersonScreen(
                             }
                         } else
                                 Text(text = "暂无信息", color = Color.Gray)
+                        }
+                    }
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+                PersonCardItem(
+                    onclick = {
+                    },
+                    text = checkboxes[2].text,
+                    imageVector = checkboxes[2].imageVector,
+                    content = {
+                        Box(
+                            modifier = Modifier
+                                .height(200.dp)
+                                .padding(10.dp)
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            TextButton(
+                                onClick = {
+                                    navController.navigate("secondClass_screen")
+                                }
+                            ) {
+                                Text(text = "点击登录")
+                            }
                         }
                     }
                 )
