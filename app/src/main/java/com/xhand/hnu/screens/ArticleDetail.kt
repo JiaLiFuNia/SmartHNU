@@ -64,7 +64,7 @@ fun ArticleDetailScreen(
     val context = LocalContext.current
     val cbManager = LocalClipboardManager.current
     var showHtml by remember {
-        mutableStateOf(false)
+        mutableStateOf(true)
     }
     val webView = remember {
         WebView(context).apply {

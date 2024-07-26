@@ -303,7 +303,7 @@ fun PersonScreen(
                             viewModel.isShowDialog = true
                         }
                     },
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiary)
+                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
                 ) {
                     ListItem(
                         leadingContent = {
@@ -342,47 +342,6 @@ fun PersonScreen(
                             containerColor = MaterialTheme.colorScheme.primaryContainer
                         )
                     )
-                    /*Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp)
-                    ) {
-                        // val random = Random(System.currentTimeMillis())
-                        // val randomNumber = random.nextInt(1, 12)
-                        Image(
-                            painter = painterResource(id = ic_ids[9]),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(80.dp)
-                                .clip(CircleShape)
-                        )
-                        Column(
-                            verticalArrangement = Arrangement.SpaceAround,
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp)
-                                .height(75.dp)
-                                .padding(start = 15.dp)
-                        ) {
-                            if (viewModel.isLoginSuccess) {
-                                Text(
-                                    text = userInfo?.name ?: "",
-                                    style = MaterialTheme.typography.headlineSmall
-                                )
-                                Text(
-                                    text = userInfo?.studentID ?: "",
-                                    fontSize = 15.sp,
-                                    color = Color.Gray
-                                )
-                                Text(
-                                    text = userInfo?.academy ?: "", fontSize = 15.sp, color = Color.Gray
-                                )
-                            } else {
-                                Text(text = "未登录", fontSize = 25.sp)
-                            }
-                        }
-                    }*/
                 }
                 Spacer(modifier = Modifier.height(14.dp))
                 PersonCardItem(

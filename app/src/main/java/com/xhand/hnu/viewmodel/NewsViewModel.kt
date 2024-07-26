@@ -32,6 +32,13 @@ class NewsViewModel(context: Context) : ViewModel() {
         }
     }
 
+    fun clearHistoryList() {
+        viewModelScope.launch {
+            dataManager.clearHistoryList()
+            searchHistory.clear()
+        }
+    }
+
     var searchText by mutableStateOf("")
 
     var searchBarExpand by mutableStateOf(false)
@@ -65,8 +72,6 @@ class NewsViewModel(context: Context) : ViewModel() {
     var pictures by mutableStateOf(
         mutableStateListOf(
             "https://gitee.com/xhand_xbh/hnu/raw/master/placeholder.png",
-            "https://gitee.com/xhand_xbh/hnu/raw/master/placeholder.png",
-            "https://gitee.com/xhand_xbh/hnu/raw/master/placeholder.png"
         )
     )
 

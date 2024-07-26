@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -41,6 +39,7 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
@@ -67,6 +66,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
 import com.xhand.hnu.components.ArticleListItem
@@ -313,14 +313,28 @@ fun NewsScreen(
                                 .verticalScroll(scrollState),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(
-                                text = "近期搜索",
-                                fontSize = 13.sp,
-                                modifier = Modifier
-                                    .padding(start = 10.dp, top = 10.dp)
-                                    .fillMaxWidth(),
-                                textAlign = TextAlign.Left
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "近期搜索",
+                                    fontSize = 13.sp,
+                                    modifier = Modifier
+                                        .padding(start = 10.dp),
+                                    textAlign = TextAlign.Left
+                                )
+                                TextButton(
+                                    onClick = { newsViewModel.clearHistoryList() },
+                                    enabled = newsViewModel.searchHistory.isNotEmpty()
+                                ) {
+                                    Text(
+                                        text = "全部清除",
+                                        fontSize = 13.sp,
+                                    )
+                                }
+                            }
                             newsViewModel.searchHistory.forEach { article ->
                                 ListItem(
                                     headlineContent = { Text(text = article) },
@@ -362,39 +376,38 @@ fun NewsScreen(
                     isRefreshing = isRefreshing,
                     contentAlignment = Alignment.TopStart
                 ) {
-                    LazyColumn(
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .verticalScroll(scrollState),
                     ) {
                         if (selectedTabIndex.value == 0) {
-                            item {
-                                HorizontalPager(
-                                    state = pagerState,
-                                    modifier = Modifier
-                                        .padding(10.dp)
-                                ) { index ->
-                                    Box {
-                                        AsyncImage(
-                                            model = pictures[index],
-                                            contentDescription = null,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .aspectRatio(16 / 9f),
-                                            //.placeholder(
-                                            //  visible = newsViewModel.isRefreshing,
-                                            //highlight = PlaceholderHighlight.shimmer()
-                                            //),
-                                            contentScale = ContentScale.Crop
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier
+                                    .padding(10.dp)
+                            ) { index ->
+                                Box {
+                                    AsyncImage(
+                                        model = pictures[index],
+                                        placeholder = painterResource(R.drawable.placeholder),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .aspectRatio(16 / 9f),
+                                        contentScale = ContentScale.Crop
                                         )
-                                        Card(
-                                            modifier = Modifier
-                                                .align(Alignment.BottomEnd)
-                                                .padding(5.dp)
-                                                .height(25.dp)
-                                                .width(50.dp)
-                                        ) {
-                                            Box(
-                                                contentAlignment = Alignment.Center,
+                                    Card(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomEnd)
+                                            .padding(5.dp)
+                                            .height(25.dp)
+                                            .width(50.dp)
+                                            .placeholder(visible = newsViewModel.isRefreshing)
+                                    ) {
+                                        Box(
+                                            contentAlignment = Alignment.Center,
                                                 modifier = Modifier.fillMaxSize()
                                             ) {
                                                 Text(
@@ -405,20 +418,17 @@ fun NewsScreen(
                                     }
                                 }
                             }
-                        }
                         if (newsViewModel.isRefreshing) {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .padding(top = 40.dp)
-                                        .fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator()
-                                }
+                            Box(
+                                modifier = Modifier
+                                    .padding(top = 40.dp)
+                                    .fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
                             }
                         } else {
-                            items(newsViewModel.list) { article ->
+                            newsViewModel.list.forEach { article ->
                                 if (article.type == newsOptions[selectedTabIndex.value].title) {
                                     ArticleListItem(
                                         article = article,

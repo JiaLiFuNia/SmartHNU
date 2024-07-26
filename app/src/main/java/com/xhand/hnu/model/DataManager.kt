@@ -22,4 +22,7 @@ class DataManager(private val context: Context) {
 
     val historyList: Flow<Set<String>> = context.dataStore.data.map { it[HISTORY_LIST] ?: emptySet()   }
 
+    suspend fun clearHistoryList() {
+        context.dataStore.edit { it[HISTORY_LIST] = emptySet() }
+    }
 }
