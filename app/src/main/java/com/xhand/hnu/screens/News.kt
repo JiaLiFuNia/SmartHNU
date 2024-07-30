@@ -57,6 +57,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -66,6 +67,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
@@ -203,6 +205,9 @@ fun NewsScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SearchBar(
+            colors = SearchBarDefaults.colors(
+                colorScheme.surfaceContainer
+            ),
             modifier = Modifier,
             inputField = {
                 SearchBarDefaults.InputField(
@@ -389,7 +394,10 @@ fun NewsScreen(
                             ) { index ->
                                 Box {
                                     AsyncImage(
-                                        model = pictures[index],
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data(pictures[index])
+                                            .crossfade(true)
+                                            .build(),
                                         placeholder = painterResource(R.drawable.placeholder),
                                         contentDescription = null,
                                         modifier = Modifier
@@ -397,7 +405,7 @@ fun NewsScreen(
                                             .clip(RoundedCornerShape(8.dp))
                                             .aspectRatio(16 / 9f),
                                         contentScale = ContentScale.Crop
-                                        )
+                                    )
                                     Card(
                                         modifier = Modifier
                                             .align(Alignment.BottomEnd)

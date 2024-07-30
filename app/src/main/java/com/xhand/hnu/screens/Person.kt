@@ -69,6 +69,7 @@ import com.xhand.hnu.components.Chart.GPAChangeLineChart
 import com.xhand.hnu.components.PersonCardItem
 import com.xhand.hnu.components.PersonFunctionCardItem
 import com.xhand.hnu.components.ShowLoginDialog
+import com.xhand.hnu.components.ShowSecondClassLoginDialog
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import com.xhand.hnu.viewmodel.CourseTaskViewModel
 import com.xhand.hnu.viewmodel.GradeViewModel
@@ -202,6 +203,12 @@ fun PersonScreen(
             viewModel.isGettingCourse = false
             // viewModel.holidayService()
         }
+    }
+    LaunchedEffect(Unit) {
+        if (viewModel.stateCode == 1) {
+            viewModel.getHourList()
+        }
+        viewModel.secondClassService()
     }
     var isRefreshing by remember { mutableStateOf(false) }
     val state = rememberPullToRefreshState()
@@ -505,6 +512,9 @@ fun PersonScreen(
                 Spacer(modifier = Modifier.height(14.dp))
                 PersonCardItem(
                     onclick = {
+                        if (viewModel.stateCode != 1) {
+                            Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
+                        }
                     },
                     text = checkboxes[2].text,
                     imageVector = checkboxes[2].imageVector,
@@ -516,23 +526,41 @@ fun PersonScreen(
                                 .fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            TextButton(
-                                onClick = {
-                                    navController.navigate("secondClass_screen")
+                            if (viewModel.stateCode != 1) {
+                                TextButton(
+                                    onClick = {
+                                        viewModel.isShowScDialog = true
+                                    }
+                                ) {
+                                    Text(text = "点击登录")
                                 }
-                            ) {
-                                Text(text = "点击登录")
+                            } else {
+                                if (viewModel.isGettingHourList)
+                                    CircularProgressIndicator()
+                                else
+                                    Column {
+                                        viewModel.scHourList.forEach { scHour ->
+                                            ListItem(
+                                                headlineContent = { Text(text = scHour.term) },
+                                                trailingContent = {
+                                                    Text(text = scHour.total.toString())
+                                                }
+                                            )
+                                        }
+                                    }
                             }
                         }
                     }
                 )
                 Spacer(modifier = Modifier.height(14.dp))
-
             }
         }
     }
     if (viewModel.isShowDialog) {
         ShowLoginDialog(viewModel)
+    }
+    if (viewModel.isShowScDialog) {
+        ShowSecondClassLoginDialog(viewModel = viewModel)
     }
 }
 

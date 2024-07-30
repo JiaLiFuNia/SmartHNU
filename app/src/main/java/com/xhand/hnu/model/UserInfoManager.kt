@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.xhand.hnu.model.entity.LoginPostEntity
+import com.xhand.hnu.model.entity.SecondClassInfo
 import com.xhand.hnu.model.entity.UserInfoEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -19,6 +20,7 @@ class UserInfoManager(private val context: Context) {
         private val Context.userStore: DataStore<Preferences> by preferencesDataStore("userStore")
         val LOGGED = intPreferencesKey("LOGGED")
         val USERINFO = stringPreferencesKey("USERINFO")
+        val SCUSERINFO = stringPreferencesKey("SCUSERINFO")
         val LOGINFO = stringPreferencesKey("LOGINFO")
     }
 
@@ -33,6 +35,17 @@ class UserInfoManager(private val context: Context) {
         gson.fromJson(json, LoginPostEntity::class.java)
     }
 
+    val scUserInfo: Flow<SecondClassInfo> = context.userStore.data.map {
+        val json = it[SCUSERINFO] ?: ""
+        gson.fromJson(json, SecondClassInfo::class.java)
+    }
+
+    suspend fun saveSecondClassInfo(secondClassInfo: SecondClassInfo) {
+        context.userStore.edit {
+            it[SCUSERINFO] = gson.toJson(secondClassInfo)
+        }
+    }
+
     suspend fun save(userInfo: UserInfoEntity, loginCode: Int, logInfo: LoginPostEntity) {
         context.userStore.edit {
             it[LOGGED] = loginCode
@@ -45,6 +58,7 @@ class UserInfoManager(private val context: Context) {
         context.userStore.edit {
             it[LOGGED] = 0
             it[USERINFO] = ""
+            it[SCUSERINFO] = ""
         }
     }
 }

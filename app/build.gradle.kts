@@ -87,6 +87,7 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.google.code.gson:gson:2.11.0")
+    implementation("com.github.franmontiel:PersistentCookieJar:1.0.1")
 
     // datastore
     implementation("androidx.datastore:datastore-preferences:1.1.1")

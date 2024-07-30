@@ -1,7 +1,16 @@
 package com.xhand.hnu.network
 
+import android.content.Context
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import com.franmontiel.persistentcookiejar.ClearableCookieJar
+import com.franmontiel.persistentcookiejar.PersistentCookieJar
+import com.franmontiel.persistentcookiejar.cache.SetCookieCache
+import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor
+import okhttp3.Cookie
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+
 
 object Network {
     private val retrofitNews = Retrofit.Builder()
@@ -26,7 +35,6 @@ object Network {
         .addConverterFactory(GsonConverterFactory.create())
         .build()*/
 
-
     private val retrofitNewsList = Retrofit.Builder()
         .baseUrl("https://www.htu.edu.cn/")
         .build()
@@ -50,6 +58,7 @@ object Network {
     fun <T> detailService(clazz: Class<T>): T {
         return retrofitNewsList.create(clazz)
     }
+
 
     /*fun <T> holidayService(clazz: Class<T>): T {
         return retrofitHoliday.create(clazz)

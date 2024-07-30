@@ -14,7 +14,7 @@ fun ShowAlert(
     if (viewModel.isShowAlert)
         AlertDialog(
             title = { Text(text = "提示") },
-            text = { Text(text = text) },
+            text = { Text(text = "确定要退出教务系统和第二课堂的登录吗？") },
             onDismissRequest = { viewModel.isShowDialog = false },
             confirmButton = {
                 TextButton(

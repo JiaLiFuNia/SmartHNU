@@ -27,6 +27,7 @@ import com.xhand.hnu.model.entity.ClassroomPost
 import com.xhand.hnu.model.entity.GradeDetailPost
 import com.xhand.hnu.model.entity.GradeInfo
 import com.xhand.hnu.model.entity.GradePost
+import com.xhand.hnu.model.entity.HourListEntity
 import com.xhand.hnu.model.entity.JDList
 import com.xhand.hnu.model.entity.JDPost
 import com.xhand.hnu.model.entity.Jszylist
@@ -39,6 +40,7 @@ import com.xhand.hnu.model.entity.MessageDetail
 import com.xhand.hnu.model.entity.MessagePost
 import com.xhand.hnu.model.entity.ReadMessagePost
 import com.xhand.hnu.model.entity.SchedulePost
+import com.xhand.hnu.model.entity.SecondClassInfo
 import com.xhand.hnu.model.entity.Update
 import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.model.entity.Xdjcdata
@@ -49,7 +51,10 @@ import com.xhand.hnu.network.GradeService
 import com.xhand.hnu.network.LoginService
 import com.xhand.hnu.network.NewsDetailService
 import com.xhand.hnu.network.ScheduleService
+import com.xhand.hnu.network.SecondClassService
 import com.xhand.hnu.network.UpdateService
+import com.xhand.hnu.network.secondClassLoginState
+import com.xhand.hnu.network.secondClassParsing
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -65,6 +70,13 @@ class SettingsViewModel(context: Context) : ViewModel() {
             val isLogged = userInfoManager.logged.firstOrNull()
             val userInfoStore = userInfoManager.userInfo.firstOrNull()
             val logInfo = userInfoManager.logInfo.firstOrNull()
+            val scUserInfo = userInfoManager.scUserInfo.firstOrNull()
+            if (scUserInfo != null) {
+                username = scUserInfo.username
+                scPassword = scUserInfo.password
+                cookie = scUserInfo.cookie
+                stateCode = 1
+            }
             userInfo = userInfoStore
             loginCode = isLogged ?: 0
             if (logInfo != null) {
@@ -150,6 +162,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
     var showPersonAlert by mutableStateOf(false)
     var showBookAlert by mutableStateOf(false)
     var showBookSelect by mutableStateOf(false)
+
     // 展示信息详情
     var showMessageDetail by mutableStateOf(false)
     var showHaveReadAlert by mutableStateOf(false)
@@ -157,6 +170,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
     // TextFiled
     var username by mutableStateOf("")
     var password by mutableStateOf("")
+    var scPassword by mutableStateOf("")
 
     // 登录信息
     var userInfo: UserInfoEntity? = null
@@ -166,6 +180,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
 
     // 展示登录弹窗
     var isShowDialog by mutableStateOf(false)
+    var isShowScDialog by mutableStateOf(false)
 
     // 展示退出登录弹窗
     var isShowAlert by mutableStateOf(false)
@@ -306,6 +321,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
     fun clearUserInfo() {
         viewModelScope.launch {
             userInfoManager.clear()
+            stateCode = 0
             userInfo = null
             loginCode = 0
         }
@@ -608,10 +624,76 @@ class SettingsViewModel(context: Context) : ViewModel() {
         updateService(currentVersion)
     }
 
-
     private fun convertVersion(version: String): Int {
         val versionInt = version.split('.').joinToString("")
         return versionInt.toInt()
+    }
+
+    // Second Class
+    private val login = SecondClassService.instance(context)
+    private var secondClassHtml by mutableStateOf("")
+    private var scToken by mutableStateOf("")
+    var verifyImg by mutableStateOf("http://dekt.htu.edu.cn/img/resources-code.jpg")
+    var scLoginCircle by mutableStateOf(false)
+    var verifycode by mutableStateOf("") // 验证码
+    var cookie by mutableStateOf("")
+    var stateCode by mutableIntStateOf(0)
+    suspend fun secondClassService() {
+        try {
+            val res = login.scLoginService()
+            secondClassHtml = res.body()?.string() ?: ""
+            scToken = secondClassParsing(secondClassHtml)
+            cookie = res.raw().header("Set-Cookie").toString().substring(4, 40)
+            Log.i("TAG666", cookie)
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
+        }
+    }
+
+    suspend fun secondClassLogin() {
+        try {
+            scLoginCircle = true
+            val publicKey = RSAEncryptionHelper.getScPublicKeyFromString()
+            val passwordEncrypt = RSAEncryptionHelper.encryptText(scPassword, publicKey)
+            val res = login.scLoginPostService(
+                cookie = "sid=${cookie}",
+                username = username,
+                password = "",
+                password2 = passwordEncrypt,
+                tk = scToken,
+                verifycode = verifycode
+            )
+            val resString = res.body()?.string()
+            delay(1500)
+            scToken = resString?.let { secondClassParsing(it) }.toString() // 更新tk
+            stateCode = resString?.let { secondClassLoginState(it) }!! // 更新状态码
+            if (stateCode == 1) {
+                val scUserInfo = SecondClassInfo(
+                    username = username,
+                    password = scPassword,
+                    cookie = cookie,
+                )
+                viewModelScope.launch {
+                    userInfoManager.saveSecondClassInfo(scUserInfo)
+                }
+            }
+            scLoginCircle = false
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
+            scLoginCircle = false
+        }
+    }
+
+    var scHourList by mutableStateOf(mutableListOf<HourListEntity>())
+    var isGettingHourList by mutableStateOf(true)
+    suspend fun getHourList() {
+        try {
+            scHourList = login.getHourList(cookie = "sid=${cookie}").toMutableList()
+            isGettingHourList = false
+            Log.i("TAG6663", "$scHourList")
+        } catch (e: Exception) {
+            Log.i("TAG6663", "$e")
+        }
     }
 
     // 复制内容到剪切板

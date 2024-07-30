@@ -21,6 +21,13 @@ object RSAEncryptionHelper {
             X509EncodedKeySpec(Base64.decode(publicKeyString.toByteArray(), Base64.DEFAULT))
         return keyFactory.generatePublic(keySpec)
     }
+    fun getScPublicKeyFromString(): PublicKey {
+        val publicKeyString =
+            "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCIDV8I1zpoazcFmv3VNtG/E9/QC14gDhBoW9Yq6o9UNLaOZC41yoGa7hjHqjuPOcmPJ61Wmv7i5UbB5BceGRl2i0pSyOzeAeYpoY5cNRStfQlXFlwV1Ig1P081rxBcCgkWZvhodsWp9yRdKOTTHUCj0FpgD94/2QhvqkxOaW9vAwIDAQAB"
+        val keySpec =
+            X509EncodedKeySpec(Base64.decode(publicKeyString.toByteArray(), Base64.DEFAULT))
+        return keyFactory.generatePublic(keySpec)
+    }
 
     fun encryptText(plainText: String, publicKey: PublicKey): String {
         try {
@@ -30,11 +37,4 @@ object RSAEncryptionHelper {
             return "error"
         }
     }
-
-    fun decryptText(encryptedText: String, publicKey: PublicKey): String {
-        cipher.init(Cipher.DECRYPT_MODE, publicKey)
-        return String(cipher.doFinal(Base64.decode(encryptedText.toByteArray(), Base64.DEFAULT)))
-    }
-
-
 }
