@@ -204,10 +204,12 @@ fun PersonScreen(
             // viewModel.holidayService()
         }
     }
-    LaunchedEffect(Unit) {
-        if (viewModel.stateCode == 1) {
+    LaunchedEffect(viewModel.stateCode == 1) {
+        if (viewModel.stateCode == 1)
             viewModel.getHourList()
-        }
+    }
+    LaunchedEffect(viewModel.stateCode == 0) {
+        if (viewModel.stateCode == 0)
         viewModel.secondClassService()
     }
     var isRefreshing by remember { mutableStateOf(false) }
@@ -374,6 +376,7 @@ fun PersonScreen(
                                         painterResource = functionCard.painterResource,
                                         onClick = {
                                             if (userInfo == null) {
+                                                viewModel.isShowDialog = true
                                                 Toast.makeText(
                                                     context,
                                                     "请先登录",
@@ -433,6 +436,7 @@ fun PersonScreen(
                                                 schedule = schedule,
                                                 onClick = {
                                                     if (userInfo == null) {
+                                                        viewModel.isShowDialog = true
                                                         Toast.makeText(
                                                             context,
                                                             "请先登录",
@@ -476,6 +480,7 @@ fun PersonScreen(
                 PersonCardItem(
                     onclick = {
                         if (userInfo == null) {
+                            viewModel.isShowDialog = true
                             Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
                         } else {
                             checkboxes[1].route?.let { navController.navigate(it) }

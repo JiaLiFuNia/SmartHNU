@@ -26,6 +26,7 @@ class UserInfoManager(private val context: Context) {
 
     private val gson = Gson()
     val logged: Flow<Int> = context.userStore.data.map { it[LOGGED] ?: 0 }
+
     val userInfo: Flow<UserInfoEntity> = context.userStore.data.map {
         val json = it[USERINFO] ?: ""
         gson.fromJson(json, UserInfoEntity::class.java)

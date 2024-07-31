@@ -1,7 +1,6 @@
 package com.xhand.hnu.components
 
 import android.widget.Toast
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -39,7 +38,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.xhand.hnu.R
 import com.xhand.hnu.network.createImageLoader
 import com.xhand.hnu.viewmodel.SettingsViewModel
@@ -117,9 +115,9 @@ fun ShowSecondClassLoginDialog(
                     value = viewModel.verifycode,
                     onValueChange = { viewModel.verifycode = it },
                     label = { Text("验证码") },
-                    isError = viewModel.stateCode == -2,
+                    isError = viewModel.stateCode == -2 || viewModel.stateCode == -3,
                     supportingText = {
-                        if (viewModel.stateCode == -2) {
+                        if (viewModel.stateCode == -2 || viewModel.stateCode == -3) {
                             Text(text = "验证码错误！", color = MaterialTheme.colorScheme.error)
                         }
                     },

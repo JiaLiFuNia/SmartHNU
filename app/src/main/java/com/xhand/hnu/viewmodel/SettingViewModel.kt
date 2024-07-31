@@ -629,21 +629,26 @@ class SettingsViewModel(context: Context) : ViewModel() {
         return versionInt.toInt()
     }
 
-    // Second Class
+
+    // 第二课堂
     private val login = SecondClassService.instance(context)
     private var secondClassHtml by mutableStateOf("")
     private var scToken by mutableStateOf("")
     var verifyImg by mutableStateOf("http://dekt.htu.edu.cn/img/resources-code.jpg")
-    var scLoginCircle by mutableStateOf(false)
+    var scLoginCircle by mutableStateOf(false) // 是否正在登录
     var verifycode by mutableStateOf("") // 验证码
-    var cookie by mutableStateOf("")
-    var stateCode by mutableIntStateOf(0)
+    var cookie by mutableStateOf("") // cookie
+    var stateCode by mutableIntStateOf(0) // 登录状态码
     suspend fun secondClassService() {
         try {
             val res = login.scLoginService()
             secondClassHtml = res.body()?.string() ?: ""
             scToken = secondClassParsing(secondClassHtml)
-            cookie = res.raw().header("Set-Cookie").toString().substring(4, 40)
+            cookie = try {
+                res.raw().header("Set-Cookie").toString().substring(4, 40)
+            } catch (e: Exception) {
+                ""
+            }
             Log.i("TAG666", cookie)
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
@@ -652,7 +657,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
 
     suspend fun secondClassLogin() {
         try {
-            scLoginCircle = true
+            scLoginCircle = true // 开始加载
             val publicKey = RSAEncryptionHelper.getScPublicKeyFromString()
             val passwordEncrypt = RSAEncryptionHelper.encryptText(scPassword, publicKey)
             val res = login.scLoginPostService(
@@ -667,6 +672,16 @@ class SettingsViewModel(context: Context) : ViewModel() {
             delay(1500)
             scToken = resString?.let { secondClassParsing(it) }.toString() // 更新tk
             stateCode = resString?.let { secondClassLoginState(it) }!! // 更新状态码
+            if (stateCode == -2 || stateCode == -3) {
+                cookie = try {
+                    res.raw().header("Set-Cookie").toString().substring(4, 40)
+                } catch (e: Exception) {
+                    ""
+                }
+                verifycode = ""
+            }
+            Log.i("TAG666", "stateCode: $stateCode")
+            scLoginCircle = false // 结束加载
             if (stateCode == 1) {
                 val scUserInfo = SecondClassInfo(
                     username = username,
@@ -677,10 +692,9 @@ class SettingsViewModel(context: Context) : ViewModel() {
                     userInfoManager.saveSecondClassInfo(scUserInfo)
                 }
             }
-            scLoginCircle = false
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
-            scLoginCircle = false
+            scLoginCircle = false // 如果出错同样结束加载
         }
     }
 
@@ -692,6 +706,8 @@ class SettingsViewModel(context: Context) : ViewModel() {
             isGettingHourList = false
             Log.i("TAG6663", "$scHourList")
         } catch (e: Exception) {
+            isGettingHourList = false
+            stateCode = 0
             Log.i("TAG6663", "$e")
         }
     }

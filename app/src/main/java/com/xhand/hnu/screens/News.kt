@@ -24,10 +24,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -157,7 +159,6 @@ fun NewsScreen(
         "数学与信息科学学院"
     )
     var selectedOption by remember { mutableIntStateOf(0) }
-    val scrollState = rememberScrollState()
     var isRefreshing by remember { mutableStateOf(false) }
     val state = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
@@ -169,25 +170,15 @@ fun NewsScreen(
             isRefreshing = false
         }
     }
+    val scrollState = rememberScrollState()
     val newsPagerState = rememberPagerState(pageCount = { newsOptions.size })
     val selectedTabIndex = remember { derivedStateOf { newsPagerState.currentPage } }
     val scope = rememberCoroutineScope()
-    val pictures = newsViewModel.pictures
-    val pagerState = rememberPagerState(pageCount = { pictures.size })
     LaunchedEffect(Unit) {
         newsViewModel.newsList()
         newsViewModel.imageLoad()
         newsViewModel.isRefreshing = false
     }
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(2000)
-            with(pagerState) {
-                animateScrollToPage((currentPage + 1) % pageCount)
-            }
-        }
-    }
-
     LaunchedEffect(newsViewModel.searchText) {
         newsViewModel.isSearching = true
         if (newsViewModel.searchText.isNotEmpty())
@@ -205,9 +196,6 @@ fun NewsScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SearchBar(
-            colors = SearchBarDefaults.colors(
-                colorScheme.surfaceContainer
-            ),
             modifier = Modifier,
             inputField = {
                 SearchBarDefaults.InputField(
@@ -373,7 +361,7 @@ fun NewsScreen(
                 )
             }
         }
-        HorizontalPager(state = newsPagerState) {
+        HorizontalPager(state = newsPagerState) { newsIndex ->
             Log.i("TAG6667", "${newsViewModel.searchList}")
                 PullToRefreshBox(
                     state = state,
@@ -381,75 +369,22 @@ fun NewsScreen(
                     isRefreshing = isRefreshing,
                     contentAlignment = Alignment.TopStart
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .verticalScroll(scrollState),
-                    ) {
-                        if (selectedTabIndex.value == 0) {
-                            HorizontalPager(
-                                state = pagerState,
-                                modifier = Modifier
-                                    .padding(10.dp)
-                            ) { index ->
-                                Box {
-                                    AsyncImage(
-                                        model = ImageRequest.Builder(LocalContext.current)
-                                            .data(pictures[index])
-                                            .crossfade(true)
-                                            .build(),
-                                        placeholder = painterResource(R.drawable.placeholder),
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .aspectRatio(16 / 9f),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                    Card(
-                                        modifier = Modifier
-                                            .align(Alignment.BottomEnd)
-                                            .padding(5.dp)
-                                            .height(25.dp)
-                                            .width(50.dp)
-                                            .placeholder(visible = newsViewModel.isRefreshing)
-                                    ) {
-                                        Box(
-                                            contentAlignment = Alignment.Center,
-                                                modifier = Modifier.fillMaxSize()
-                                            ) {
-                                                Text(
-                                                    text = "${index + 1}/${pictures.size}"
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        if (newsViewModel.isRefreshing) {
-                            Box(
-                                modifier = Modifier
-                                    .padding(top = 40.dp)
-                                    .fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        } else {
-                            newsViewModel.list.forEach { article ->
-                                if (article.type == newsOptions[selectedTabIndex.value].title) {
-                                    ArticleListItem(
-                                        article = article,
-                                        loaded = newsViewModel.isRefreshing,
-                                        modifier = Modifier
-                                            .clickable {
-                                                navController.navigate("detail_screen")
-                                                newsViewModel.url = article.url
-                                            }
-                                    )
-                                }
-                            }
+                    if (newsViewModel.isRefreshing) {
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 40.dp)
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
                         }
+                    } else {
+                        NewsList(
+                            newsViewModel = newsViewModel,
+                            navController = navController,
+                            selectedTabIndex = newsIndex,
+                            newsOptions = newsOptions
+                        )
                     }
                 }
         }
@@ -480,6 +415,85 @@ fun NewsScreen(
                         modifier = Modifier.padding(start = 16.dp)
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun NewsList(
+    newsViewModel: NewsViewModel,
+    navController: NavController,
+    selectedTabIndex: Int,
+    newsOptions: List<NewsOptions>,
+    pictures: List<String> = newsViewModel.pictures
+) {
+    val pagerState = rememberPagerState(pageCount = { pictures.size })
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(2000)
+            with(pagerState) {
+                animateScrollToPage((currentPage + 1) % pageCount)
+            }
+        }
+    }
+    val scrollState = rememberScrollState()
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .verticalScroll(scrollState),
+    ) {
+        if (selectedTabIndex == 0) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .padding(10.dp)
+            ) { index ->
+                Box {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(pictures[index])
+                            .crossfade(true)
+                            .build(),
+                        placeholder = painterResource(R.drawable.placeholder),
+                        contentDescription = "pictures",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .aspectRatio(16 / 9f),
+                        contentScale = ContentScale.Crop
+                    )
+                    Card(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(5.dp)
+                            .height(25.dp)
+                            .width(50.dp)
+                            .placeholder(visible = newsViewModel.isRefreshing)
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                text = "${index + 1}/${pictures.size}"
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        newsViewModel.list.forEach { article ->
+            if (article.type == newsOptions[selectedTabIndex].title) {
+                ArticleListItem(
+                    article = article,
+                    loaded = newsViewModel.isRefreshing,
+                    modifier = Modifier
+                        .clickable {
+                            navController.navigate("detail_screen")
+                            newsViewModel.url = article.url
+                        }
+                )
             }
         }
     }

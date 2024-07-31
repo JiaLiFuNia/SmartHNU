@@ -136,16 +136,14 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
         ) {
             BasicListItem(leadingText = "账户")
             BasicListItem(
-                headlineText = if (viewModel.isLoginSuccess) "退出" else "登录",
-                supportingText = if (viewModel.isLoginSuccess) "点击退出登录" else "请先登录",
-                leadingImageVector = if (viewModel.isLoginSuccess) R.drawable.ic_outline_account_circle else R.drawable.ic_outline_no_accounts_24,
+                headlineText = if (viewModel.isLoginSuccess || viewModel.stateCode == 1) "退出" else "登录",
+                supportingText = if (viewModel.isLoginSuccess || viewModel.stateCode == 1) "点击退出登录" else "请先登录",
+                leadingImageVector = if (viewModel.isLoginSuccess || viewModel.stateCode == 1) R.drawable.ic_outline_account_circle else R.drawable.ic_outline_no_accounts_24,
                 onClick = {
-                    if (viewModel.isLoginSuccess)
+                    if (viewModel.isLoginSuccess || viewModel.stateCode == 1)
                         viewModel.isShowAlert = true
                     else {
                         viewModel.isShowDialog = true
-                        viewModel.username = ""
-                        viewModel.password = ""
                     }
                 }
             )
