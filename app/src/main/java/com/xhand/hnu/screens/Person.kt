@@ -210,7 +210,7 @@ fun PersonScreen(
     }
     LaunchedEffect(viewModel.stateCode == 0) {
         if (viewModel.stateCode == 0)
-        viewModel.secondClassService()
+            viewModel.secondClassService()
     }
     var isRefreshing by remember { mutableStateOf(false) }
     val state = rememberPullToRefreshState()
