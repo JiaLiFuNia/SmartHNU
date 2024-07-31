@@ -18,11 +18,8 @@ import retrofit2.converter.gson.GsonConverterFactory
  * @param context Context
  * */
 fun <T> scRetrofitCreater(clazz: Class<T>, context: Context): T {
-    val cookieJar = PersistentCookieJar(SetCookieCache(), SharedPrefsCookiePersistor(context))
-    val client = OkHttpClient.Builder().cookieJar(cookieJar).build()
     val retrofit = Retrofit.Builder()
         .baseUrl("http://dekt.htu.edu.cn")
-        .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
     return retrofit.create(clazz)

@@ -1,6 +1,7 @@
 package com.xhand.hnu.network
 
 import android.content.Context
+import android.util.Log
 import coil.ImageLoader
 import okhttp3.Cookie
 import okhttp3.CookieJar
@@ -30,6 +31,7 @@ fun createImageLoader(context: Context,sid: String): ImageLoader {
             .value(sid)
             .build()
     )
+    Log.i("TAG666", "sid: $sid")
     cookieJar.saveFromResponse("http://dekt.htu.edu.cn/img/resources-code.jpg".toHttpUrl(), customCookies)
 
     val client = OkHttpClient.Builder()

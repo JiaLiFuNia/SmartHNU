@@ -105,8 +105,7 @@ fun ShowLoginDialog(
                     text = AnnotatedString(
                         text = "*此登录接口采用的是河南师大智慧教务公众号",
                         spanStyle = SpanStyle(
-                            color = MaterialTheme.colorScheme.primary,
-                            textDecoration = TextDecoration.Underline
+                            color = MaterialTheme.colorScheme.primary
                         )
                     )
                 ) {

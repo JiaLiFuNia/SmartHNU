@@ -8,11 +8,10 @@ import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -26,7 +25,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -38,7 +36,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -46,7 +43,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
 import com.xhand.hnu.viewmodel.NewsViewModel
@@ -58,13 +54,13 @@ import net.dankito.readability4j.Readability4J
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun ArticleDetailScreen(
-    viewModel: SettingsViewModel, newsViewModel: NewsViewModel, navController: NavController
+    viewModel: SettingsViewModel, newsViewModel: NewsViewModel, onClick: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val cbManager = LocalClipboardManager.current
     var showHtml by remember {
-        mutableStateOf(true)
+        mutableStateOf(false)
     }
     val webView = remember {
         WebView(context).apply {
@@ -77,7 +73,6 @@ fun ArticleDetailScreen(
     // 获取SystemUiController
     val systemUiController = rememberSystemUiController()
     val statueBarColor = MaterialTheme.colorScheme.surfaceContainer
-    val scrollState = rememberScrollState()
     LaunchedEffect(Unit) {
         newsViewModel.detailService()
     }
@@ -85,26 +80,23 @@ fun ArticleDetailScreen(
     SideEffect {
         systemUiController.setStatusBarColor(color = statueBarColor)
     }
-    Surface(
-        color = Color.White
-    ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
+    Scaffold(
+        topBar = {
+            TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer
                     ),
                     title = { Text(text = "详情") },
                     navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(onClick = { onClick() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "返回"
                             )
                         }
                     },
-                    actions = {
-                        IconButton(
+                actions = {
+                    IconButton(
                             onClick = {
                                 Intent(Intent.ACTION_SEND).also {
                                     it.putExtra(Intent.EXTRA_TEXT, newsViewModel.url)
@@ -117,7 +109,7 @@ fun ArticleDetailScreen(
                                     .show()
                             }
                         ) {
-                            Icon(
+                        Icon(
                                 imageVector = Icons.Default.Share, contentDescription = "分享"
                             )
                         }
@@ -146,7 +138,7 @@ fun ArticleDetailScreen(
                                 }
                             )
                             DropdownMenuItem(
-                                text = { if (!showHtml) Text(text = "查看原网页") else Text(text = "内容提取") },
+                                text = { if (!showHtml) Text(text = "查看原网页") else Text(text = "提取内容") },
                                 onClick = {
                                     showHtml = !showHtml
                                 },
@@ -195,7 +187,7 @@ fun ArticleDetailScreen(
                 )
             }
         ) {
-            val readability4J = Readability4J(newsViewModel.url, newsViewModel.htmlParsing)
+        val readability4J = Readability4J("newsViewModel.url", newsViewModel.htmlParsing)
             val article: Article = readability4J.parse()
 
             // 标题
@@ -213,14 +205,23 @@ fun ArticleDetailScreen(
             <title></title>
             <style>
                 body {
-                  font-size: 120%;
+                  font-size: 17px;
                   background-color: rgb(${(MaterialTheme.colorScheme.surface.red) * 256}, ${(MaterialTheme.colorScheme.surface.green) * 256}, ${(MaterialTheme.colorScheme.surface.blue) * 256});
                   color: ${fontColor};
-                  font-family:"Microsoft YaHei",微软雅黑;
-                  line-height:30px;
+                  line-height: 30.6px;
+                  font-weight: normal;
                 }
                 img {
-                    max-width: 100% !important;
+                    max-width: 100%;
+                    height: auto;
+                }
+                a:link {
+                    color: ${fontColor};
+                    text-decoration:underline;
+                }
+                a:visited {
+                    color: ${fontColor};
+                    text-decoration:underline;
                 }
             </style>
         </head>
@@ -236,39 +237,42 @@ fun ArticleDetailScreen(
                     CircularProgressIndicator()
                 }
             else
-                Column(
+                LazyColumn(
                     Modifier
                         .fillMaxSize()
                         .padding(paddingValues = it)
-                        .verticalScroll(scrollState)
+                    // .verticalScroll(scrollState)
                 ) {
                     if (!showHtml) {
-                        Text(
-                            text = title,
-                            fontSize = 25.sp,
-                            fontWeight = FontWeight.W700,
-                            lineHeight = 35.sp,
-                            modifier = Modifier.padding(10.dp)
+                        item {
+                            Text(
+                                text = title,
+                                fontSize = 25.sp,
+                                fontWeight = FontWeight.W700,
+                                lineHeight = 35.sp,
+                                modifier = Modifier.padding(10.dp)
                             )
+                        }
+                        item {
+                            AndroidView(
+                                factory = { context -> WebView(context) },
+                                modifier = Modifier.padding(5.dp)
+                            ) { view ->
+                                view.loadDataWithBaseURL(
+                                    "",
+                                    "$htmlHeader$content$htmlFooter",
+                                    null,
+                                    "utf-8",
+                                    null
+                                )
+                            }
+                        }
                             // HorizontalDivider(modifier = Modifier.padding(10.dp))
-                        }
-                    if (!showHtml) {
-                        AndroidView(
-                            factory = { context -> WebView(context) },
-                            modifier = Modifier.padding(5.dp)
-                        ) { view ->
-                            view.loadDataWithBaseURL(
-                                "",
-                                "$htmlHeader$content$htmlFooter",
-                                null,
-                                "utf-8",
-                                null
-                            )
-                        }
                     } else {
-                        AndroidView(factory = { webView })
+                        item {
+                            AndroidView(factory = { webView })
+                        }
                     }
                 }
         }
-    }
 }

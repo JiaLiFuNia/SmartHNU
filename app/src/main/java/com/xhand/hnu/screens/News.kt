@@ -1,6 +1,5 @@
 package com.xhand.hnu.screens
 
-import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
@@ -24,12 +23,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -75,6 +72,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
 import com.xhand.hnu.components.ArticleListItem
 import com.xhand.hnu.components.ModalBottomSheet
+import com.xhand.hnu.network.PictureListItem
 import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
 import kotlinx.coroutines.delay
@@ -125,7 +123,9 @@ fun NavigationScreen(
             ArticleDetailScreen(
                 viewModel = viewModel,
                 newsViewModel = newsViewModel,
-                navController = navController
+                onClick = {
+                    navController.popBackStack()
+                }
             )
         }
     }
@@ -175,15 +175,18 @@ fun NewsScreen(
     val selectedTabIndex = remember { derivedStateOf { newsPagerState.currentPage } }
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
-        newsViewModel.newsList()
-        newsViewModel.imageLoad()
-        newsViewModel.isRefreshing = false
+        if (!newsViewModel.hadGetNew) {
+            newsViewModel.newsList()
+            newsViewModel.imageLoad()
+            newsViewModel.isRefreshing = false
+        }
     }
     LaunchedEffect(newsViewModel.searchText) {
-        newsViewModel.isSearching = true
-        if (newsViewModel.searchText.isNotEmpty())
+        if (newsViewModel.searchText != "" && newsViewModel.searchBarExpand) {
+            newsViewModel.isSearching = true
             newsViewModel.searchRes(newsViewModel.searchText)
-        newsViewModel.isSearching = false
+            newsViewModel.isSearching = false
+        }
     }
     // 获取SystemUiController
     val systemUiController = rememberSystemUiController()
@@ -362,13 +365,12 @@ fun NewsScreen(
             }
         }
         HorizontalPager(state = newsPagerState) { newsIndex ->
-            Log.i("TAG6667", "${newsViewModel.searchList}")
-                PullToRefreshBox(
+            PullToRefreshBox(
                     state = state,
                     onRefresh = onRefresh,
                     isRefreshing = isRefreshing,
                     contentAlignment = Alignment.TopStart
-                ) {
+            ) {
                     if (newsViewModel.isRefreshing) {
                         Box(
                             modifier = Modifier
@@ -426,7 +428,7 @@ fun NewsList(
     navController: NavController,
     selectedTabIndex: Int,
     newsOptions: List<NewsOptions>,
-    pictures: List<String> = newsViewModel.pictures
+    pictures: List<PictureListItem> = newsViewModel.pictures
 ) {
     val pagerState = rememberPagerState(pageCount = { pictures.size })
     LaunchedEffect(Unit) {
@@ -452,7 +454,7 @@ fun NewsList(
                 Box {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data(pictures[index])
+                            .data(pictures[index].url)
                             .crossfade(true)
                             .build(),
                         placeholder = painterResource(R.drawable.placeholder),
@@ -460,9 +462,24 @@ fun NewsList(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
-                            .aspectRatio(16 / 9f),
+                            .aspectRatio(16 / 9f)
+                            .clickable {
+                                newsViewModel.url = pictures[index].newsUrl
+                                navController.navigate("detail_screen")
+                            },
                         contentScale = ContentScale.Crop
                     )
+                    /*Text(
+                        text = pictures[index].title,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        color = Color.White,
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(start = 5.dp, bottom = 10.dp),
+                        fontSize = 25.sp,
+                        fontWeight = FontWeight.Bold
+                    )*/
                     Card(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)

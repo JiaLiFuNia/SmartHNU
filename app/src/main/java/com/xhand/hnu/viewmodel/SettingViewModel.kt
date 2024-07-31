@@ -75,7 +75,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
                 username = scUserInfo.username
                 scPassword = scUserInfo.password
                 cookie = scUserInfo.cookie
-                stateCode = 1
+                stateCode = if (cookie == "") 0 else 1
             }
             userInfo = userInfoStore
             loginCode = isLogged ?: 0
@@ -299,6 +299,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
             loginCircle = false
             loginCode = res.code
         } catch (e: Exception) {
+            loginCircle = false
             Log.i("TAG666", "$e")
         }
     }
@@ -635,12 +636,14 @@ class SettingsViewModel(context: Context) : ViewModel() {
     private var secondClassHtml by mutableStateOf("")
     private var scToken by mutableStateOf("")
     var verifyImg by mutableStateOf("http://dekt.htu.edu.cn/img/resources-code.jpg")
+    var scService by mutableStateOf(true)
     var scLoginCircle by mutableStateOf(false) // 是否正在登录
-    var verifycode by mutableStateOf("") // 验证码
+    var verifyCode by mutableStateOf("") // 验证码
     var cookie by mutableStateOf("") // cookie
     var stateCode by mutableIntStateOf(0) // 登录状态码
     suspend fun secondClassService() {
         try {
+            scService = true
             val res = login.scLoginService()
             secondClassHtml = res.body()?.string() ?: ""
             scToken = secondClassParsing(secondClassHtml)
@@ -649,9 +652,12 @@ class SettingsViewModel(context: Context) : ViewModel() {
             } catch (e: Exception) {
                 ""
             }
-            Log.i("TAG666", cookie)
+            Log.i("TAG666", "cookie: $cookie")
+            Log.i("TAG666", "scToken: $scToken")
+            scService = false
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
+            scService = false
         }
     }
 
@@ -666,19 +672,21 @@ class SettingsViewModel(context: Context) : ViewModel() {
                 password = "",
                 password2 = passwordEncrypt,
                 tk = scToken,
-                verifycode = verifycode
+                verifycode = verifyCode
             )
             val resString = res.body()?.string()
             delay(1500)
             scToken = resString?.let { secondClassParsing(it) }.toString() // 更新tk
             stateCode = resString?.let { secondClassLoginState(it) }!! // 更新状态码
             if (stateCode == -2 || stateCode == -3) {
-                cookie = try {
-                    res.raw().header("Set-Cookie").toString().substring(4, 40)
-                } catch (e: Exception) {
-                    ""
-                }
-                verifycode = ""
+                if (stateCode == -3)
+                    cookie = try {
+                        res.raw().header("Set-Cookie").toString().substring(4, 40)
+                    } catch (e: Exception) {
+                        ""
+                    }
+                secondClassService()
+                verifyCode = ""
             }
             Log.i("TAG666", "stateCode: $stateCode")
             scLoginCircle = false // 结束加载
@@ -702,12 +710,16 @@ class SettingsViewModel(context: Context) : ViewModel() {
     var isGettingHourList by mutableStateOf(true)
     suspend fun getHourList() {
         try {
+            Log.i("TAG6663", "getHourListCookie: $cookie")
             scHourList = login.getHourList(cookie = "sid=${cookie}").toMutableList()
             isGettingHourList = false
             Log.i("TAG6663", "$scHourList")
         } catch (e: Exception) {
             isGettingHourList = false
             stateCode = 0
+            viewModelScope.launch {
+                userInfoManager.saveSecondClassInfo(SecondClassInfo(username, password, ""))
+            }
             Log.i("TAG6663", "$e")
         }
     }

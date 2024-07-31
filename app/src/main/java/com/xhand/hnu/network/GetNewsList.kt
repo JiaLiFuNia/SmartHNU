@@ -1,8 +1,6 @@
 package com.xhand.hnu.network
 
 import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.xhand.hnu.model.entity.ArticleListEntity
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -141,14 +139,38 @@ fun getNewsList4(str: String?, type: String): MutableList<ArticleListEntity> {
     return firstList
 }
 
+data class PictureListItem(
+    val url: String,
+    val title: String,
+    val newsUrl: String
+)
+
+
 // 主页图片
-fun getPicList(str: String?): SnapshotStateList<String> {
-    val firstList = mutableStateListOf<String>()
+fun getPicList(str: String?): MutableList<PictureListItem> {
+    val firstList = mutableListOf<PictureListItem>()
     val document: Document = Jsoup.parse(str.toString())
-    val picRule = "div#banner div.inner ul.news_list li.news div.imgs a img"
+    // val picRule = "div#banner div.inner ul.news_list li.news div.imgs a img"
+    val picRule = "div.bodycon1 div.tab-con1 div.c ul.news_list li.news div.imgs a img"
+    val picTitle = "div.bodycon1 div.tab-con1 div.c ul.news_list li.news div.imgs a"
     val picElements = document.select(picRule)
+    val picTitleElements = document.select(picTitle)
     for (index in 0 until picElements.size) {
-        firstList.add("https://www.htu.edu.cn" + picElements[index].attr("src"))
+        firstList.add(
+            PictureListItem(
+                url = "https://www.htu.edu.cn" + picElements[index].attr("src"),
+                title = picTitleElements[index].attr("title"),
+                newsUrl = "https://www.htu.edu.cn" + picTitleElements[index].attr("href")
+            )
+        )
     }
     return firstList
+}
+
+
+fun preProcessNewsDetail(str: String?): String {
+    val document: Document = Jsoup.parse(str.toString())
+    document.select("h1").remove()
+    document.select("[class=arti_metas]").remove();
+    return document.toString()
 }

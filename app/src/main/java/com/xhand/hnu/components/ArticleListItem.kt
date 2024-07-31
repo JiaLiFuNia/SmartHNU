@@ -60,6 +60,9 @@ fun timeSwitch(dateString: String): String {
                 0L -> "今天"
                 1L -> "昨天"
                 2L -> "前天"
+                3L -> "3天前"
+                4L -> "4天前"
+                5L -> "5天前"
                 else -> datePattern(dateString.substring(5))
             }
         } else {

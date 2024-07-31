@@ -9,15 +9,18 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.xhand.hnu.model.DataManager
 import com.xhand.hnu.model.entity.ArticleListEntity
 import com.xhand.hnu.network.NewsDetailService
 import com.xhand.hnu.network.NewsListService
+import com.xhand.hnu.network.PictureListItem
 import com.xhand.hnu.network.SearchService
 import com.xhand.hnu.network.getNewsList
 import com.xhand.hnu.network.getPicList
+import com.xhand.hnu.network.preProcessNewsDetail
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
@@ -39,12 +42,16 @@ class NewsViewModel(context: Context) : ViewModel() {
         }
     }
 
+    var hadGetNew by mutableStateOf(false)
+
     var searchText by mutableStateOf("")
 
     var searchBarExpand by mutableStateOf(false)
 
     // 新闻列表
-    var list by mutableStateOf(mutableListOf<ArticleListEntity>())
+    var list by mutableStateOf(
+        mutableListOf<ArticleListEntity>()
+    )
 
     // 搜索列表
     var searchList by mutableStateOf(
@@ -71,7 +78,11 @@ class NewsViewModel(context: Context) : ViewModel() {
 
     var pictures by mutableStateOf(
         mutableStateListOf(
-            "https://gitee.com/xhand_xbh/hnu/raw/master/placeholder.png",
+            PictureListItem(
+                "https://www.htu.edu.cn/upload/2021/10/202110201013271.jpg",
+                "加载中...",
+                "https://www.htu.edu.cn/"
+            )
         )
     )
 
@@ -95,7 +106,7 @@ class NewsViewModel(context: Context) : ViewModel() {
     suspend fun detailService() {
         try {
             val res = detailService.getNewsDetail(url)
-            htmlParsing = res.body()?.string() ?: ""
+            htmlParsing = preProcessNewsDetail(res.body()?.string() ?: "")
             isDetailLoad = false
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
@@ -131,6 +142,7 @@ class NewsViewModel(context: Context) : ViewModel() {
                     )
                 }
             }
+            hadGetNew = true
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
         }
@@ -168,7 +180,7 @@ class NewsViewModel(context: Context) : ViewModel() {
     suspend fun imageLoad() {
         val htmlRes = newsListService.getPicList(url = "https://www.htu.edu.cn/")
         // Log.i("TAG6656","${htmlRes.body()?.string()}")
-        pictures = getPicList(str = htmlRes.body()?.string())
+        pictures = getPicList(str = htmlRes.body()?.string()).toMutableStateList()
         Log.i("TAG6656", "$pictures")
     }
 }

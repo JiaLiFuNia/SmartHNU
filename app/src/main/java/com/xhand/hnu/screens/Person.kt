@@ -36,7 +36,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -519,6 +518,7 @@ fun PersonScreen(
                     onclick = {
                         if (viewModel.stateCode != 1) {
                             Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
+                            viewModel.isShowScDialog = true
                         }
                     },
                     text = checkboxes[2].text,
@@ -532,13 +532,7 @@ fun PersonScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             if (viewModel.stateCode != 1) {
-                                TextButton(
-                                    onClick = {
-                                        viewModel.isShowScDialog = true
-                                    }
-                                ) {
-                                    Text(text = "点击登录")
-                                }
+                                Text(text = "暂无信息", color = Color.Gray)
                             } else {
                                 if (viewModel.isGettingHourList)
                                     CircularProgressIndicator()

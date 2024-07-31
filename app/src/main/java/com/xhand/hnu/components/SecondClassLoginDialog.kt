@@ -1,6 +1,7 @@
 package com.xhand.hnu.components
 
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -112,8 +114,8 @@ fun ShowSecondClassLoginDialog(
                     visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                 )
                 TextField(
-                    value = viewModel.verifycode,
-                    onValueChange = { viewModel.verifycode = it },
+                    value = viewModel.verifyCode,
+                    onValueChange = { viewModel.verifyCode = it },
                     label = { Text("验证码") },
                     isError = viewModel.stateCode == -2 || viewModel.stateCode == -3,
                     supportingText = {
@@ -127,17 +129,38 @@ fun ShowSecondClassLoginDialog(
                                 .sizeIn(maxWidth = 120.dp, maxHeight = 40.dp)
                                 .padding(end = 10.dp)
                         ) {
-                            AsyncImage(
-                                model = viewModel.verifyImg,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .aspectRatio(3 / 1f),
-                                contentScale = ContentScale.Crop,
-                                imageLoader = createImageLoader(context, viewModel.cookie)
-                            )
+                            if (viewModel.scService)
+                                CircularProgressIndicator()
+                            else
+                                AsyncImage(
+                                    model = viewModel.verifyImg,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .aspectRatio(3 / 1f)
+                                        .clickable {
+                                            coroutineScope.launch {
+                                                viewModel.secondClassService()
+                                            }
+                                        },
+                                    contentScale = ContentScale.Crop,
+                                    imageLoader = createImageLoader(context, viewModel.cookie)
+                                )
                         }
                     }
                 )
+                ClickableText(
+                    text = AnnotatedString(
+                        text = "如果你频繁遇到验证码错误，请点击此处刷新",
+                        spanStyle = SpanStyle(
+                            color = MaterialTheme.colorScheme.primary,
+                            textDecoration = TextDecoration.Underline
+                        )
+                    )
+                ) {
+                    coroutineScope.launch {
+                        viewModel.secondClassService()
+                    }
+                }
                 ClickableText(
                     text = AnnotatedString(
                         text = "忘记密码？",
@@ -147,7 +170,8 @@ fun ShowSecondClassLoginDialog(
                         )
                     )
                 ) {
-
+                    Toast.makeText(context, "请联系学校管理员解决", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         },
