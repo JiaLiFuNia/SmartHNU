@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -12,7 +13,7 @@ android {
         minSdk = 29
         targetSdk = 33
         versionCode = 1
-        versionName = "2.1.4"
+        versionName = "2.1.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -92,7 +93,7 @@ dependencies {
     // datastore
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
-    val chartVersion = "2.0.0-alpha.13"
+    val chartVersion = "2.0.0-alpha.26"
     // Chart
     // For Jetpack Compose.
     implementation("com.patrykandpatrick.vico:compose:$chartVersion")
@@ -109,5 +110,7 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     implementation("com.github.jeziellago:compose-markdown:0.5.1")
+
+    implementation("androidx.core:core-splashscreen:1.1.0-rc01")
 
 }

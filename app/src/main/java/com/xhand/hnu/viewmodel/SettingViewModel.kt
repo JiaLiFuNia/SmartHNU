@@ -71,6 +71,12 @@ class SettingsViewModel(context: Context) : ViewModel() {
             val userInfoStore = userInfoManager.userInfo.firstOrNull()
             val logInfo = userInfoManager.logInfo.firstOrNull()
             val scUserInfo = userInfoManager.scUserInfo.firstOrNull()
+            val scHourLists = userInfoManager.scHours.firstOrNull()
+            if (scHourLists != null) {
+                if (scHourLists.isNotEmpty()) {
+                    scHourList = scHourLists as MutableList<HourListEntity>
+                }
+            }
             if (scUserInfo != null) {
                 username = scUserInfo.username
                 scPassword = scUserInfo.password
@@ -712,6 +718,9 @@ class SettingsViewModel(context: Context) : ViewModel() {
         try {
             Log.i("TAG6663", "getHourListCookie: $cookie")
             scHourList = login.getHourList(cookie = "sid=${cookie}").toMutableList()
+            viewModelScope.launch {
+                userInfoManager.saveScHours(scHourList)
+            }
             isGettingHourList = false
             Log.i("TAG6663", "$scHourList")
         } catch (e: Exception) {

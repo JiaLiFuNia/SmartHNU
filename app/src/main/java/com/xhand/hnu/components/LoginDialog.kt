@@ -2,13 +2,13 @@ package com.xhand.hnu.components
 
 import android.widget.Toast
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,7 +57,11 @@ fun ShowLoginDialog(
         text = {
             Column(verticalArrangement = Arrangement.SpaceAround) {
                 if (viewModel.loginCircle)
-                    LinearProgressIndicator(modifier = Modifier.padding(bottom = 5.dp).fillMaxWidth())
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .fillMaxWidth()
+                    )
                 TextField(
                     value = viewModel.username,
                     onValueChange = { viewModel.username = it },
@@ -99,30 +103,33 @@ fun ShowLoginDialog(
                     },
                     visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                 )
-                ClickableText(
-                    modifier = Modifier
-                        .basicMarquee(),
+                Text(
                     text = AnnotatedString(
                         text = "*此登录接口采用的是河南师大智慧教务公众号",
                         spanStyle = SpanStyle(
                             color = MaterialTheme.colorScheme.primary
                         )
-                    )
-                ) {
-
-                }
-                ClickableText(
+                    ),
+                    modifier = Modifier
+                        .basicMarquee(),
+                )
+                Text(
                     text = AnnotatedString(
                         text = "忘记密码？",
                         spanStyle = SpanStyle(
                             color = MaterialTheme.colorScheme.primary,
                             textDecoration = TextDecoration.Underline
                         )
-                    )
-                ) {
-                    Toast.makeText(context, "请前往河南师大智慧教务修改密码", Toast.LENGTH_SHORT)
-                        .show()
-                }
+                    ),
+                    modifier = Modifier.clickable {
+                        Toast.makeText(
+                            context,
+                            "请前往河南师大智慧教务修改密码",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+                )
             }
         },
         onDismissRequest = { viewModel.isShowDialog = false },

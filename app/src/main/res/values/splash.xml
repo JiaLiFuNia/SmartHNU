@@ -1,0 +1,14 @@
+<resources>
+
+    <style name="Theme.MyApplication.MySplash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">
+            #FFFFFF
+        </item>
+        <item name="postSplashScreenTheme">
+            @android:style/Theme.Material.Light.NoActionBar
+        </item>
+        <item name="windowSplashScreenAnimatedIcon">
+            @mipmap/splash_icon
+        </item>
+    </style>
+</resources>

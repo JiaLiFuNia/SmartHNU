@@ -314,7 +314,7 @@ data class JDEntity(
 )
 
 data class JDList(
-    val mc: String,
+    var mc: String,
     val pjxfjd: String,
 )
 

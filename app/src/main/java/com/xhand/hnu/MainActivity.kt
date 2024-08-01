@@ -1,13 +1,8 @@
 package com.xhand.hnu
 
-import android.content.Context
-import android.content.pm.PackageManager
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -19,7 +14,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -33,7 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.xhand.hnu.components.UpdateDialog
 import com.xhand.hnu.screens.NavigationPersonScreen
 import com.xhand.hnu.screens.NavigationScreen
@@ -41,6 +35,7 @@ import com.xhand.hnu.screens.NavigationSettingScreen
 import com.xhand.hnu.ui.theme.MyApplicationTheme
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import com.xhand.hnu.viewmodel.CourseTaskViewModel
+import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.LocalNewsViewModel
 import com.xhand.hnu.viewmodel.LocalUserViewModel
 import com.xhand.hnu.viewmodel.NewsViewModel
@@ -57,6 +52,7 @@ data class BottomNavigationItem(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        installSplashScreen()
         setContent {
             CompositionLocalProvider(
                 LocalUserViewModel provides SettingsViewModel(LocalContext.current),
@@ -143,7 +139,8 @@ class MainActivity : ComponentActivity() {
                                         viewModel,
                                         PersonViewModel(),
                                         CourseSearchViewModel(LocalContext.current),
-                                        CourseTaskViewModel(LocalContext.current)
+                                        CourseTaskViewModel(LocalContext.current),
+                                        GradeViewModel(viewModel)
                                     )
                                     1 -> NavigationScreen(viewModel, newsViewModel)
                                     2 -> NavigationSettingScreen(viewModel)

@@ -1,7 +1,10 @@
 package com.xhand.hnu.screens
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +30,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -440,76 +444,102 @@ fun NewsList(
         }
     }
     val scrollState = rememberScrollState()
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .verticalScroll(scrollState),
-    ) {
-        if (selectedTabIndex == 0) {
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .padding(10.dp)
-            ) { index ->
-                Box {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(pictures[index].url)
-                            .crossfade(true)
-                            .build(),
-                        placeholder = painterResource(R.drawable.placeholder),
-                        contentDescription = "pictures",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .aspectRatio(16 / 9f)
-                            .clickable {
-                                newsViewModel.url = pictures[index].newsUrl
-                                navController.navigate("detail_screen")
-                            },
-                        contentScale = ContentScale.Crop
-                    )
-                    /*Text(
-                        text = pictures[index].title,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        color = Color.White,
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(start = 5.dp, bottom = 10.dp),
-                        fontSize = 25.sp,
-                        fontWeight = FontWeight.Bold
-                    )*/
-                    Card(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(5.dp)
-                            .height(25.dp)
-                            .width(50.dp)
-                            .placeholder(visible = newsViewModel.isRefreshing)
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize()
+    val coroutineScope = rememberCoroutineScope()
+    Box {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .verticalScroll(scrollState),
+        ) {
+            if (selectedTabIndex == 0) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .padding(10.dp)
+                ) { index ->
+                    Box {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(pictures[index].url)
+                                .crossfade(true)
+                                .build(),
+                            placeholder = painterResource(R.drawable.placeholder),
+                            contentDescription = "pictures",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .aspectRatio(16 / 9f)
+                                .clickable {
+                                    newsViewModel.url = pictures[index].newsUrl
+                                    navController.navigate("detail_screen")
+                                },
+                            contentScale = ContentScale.Crop
+                        )
+                        /*Text(
+                            text = pictures[index].title,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            color = Color.White,
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(start = 5.dp, bottom = 10.dp),
+                            fontSize = 25.sp,
+                            fontWeight = FontWeight.Bold
+                        )*/
+                        Card(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(5.dp)
+                                .height(25.dp)
+                                .width(50.dp)
+                                .placeholder(visible = newsViewModel.isRefreshing)
                         ) {
-                            Text(
-                                text = "${index + 1}/${pictures.size}"
-                            )
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Text(
+                                    text = "${index + 1}/${pictures.size}"
+                                )
+                            }
                         }
                     }
                 }
             }
+            newsViewModel.list.forEach { article ->
+                if (article.type == newsOptions[selectedTabIndex].title) {
+                    ArticleListItem(
+                        article = article,
+                        loaded = newsViewModel.isRefreshing,
+                        modifier = Modifier
+                            .clickable {
+                                navController.navigate("detail_screen")
+                                newsViewModel.url = article.url
+                            }
+                    )
+                }
+            }
         }
-        newsViewModel.list.forEach { article ->
-            if (article.type == newsOptions[selectedTabIndex].title) {
-                ArticleListItem(
-                    article = article,
-                    loaded = newsViewModel.isRefreshing,
-                    modifier = Modifier
-                        .clickable {
-                            navController.navigate("detail_screen")
-                            newsViewModel.url = article.url
-                        }
+        AnimatedVisibility(
+            modifier = Modifier
+                .align(Alignment.BottomEnd),
+            visible = scrollState.value > 0,
+            enter = slideInVertically(initialOffsetY = { it * 2 }),
+            exit = slideOutVertically(targetOffsetY = { it * 2 }),
+        ) {
+            FloatingActionButton(
+                onClick = {
+                    coroutineScope.launch {
+                        scrollState.animateScrollTo(0)
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(10.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_arrow_upward_24),
+                    contentDescription = null
                 )
             }
         }

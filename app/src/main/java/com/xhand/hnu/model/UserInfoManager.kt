@@ -8,6 +8,8 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.xhand.hnu.model.entity.HourListEntity
 import com.xhand.hnu.model.entity.LoginPostEntity
 import com.xhand.hnu.model.entity.SecondClassInfo
 import com.xhand.hnu.model.entity.UserInfoEntity
@@ -22,6 +24,7 @@ class UserInfoManager(private val context: Context) {
         val USERINFO = stringPreferencesKey("USERINFO")
         val SCUSERINFO = stringPreferencesKey("SCUSERINFO")
         val LOGINFO = stringPreferencesKey("LOGINFO")
+        val SCHOURS = stringPreferencesKey("SCHOURS")
     }
 
     private val gson = Gson()
@@ -39,6 +42,19 @@ class UserInfoManager(private val context: Context) {
     val scUserInfo: Flow<SecondClassInfo> = context.userStore.data.map {
         val json = it[SCUSERINFO] ?: ""
         gson.fromJson(json, SecondClassInfo::class.java)
+    }
+
+
+    val scHours: Flow<MutableList<HourListEntity>> = context.userStore.data.map {
+        val json = it[SCHOURS] ?: ""
+        val type = object : TypeToken<List<HourListEntity>>() {}.type
+        gson.fromJson(json, type)
+    }
+
+    suspend fun saveScHours(scHours: List<HourListEntity>) {
+        context.userStore.edit {
+            it[SCHOURS] = gson.toJson(scHours)
+        }
     }
 
     suspend fun saveSecondClassInfo(secondClassInfo: SecondClassInfo) {

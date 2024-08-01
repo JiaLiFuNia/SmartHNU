@@ -46,4 +46,25 @@ class GradeViewModel(settingsViewModel: SettingsViewModel) : ViewModel() {
         )
     )
 
+    fun convertTermToIndex(term: MutableList<String>): List<String> {
+        term.forEachIndexed { index, _ ->
+            val gradeClassString = when (index) {
+                0 -> "一"
+                1 -> "一"
+                2 -> "二"
+                3 -> "二"
+                4 -> "三"
+                5 -> "三"
+                6 -> "四"
+                7 -> "四"
+                else -> ""
+            }
+            val formOrLater = when ((term.size - index) % 2) {
+                0 -> "下"
+                else -> "上"
+            }
+            term[index] = "大${gradeClassString}${formOrLater}"
+        }
+        return term
+    }
 }

@@ -64,11 +64,12 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
 import com.xhand.hnu.components.CardCourseList
-import com.xhand.hnu.components.Chart.GPAChangeLineChart
 import com.xhand.hnu.components.PersonCardItem
 import com.xhand.hnu.components.PersonFunctionCardItem
 import com.xhand.hnu.components.ShowLoginDialog
 import com.xhand.hnu.components.ShowSecondClassLoginDialog
+import com.xhand.hnu.components.chart.GPAChangeLineChart
+import com.xhand.hnu.components.chart.HourChart
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import com.xhand.hnu.viewmodel.CourseTaskViewModel
 import com.xhand.hnu.viewmodel.GradeViewModel
@@ -89,7 +90,8 @@ fun NavigationPersonScreen(
     viewModel: SettingsViewModel,
     personViewModel: PersonViewModel,
     courseSearchViewModel: CourseSearchViewModel,
-    courseTaskViewModel: CourseTaskViewModel
+    courseTaskViewModel: CourseTaskViewModel,
+    gradeViewModel: GradeViewModel
 ) {
     val navController = rememberNavController()
     NavHost(
@@ -120,7 +122,8 @@ fun NavigationPersonScreen(
             PersonScreen(
                 navController = navController,
                 viewModel = viewModel,
-                personViewModel = personViewModel
+                personViewModel = personViewModel,
+                gradeViewModel = gradeViewModel
             )
         }
         composable("grade_screen") {
@@ -182,7 +185,10 @@ fun NavigationPersonScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonScreen(
-    navController: NavController, viewModel: SettingsViewModel, personViewModel: PersonViewModel
+    navController: NavController,
+    viewModel: SettingsViewModel,
+    personViewModel: PersonViewModel,
+    gradeViewModel: GradeViewModel
 ) {
     val context = LocalContext.current
     val checkboxes = viewModel.checkboxes
@@ -506,7 +512,10 @@ fun PersonScreen(
                                         color = Color.Gray
                                     )
                                 else
-                                    GPAChangeLineChart(viewModel.jdList)
+                                    GPAChangeLineChart(
+                                        viewModel.jdList,
+                                        gradeViewModel = gradeViewModel
+                                    )
                             }
                         } else
                                 Text(text = "暂无信息", color = Color.Gray)
@@ -531,22 +540,17 @@ fun PersonScreen(
                                 .fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            if (viewModel.stateCode != 1) {
-                                Text(text = "暂无信息", color = Color.Gray)
+                            if (viewModel.scHourList.isNotEmpty()) {
+                                HourChart(hourLists = viewModel.scHourList)
                             } else {
-                                if (viewModel.isGettingHourList)
-                                    CircularProgressIndicator()
-                                else
-                                    Column {
-                                        viewModel.scHourList.forEach { scHour ->
-                                            ListItem(
-                                                headlineContent = { Text(text = scHour.term) },
-                                                trailingContent = {
-                                                    Text(text = scHour.total.toString())
-                                                }
-                                            )
-                                        }
-                                    }
+                                if (viewModel.stateCode != 1) {
+                                    Text(text = "暂无信息", color = Color.Gray)
+                                } else {
+                                    if (viewModel.isGettingHourList)
+                                        CircularProgressIndicator()
+                                    else
+                                        HourChart(hourLists = viewModel.scHourList)
+                                }
                             }
                         }
                     }
