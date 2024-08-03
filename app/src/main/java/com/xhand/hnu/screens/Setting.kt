@@ -5,12 +5,17 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -26,6 +31,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -93,7 +100,7 @@ fun NavigationSettingScreen(viewModel: SettingsViewModel) {
             )
         }
         composable("guide_screen") {
-            GuideScreen(onBack = { navController.popBackStack() })
+            GuideScreen(onBack = { navController.popBackStack() }, viewModel = viewModel)
         }
     }
 }
@@ -144,6 +151,23 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                         viewModel.isShowAlert = true
                     else {
                         viewModel.isShowDialog = true
+                    }
+                },
+                trailingContent = {
+                    Row {
+                        Box(
+                            modifier = Modifier
+                                .size(15.dp)
+                                .clip(CircleShape)
+                                .background(if (viewModel.isLoginSuccess) colorScheme.primaryContainer else Color.LightGray)
+                        ) { }
+                        Spacer(modifier = Modifier.size(10.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(15.dp)
+                                .clip(CircleShape)
+                                .background(if (viewModel.stateCode == 1) colorScheme.primaryContainer else Color.LightGray)
+                        ) { }
                     }
                 }
             )

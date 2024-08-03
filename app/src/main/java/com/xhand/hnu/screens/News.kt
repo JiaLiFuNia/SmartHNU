@@ -76,6 +76,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
 import com.xhand.hnu.components.ArticleListItem
 import com.xhand.hnu.components.ModalBottomSheet
+import com.xhand.hnu.model.entity.ArticleListEntity
 import com.xhand.hnu.network.PictureListItem
 import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
@@ -299,7 +300,7 @@ fun NewsScreen(
                                     modifier = Modifier
                                         .clickable {
                                             navController.navigate("detail_screen")
-                                            newsViewModel.url = article.url
+                                            newsViewModel.article = article
                                         },
                                     color = ListItemDefaults.colors(
                                         Color.Transparent
@@ -470,7 +471,13 @@ fun NewsList(
                                 .clip(RoundedCornerShape(8.dp))
                                 .aspectRatio(16 / 9f)
                                 .clickable {
-                                    newsViewModel.url = pictures[index].newsUrl
+                                    newsViewModel.article = ArticleListEntity(
+                                        pictures[index].title,
+                                        "",
+                                        pictures[index].newsUrl,
+                                        "师大要闻",
+                                        false
+                                    )
                                     navController.navigate("detail_screen")
                                 },
                             contentScale = ContentScale.Crop
@@ -514,7 +521,7 @@ fun NewsList(
                         modifier = Modifier
                             .clickable {
                                 navController.navigate("detail_screen")
-                                newsViewModel.url = article.url
+                                newsViewModel.article = article
                             }
                     )
                 }

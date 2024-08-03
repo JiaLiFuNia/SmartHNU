@@ -59,7 +59,7 @@ class CourseSearchViewModel(context: Context) : ViewModel() {
         )
     )
     var searchResult by mutableStateOf(mutableListOf<CourseSearchKBList>())
-    var isGettingCourse by mutableStateOf(true)
+    var isGettingCourse by mutableStateOf(false)
     suspend fun getCourse(searchContent: CourseSearchPost) {
         try {
             isGettingCourse = true

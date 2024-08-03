@@ -29,7 +29,9 @@ object Network {
         .baseUrl("https://gitee.com/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
-
+    private val retrofitGuide = Retrofit.Builder()
+        .baseUrl("https://gitee.com/")
+        .build()
     /*private val retrofitHoliday = Retrofit.Builder()
         .baseUrl("https://timor.tech/api/holiday/info")
         .addConverterFactory(GsonConverterFactory.create())
@@ -51,6 +53,9 @@ object Network {
         return retrofitUpdate.create(clazz)
     }
 
+    fun <T> guideService(clazz: Class<T>): T {
+        return retrofitGuide.create(clazz)
+    }
     fun <T> newsService(clazz: Class<T>): T {
         return retrofitNewsList.create(clazz)
     }

@@ -136,11 +136,11 @@ class MainActivity : ComponentActivity() {
                         Box(modifier = Modifier.padding(it)) {
                                 when (selectedItemIndex) {
                                     0 -> NavigationPersonScreen(
-                                        viewModel,
-                                        PersonViewModel(),
-                                        CourseSearchViewModel(LocalContext.current),
-                                        CourseTaskViewModel(LocalContext.current),
-                                        GradeViewModel(viewModel)
+                                        viewModel = viewModel,
+                                        personViewModel = PersonViewModel(),
+                                        courseSearchViewModel = CourseSearchViewModel(LocalContext.current),
+                                        courseTaskViewModel = CourseTaskViewModel(LocalContext.current),
+                                        gradeViewModel = GradeViewModel(viewModel)
                                     )
                                     1 -> NavigationScreen(viewModel, newsViewModel)
                                     2 -> NavigationSettingScreen(viewModel)

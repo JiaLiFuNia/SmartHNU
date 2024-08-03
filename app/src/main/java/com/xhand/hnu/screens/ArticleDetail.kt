@@ -3,6 +3,7 @@ package com.xhand.hnu.screens
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
@@ -26,7 +27,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,11 +38,12 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
+import com.xhand.hnu.model.entity.DarkMode
 import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
 import net.dankito.readability4j.Article
@@ -65,7 +66,7 @@ fun ArticleDetailScreen(
             settings.javaScriptEnabled = true
             webViewClient = WebViewClient()
             settings.builtInZoomControls = true
-            loadUrl(newsViewModel.url)
+            loadUrl(newsViewModel.article.url)
         }
     }
     LaunchedEffect(Unit) {
@@ -88,7 +89,7 @@ fun ArticleDetailScreen(
                     IconButton(
                             onClick = {
                                 Intent(Intent.ACTION_SEND).also {
-                                    it.putExtra(Intent.EXTRA_TEXT, newsViewModel.url)
+                                    it.putExtra(Intent.EXTRA_TEXT, newsViewModel.article.url)
                                     it.type = "text/plain"
                                     if (it.resolveActivity(context.packageManager) != null) {
                                         context.startActivity(it)
@@ -97,22 +98,22 @@ fun ArticleDetailScreen(
                                 Toast.makeText(context, "请选择分享的应用", Toast.LENGTH_SHORT)
                                     .show()
                             }
-                        ) {
+                    ) {
                         Icon(
-                                imageVector = Icons.Default.Share, contentDescription = "分享"
-                            )
-                        }
-                        IconButton(
-                            onClick = { showMenu = !showMenu }
+                            imageVector = Icons.Default.Share, contentDescription = "分享"
                         )
-                        {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert, contentDescription = "其他"
-                            )
-                        }
+                    }
+                    IconButton(
+                        onClick = { showMenu = !showMenu }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert, contentDescription = "其他"
+                        )
+                    }
                         DropdownMenu(
                             expanded = showMenu,
-                            onDismissRequest = { showMenu = false }
+                            onDismissRequest = { showMenu = false },
+                            shadowElevation = 4.dp,
                         ) {
                             DropdownMenuItem(
                                 text = { Text(text = "刷新页面") },
@@ -127,7 +128,7 @@ fun ArticleDetailScreen(
                                 }
                             )
                             DropdownMenuItem(
-                                text = { if (!showHtml) Text(text = "查看原网页") else Text(text = "提取内容") },
+                                text = { if (!showHtml) Text(text = "查看原页面") else Text(text = "提取内容") },
                                 onClick = {
                                     showHtml = !showHtml
                                 },
@@ -139,9 +140,9 @@ fun ArticleDetailScreen(
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text(text = "复制文章链接") },
+                                text = { Text(text = "复制新闻链接") },
                                 onClick = {
-                                    viewModel.copyText(cbManager, newsViewModel.url)
+                                    viewModel.copyText(cbManager, newsViewModel.article.url)
                                     Toast.makeText(context, "已复制", Toast.LENGTH_SHORT).show()
                                 },
                                 leadingIcon = {
@@ -155,14 +156,11 @@ fun ArticleDetailScreen(
                                 text = { Text(text = "使用外部浏览器") },
                                 onClick = {
                                     Intent(Intent.ACTION_VIEW).also {
-                                        it.data = Uri.parse(newsViewModel.url)
+                                        it.data = Uri.parse(newsViewModel.article.url)
                                         if (it.resolveActivity(context.packageManager) != null) {
                                             context.startActivity(it)
                                         }
                                     }
-                                    Toast.makeText(
-                                        context, "正在打开外部浏览器", Toast.LENGTH_SHORT
-                                    ).show()
                                 },
                                 leadingIcon = {
                                     Icon(
@@ -176,15 +174,22 @@ fun ArticleDetailScreen(
                 )
             }
         ) {
-        val readability4J = Readability4J("newsViewModel.url", newsViewModel.htmlParsing)
+        val readability4J = Readability4J(newsViewModel.article.url, newsViewModel.htmlParsing)
             val article: Article = readability4J.parse()
 
-            // 标题
-            val title: String = article.title ?: ""
-            // 内容
-            val content: String = article.articleContent.toString()
-            val fontColor: String = if (isSystemInDarkTheme()) "rgb(255,255,255)" else "rgb(0,0,0)"
-            // html头部
+        val content: String = article.articleContent.toString().replace("img src", "imgFLAGsrc")
+            .replace("a href", "aFLAGhref").replace("span lang", "spanFLAGlang")
+            .replace(" ", "").replace("FLAG", " ")
+        Log.i("TAG666", "title: $content")
+
+        val darkTheme = when (viewModel.darkModeIndex) {
+            DarkMode.ON.ordinal -> true
+            DarkMode.OFF.ordinal -> false
+            else -> isSystemInDarkTheme()
+        }
+
+        val fontColor: String = if (darkTheme) "rgb(255,255,255)" else "rgb(0,0,0)"
+        // html头部
             val htmlHeader = """
         <!DOCTYPE html>
         <html lang="en">
@@ -195,10 +200,12 @@ fun ArticleDetailScreen(
             <style>
                 body {
                   font-size: 17px;
-                  background-color: rgb(${(MaterialTheme.colorScheme.surface.red) * 256}, ${(MaterialTheme.colorScheme.surface.green) * 256}, ${(MaterialTheme.colorScheme.surface.blue) * 256});
+                  background-color: rgb(${(MaterialTheme.colorScheme.background.red) * 256}, ${(MaterialTheme.colorScheme.background.green) * 256}, ${(MaterialTheme.colorScheme.background.blue) * 256});
                   color: ${fontColor};
                   line-height: 30.6px;
                   font-weight: normal;
+                  font-family: Arial, Helvetica;
+                  word-wrap: break-word;
                 }
                 img {
                     max-width: 100%;
@@ -211,6 +218,10 @@ fun ArticleDetailScreen(
                 a:visited {
                     color: ${fontColor};
                     text-decoration:underline;
+                }
+                /* 对所有非首段的p标签应用首行缩进 */  
+                p:not(:first-of-type) {  
+                    text-indent: 2em; /* 设置首行缩进为2em */  
                 }
             </style>
         </head>
@@ -235,17 +246,21 @@ fun ArticleDetailScreen(
                     if (!showHtml) {
                         item {
                             Text(
-                                text = title,
-                                fontSize = 25.sp,
-                                fontWeight = FontWeight.W700,
+                                text = newsViewModel.article.title,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.W800,
                                 lineHeight = 35.sp,
-                                modifier = Modifier.padding(10.dp)
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 10.dp),
+                                textAlign = TextAlign.Left
                             )
                         }
                         item {
                             AndroidView(
                                 factory = { context -> WebView(context) },
-                                modifier = Modifier.padding(5.dp)
+                                modifier = Modifier
+                                    .padding(horizontal = 5.dp)
                             ) { view ->
                                 view.loadDataWithBaseURL(
                                     "",

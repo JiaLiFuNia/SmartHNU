@@ -100,12 +100,12 @@ class NewsViewModel(context: Context) : ViewModel() {
     var isDetailLoad by mutableStateOf(true)
 
     // 新闻链接
-    var url by mutableStateOf("")
+    var article by mutableStateOf(ArticleListEntity("", "", "", "", false))
 
     // 新闻页面详情请求
     suspend fun detailService() {
         try {
-            val res = detailService.getNewsDetail(url)
+            val res = detailService.getNewsDetail(article.url)
             htmlParsing = preProcessNewsDetail(res.body()?.string() ?: "")
             isDetailLoad = false
         } catch (e: Exception) {

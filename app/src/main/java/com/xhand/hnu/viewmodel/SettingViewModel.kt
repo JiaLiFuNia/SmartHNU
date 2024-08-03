@@ -48,6 +48,7 @@ import com.xhand.hnu.model.entity.Xscj
 import com.xhand.hnu.model.entity.Yxjcdata
 import com.xhand.hnu.model.entity.teacherPost
 import com.xhand.hnu.network.GradeService
+import com.xhand.hnu.network.GuideService
 import com.xhand.hnu.network.LoginService
 import com.xhand.hnu.network.NewsDetailService
 import com.xhand.hnu.network.ScheduleService
@@ -730,6 +731,17 @@ class SettingsViewModel(context: Context) : ViewModel() {
                 userInfoManager.saveSecondClassInfo(SecondClassInfo(username, password, ""))
             }
             Log.i("TAG6663", "$e")
+        }
+    }
+
+    // 获取更新内容
+    var guideText by mutableStateOf("")
+    private val guideService = GuideService.instance()
+    suspend fun guideService() {
+        try {
+            guideText = guideService.guide().body()?.string() ?: ""
+        } catch (e: Exception) {
+            Log.i("TAG666", "$e")
         }
     }
 
