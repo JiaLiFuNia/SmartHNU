@@ -1,6 +1,7 @@
 package com.xhand.hnu.screens
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,9 +14,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -28,20 +34,27 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import com.xhand.hnu.components.CourseSearchListItem
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CourseSearchScreen(
@@ -52,6 +65,12 @@ fun CourseSearchScreen(
     val scrollState = rememberScrollState()
     var ifShow by remember {
         mutableStateOf(true)
+    }
+    var showDatePicker by remember {
+        mutableStateOf(false)
+    }
+    LaunchedEffect(Unit) {
+        if (!ifShow) courseSearchViewModel.getCourseIndex()
     }
     Scaffold(
         modifier = Modifier
@@ -77,12 +96,14 @@ fun CourseSearchScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                courseSearchViewModel.courseSearch(
-                    courseSearchViewModel.searchContent.value
-                )
-                ifShow = false
-            }) {
+            FloatingActionButton(
+                onClick = {
+                    courseSearchViewModel.courseSearch(
+                        courseSearchViewModel.searchContent.value
+                    )
+                    ifShow = false
+                }
+            ) {
                 Icon(imageVector = Icons.Default.Search, contentDescription = "搜索")
             }
         },
@@ -110,6 +131,8 @@ fun CourseSearchScreen(
                 },
                 modifier = Modifier.clickable { ifShow = !ifShow }
             )
+            var mTextFieldSize by remember { mutableStateOf(Size.Zero) }
+            var showDropDownMenu by remember { mutableStateOf(false) }
             HorizontalDivider()
             if (ifShow) {
                 OutlinedTextField(
@@ -118,18 +141,53 @@ fun CourseSearchScreen(
                         courseSearchViewModel.searchContent.value =
                             courseSearchViewModel.searchContent.value.copy(xsnj = it)
                     },
-                    label = { Text(text = "xsnj") },
+                    label = { Text(text = "年级") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .onGloballyPositioned { coordinates ->
+                            // This value is used to assign to
+                            // the DropDown the same width
+                            mTextFieldSize = coordinates.size.toSize()
+                        },
+                    trailingIcon = {
+                        IconButton(onClick = { showDropDownMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = "年级"
+                            )
+                        }
+                    }
+                )
+                OutlinedTextField(
+                    value = courseSearchViewModel.searchContent.value.zydm.toString(),
+                    onValueChange = {
+                        courseSearchViewModel.searchContent.value =
+                            courseSearchViewModel.searchContent.value.copy(zydm = it)
+                    },
+                    label = { Text(text = "专业") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp)
                 )
                 OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.gnqdm.toString(),
+                    value = courseSearchViewModel.searchContent.value.kcmc,
                     onValueChange = {
                         courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(gnqdm = it)
+                            courseSearchViewModel.searchContent.value.copy(kcmc = it)
                     },
-                    label = { Text(text = "gnqdm") },
+                    label = { Text(text = "课程") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                )
+                OutlinedTextField(
+                    value = courseSearchViewModel.searchContent.value.teaxm,
+                    onValueChange = {
+                        courseSearchViewModel.searchContent.value =
+                            courseSearchViewModel.searchContent.value.copy(teaxm = it)
+                    },
+                    label = { Text(text = "教师") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp)
@@ -140,18 +198,7 @@ fun CourseSearchScreen(
                         courseSearchViewModel.searchContent.value =
                             courseSearchViewModel.searchContent.value.copy(jcdm = it)
                     },
-                    label = { Text(text = "jcdm") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                )
-                OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.jhlxdm.toString(),
-                    onValueChange = {
-                        courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(jhlxdm = it)
-                    },
-                    label = { Text(text = "jhlxdm") },
+                    label = { Text(text = "节次") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp)
@@ -162,7 +209,7 @@ fun CourseSearchScreen(
                         courseSearchViewModel.searchContent.value =
                             courseSearchViewModel.searchContent.value.copy(jxbmc = it)
                     },
-                    label = { Text(text = "jxbmc") },
+                    label = { Text(text = "教学班") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp)
@@ -173,7 +220,7 @@ fun CourseSearchScreen(
                         courseSearchViewModel.searchContent.value =
                             courseSearchViewModel.searchContent.value.copy(jzwdm = it)
                     },
-                    label = { Text(text = "jzwdm") },
+                    label = { Text(text = "教学楼") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp)
@@ -184,21 +231,25 @@ fun CourseSearchScreen(
                         courseSearchViewModel.searchContent.value =
                             courseSearchViewModel.searchContent.value.copy(jxcdmc = it)
                     },
-                    label = { Text(text = "教学楼名称") },
+                    label = { Text(text = "教学场地") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp)
                 )
                 OutlinedTextField(
                     value = courseSearchViewModel.searchContent.value.rq,
-                    onValueChange = {
-                        courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(rq = it)
-                    },
+                    onValueChange = { },
+                    readOnly = true,
                     label = { Text(text = "日期") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp)
+                        .clickable { showDatePicker = true },
+                    trailingIcon = {
+                        IconButton(onClick = { showDatePicker = true }) {
+                            Icon(imageVector = Icons.Default.DateRange, contentDescription = "日期")
+                        }
+                    },
                 )
                 OutlinedTextField(
                     value = courseSearchViewModel.searchContent.value.zc.toString(),
@@ -206,7 +257,7 @@ fun CourseSearchScreen(
                         courseSearchViewModel.searchContent.value =
                             courseSearchViewModel.searchContent.value.copy(zc = it)
                     },
-                    label = { Text(text = "周数") },
+                    label = { Text(text = "周次") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp)
@@ -228,18 +279,7 @@ fun CourseSearchScreen(
                         courseSearchViewModel.searchContent.value =
                             courseSearchViewModel.searchContent.value.copy(kkyxdm = it)
                     },
-                    label = { Text(text = "kkyxdm") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                )
-                OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.kkjysdm.toString(),
-                    onValueChange = {
-                        courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(kkjysdm = it)
-                    },
-                    label = { Text(text = "kkjysdm") },
+                    label = { Text(text = "开课单位") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp)
@@ -250,7 +290,7 @@ fun CourseSearchScreen(
                         courseSearchViewModel.searchContent.value =
                             courseSearchViewModel.searchContent.value.copy(xsyxdm = it)
                     },
-                    label = { Text(text = "xsyxdm") },
+                    label = { Text(text = "学生院系") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp)
@@ -263,6 +303,47 @@ fun CourseSearchScreen(
             } else {
                 courseSearchViewModel.searchResult.forEach { room ->
                     CourseSearchListItem(course = room)
+                }
+            }
+            val datePickerState = rememberDatePickerState()
+            val confirmEnabled = derivedStateOf { datePickerState.selectedDateMillis != null }
+            Log.i("TAG63", confirmEnabled.value.toString())
+            if (showDatePicker)
+                DatePickerDialog(
+                    onDismissRequest = {
+                        showDatePicker = false
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showDatePicker = false
+                                courseSearchViewModel.searchContent.value.rq =
+                                    timeStamp2DateStr(datePickerState.selectedDateMillis ?: 0)
+                            },
+                            enabled = confirmEnabled.value
+                        ) {
+                            Text("确定")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                showDatePicker = false
+                            }
+                        ) {
+                            Text("取消")
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            DropdownMenu(
+                expanded = showDropDownMenu,
+                onDismissRequest = { showDropDownMenu = false },
+                modifier = Modifier
+            ) {
+                courseSearchViewModel.searchCourseIndex.xsnjList.forEach { aXsnjList ->
+                    DropdownMenuItem(text = { Text(text = aXsnjList.title) }, onClick = {})
                 }
             }
         }

@@ -9,6 +9,7 @@ import com.xhand.hnu.model.entity.CheckTokenEntity
 import com.xhand.hnu.model.entity.ClassroomEntity
 import com.xhand.hnu.model.entity.ClassroomPost
 import com.xhand.hnu.model.entity.CourseSearchEntity
+import com.xhand.hnu.model.entity.CourseSearchIndexEntity
 import com.xhand.hnu.model.entity.CourseSearchPost
 import com.xhand.hnu.model.entity.CourseTaskEntity
 import com.xhand.hnu.model.entity.GradeDetailEntity
@@ -118,6 +119,11 @@ interface GradeService {
         @Body body: ReadMessagePost,
         @Header("Token") token: String
     ): ReadMessageEntity
+
+    @POST("dev-api/appapi/appqxkb/index")
+    suspend fun courseSearchIndex(
+        @Header("Token") token: String
+    ): CourseSearchIndexEntity
 
     companion object {
         fun instance(): GradeService {

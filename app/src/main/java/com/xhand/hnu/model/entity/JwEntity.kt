@@ -413,7 +413,7 @@ data class CourseSearchPost(
     val jxbmc: String,
     val jzwdm: Any? = null,
     val gnqdm: Any? = null,
-    val rq: String,
+    var rq: String,
     val zc: Any? = null,
     val xq: Any? = null,
     val jcdm: String,
@@ -435,14 +435,12 @@ data class CourseSearchEntity(
 
 data class CourseSearchKBList(
     val flfzmc: String,
-    val rownum: Long,
     val pkrs: Long,
     val sknrjj: String,
     val jxhjmc: String,
     val xnxqmc: String,
     val kcywmc: String,
     val pkrq: String,
-    val lch: Long,
     val jxbrs: Long,
     val kcrwdm: String,
     val kxh: Long,

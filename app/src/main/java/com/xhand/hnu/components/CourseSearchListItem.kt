@@ -38,7 +38,7 @@ fun CourseSearchListItem(
                 )
                 Text(
                     text = "第${course.jcdm.substring(0, 2).toInt()}-${
-                        course.jcdm.substring(2, 4).toInt()
+                        course.jcdm.last()
                     }节"
                 )
             }
