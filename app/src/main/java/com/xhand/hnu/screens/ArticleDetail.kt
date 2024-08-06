@@ -199,7 +199,7 @@ fun ArticleDetailScreen(
 
         val fontColor: String = if (darkTheme) "rgb(255,255,255)" else "rgb(0,0,0)"
         // html头部
-            val htmlHeader = """
+        val htmlHeader = """
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -246,7 +246,7 @@ fun ArticleDetailScreen(
         <body>
     """
             // html尾部
-            val htmlFooter = """
+        val htmlFooter = """
                     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var paragraphs = document.querySelectorAll('p'); // 获取所有的p标签  
@@ -272,62 +272,62 @@ fun ArticleDetailScreen(
 </body>
 </html>
     """
-                LazyColumn(
-                    Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues = it)
+        LazyColumn(
+            Modifier
+                .fillMaxSize()
+                .padding(paddingValues = it)
                     // .verticalScroll(scrollState)
-                ) {
-                    if (!showHtml) {
-                        item {
-                            Text(
-                                text = articleTitle.title,
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.W800,
-                                lineHeight = 35.sp,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = 10.dp),
-                                textAlign = TextAlign.Justify
+        ) {
+            if (!showHtml) {
+                item {
+                    Text(
+                        text = articleTitle.title,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.W800,
+                        lineHeight = 35.sp,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 10.dp),
+                        textAlign = TextAlign.Justify
+                    )
+                }
+                if (newsViewModel.isDetailLoading) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .height(300.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                } else {
+                    item {
+                        AndroidView(
+                            factory = { context ->
+                                WebView(context).apply {
+                                    settings.javaScriptEnabled = true
+                                }
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 5.dp)
+                        ) { view ->
+                            view.loadDataWithBaseURL(
+                                "",
+                                "$htmlHeader$content$htmlFooter",
+                                null,
+                                "utf-8",
+                                null
                             )
-                        }
-                        if (newsViewModel.isDetailLoading) {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .height(300.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator()
-                                }
-                            }
-                        } else {
-                            item {
-                                AndroidView(
-                                    factory = { context ->
-                                        WebView(context).apply {
-                                            settings.javaScriptEnabled = true
-                                        }
-                                    },
-                                    modifier = Modifier
-                                        .padding(horizontal = 5.dp)
-                                ) { view ->
-                                    view.loadDataWithBaseURL(
-                                        "",
-                                        "$htmlHeader$content$htmlFooter",
-                                        null,
-                                        "utf-8",
-                                        null
-                                    )
-                                }
-                            }
-                        }
-                    } else {
-                        item {
-                            AndroidView(factory = { webView })
                         }
                     }
                 }
+            } else {
+                item {
+                    AndroidView(factory = { webView })
+                }
+            }
         }
+    }
 }
