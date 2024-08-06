@@ -18,8 +18,7 @@ fun GradeListItem(
         headlineContent = {
             Text(
                 text = grade.kcmc,
-                maxLines = 1,
-                fontWeight = FontWeight.Bold
+                maxLines = 1
             )
         },
         supportingContent = {

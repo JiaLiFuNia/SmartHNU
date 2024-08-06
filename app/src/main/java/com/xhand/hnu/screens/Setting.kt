@@ -29,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +38,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -53,6 +55,7 @@ import com.xhand.hnu.components.SwitchListItem
 import com.xhand.hnu.components.UpdateDialog
 import com.xhand.hnu.model.entity.DarkMode
 import com.xhand.hnu.viewmodel.SettingsViewModel
+import kotlinx.coroutines.coroutineScope
 
 fun DarkMode.toStringResourceId(): String {
     return when (this) {
@@ -184,8 +187,8 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
             DropdownListItem(
                 leadingImageVector = R.drawable.ic_nightlight,
                 headlineText = "深色模式",
-                value = DarkMode.values()[viewModel.darkModeIndex],
-                selections = DarkMode.values()
+                value = DarkMode.entries[viewModel.darkModeIndex],
+                selections = DarkMode.entries
                     .map { SelectionItem(it.toStringResourceId(), it) },
                 onValueChanged = { index, _ ->
                     viewModel.darkModeIndex = index
@@ -269,4 +272,13 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
         }
         UpdateDialog(viewModel = viewModel)
     }
+}
+
+@Preview
+@Composable
+fun SettingScreenPreview() {
+    SettingScreen(
+        viewModel = SettingsViewModel(LocalContext.current),
+        navController = rememberNavController()
+    )
 }

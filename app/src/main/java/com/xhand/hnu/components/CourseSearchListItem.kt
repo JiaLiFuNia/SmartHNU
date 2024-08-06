@@ -19,8 +19,7 @@ fun CourseSearchListItem(
     ListItem(
         headlineContent = {
             Text(
-                text = course.kcmc,
-                fontWeight = FontWeight.Bold
+                text = course.kcmc
             )
         },
         supportingContent = {

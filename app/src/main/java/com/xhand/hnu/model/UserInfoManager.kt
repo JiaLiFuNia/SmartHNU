@@ -3,6 +3,7 @@ package com.xhand.hnu.model
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -25,6 +26,7 @@ class UserInfoManager(private val context: Context) {
         val SCUSERINFO = stringPreferencesKey("SCUSERINFO")
         val LOGINFO = stringPreferencesKey("LOGINFO")
         val SCHOURS = stringPreferencesKey("SCHOURS")
+        val UI = booleanPreferencesKey("UI")
     }
 
     private val gson = Gson()
@@ -34,6 +36,7 @@ class UserInfoManager(private val context: Context) {
         val json = it[USERINFO] ?: ""
         gson.fromJson(json, UserInfoEntity::class.java)
     }
+
     val logInfo: Flow<LoginPostEntity> = context.userStore.data.map {
         val json = it[LOGINFO] ?: ""
         gson.fromJson(json, LoginPostEntity::class.java)
@@ -44,10 +47,9 @@ class UserInfoManager(private val context: Context) {
         gson.fromJson(json, SecondClassInfo::class.java)
     }
 
-
     val scHours: Flow<MutableList<HourListEntity>> = context.userStore.data.map {
         val json = it[SCHOURS] ?: ""
-        val type = object : TypeToken<List<HourListEntity>>() {}.type
+        val type = object : TypeToken<List<HourListEntity>>(){}.type
         gson.fromJson(json, type)
     }
 

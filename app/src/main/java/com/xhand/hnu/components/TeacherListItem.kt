@@ -13,8 +13,7 @@ fun TeacherListItem(teacherItem: AllPjxxList, modifier: Modifier) {
         headlineContent = {
             Text(
                 text = teacherItem.kcmc,
-                maxLines = 1,
-                fontWeight = FontWeight.Bold
+                maxLines = 1
             )
         },
         supportingContent = {

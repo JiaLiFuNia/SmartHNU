@@ -146,20 +146,6 @@ fun GradeScreen(
                             contentDescription = "返回"
                         )
                     }
-                },
-                actions = {
-                    IconButton(onClick = {  }) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = null
-                        )
-                    }
-                    IconButton(onClick = { showBottomSheetData.value = true }) {
-                        Icon(
-                            painterResource(id = R.drawable.ic_baseline_show_chart_24),
-                            contentDescription = null
-                        )
-                    }
                 }
             )
         },

@@ -75,7 +75,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
             val scHourLists = userInfoManager.scHours.firstOrNull()
             if (scHourLists != null) {
                 if (scHourLists.isNotEmpty()) {
-                    scHourList = scHourLists as MutableList<HourListEntity>
+                    scHourList = scHourLists
                 }
             }
             if (scUserInfo != null) {
@@ -92,7 +92,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
             }
         }
     }
-    var isDynamicColor by mutableStateOf(true)
+    var isDynamicColor by mutableStateOf(false)
     var darkModeIndex by mutableIntStateOf(0)
     var checkboxes = mutableStateListOf(
         ToggleableInfo(
@@ -126,11 +126,6 @@ class SettingsViewModel(context: Context) : ViewModel() {
             route = "search_screen"
         ),
         FunctionCard(
-            title = "上课任务",
-            painterResource = R.drawable.ic_baseline_task_24,
-            route = "task_screen"
-        ),
-        FunctionCard(
             title = "课程查询",
             painterResource = R.drawable.ic_outline_manage_search_24,
             route = "courseSearch_screen"
@@ -139,6 +134,11 @@ class SettingsViewModel(context: Context) : ViewModel() {
             title = "教学评价",
             painterResource = R.drawable.outline_assessment_24,
             route = "teacher_screen"
+        ),
+        FunctionCard(
+            title = "上课任务",
+            painterResource = R.drawable.ic_baseline_task_24,
+            route = "task_screen"
         )
     )
 

@@ -21,6 +21,7 @@ import com.xhand.hnu.network.SearchService
 import com.xhand.hnu.network.getNewsList
 import com.xhand.hnu.network.getPicList
 import com.xhand.hnu.network.preProcessNewsDetail
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
@@ -97,7 +98,7 @@ class NewsViewModel(context: Context) : ViewModel() {
 
     // 网页源码请求
     var htmlParsing by mutableStateOf("")
-    var isDetailLoad by mutableStateOf(true)
+    var isDetailLoading by mutableStateOf(true)
 
     // 新闻链接
     var article by mutableStateOf(ArticleListEntity("", "", "", "", false))
@@ -106,8 +107,10 @@ class NewsViewModel(context: Context) : ViewModel() {
     suspend fun detailService() {
         try {
             val res = detailService.getNewsDetail(article.url)
+            delay(500)
             htmlParsing = preProcessNewsDetail(res.body()?.string() ?: "")
-            isDetailLoad = false
+            Log.i("TAG666", htmlParsing)
+            isDetailLoading = false
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
         }

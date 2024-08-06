@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -27,13 +28,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -61,6 +65,7 @@ fun ArticleDetailScreen(
     var showHtml by remember {
         mutableStateOf(false)
     }
+    val articleTitle = newsViewModel.article
     val webView = remember {
         WebView(context).apply {
             settings.javaScriptEnabled = true
@@ -70,12 +75,15 @@ fun ArticleDetailScreen(
         }
     }
     LaunchedEffect(Unit) {
+        newsViewModel.isDetailLoading = true
         newsViewModel.detailService()
     }
-
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
+                scrollBehavior = scrollBehavior,
                 title = { Text(text = "详情") },
                 navigationIcon = {
                         IconButton(onClick = { onClick() }) {
@@ -177,9 +185,10 @@ fun ArticleDetailScreen(
         val readability4J = Readability4J(newsViewModel.article.url, newsViewModel.htmlParsing)
             val article: Article = readability4J.parse()
 
-        val content: String = article.articleContent.toString().replace("img src", "imgFLAGsrc")
-            .replace("a href", "aFLAGhref").replace("span lang", "spanFLAGlang")
-            .replace(" ", "").replace("FLAG", " ")
+        val content: String = article.articleContent.toString()
+        /*.replace("img src", "imgFLAGsrc")
+        .replace("a href", "aFLAGhref").replace("span lang", "spanFLAGlang").replace("img data-layer="photo" src", "imgFLAGdata-layer="photo"FLAGsrc")
+        .replace(" ", "").replace("FLAG", " ")*/
         Log.i("TAG666", "title: $content")
 
         val darkTheme = when (viewModel.darkModeIndex) {
@@ -205,10 +214,14 @@ fun ArticleDetailScreen(
                   line-height: 30.6px;
                   font-weight: normal;
                   font-family: Arial, Helvetica;
+                  text-align: justify;
                   word-wrap: break-word;
                 }
-                img {
-                    max-width: 100%;
+                img[data-layer="photo"] {
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                    width: 80%;
                     height: auto;
                 }
                 a:link {
@@ -219,9 +232,14 @@ fun ArticleDetailScreen(
                     color: ${fontColor};
                     text-decoration:underline;
                 }
-                /* 对所有非首段的p标签应用首行缩进 */  
                 p:not(:first-of-type) {  
                     text-indent: 2em; /* 设置首行缩进为2em */  
+                }
+                .right-align {
+                    text-align: right;
+                }
+                .indent {
+                    text-indent: 2em;
                 }
             </style>
         </head>
@@ -229,14 +247,31 @@ fun ArticleDetailScreen(
     """
             // html尾部
             val htmlFooter = """
-        </body>
-        </html>
-    """
-            if (newsViewModel.isDetailLoad)
-                Box(modifier = Modifier.fillMaxSize()) {
-                    CircularProgressIndicator()
+                    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var paragraphs = document.querySelectorAll('p'); // 获取所有的p标签  
+
+            var firstParagraph = document.querySelector('p'); // 获取第一个p标签 
+            if (firstParagraph.textContent.trim().length > 10) {
+                firstParagraph.classList.add('indent'); // 如果文本长度大于10，则添加缩进类  
+            }
+
+            var lastParagraph = paragraphs[paragraphs.length - 1]; // 获取最后一个p标签  
+            if (lastParagraph.textContent.trim().startsWith('（')) {
+                lastParagraph.style.textAlign = 'right'; // 将文本居右对齐  
+            }
+
+            var lastTwo = Array.from(paragraphs).slice(-2); // 选取最后两个p标签  
+            lastTwo.forEach(function (paragraph) {
+                if (!paragraph.querySelector('img') && !paragraph.textContent.trim().startsWith('附') && paragraph.textContent.trim().length < 15) {
+                    paragraph.style.textAlign = 'right'; // 将每个p标签的文本居右对齐  
                 }
-            else
+            });
+        });
+    </script>
+</body>
+</html>
+    """
                 LazyColumn(
                     Modifier
                         .fillMaxSize()
@@ -246,32 +281,48 @@ fun ArticleDetailScreen(
                     if (!showHtml) {
                         item {
                             Text(
-                                text = newsViewModel.article.title,
-                                fontSize = 24.sp,
+                                text = articleTitle.title,
+                                fontSize = 22.sp,
                                 fontWeight = FontWeight.W800,
                                 lineHeight = 35.sp,
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(horizontal = 10.dp),
-                                textAlign = TextAlign.Left
+                                textAlign = TextAlign.Justify
                             )
                         }
-                        item {
-                            AndroidView(
-                                factory = { context -> WebView(context) },
-                                modifier = Modifier
-                                    .padding(horizontal = 5.dp)
-                            ) { view ->
-                                view.loadDataWithBaseURL(
-                                    "",
-                                    "$htmlHeader$content$htmlFooter",
-                                    null,
-                                    "utf-8",
-                                    null
-                                )
+                        if (newsViewModel.isDetailLoading) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .height(300.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        } else {
+                            item {
+                                AndroidView(
+                                    factory = { context ->
+                                        WebView(context).apply {
+                                            settings.javaScriptEnabled = true
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .padding(horizontal = 5.dp)
+                                ) { view ->
+                                    view.loadDataWithBaseURL(
+                                        "",
+                                        "$htmlHeader$content$htmlFooter",
+                                        null,
+                                        "utf-8",
+                                        null
+                                    )
+                                }
                             }
                         }
-                            // HorizontalDivider(modifier = Modifier.padding(10.dp))
                     } else {
                         item {
                             AndroidView(factory = { webView })

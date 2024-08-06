@@ -22,8 +22,7 @@ fun ClassroomListItem(
     ListItem(
         headlineContent = {
             Text(
-                text = text,
-                fontWeight = FontWeight.Bold
+                text = text
             )
         },
         trailingContent = {

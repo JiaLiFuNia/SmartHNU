@@ -23,8 +23,8 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -96,16 +96,20 @@ fun CourseSearchScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
+            ExtendedFloatingActionButton(
                 onClick = {
                     courseSearchViewModel.courseSearch(
                         courseSearchViewModel.searchContent.value
                     )
                     ifShow = false
+                },
+                text = {
+                    Text(text = "搜索")
+                },
+                icon = {
+                    Icon(imageVector = Icons.Default.Search, contentDescription = "搜索")
                 }
-            ) {
-                Icon(imageVector = Icons.Default.Search, contentDescription = "搜索")
-            }
+            )
         },
         floatingActionButtonPosition = FabPosition.End
     ) {
@@ -298,9 +302,13 @@ fun CourseSearchScreen(
                 Spacer(modifier = Modifier.height(10.dp))
                 HorizontalDivider()
             }
+            Spacer(modifier = Modifier.height(15.dp))
             if (courseSearchViewModel.isGettingCourse) {
                 CircularProgressIndicator()
             } else {
+                if (courseSearchViewModel.searchResult.isEmpty()) {
+                    Text(text = "无结果")
+                }
                 courseSearchViewModel.searchResult.forEach { room ->
                     CourseSearchListItem(course = room)
                 }
