@@ -2,6 +2,7 @@ package com.xhand.hnu.screens
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -113,6 +115,10 @@ fun CourseSearchScreen(
         },
         floatingActionButtonPosition = FabPosition.End
     ) {
+        val subArrowRotateDegrees: Float by animateFloatAsState(
+            if (ifShow) 180f else 0f,
+            label = ""
+        )
         Column(
             modifier = Modifier
                 .padding(paddingValues = it)
@@ -129,7 +135,9 @@ fun CourseSearchScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier
+                                .rotate(subArrowRotateDegrees),
                         )
                     }
                 },
@@ -158,7 +166,7 @@ fun CourseSearchScreen(
                         IconButton(onClick = { showDropDownMenu = true }) {
                             Icon(
                                 imageVector = Icons.Default.KeyboardArrowDown,
-                                contentDescription = "年级"
+                                contentDescription = "年级",
                             )
                         }
                     }
@@ -313,6 +321,7 @@ fun CourseSearchScreen(
                     CourseSearchListItem(course = room)
                 }
             }
+            Spacer(modifier = Modifier.height(15.dp))
             val datePickerState = rememberDatePickerState()
             val confirmEnabled = derivedStateOf { datePickerState.selectedDateMillis != null }
             Log.i("TAG63", confirmEnabled.value.toString())

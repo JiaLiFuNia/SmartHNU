@@ -39,7 +39,7 @@ class CourseSearchViewModel(context: Context) : ViewModel() {
     var searchContent = mutableStateOf(
         CourseSearchPost(
             1,
-            50,
+            50000,
             "202302",
             "1",
             "",
@@ -104,7 +104,7 @@ class CourseSearchViewModel(context: Context) : ViewModel() {
             Log.i("TAG2310", e.toString())
         }
     }
-    fun getCurrentDates(): String {
+    private fun getCurrentDates(): String {
         val currentDate = LocalDate.now()
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val formattedDate = currentDate.format(formatter)

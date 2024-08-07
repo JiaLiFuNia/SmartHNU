@@ -33,8 +33,12 @@ fun getNewsList2(str: String?, type: String): MutableList<ArticleListEntity> {
         firstList.add(
             ArticleListEntity(
                 title = titleAndUrlElements[index].text(),
-                time = if (timeElements[index].text()[0] == '发') timeElements[index].text()
-                    .substring(5, 15) else timeElements2[index].text().substring(5, 15),
+                time = try {
+                    if (timeElements[index].text()[0] == '发') timeElements[index].text()
+                        .substring(5, 15) else timeElements2[index].text().substring(5, 15)
+                } catch (e: Exception) {
+                    timeElements[index].text()
+                },
                 url = titleAndUrlElements[index].attr("href"),
                 type = type,
                 isTop = false

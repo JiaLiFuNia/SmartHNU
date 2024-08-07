@@ -60,13 +60,13 @@ fun GuideScreen(
             modifier = Modifier
                 .padding(paddingValues = it)
                 .verticalScroll(scrollState)
+                .padding(10.dp)
         ) {
             val markdownContent = viewModel.guideText
             MarkdownText(
                 markdown = markdownContent.trimIndent(),
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(10.dp)
             )
         }
     }

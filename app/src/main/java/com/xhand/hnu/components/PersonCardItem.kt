@@ -1,5 +1,6 @@
 package com.xhand.hnu.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,47 +37,47 @@ fun PersonCardItem(
     imageVector: ImageVector,
     content: @Composable () -> Unit = {}
 ) {
-        Card(
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 6.dp
-            ),
+    Card(
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 3.dp
+        ),
+        modifier = Modifier
+            .fillMaxWidth(),
+        onClick = onclick,
+    ) {
+        Row(
             modifier = Modifier
+                .padding(start = 8.dp, top = 8.dp, end = 8.dp)
                 .fillMaxWidth(),
-            onClick = onclick,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .padding(start = 8.dp, top = 8.dp, end = 8.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = imageVector,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 3.dp)
-                )
+            Icon(
+                imageVector = imageVector,
+                contentDescription = null,
+                modifier = Modifier.padding(end = 3.dp)
+            )
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleMedium
+            )
+            if (rightText != null) {
                 Text(
-                    text = text,
-                    style = MaterialTheme.typography.titleMedium
+                    text = rightText,
+                    textAlign = TextAlign.Right,
+                    color = Color.Gray,
+                    modifier = Modifier.fillMaxWidth()
                 )
-                if (rightText != null) {
-                    Text(
-                        text = rightText,
-                        textAlign = TextAlign.Right,
-                        color = Color.Gray,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(),
-                contentAlignment = Alignment.Center
-            ) {
-                content()
             }
         }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(),
+            contentAlignment = Alignment.Center
+        ) {
+            content()
+        }
+    }
 }
 
 @Composable
@@ -86,9 +87,16 @@ fun PersonFunctionCardItem(
     painterResource: Int,
     onClick: () -> Unit
 ) {
-    Card(onClick = onClick, modifier = modifier) {
+    Card(
+        modifier = modifier.clickable { onClick() },
+        colors = CardDefaults.cardColors(
+            Color.Transparent
+        ),
+        onClick = { onClick() }
+    ) {
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             Column(

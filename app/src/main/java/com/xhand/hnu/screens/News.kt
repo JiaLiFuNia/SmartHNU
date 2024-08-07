@@ -26,7 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -190,7 +190,6 @@ fun NewsScreen(
         if (newsViewModel.searchText != "" && newsViewModel.searchBarExpand) {
             newsViewModel.isSearching = true
             newsViewModel.searchRes(newsViewModel.searchText)
-            newsViewModel.isSearching = false
         }
     }
     // 获取SystemUiController
@@ -230,9 +229,9 @@ fun NewsScreen(
                                 )
                             }
                         else
-                            IconButton(onClick = { showBottomSheet.value = true }) {
+                            IconButton(onClick = { /*showBottomSheet.value = true*/ }) {
                                 Icon(
-                                    Icons.Default.Menu,
+                                    Icons.Default.Search,
                                     contentDescription = "其他"
                                 )
                             }
@@ -327,7 +326,9 @@ fun NewsScreen(
                                     textAlign = TextAlign.Left
                                 )
                                 TextButton(
-                                    onClick = { newsViewModel.clearHistoryList() },
+                                    onClick = {
+                                        newsViewModel.clearHistoryList()
+                                    },
                                     enabled = newsViewModel.searchHistory.isNotEmpty()
                                 ) {
                                     Text(

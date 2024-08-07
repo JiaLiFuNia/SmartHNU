@@ -5,7 +5,6 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,11 +18,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -309,7 +308,7 @@ fun PersonScreen(
                 Spacer(modifier = Modifier.height(15.dp))
                 ElevatedCard(
                     elevation = CardDefaults.cardElevation(
-                        defaultElevation = 6.dp
+                        defaultElevation = 3.dp
                     ),
                     onClick = {
                         if (userInfo == null) {
@@ -358,46 +357,39 @@ fun PersonScreen(
                     )
                 }
                 Spacer(modifier = Modifier.height(14.dp))
-                PersonCardItem(
-                    onclick = { },
-                    text = "快捷方式",
-                    rightText = null,
-                    imageVector = Icons.Default.Home,
-                    content = {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier
-                                .padding(8.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                otherCards.forEach { functionCard ->
-                                    PersonFunctionCardItem(
-                                        modifier = Modifier
-                                            .weight(0.2f),
-                                        title = functionCard.title,
-                                        painterResource = functionCard.painterResource,
-                                        onClick = {
-                                            if (userInfo == null) {
-                                                viewModel.isShowDialog = true
-                                                Toast.makeText(
-                                                    context,
-                                                    "请先登录",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            } else {
-                                                navController.navigate(functionCard.route)
-                                            }
-                                        }
-                                    )
+                Card(
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 3.dp
+                    ),
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(bottom = 8.dp, top = 16.dp)
+                    ) {
+                        otherCards.forEach { functionCard ->
+                            PersonFunctionCardItem(
+                                modifier = Modifier
+                                    .weight(0.2f),
+                                title = functionCard.title,
+                                painterResource = functionCard.painterResource,
+                                onClick = {
+                                    if (userInfo == null) {
+                                        viewModel.isShowDialog = true
+                                        Toast.makeText(
+                                            context,
+                                            "请先登录",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        navController.navigate(functionCard.route)
+                                    }
                                 }
-                            }
+                            )
                         }
-
                     }
-                )
+                }
                 Spacer(modifier = Modifier.height(14.dp))
                 val currentDate = LocalDate.now()
                 val dayOfMonth = currentDate.dayOfMonth

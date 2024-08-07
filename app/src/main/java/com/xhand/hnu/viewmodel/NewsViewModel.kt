@@ -109,10 +109,10 @@ class NewsViewModel(context: Context) : ViewModel() {
             val res = detailService.getNewsDetail(article.url)
             delay(500)
             htmlParsing = preProcessNewsDetail(res.body()?.string() ?: "")
-            Log.i("TAG666", htmlParsing)
+            Log.i("TAG666", "htmlParsing $htmlParsing")
             isDetailLoading = false
         } catch (e: Exception) {
-            Log.i("TAG666", "$e")
+            Log.i("TAG666", "detailService: $e")
         }
     }
 
@@ -161,16 +161,15 @@ class NewsViewModel(context: Context) : ViewModel() {
             try {
                 val searchRes = searchService.pushPost(searchKeyEncode)
                 searchList.addAll(getNewsList(searchRes.body()?.data, "搜索", 2))
-                Log.i("TAG666", "$searchList")
-
+                Log.i("TAG666", "searchList $searchList")
             } catch (e: Exception) {
-                Log.i("TAG666", "$e")
+                Log.i("TAG666", "searchRes: $e")
             }
         }
+        isSearching = false
         if (searchList.isNotEmpty()) {
-            if (content in searchHistory)
-                null
-            else {
+            if (content !in searchHistory) {
+                Log.i("TAG666", "searchHistory $searchHistory")
                 searchHistory.add(content)
                 viewModelScope.launch {
                     dataManager.saveHistoryList(searchHistory)

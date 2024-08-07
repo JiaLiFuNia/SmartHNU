@@ -31,6 +31,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.xhand.hnu.components.BookBottomSheet
 import com.xhand.hnu.components.BookSelectBottomSheet
@@ -121,38 +122,23 @@ fun ChooseBookScreen(
                     modifier = Modifier
                         .verticalScroll(scrollState)
                 ) {
-                    /*TextButton(
-                        onClick = {  },
-                        colors = ButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
-                            disabledContentColor = MaterialTheme.colorScheme.onSurface,
-                            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer
-                        )
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(text = viewModel.longToShort(xnxqdm))
-                            Icon(
-                                imageVector = Icons.Default.ArrowDropDown,
-                                contentDescription = "下拉"
+                    if (viewModel.booksList.isEmpty())
+                        Text(text = "没有教材", color = Color.Gray)
+                    else {
+                        viewModel.booksList.sortedBy { it.kcdlmc }
+                        viewModel.booksList.forEach { book ->
+                            BooksListItem(
+                                book = book,
+                                modifier = Modifier.clickable {
+                                    kcrwdm = book.kcrwdm
+                                    xnxqdm = viewModel.longToShort(book.xnxqmc)
+                                    kcmc = book.kcmc
+                                    viewModel.showBookAlert = true
+                                }
                             )
                         }
-                    }*/
-                    viewModel.booksList.sortedBy { it.kcdlmc }
-                    viewModel.booksList.forEach { book ->
-                        BooksListItem(
-                            book = book,
-                            modifier = Modifier.clickable {
-                                kcrwdm = book.kcrwdm
-                                xnxqdm = viewModel.longToShort(book.xnxqmc)
-                                kcmc = book.kcmc
-                                viewModel.showBookAlert = true
-                            }
-                        )
                     }
+
                 }
             }
         }
