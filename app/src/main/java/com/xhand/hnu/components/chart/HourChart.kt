@@ -16,8 +16,8 @@ import com.xhand.hnu.model.entity.HourListEntity
 @Composable
 fun HourChart(hourLists: List<HourListEntity>) {
     val modelProducer = remember { CartesianChartModelProducer() }
-    val hourList: List<Number> = hourLists.map { it.total }
-    val xLabel = hourLists.map { it.term }
+    val hourList: List<Number> = hourLists.map { it.value }
+    val xLabel = hourLists.map { it.name.substring(it.name.length - 2, it.name.length) }
     LaunchedEffect(Unit) {
         modelProducer.runTransaction {
             columnSeries {

@@ -93,7 +93,7 @@ dependencies {
     // datastore
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
-    val chartVersion = "2.0.0-alpha.26"
+    val chartVersion = "2.0.0-alpha.27"
     // Chart
     // For Jetpack Compose.
     implementation("com.patrykandpatrick.vico:compose:$chartVersion")
@@ -111,6 +111,5 @@ dependencies {
 
     implementation("com.github.jeziellago:compose-markdown:0.5.2")
 
-    implementation("androidx.core:core-splashscreen:1.1.0-rc01")
-
+    // implementation("io.github.ehsannarmani:compose-charts:0.0.13")
 }

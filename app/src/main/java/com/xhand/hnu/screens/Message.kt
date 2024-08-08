@@ -2,6 +2,7 @@ package com.xhand.hnu.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -28,6 +29,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
@@ -111,22 +113,31 @@ fun MessageScreen(
                 .padding(paddingValues = it),
             contentAlignment = Alignment.TopStart
         ) {
-            Column(
-                modifier = Modifier
-                    .verticalScroll(scrollState)
-            ) {
-                messageDetails.forEach { messageDetail ->
-                    MessageListItem(
-                        messageDetail = messageDetail,
-                        modifier = Modifier.clickable {
-                            viewModel.showMessageDetail = true
-                            aMessageDetail = messageDetail
-                            if (messageDetail.type == "cycjtz" || messageDetail.type == "cjtz")
-                                navController.navigate("grade_screen")
-                        },
-                        viewModel = viewModel
+            if (messageDetails.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "没有信息",
+                        color = Color.Gray
                     )
-                    HorizontalDivider()
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(scrollState)
+                ) {
+                    messageDetails.forEach { messageDetail ->
+                        MessageListItem(
+                            messageDetail = messageDetail,
+                            modifier = Modifier.clickable {
+                                viewModel.showMessageDetail = true
+                                aMessageDetail = messageDetail
+                                if (messageDetail.type == "cycjtz" || messageDetail.type == "cjtz")
+                                    navController.navigate("grade_screen")
+                            },
+                            viewModel = viewModel
+                        )
+                        HorizontalDivider()
+                    }
                 }
             }
         }

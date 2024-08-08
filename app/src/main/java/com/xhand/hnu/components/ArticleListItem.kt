@@ -36,7 +36,16 @@ fun ArticleListItem(
         },
         supportingContent = {
             Text(
-                text = if (article.time == "") "" else timeSwitch(dateString = article.time),
+                text =
+                if (article.time == "")
+                    ""
+                else {
+                    if (article.time.first() == '目')
+                        article.time
+                    else timeSwitch(
+                        dateString = article.time
+                    )
+                },
                 color = Color.Gray,
                 modifier = Modifier.placeholder(
                     visible = loaded,

@@ -327,9 +327,12 @@ fun NewsScreen(
                                 )
                                 TextButton(
                                     onClick = {
+                                        newsViewModel.searchHistory.clear()
                                         newsViewModel.clearHistoryList()
                                     },
-                                    enabled = newsViewModel.searchHistory.isNotEmpty()
+                                    enabled = newsViewModel.searchHistory.isNotEmpty(),
+                                    modifier = Modifier
+                                        .padding(end = 10.dp),
                                 ) {
                                     Text(
                                         text = "全部清除",

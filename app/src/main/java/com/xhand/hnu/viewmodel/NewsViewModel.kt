@@ -58,6 +58,7 @@ class NewsViewModel(context: Context) : ViewModel() {
     var searchList by mutableStateOf(
         mutableListOf<ArticleListEntity>()
     )
+    var searchListTotal by mutableStateOf("")
 
     var searchHistory by mutableStateOf(
         mutableListOf<String>()
@@ -154,19 +155,22 @@ class NewsViewModel(context: Context) : ViewModel() {
     // 搜索列表请求
     suspend fun searchRes(content: String) {
         searchList.clear()
-        for (i in 1..sliderPosition.toInt()) {
-            val searchKeys =
-                """[{"field":"pageIndex","value":1},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$content"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
-            val searchKeyEncode = Base64.encodeToString(searchKeys.toByteArray(), 0)
-            try {
+        try {
+            for (i in 1..sliderPosition.toInt()) {
+                val searchKeys =
+                    """[{"field":"pageIndex","value":$i},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$content"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
+                val searchKeyEncode = Base64.encodeToString(searchKeys.toByteArray(), 0)
                 val searchRes = searchService.pushPost(searchKeyEncode)
                 searchList.addAll(getNewsList(searchRes.body()?.data, "搜索", 2))
                 Log.i("TAG666", "searchList $searchList")
-            } catch (e: Exception) {
-                Log.i("TAG666", "searchRes: $e")
+                if (searchList.isEmpty() || searchList.size < 10)
+                    break
+                searchListTotal = searchRes.body()?.total ?: ""
             }
+            isSearching = false
+        } catch (e: Exception) {
+            Log.i("TAG666", "searchRes: $e")
         }
-        isSearching = false
         if (searchList.isNotEmpty()) {
             if (content !in searchHistory) {
                 Log.i("TAG666", "searchHistory $searchHistory")

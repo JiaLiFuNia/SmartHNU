@@ -23,7 +23,7 @@ fun GradeListItem(
         },
         supportingContent = {
             Text(
-                text = "成绩  ${grade.zcjfs}"
+                text = "成绩  ${grade.zcjfs} | ${grade.cjjd}"
             )
         },
         trailingContent = {

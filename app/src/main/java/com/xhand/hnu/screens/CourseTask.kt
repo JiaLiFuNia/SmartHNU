@@ -30,6 +30,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.xhand.hnu.components.TaskBottomSheet
 import com.xhand.hnu.components.TaskCourseListItem
@@ -110,12 +111,21 @@ fun CourseTaskScreen(
                     .padding(paddingValues = it),
                 contentAlignment = Alignment.TopStart
             ) {
-                Column(
-                    modifier = Modifier
-                        .verticalScroll(scrollState)
-                ) {
-                    viewModel.taskList.forEach { task ->
-                        TaskCourseListItem(task = task)
+                if (viewModel.taskList.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "暂无上课任务",
+                            color = Color.Gray
+                        )
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .verticalScroll(scrollState)
+                    ) {
+                        viewModel.taskList.forEach { task ->
+                            TaskCourseListItem(task = task)
+                        }
                     }
                 }
             }

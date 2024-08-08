@@ -377,11 +377,6 @@ fun PersonScreen(
                                 onClick = {
                                     if (userInfo == null) {
                                         viewModel.isShowDialog = true
-                                        Toast.makeText(
-                                            context,
-                                            "请先登录",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
                                     } else {
                                         navController.navigate(functionCard.route)
                                     }
@@ -434,12 +429,6 @@ fun PersonScreen(
                                                 onClick = {
                                                     if (userInfo == null) {
                                                         viewModel.isShowDialog = true
-                                                        Toast.makeText(
-                                                            context,
-                                                            "请先登录",
-                                                            Toast.LENGTH_SHORT
-                                                        )
-                                                            .show()
                                                     } else {
                                                         /*checkboxes[0].route?.let {
                                                             navController.navigate(
@@ -478,7 +467,6 @@ fun PersonScreen(
                     onclick = {
                         if (userInfo == null) {
                             viewModel.isShowDialog = true
-                            Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
                         } else {
                             checkboxes[1].route?.let { navController.navigate(it) }
                         }
@@ -490,7 +478,7 @@ fun PersonScreen(
                         Box(
                             modifier = Modifier
                                 .height(200.dp)
-                                .padding(10.dp)
+                                .padding(start = 10.dp, bottom = 10.dp, end = 10.dp)
                                 .fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
@@ -518,10 +506,10 @@ fun PersonScreen(
                 PersonCardItem(
                     onclick = {
                         if (viewModel.stateCode != 1) {
-                            Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
                             viewModel.isShowScDialog = true
                         }
                     },
+                    rightText = "合计：${(viewModel.scHourList.map { it.value }).sum()}",
                     text = checkboxes[2].text,
                     imageVector = checkboxes[2].imageVector,
                     content = {

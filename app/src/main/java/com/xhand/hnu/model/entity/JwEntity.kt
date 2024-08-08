@@ -371,11 +371,6 @@ data class HadBookDetailEntity(
 )
 
 data class Yxjcdata (
-    val ssmc: String,
-    val zkbl: Double,
-    val rownum: Int,
-    val hasfile: Int,
-    val isfs: String,
     val isbn: String,
     val xsxm: String,
     val pcdm: String,

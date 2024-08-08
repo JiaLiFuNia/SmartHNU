@@ -118,13 +118,18 @@ fun ChooseBookScreen(
                     .padding(paddingValues = it),
                 contentAlignment = Alignment.TopStart
             ) {
-                Column(
-                    modifier = Modifier
-                        .verticalScroll(scrollState)
-                ) {
-                    if (viewModel.booksList.isEmpty())
-                        Text(text = "没有教材", color = Color.Gray)
-                    else {
+                if (viewModel.booksList.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "没有教材",
+                            color = Color.Gray
+                        )
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .verticalScroll(scrollState)
+                    ) {
                         viewModel.booksList.sortedBy { it.kcdlmc }
                         viewModel.booksList.forEach { book ->
                             BooksListItem(
@@ -138,7 +143,6 @@ fun ChooseBookScreen(
                             )
                         }
                     }
-
                 }
             }
         }

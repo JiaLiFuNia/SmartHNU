@@ -1,7 +1,6 @@
 package com.xhand.hnu.screens
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,8 +31,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import com.xhand.hnu.components.BookSelectBottomSheet
 import com.xhand.hnu.components.TeacherBottomSheet
 import com.xhand.hnu.components.TeacherListItem
 import com.xhand.hnu.viewmodel.SettingsViewModel
@@ -117,17 +116,25 @@ fun TeacherScreen(
                     .padding(paddingValues = it),
                 contentAlignment = Alignment.TopStart
             ) {
-                Column(
-                    modifier = Modifier
-                        .verticalScroll(scrollState)
-                ) {
-                    Log.i("TAG6657", viewModel.teacherList.toString())
-                    teacherList.sortBy { it.wjkkp }
-                    teacherList.sortBy { it.kcmc.first() }
-                    teacherList.forEach { teacherItem ->
-                        TeacherListItem(
-                            teacherItem = teacherItem,
-                            modifier = Modifier.clickable { })
+                if (teacherList.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "没有评价科目",
+                            color = Color.Gray
+                        )
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .verticalScroll(scrollState)
+                    ) {
+                        teacherList.sortBy { it.wjkkp }
+                        teacherList.sortBy { it.kcmc.first() }
+                        teacherList.forEach { teacherItem ->
+                            TeacherListItem(
+                                teacherItem = teacherItem,
+                                modifier = Modifier.clickable { })
+                        }
                     }
                 }
             }

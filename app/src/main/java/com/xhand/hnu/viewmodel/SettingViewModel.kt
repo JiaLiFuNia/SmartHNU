@@ -50,7 +50,6 @@ import com.xhand.hnu.model.entity.teacherPost
 import com.xhand.hnu.network.GradeService
 import com.xhand.hnu.network.GuideService
 import com.xhand.hnu.network.LoginService
-import com.xhand.hnu.network.NewsDetailService
 import com.xhand.hnu.network.ScheduleService
 import com.xhand.hnu.network.SecondClassService
 import com.xhand.hnu.network.UpdateService
@@ -216,11 +215,6 @@ class SettingsViewModel(context: Context) : ViewModel() {
     var teacherList by mutableStateOf(mutableListOf<AllPjxxList>())
     var jdList = mutableListOf<JDList>()
 
-    // 是否正在刷新
-
-    // 网页源码请求
-    var htmlParsing by mutableStateOf("")
-
     // 学号 年级
     private val grade: String
         get() {
@@ -265,7 +259,6 @@ class SettingsViewModel(context: Context) : ViewModel() {
     private val gradeService = GradeService.instance()
     private val loginService = LoginService.instance()
     private val updateService = UpdateService.instance()
-    private val detailService = NewsDetailService.instance()
     private val todayScheduleService = ScheduleService.instance()
     // private val holidayService = HolidayService.instance()
 
@@ -457,7 +450,6 @@ class SettingsViewModel(context: Context) : ViewModel() {
             Log.i("TAG666", "$e")
         }
     }
-
 
     fun readMessage(xxids: String) = viewModelScope.launch {
         try {

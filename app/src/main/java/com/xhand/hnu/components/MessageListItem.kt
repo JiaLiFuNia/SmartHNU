@@ -141,6 +141,7 @@ fun AllMessageRead(viewModel: SettingsViewModel) {
             confirmButton = {
                 TextButton(
                     onClick = {
+                        viewModel.readMessage(viewModel.hasMessage.joinToString(",") { it.xxid })
                         viewModel.showHaveReadAlert = false
                     }
                 ) {

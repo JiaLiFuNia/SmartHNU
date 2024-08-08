@@ -26,7 +26,7 @@ interface SecondClassService {
         @Field("verifycode") verifycode: String,
     ): Response<ResponseBody>
 
-    @GET("/sys/stu/dataanalysis/semesterintegraltrendlist")
+    @GET("/sys/stu/dataanalysis/plate")
     suspend fun getHourList(
         @Header("Cookie") cookie: String
     ): HourEntity

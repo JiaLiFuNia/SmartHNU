@@ -1,7 +1,5 @@
 package com.xhand.hnu.screens
 
-import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -29,7 +27,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,8 +52,8 @@ import com.xhand.hnu.components.ShowLoginDialog
 import com.xhand.hnu.components.SwitchListItem
 import com.xhand.hnu.components.UpdateDialog
 import com.xhand.hnu.model.entity.DarkMode
+import com.xhand.hnu.model.viewWebsite
 import com.xhand.hnu.viewmodel.SettingsViewModel
-import kotlinx.coroutines.coroutineScope
 
 fun DarkMode.toStringResourceId(): String {
     return when (this) {
@@ -215,12 +213,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 supportingText = "Copyright 2023-2024 Xhand Version${currentVersion}",
                 leadingImageVector = R.drawable.ic_outline_article,
                 onClick = {
-                    Intent(Intent.ACTION_VIEW).also {
-                        it.data = Uri.parse("https://github.com/JiaLiFuNia/SmartHNU")
-                        if (it.resolveActivity(context.packageManager) != null) {
-                            context.startActivity(it)
-                        }
-                    }
+                    viewWebsite("https://github.com/JiaLiFuNia/SmartHNU", context)
                 }
             )
             BasicListItem(
@@ -248,12 +241,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 supportingText = "Xhand",
                 leadingImageVector = R.drawable.ic_outline_person,
                 onClick = {
-                    Intent(Intent.ACTION_VIEW).also {
-                        it.data = Uri.parse("https://xhand.fun")
-                        if (it.resolveActivity(context.packageManager) != null) {
-                            context.startActivity(it)
-                        }
-                    }
+                    viewWebsite("https://xhand.fun", context)
                 }
             )
             BasicListItem(
@@ -263,6 +251,31 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 onClick = {
                     viewModel.copyText(cbManager, "2695520089@qq.com")
                     Toast.makeText(context, "已复制邮件地址", Toast.LENGTH_SHORT).show()
+                }
+            )
+            BasicListItem(leadingText = "友情链接")
+            BasicListItem(
+                headlineText = "河南师范大学",
+                supportingText = "河南师范大学官网",
+                leadingPainter = painterResource(id = R.drawable.hnu),
+                onClick = {
+                    viewWebsite("https://www.htu.edu.cn/", context)
+                }
+            )
+            BasicListItem(
+                headlineText = "教务系统",
+                supportingText = "河南师范大学教务管理系统",
+                leadingPainter = painterResource(id = R.drawable.jwc),
+                onClick = {
+                    viewWebsite("https://jwc.htu.edu.cn/", context)
+                }
+            )
+            BasicListItem(
+                headlineText = "Hack HTU",
+                supportingText = "河南师范大学工具站",
+                leadingPainter = painterResource(id = R.drawable.hack_htu),
+                onClick = {
+                    viewWebsite("https://hackhtu.pages.dev/", context)
                 }
             )
         }

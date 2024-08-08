@@ -121,7 +121,6 @@ fun GradeScreen(
         }
     }
     LaunchedEffect(Unit) {
-        viewModel.isGettingGrade = true
         viewModel.gradeService()
         delay(500)
         viewModel.isGettingGrade = false
@@ -185,7 +184,7 @@ fun GradeScreen(
                 ) {
                     val matchedElements = checkboxes.filter { it.isChecked }
                     Log.i("TAG62", matchedElements.toString())
-                    gradeList.sortBy {
+                    gradeList.sortByDescending {
                         when (selectedIndex) {
                             0 -> it.order.toString()
                             1 -> it.zcjfs.toString()

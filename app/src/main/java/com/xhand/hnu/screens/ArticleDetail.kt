@@ -2,7 +2,6 @@ package com.xhand.hnu.screens
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -30,7 +29,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,8 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -52,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.xhand.hnu.R
 import com.xhand.hnu.model.entity.DarkMode
+import com.xhand.hnu.model.viewWebsite
 import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
 import net.dankito.readability4j.Article
@@ -171,12 +168,7 @@ fun ArticleDetailScreen(
                             DropdownMenuItem(
                                 text = { Text(text = "使用外部浏览器") },
                                 onClick = {
-                                    Intent(Intent.ACTION_VIEW).also {
-                                        it.data = Uri.parse(newsViewModel.article.url)
-                                        if (it.resolveActivity(context.packageManager) != null) {
-                                            context.startActivity(it)
-                                        }
-                                    }
+                                    viewWebsite(newsViewModel.article.url, context)
                                 },
                                 leadingIcon = {
                                     Icon(

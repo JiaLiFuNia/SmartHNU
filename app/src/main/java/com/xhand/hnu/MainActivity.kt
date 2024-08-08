@@ -39,7 +39,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.xhand.hnu.components.UpdateDialog
 import com.xhand.hnu.model.NetworkConnectionState
 import com.xhand.hnu.model.rememberConnectivityState
@@ -67,7 +66,6 @@ data class BottomNavigationItem(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        installSplashScreen()
         setContent {
             val connectionState by rememberConnectivityState()
 
@@ -196,7 +194,7 @@ fun NetworkScreen() {
             Icon(imageVector = rememberWifiOff(), contentDescription = null)
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "无网络链接",
+                text = "无网络连接",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )

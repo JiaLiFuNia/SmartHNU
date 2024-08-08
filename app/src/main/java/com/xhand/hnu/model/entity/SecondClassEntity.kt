@@ -10,6 +10,6 @@ data class SecondClassInfo (
 typealias HourEntity = List<HourListEntity>
 
 data class HourListEntity (
-    val total: Long,
-    val term: String
+    val value: Long,
+    val name: String
 )
