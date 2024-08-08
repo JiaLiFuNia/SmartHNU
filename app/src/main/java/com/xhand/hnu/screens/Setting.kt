@@ -238,7 +238,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
             )
             BasicListItem(
                 headlineText = "开发人员",
-                supportingText = "Xhand",
+                supportingText = "JiaLiFuNia",
                 leadingImageVector = R.drawable.ic_outline_person,
                 onClick = {
                     viewWebsite("https://xhand.fun", context)
@@ -257,7 +257,8 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
             BasicListItem(
                 headlineText = "河南师范大学",
                 supportingText = "河南师范大学官网",
-                leadingPainter = painterResource(id = R.drawable.hnu),
+                leadingImageVector = R.drawable.hnu,
+                leadingImageVectorModifier = Modifier.size(28.dp),
                 onClick = {
                     viewWebsite("https://www.htu.edu.cn/", context)
                 }
@@ -265,7 +266,8 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
             BasicListItem(
                 headlineText = "教务系统",
                 supportingText = "河南师范大学教务管理系统",
-                leadingPainter = painterResource(id = R.drawable.jwc),
+                leadingImageVector = R.drawable.jwc,
+                leadingImageVectorModifier = Modifier.size(28.dp),
                 onClick = {
                     viewWebsite("https://jwc.htu.edu.cn/", context)
                 }
@@ -273,7 +275,8 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
             BasicListItem(
                 headlineText = "Hack HTU",
                 supportingText = "河南师范大学工具站",
-                leadingPainter = painterResource(id = R.drawable.hack_htu),
+                leadingImageVector =  R.drawable.hack_htu,
+                leadingImageVectorModifier = Modifier.size(28.dp),
                 onClick = {
                     viewWebsite("https://hackhtu.pages.dev/", context)
                 }

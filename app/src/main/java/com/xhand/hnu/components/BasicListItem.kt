@@ -21,6 +21,7 @@ fun BasicListItem(
     headlineText: String? = null,
     supportingText: String? = null,
     leadingImageVector: Int? = null,
+    leadingImageVectorModifier: Modifier = Modifier,
     leadingPainter: Painter? = null,
     leadingContent: @Composable() (() -> Unit)? = null,
     leadingText: String? = null,
@@ -51,7 +52,7 @@ fun BasicListItem(
                     style = MaterialTheme.typography.titleSmall
                 )
             } else if (leadingImageVector != null) {
-                Icon(painterResource(id = leadingImageVector), contentDescription = null)
+                Icon(painterResource(id = leadingImageVector), contentDescription = null, modifier = leadingImageVectorModifier)
             } else if (leadingPainter != null) {
                 Image(
                     painter = leadingPainter, contentDescription = null, modifier = Modifier
