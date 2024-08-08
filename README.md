@@ -36,7 +36,7 @@
 
 ## 界面预览
 
-!["Screen"](/img/ScreenShot.png)
+
 
 ## 下载链接
 
