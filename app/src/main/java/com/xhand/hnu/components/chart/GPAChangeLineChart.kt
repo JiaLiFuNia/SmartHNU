@@ -25,7 +25,6 @@ import com.xhand.hnu.model.entity.JDList
 import com.xhand.hnu.viewmodel.GradeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import rememberMarker
 
 @Composable
 fun GPAChangeLineChart(jdLists: List<JDList>, gradeViewModel: GradeViewModel) {

@@ -1,3 +1,5 @@
+package com.xhand.hnu.components.chart
+
 import android.annotation.SuppressLint
 import android.text.Layout
 import androidx.compose.material3.MaterialTheme
