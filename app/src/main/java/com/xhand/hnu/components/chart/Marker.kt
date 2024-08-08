@@ -1,5 +1,3 @@
-package com.xhand.hnu.components.chart
-
 import android.text.Layout
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
