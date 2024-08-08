@@ -1,3 +1,4 @@
+import android.annotation.SuppressLint
 import android.text.Layout
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -67,6 +68,7 @@ internal fun rememberMarker(
     )
   val guideline = rememberAxisGuidelineComponent()
   return remember(label, labelPosition, indicator, showIndicator, guideline) {
+    @SuppressLint("RestrictedApi")
     object :
       DefaultCartesianMarker(
         label = label,
