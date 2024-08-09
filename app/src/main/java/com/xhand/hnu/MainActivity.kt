@@ -108,8 +108,11 @@ class MainActivity : ComponentActivity() {
                         )
                     )
                     var selectedItemIndex by rememberSaveable {
-                        mutableIntStateOf(0)
+                        mutableIntStateOf(1)
                     }
+                    if (viewModel.isLoginSuccess)
+                        selectedItemIndex = 0
+
                     if (isConnected) {
                         Surface(
                             modifier = Modifier.fillMaxSize()

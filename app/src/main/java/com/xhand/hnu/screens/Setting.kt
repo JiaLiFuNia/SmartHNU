@@ -160,14 +160,14 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                             modifier = Modifier
                                 .size(15.dp)
                                 .clip(CircleShape)
-                                .background(if (viewModel.isLoginSuccess) colorScheme.primaryContainer else Color.LightGray)
+                                .background(if (viewModel.isLoginSuccess) colorScheme.primaryContainer else Color.Gray)
                         ) { }
                         Spacer(modifier = Modifier.size(10.dp))
                         Box(
                             modifier = Modifier
                                 .size(15.dp)
                                 .clip(CircleShape)
-                                .background(if (viewModel.stateCode == 1) colorScheme.primaryContainer else Color.LightGray)
+                                .background(if (viewModel.stateCode == 1) colorScheme.primaryContainer else Color.Gray)
                         ) { }
                     }
                 }
@@ -210,7 +210,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
             val currentVersion = stringResource(R.string.version)
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Copyright 2023-2024 Xhand Version${currentVersion}",
+                supportingText = "Version: Release-${currentVersion}",
                 leadingImageVector = R.drawable.ic_outline_article,
                 onClick = {
                     viewWebsite("https://github.com/JiaLiFuNia/SmartHNU", context)
@@ -241,7 +241,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 supportingText = "JiaLiFuNia",
                 leadingImageVector = R.drawable.ic_outline_person,
                 onClick = {
-                    viewWebsite("https://xhand.fun", context)
+                    viewWebsite("https://github.com/JiaLiFuNia", context)
                 }
             )
             BasicListItem(
@@ -249,18 +249,18 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 supportingText = "发送邮件提供你的意见及建议",
                 leadingImageVector = R.drawable.ic_outline_chat,
                 onClick = {
-                    viewModel.copyText(cbManager, "2695520089@qq.com")
+                    viewModel.copyText(cbManager, "smarthnu@proton.me")
                     Toast.makeText(context, "已复制邮件地址", Toast.LENGTH_SHORT).show()
                 }
             )
-            BasicListItem(leadingText = "友情链接")
+            BasicListItem(leadingText = "其他")
             BasicListItem(
                 headlineText = "河南师范大学",
                 supportingText = "河南师范大学官网",
                 leadingImageVector = R.drawable.hnu,
                 leadingImageVectorModifier = Modifier.size(28.dp),
                 onClick = {
-                    viewWebsite("https://www.htu.edu.cn/", context)
+                    viewWebsite("https://www.htu.edu.cn", context)
                 }
             )
             BasicListItem(
@@ -269,7 +269,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 leadingImageVector = R.drawable.jwc,
                 leadingImageVectorModifier = Modifier.size(28.dp),
                 onClick = {
-                    viewWebsite("https://jwc.htu.edu.cn/", context)
+                    viewWebsite("https://jwc.htu.edu.cn", context)
                 }
             )
             BasicListItem(
@@ -278,7 +278,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 leadingImageVector =  R.drawable.hack_htu,
                 leadingImageVectorModifier = Modifier.size(28.dp),
                 onClick = {
-                    viewWebsite("https://hackhtu.pages.dev/", context)
+                    viewWebsite("https://hackhtu.pages.dev", context)
                 }
             )
         }

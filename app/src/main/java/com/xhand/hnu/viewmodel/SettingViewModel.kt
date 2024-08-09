@@ -311,10 +311,9 @@ class SettingsViewModel(context: Context) : ViewModel() {
             res = gradeService.checkToken(token)
         }
         if (res != null) {
-            if (res.code != 200) {
-                if (password.isNotEmpty() and username.isNotEmpty()) {
-                    login()
-                }
+            if (res.code != 200 && password.isNotEmpty() && username.isNotEmpty()) {
+                loginCode = 0
+                login()
             }
         }
     }
