@@ -3,6 +3,7 @@ package com.xhand.hnu
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -81,6 +82,7 @@ class MainActivity : ComponentActivity() {
                 val currentVersion = stringResource(id = R.string.version)
                 LaunchedEffect(Unit) {
                     viewModel.updateService(currentVersion)
+                    viewModel.noticeService()
                     if (viewModel.ifNeedUpdate)
                         viewModel.isShowUpdateDialog = true
                 }
@@ -110,9 +112,6 @@ class MainActivity : ComponentActivity() {
                     var selectedItemIndex by rememberSaveable {
                         mutableIntStateOf(1)
                     }
-                    if (viewModel.isLoginSuccess)
-                        selectedItemIndex = 0
-
                     if (isConnected) {
                         Surface(
                             modifier = Modifier.fillMaxSize()

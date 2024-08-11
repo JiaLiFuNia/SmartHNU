@@ -2,7 +2,13 @@ package com.xhand.hnu.screens
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -10,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,7 +25,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -50,6 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -69,6 +76,8 @@ import com.xhand.hnu.components.ShowLoginDialog
 import com.xhand.hnu.components.ShowSecondClassLoginDialog
 import com.xhand.hnu.components.chart.GPAChangeLineChart
 import com.xhand.hnu.components.chart.HourChart
+import com.xhand.hnu.components.generateQRCode
+import com.xhand.hnu.ui.icon.rememberQrCode
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import com.xhand.hnu.viewmodel.CourseTaskViewModel
 import com.xhand.hnu.viewmodel.GradeViewModel
@@ -197,6 +206,13 @@ fun PersonScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val schedule = viewModel.todaySchedule
     val hasMessage = viewModel.hasMessage
+
+    var ifShowExpandCard by remember { mutableStateOf(false) }
+    val subArrowRotateDegrees: Float by animateFloatAsState(
+        if (ifShowExpandCard) 180f else 0f,
+        label = ""
+    )
+
     LaunchedEffect(viewModel.isLoginSuccess) {
         viewModel.checkToken()
         if (viewModel.isLoginSuccess) {
@@ -343,18 +359,35 @@ fun PersonScreen(
                                     color = Color.Gray
                                 )
                         },
-                        trailingContent = {
-                            IconButton(onClick = { /*TODO*/ }) {
+                        /*trailingContent = {
+                            IconButton(onClick = { ifShowExpandCard = !ifShowExpandCard }) {
                                 Icon(
-                                    imageVector = Icons.Default.KeyboardArrowDown,
-                                    contentDescription = null
+                                    imageVector = rememberQrCode(),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp),
                                 )
                             }
-                        },
+                        },*/
                         colors = ListItemDefaults.colors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer
                         )
                     )
+                    /*AnimatedVisibility(
+                        visible = ifShowExpandCard,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            val bitmap = generateQRCode(userInfo.toString(), 600)
+                            Image(
+                                bitmap = bitmap.asImageBitmap(),
+                                contentDescription = "QR Code"
+                            )
+                        }
+                    }*/
                 }
                 Spacer(modifier = Modifier.height(14.dp))
                 Card(
@@ -507,6 +540,8 @@ fun PersonScreen(
                     onclick = {
                         if (viewModel.stateCode != 1) {
                             viewModel.isShowScDialog = true
+                        } else {
+                            checkboxes[2].route?.let { navController.navigate(it) }
                         }
                     },
                     rightText = "合计：${(viewModel.scHourList.map { it.value }).sum()}",

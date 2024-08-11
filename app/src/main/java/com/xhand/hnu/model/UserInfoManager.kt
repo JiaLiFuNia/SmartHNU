@@ -26,7 +26,7 @@ class UserInfoManager(private val context: Context) {
         val SCUSERINFO = stringPreferencesKey("SCUSERINFO")
         val LOGINFO = stringPreferencesKey("LOGINFO")
         val SCHOURS = stringPreferencesKey("SCHOURS")
-        val UI = booleanPreferencesKey("UI")
+        val HISTORY_NOTICE = stringPreferencesKey("HISTORY_NOTICE")
     }
 
     private val gson = Gson()
@@ -53,6 +53,8 @@ class UserInfoManager(private val context: Context) {
         gson.fromJson(json, type)
     }
 
+    val historyNotice: Flow<String> = context.userStore.data.map { it[HISTORY_NOTICE] ?: "" }
+
     suspend fun saveScHours(scHours: List<HourListEntity>) {
         context.userStore.edit {
             it[SCHOURS] = gson.toJson(scHours)
@@ -70,6 +72,12 @@ class UserInfoManager(private val context: Context) {
             it[LOGGED] = loginCode
             it[USERINFO] = gson.toJson(userInfo)
             it[LOGINFO] = gson.toJson(logInfo)
+        }
+    }
+
+    suspend fun saveHistoryNotice(notice: String) {
+        context.userStore.edit {
+            it[HISTORY_NOTICE] = notice
         }
     }
 

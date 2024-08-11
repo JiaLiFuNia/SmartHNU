@@ -4,9 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -72,6 +72,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
             val logInfo = userInfoManager.logInfo.firstOrNull()
             val scUserInfo = userInfoManager.scUserInfo.firstOrNull()
             val scHourLists = userInfoManager.scHours.firstOrNull()
+            historyNotice = userInfoManager.historyNotice.firstOrNull().toString()
             if (scHourLists != null) {
                 if (scHourLists.isNotEmpty()) {
                     scHourList = scHourLists
@@ -97,20 +98,20 @@ class SettingsViewModel(context: Context) : ViewModel() {
         ToggleableInfo(
             isChecked = true,
             text = "今日课程",
-            imageVector = Icons.Default.DateRange,
+            imageVector = Icons.Outlined.DateRange,
             route = "schedule_screen"
         ),
         ToggleableInfo(
             isChecked = true,
             text = "课程成绩",
-            imageVector = Icons.Default.Edit,
+            imageVector = Icons.Outlined.Edit,
             route = "grade_screen"
         ),
         ToggleableInfo(
             isChecked = true,
             text = "第二课堂",
-            imageVector = Icons.Default.Star,
-            route = "teacher_screen"
+            imageVector = Icons.Outlined.Star,
+            route = "secondClass_screen"
         ),
     )
     var functionCards = mutableStateListOf(
@@ -611,11 +612,34 @@ class SettingsViewModel(context: Context) : ViewModel() {
         try {
             isGettingUpdate = true
             updateMessage = updateService.update()
-            ifNeedUpdate = convertVersion(updateMessage.version) > convertVersion(currentVersion)
+            if (updateMessage.type == "update") {
+                ifNeedUpdate =
+                    convertVersion(updateMessage.version) > convertVersion(currentVersion)
+            }
             isGettingUpdate = false
-            Log.i("TAG666", "${updateMessage.version}${convertVersion(currentVersion)}${ifNeedUpdate}")
+            Log.i(
+                "TAG666",
+                "newVersion: ${updateMessage.version} \ncurrentVersion:${
+                    convertVersion(currentVersion)
+                } $ifNeedUpdate"
+            )
         } catch (e: Exception) {
             isGettingUpdate = false
+            Log.i("TAG666", "$e")
+        }
+    }
+    private var historyNotice by mutableStateOf("")
+    suspend fun noticeService() {
+        try {
+            updateMessage = updateService.update()
+            if ((updateMessage.type == "notice" && updateMessage.version != historyNotice)) {
+                isShowUpdateDialog = true
+                Log.i("TAG666", "notice: $historyNotice")
+                viewModelScope.launch {
+                    userInfoManager.saveHistoryNotice(updateMessage.version)
+                }
+            }
+        } catch (e: Exception) {
             Log.i("TAG666", "$e")
         }
     }
@@ -623,9 +647,16 @@ class SettingsViewModel(context: Context) : ViewModel() {
         updateService(currentVersion)
     }
 
-    private fun convertVersion(version: String): Int {
-        val versionInt = version.split('.').joinToString("")
-        return versionInt.toInt()
+    private fun convertVersion(version: String): Float {
+        val versionInt = when (version.length) {
+            5 -> version.split('.').joinToString("")
+            7 -> "${version.split('.').joinToString("").substring(0, 3)}.${
+                version.split('.').joinToString("").last()
+            }"
+
+            else -> "0"
+        }
+        return versionInt.toFloat()
     }
 
 

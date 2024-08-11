@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -114,7 +113,6 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
     val cbManager = LocalClipboardManager.current
     // 获取SystemUiController
     val systemUiController = rememberSystemUiController()
-    val useDarkIcons = isSystemInDarkTheme()
     val statueBarColor = colorScheme.surfaceContainer
     // 设置状态栏颜色
     SideEffect {
