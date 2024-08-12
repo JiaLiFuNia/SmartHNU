@@ -1,28 +1,27 @@
 package com.xhand.hnu.screens
 
 import android.annotation.SuppressLint
-import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FabPosition
@@ -32,7 +31,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -48,13 +46,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toSize
 import com.xhand.hnu.components.CourseSearchListItem
+import com.xhand.hnu.components.CourseSearchTextField
+import com.xhand.hnu.model.entity.CourseSearchPost
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.isAccessible
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,14 +65,12 @@ fun CourseSearchScreen(
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
-    var ifShow by remember {
+    var ifShowTextField by remember {
         mutableStateOf(true)
     }
-    var showDatePicker by remember {
-        mutableStateOf(false)
-    }
+
     LaunchedEffect(Unit) {
-        if (!ifShow) courseSearchViewModel.getCourseIndex()
+        courseSearchViewModel.getCourseIndex()
     }
     Scaffold(
         modifier = Modifier
@@ -98,25 +96,67 @@ fun CourseSearchScreen(
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = {
-                    courseSearchViewModel.courseSearch(
-                        courseSearchViewModel.searchContent.value
+            AnimatedVisibility(
+                visible = scrollState.value > 10,
+                enter = slideInVertically(initialOffsetY = { it * 2 }),
+                exit = slideOutVertically(targetOffsetY = { it * 2 }),
+            ) {
+                Column {
+                    ExtendedFloatingActionButton(
+                        onClick = {
+                            courseSearchViewModel.searchContent.value = CourseSearchPost(
+                                1,
+                                50000,
+                                courseSearchViewModel.searchCourseIndex.xnxqdm,
+                                "1",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                rq = getCurrentDates(),
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "",
+                                ""
+                            )
+                        },
+                        text = {
+                            Text(text = "重置")
+                        },
+                        icon = {
+                            Icon(imageVector = Icons.Default.Clear, contentDescription = "重置")
+                        }
                     )
-                    ifShow = false
-                },
-                text = {
-                    Text(text = "搜索")
-                },
-                icon = {
-                    Icon(imageVector = Icons.Default.Search, contentDescription = "搜索")
+                    Spacer(modifier = Modifier.height(10.dp))
+                    ExtendedFloatingActionButton(
+                        onClick = {
+                            courseSearchViewModel.courseSearch(
+                                courseSearchViewModel.searchContent.value
+                            )
+                            ifShowTextField = false
+                        },
+                        text = {
+                            Text(text = "搜索")
+                        },
+                        icon = {
+                            Icon(imageVector = Icons.Default.Search, contentDescription = "搜索")
+                        }
+                    )
                 }
-            )
+            }
         },
         floatingActionButtonPosition = FabPosition.End
     ) {
         val subArrowRotateDegrees: Float by animateFloatAsState(
-            if (ifShow) 180f else 0f,
+            if (ifShowTextField) 180f else 0f,
             label = ""
         )
         Column(
@@ -131,7 +171,7 @@ fun CourseSearchScreen(
                 headlineContent = { Text(text = "搜索选项") },
                 trailingContent = {
                     IconButton(
-                        onClick = { ifShow = !ifShow }
+                        onClick = { ifShowTextField = !ifShowTextField }
                     ) {
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowDown,
@@ -141,13 +181,34 @@ fun CourseSearchScreen(
                         )
                     }
                 },
-                modifier = Modifier.clickable { ifShow = !ifShow }
+                modifier = Modifier.clickable { ifShowTextField = !ifShowTextField }
             )
-            var mTextFieldSize by remember { mutableStateOf(Size.Zero) }
-            var showDropDownMenu by remember { mutableStateOf(false) }
             HorizontalDivider()
-            if (ifShow) {
-                OutlinedTextField(
+
+            if (ifShowTextField) {
+                courseSearchViewModel.searchContentKeys.forEachIndexed { index, searchContentKey ->
+                    CourseSearchTextField(
+                        index = index,
+                        content = searchContentKey,
+                        value = getSearchContentValueByKey(
+                            courseSearchViewModel.searchContent.value,
+                            searchContentKey.key
+                        ).toString(),
+                        onValueChange = {
+                            courseSearchViewModel.searchContent.value =
+                                updateSearchContentValueByKey(
+                                    courseSearchViewModel.searchContent.value,
+                                    searchContentKey.key,
+                                    it
+                                )
+                        },
+                        onClick = {
+                            courseSearchViewModel.showDropDownMenuList[index] = true
+                        },
+                        courseSearchViewModel = courseSearchViewModel
+                    )
+                }
+                /*OutlinedTextField(
                     value = courseSearchViewModel.searchContent.value.xsnj,
                     onValueChange = {
                         courseSearchViewModel.searchContent.value =
@@ -156,19 +217,15 @@ fun CourseSearchScreen(
                     label = { Text(text = "年级") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .onGloballyPositioned { coordinates ->
-                            // This value is used to assign to
-                            // the DropDown the same width
-                            mTextFieldSize = coordinates.size.toSize()
-                        },
+                        .padding(horizontal = 20.dp),
                     trailingIcon = {
-                        IconButton(onClick = { showDropDownMenu = true }) {
+                        IconButton(onClick = { }) {
                             Icon(
                                 imageVector = Icons.Default.KeyboardArrowDown,
                                 contentDescription = "年级",
                             )
                         }
+
                     }
                 )
                 OutlinedTextField(
@@ -306,34 +363,38 @@ fun CourseSearchScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp)
-                )
+                )*/
                 Spacer(modifier = Modifier.height(10.dp))
                 HorizontalDivider()
             }
+
             Spacer(modifier = Modifier.height(15.dp))
+
             if (courseSearchViewModel.isGettingCourse) {
                 CircularProgressIndicator()
             } else {
                 if (courseSearchViewModel.searchResult.isEmpty()) {
                     Text(text = "无结果")
-                }
-                courseSearchViewModel.searchResult.forEach { room ->
-                    CourseSearchListItem(course = room)
+                } else {
+                    courseSearchViewModel.searchResult.forEach { room ->
+                        CourseSearchListItem(course = room)
+                    }
                 }
             }
+
             Spacer(modifier = Modifier.height(15.dp))
+
             val datePickerState = rememberDatePickerState()
             val confirmEnabled = derivedStateOf { datePickerState.selectedDateMillis != null }
-            Log.i("TAG63", confirmEnabled.value.toString())
-            if (showDatePicker)
+            if (courseSearchViewModel.showDatePicker) {
                 DatePickerDialog(
                     onDismissRequest = {
-                        showDatePicker = false
+                        courseSearchViewModel.showDatePicker = false
                     },
                     confirmButton = {
                         TextButton(
                             onClick = {
-                                showDatePicker = false
+                                courseSearchViewModel.showDatePicker = false
                                 courseSearchViewModel.searchContent.value.rq =
                                     timeStamp2DateStr(datePickerState.selectedDateMillis ?: 0)
                             },
@@ -345,7 +406,7 @@ fun CourseSearchScreen(
                     dismissButton = {
                         TextButton(
                             onClick = {
-                                showDatePicker = false
+                                courseSearchViewModel.showDatePicker = false
                             }
                         ) {
                             Text("取消")
@@ -354,15 +415,27 @@ fun CourseSearchScreen(
                 ) {
                     DatePicker(state = datePickerState)
                 }
-            DropdownMenu(
-                expanded = showDropDownMenu,
-                onDismissRequest = { showDropDownMenu = false },
-                modifier = Modifier
-            ) {
-                courseSearchViewModel.searchCourseIndex.xsnjList.forEach { aXsnjList ->
-                    DropdownMenuItem(text = { Text(text = aXsnjList.title) }, onClick = {})
-                }
             }
         }
     }
+}
+
+fun getSearchContentValueByKey(searchContent: CourseSearchPost, searchContentKey: String): Any? {
+    val property = CourseSearchPost::class.memberProperties.find { it.name == searchContentKey }
+    return property?.get(searchContent)
+}
+
+fun updateSearchContentValueByKey(
+    searchContent: CourseSearchPost,
+    key: String,
+    value: Any
+): CourseSearchPost {
+    val constructor = CourseSearchPost::class.primaryConstructor!!
+    val params = constructor.parameters.associateWith { param ->
+        if (param.name == key) value else CourseSearchPost::class.memberProperties
+            .find { it.name == param.name }
+            ?.apply { isAccessible = true }
+            ?.get(searchContent)
+    }
+    return constructor.callBy(params)
 }

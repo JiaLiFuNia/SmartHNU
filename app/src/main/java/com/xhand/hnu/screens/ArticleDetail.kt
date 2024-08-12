@@ -153,7 +153,7 @@ fun ArticleDetailScreen(
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text(text = "复制原文链接") },
+                                text = { Text(text = "复制链接") },
                                 onClick = {
                                     viewModel.copyText(cbManager, newsViewModel.article.url)
                                     Toast.makeText(context, "已复制", Toast.LENGTH_SHORT).show()

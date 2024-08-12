@@ -64,7 +64,7 @@ fun RoomBottomSheet(viewModel: CourseSearchViewModel, room: String) {
                             Text(text = "今天这个教室很空...", color = Color.Gray)
                         }
                     else {
-                        viewModel.searchResult.sortBy { it.jcdm.toInt() }
+                        viewModel.searchResult.sortBy { it.jcdm.takeLast(2).toInt() }
                         viewModel.searchResult.forEach { room ->
                             CourseSearchListItem(course = room)
                         }

@@ -120,7 +120,7 @@ interface GradeService {
         @Header("Token") token: String
     ): ReadMessageEntity
 
-    @POST("dev-api/appapi/appqxkb/index")
+    @GET("dev-api/appapi/appqxkb/index")
     suspend fun courseSearchIndex(
         @Header("Token") token: String
     ): CourseSearchIndexEntity

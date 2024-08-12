@@ -158,14 +158,14 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                             modifier = Modifier
                                 .size(15.dp)
                                 .clip(CircleShape)
-                                .background(if (viewModel.isLoginSuccess) colorScheme.primaryContainer else Color.Gray)
+                                .background(if (viewModel.isLoginSuccess) colorScheme.primary else Color.LightGray)
                         ) { }
                         Spacer(modifier = Modifier.size(10.dp))
                         Box(
                             modifier = Modifier
                                 .size(15.dp)
                                 .clip(CircleShape)
-                                .background(if (viewModel.stateCode == 1) colorScheme.primaryContainer else Color.Gray)
+                                .background(if (viewModel.stateCode == 1) colorScheme.primary else Color.LightGray)
                         ) { }
                     }
                 }
@@ -208,7 +208,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
             val currentVersion = stringResource(R.string.version)
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Version: Release-${currentVersion}",
+                supportingText = "Version: release-${currentVersion}",
                 leadingImageVector = R.drawable.ic_outline_article,
                 onClick = {
                     viewWebsite("https://github.com/JiaLiFuNia/SmartHNU", context)

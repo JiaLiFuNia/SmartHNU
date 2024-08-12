@@ -76,8 +76,6 @@ import com.xhand.hnu.components.ShowLoginDialog
 import com.xhand.hnu.components.ShowSecondClassLoginDialog
 import com.xhand.hnu.components.chart.GPAChangeLineChart
 import com.xhand.hnu.components.chart.HourChart
-import com.xhand.hnu.components.generateQRCode
-import com.xhand.hnu.ui.icon.rememberQrCode
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import com.xhand.hnu.viewmodel.CourseTaskViewModel
 import com.xhand.hnu.viewmodel.GradeViewModel
@@ -206,12 +204,6 @@ fun PersonScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val schedule = viewModel.todaySchedule
     val hasMessage = viewModel.hasMessage
-
-    var ifShowExpandCard by remember { mutableStateOf(false) }
-    val subArrowRotateDegrees: Float by animateFloatAsState(
-        if (ifShowExpandCard) 180f else 0f,
-        label = ""
-    )
 
     LaunchedEffect(viewModel.isLoginSuccess) {
         viewModel.checkToken()

@@ -1,5 +1,7 @@
 package com.xhand.hnu.model.entity
 
+import com.google.gson.annotations.SerializedName
+
 data class CourseSearchIndexEntity(
     val msg: String,
     val zyList: List<GnqListElement>,
@@ -23,8 +25,8 @@ data class GnqListElement(
 )
 
 data class XnxqList(
-    val mrczxq: String,
-    val xnxqdm: String,
-    val xnxqmc: String,
-    val xnd: String
+    @SerializedName("xnxqdm")
+    val value: String,
+    @SerializedName("xnxqmc")
+    val title: String
 )

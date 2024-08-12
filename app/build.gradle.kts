@@ -111,6 +111,7 @@ dependencies {
 
     // implementation("io.github.ehsannarmani:compose-charts:0.0.13")
 
-    implementation("com.google.zxing:core:3.5.3")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.10")
+
 
 }
