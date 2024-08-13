@@ -159,7 +159,7 @@ class MainActivity : ComponentActivity() {
                                         0 -> NavigationPersonScreen(
                                             viewModel = viewModel,
                                             courseSearchViewModel = CourseSearchViewModel(
-                                                LocalContext.current,
+                                                context = LocalContext.current,
                                                 settingsViewModel = viewModel
                                             ),
                                             courseTaskViewModel = CourseTaskViewModel(LocalContext.current),

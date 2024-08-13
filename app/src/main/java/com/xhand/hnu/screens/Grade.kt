@@ -1,6 +1,5 @@
 package com.xhand.hnu.screens
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +13,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -61,7 +59,6 @@ fun GradeScreen(
     onBack: () -> Unit,
     gradeViewModel: GradeViewModel
 ) {
-    val checkboxes = gradeViewModel.checkboxes
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
     var selectedIndex by remember { mutableIntStateOf(0) }
@@ -105,6 +102,7 @@ fun GradeScreen(
         }
     }
     LaunchedEffect(Unit) {
+        gradeViewModel.isGettingGrade = true
         gradeViewModel.gradeService()
         delay(500)
     }
@@ -165,7 +163,7 @@ fun GradeScreen(
                     modifier = Modifier
                         .verticalScroll(scrollState)
                 ) {
-                    val matchedElements = checkboxes.filter { it.isChecked }
+                    val matchedElements = gradeViewModel.checkboxes.filter { it.isChecked }
                     gradeViewModel.gradeList.sortByDescending {
                         when (selectedIndex) {
                             0 -> it.order.toString()
@@ -234,14 +232,14 @@ fun GradeScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
             }
-            checkboxes.forEachIndexed { index, info ->
+            gradeViewModel.checkboxes.forEachIndexed { index, info ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 32.dp)
                         .clickable {
-                            checkboxes[index] = info.copy(
+                            gradeViewModel.checkboxes[index] = info.copy(
                                 isChecked = !info.isChecked
                             )
                         }
@@ -249,7 +247,7 @@ fun GradeScreen(
                     Checkbox(
                         checked = info.isChecked,
                         onCheckedChange = { isChecked ->
-                            checkboxes[index] = info.copy(
+                            gradeViewModel.checkboxes[index] = info.copy(
                                 isChecked = isChecked
                             )
                         }

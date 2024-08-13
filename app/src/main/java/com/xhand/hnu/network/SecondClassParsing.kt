@@ -2,12 +2,6 @@ package com.xhand.hnu.network
 
 import android.content.Context
 import android.util.Log
-import com.franmontiel.persistentcookiejar.PersistentCookieJar
-import com.franmontiel.persistentcookiejar.cache.SetCookieCache
-import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor
-import okhttp3.OkHttpClient
-import okhttp3.Response
-import okhttp3.ResponseBody
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import retrofit2.Retrofit
@@ -15,9 +9,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 /**
  * 获取Retrofit对象
- * @param context Context
  * */
-fun <T> scRetrofitCreater(clazz: Class<T>, context: Context): T {
+fun <T> scRetrofitCreater(clazz: Class<T>): T {
     val retrofit = Retrofit.Builder()
         .baseUrl("http://dekt.htu.edu.cn")
         .addConverterFactory(GsonConverterFactory.create())

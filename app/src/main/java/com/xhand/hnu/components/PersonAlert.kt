@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.xhand.hnu.model.entity.KccjList
 import com.xhand.hnu.viewmodel.GradeViewModel
-import com.xhand.hnu.viewmodel.SettingsViewModel
 
 @Composable
 fun ShowAlert(

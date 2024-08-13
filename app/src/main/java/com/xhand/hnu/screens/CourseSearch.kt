@@ -53,8 +53,6 @@ import com.xhand.hnu.components.CourseSearchListItem
 import com.xhand.hnu.components.CourseSearchOutlineTextFiled
 import com.xhand.hnu.model.entity.CourseSearchIndexEntity
 import com.xhand.hnu.model.entity.CourseSearchPost
-import com.xhand.hnu.model.entity.GnqListElement
-import com.xhand.hnu.model.entity.XnxqList
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
@@ -303,18 +301,4 @@ fun updateSearchContentValueByKey(
             ?.get(searchContent)
     }
     return constructor.callBy(params)
-}
-
-
-fun getSearchContentValueByKey(
-    searchCourseIndex: CourseSearchIndexEntity,
-    courseSearchContentKey: String
-): Any? {
-    try {
-        val property =
-            CourseSearchIndexEntity::class.memberProperties.find { it.name == courseSearchContentKey }
-        return property?.get(searchCourseIndex)
-    } catch (e: Exception) {
-        return null
-    }
 }

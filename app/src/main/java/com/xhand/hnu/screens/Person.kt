@@ -1,5 +1,6 @@
 package com.xhand.hnu.screens
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -201,11 +202,11 @@ fun PersonScreen(
             // viewModel.holidayService()
         }
     }
-    LaunchedEffect(viewModel.stateCode == 1) {
+    LaunchedEffect(viewModel.stateCode) {
         if (viewModel.stateCode == 1)
             viewModel.getHourList()
     }
-    LaunchedEffect(viewModel.stateCode == 0) {
+    LaunchedEffect(viewModel.stateCode) {
         if (viewModel.stateCode == 0)
             viewModel.secondClassService()
     }
@@ -491,24 +492,25 @@ fun PersonScreen(
                                 .fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                        if (viewModel.isLoginSuccess) {
-                            if (gradeViewModel.isGettingJD)
-                                CircularProgressIndicator()
-                            else {
-                                if (gradeViewModel.jdList.size == 0)
-                                    Text(
-                                        text = "未能获取到你的成绩信息",
-                                        color = Color.Gray
-                                    )
-                                else
-                                    GPAChangeLineChart(
-                                        gradeViewModel.jdList,
-                                        gradeViewModel = gradeViewModel
-                                    )
+                            Log.i("TAG666", "isGettingJD: ${gradeViewModel.isGettingJD}")
+                            if (viewModel.isLoginSuccess) {
+                                if (gradeViewModel.isGettingJD)
+                                    CircularProgressIndicator()
+                                else {
+                                    if (gradeViewModel.jdList.size == 0)
+                                        Text(
+                                            text = "未能获取到你的成绩信息",
+                                            color = Color.Gray
+                                        )
+                                    else
+                                        GPAChangeLineChart(
+                                            gradeViewModel.jdList,
+                                            gradeViewModel = gradeViewModel
+                                        )
+                                }
+                            } else
+                                    Text(text = "暂无信息", color = Color.Gray)
                             }
-                        } else
-                                Text(text = "暂无信息", color = Color.Gray)
-                        }
                     }
                 )
                 Spacer(modifier = Modifier.height(14.dp))

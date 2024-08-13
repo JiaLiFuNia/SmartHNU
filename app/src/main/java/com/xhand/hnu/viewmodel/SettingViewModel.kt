@@ -562,7 +562,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
 
 
     // 第二课堂
-    private val login = SecondClassService.instance(context)
+    private val login = SecondClassService.instance()
     private var secondClassHtml by mutableStateOf("")
     private var scToken by mutableStateOf("")
     var verifyImg by mutableStateOf("http://dekt.htu.edu.cn/img/resources-code.jpg")

@@ -32,8 +32,8 @@ interface SecondClassService {
     ): HourEntity
 
     companion object {
-        fun instance(context: Context): SecondClassService {
-            return scRetrofitCreater(SecondClassService::class.java, context)
+        fun instance(): SecondClassService {
+            return scRetrofitCreater(SecondClassService::class.java)
         }
     }
 
