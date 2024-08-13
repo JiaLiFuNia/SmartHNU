@@ -48,9 +48,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import com.xhand.hnu.components.CourseSearchDropDownTextField
 import com.xhand.hnu.components.CourseSearchListItem
-import com.xhand.hnu.components.CourseSearchTextField
+import com.xhand.hnu.components.CourseSearchOutlineTextFiled
+import com.xhand.hnu.model.entity.CourseSearchIndexEntity
 import com.xhand.hnu.model.entity.CourseSearchPost
+import com.xhand.hnu.model.entity.GnqListElement
+import com.xhand.hnu.model.entity.XnxqList
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
@@ -108,7 +112,7 @@ fun CourseSearchScreen(
                                 1,
                                 50000,
                                 courseSearchViewModel.searchCourseIndex.xnxqdm,
-                                "1",
+                                "",
                                 "",
                                 "",
                                 "",
@@ -186,184 +190,45 @@ fun CourseSearchScreen(
             HorizontalDivider()
 
             if (ifShowTextField) {
-                courseSearchViewModel.searchContentKeys.forEachIndexed { index, searchContentKey ->
-                    CourseSearchTextField(
-                        index = index,
-                        content = searchContentKey,
-                        value = getSearchContentValueByKey(
-                            courseSearchViewModel.searchContent.value,
-                            searchContentKey.key
-                        ).toString(),
-                        onValueChange = {
-                            courseSearchViewModel.searchContent.value =
-                                updateSearchContentValueByKey(
+                courseSearchViewModel.searchContentKeys.forEach { searchContentKey ->
+                    if (searchContentKey.show && searchContentKey.name != "") {
+                        if (searchContentKey.courseIndex != "") {
+                            CourseSearchDropDownTextField(
+                                content = searchContentKey,
+                                value = getSearchContentValueByKey(
                                     courseSearchViewModel.searchContent.value,
-                                    searchContentKey.key,
-                                    it
-                                )
-                        },
-                        onClick = {
-                            courseSearchViewModel.showDropDownMenuList[index] = true
-                        },
-                        courseSearchViewModel = courseSearchViewModel
-                    )
-                }
-                /*OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.xsnj,
-                    onValueChange = {
-                        courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(xsnj = it)
-                    },
-                    label = { Text(text = "年级") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    trailingIcon = {
-                        IconButton(onClick = { }) {
-                            Icon(
-                                imageVector = Icons.Default.KeyboardArrowDown,
-                                contentDescription = "年级",
+                                    searchContentKey.key
+                                ).toString(),
+                                onValueChange = {
+                                    courseSearchViewModel.searchContent.value =
+                                        updateSearchContentValueByKey(
+                                            courseSearchViewModel.searchContent.value,
+                                            searchContentKey.key,
+                                            it
+                                        )
+                                },
+                                courseSearchViewModel = courseSearchViewModel
+                            )
+                        } else {
+                            CourseSearchOutlineTextFiled(
+                                content = searchContentKey,
+                                value = getSearchContentValueByKey(
+                                    courseSearchViewModel.searchContent.value,
+                                    searchContentKey.key
+                                ).toString(),
+                                onValueChange = {
+                                    courseSearchViewModel.searchContent.value =
+                                        updateSearchContentValueByKey(
+                                            courseSearchViewModel.searchContent.value,
+                                            searchContentKey.key,
+                                            it
+                                        )
+                                },
+                                courseSearchViewModel = courseSearchViewModel
                             )
                         }
-
                     }
-                )
-                OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.zydm.toString(),
-                    onValueChange = {
-                        courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(zydm = it)
-                    },
-                    label = { Text(text = "专业") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                )
-                OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.kcmc,
-                    onValueChange = {
-                        courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(kcmc = it)
-                    },
-                    label = { Text(text = "课程") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                )
-                OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.teaxm,
-                    onValueChange = {
-                        courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(teaxm = it)
-                    },
-                    label = { Text(text = "教师") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                )
-                OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.jcdm,
-                    onValueChange = {
-                        courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(jcdm = it)
-                    },
-                    label = { Text(text = "节次") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                )
-                OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.jxbmc,
-                    onValueChange = {
-                        courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(jxbmc = it)
-                    },
-                    label = { Text(text = "教学班") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                )
-                OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.jzwdm.toString(),
-                    onValueChange = {
-                        courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(jzwdm = it)
-                    },
-                    label = { Text(text = "教学楼") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                )
-                OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.jxcdmc,
-                    onValueChange = {
-                        courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(jxcdmc = it)
-                    },
-                    label = { Text(text = "教学场地") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                )
-                OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.rq,
-                    onValueChange = { },
-                    readOnly = true,
-                    label = { Text(text = "日期") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .clickable { showDatePicker = true },
-                    trailingIcon = {
-                        IconButton(onClick = { showDatePicker = true }) {
-                            Icon(imageVector = Icons.Default.DateRange, contentDescription = "日期")
-                        }
-                    },
-                )
-                OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.zc.toString(),
-                    onValueChange = {
-                        courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(zc = it)
-                    },
-                    label = { Text(text = "周次") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                )
-                OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.xq.toString(),
-                    onValueChange = {
-                        courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(xq = it)
-                    },
-                    label = { Text(text = "星期") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                )
-                OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.kkyxdm.toString(),
-                    onValueChange = {
-                        courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(kkyxdm = it)
-                    },
-                    label = { Text(text = "开课单位") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                )
-                OutlinedTextField(
-                    value = courseSearchViewModel.searchContent.value.xsyxdm.toString(),
-                    onValueChange = {
-                        courseSearchViewModel.searchContent.value =
-                            courseSearchViewModel.searchContent.value.copy(xsyxdm = it)
-                    },
-                    label = { Text(text = "学生院系") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                )*/
+                }
                 Spacer(modifier = Modifier.height(10.dp))
                 HorizontalDivider()
             }
@@ -438,4 +303,18 @@ fun updateSearchContentValueByKey(
             ?.get(searchContent)
     }
     return constructor.callBy(params)
+}
+
+
+fun getSearchContentValueByKey(
+    searchCourseIndex: CourseSearchIndexEntity,
+    courseSearchContentKey: String
+): Any? {
+    try {
+        val property =
+            CourseSearchIndexEntity::class.memberProperties.find { it.name == courseSearchContentKey }
+        return property?.get(searchCourseIndex)
+    } catch (e: Exception) {
+        return null
+    }
 }

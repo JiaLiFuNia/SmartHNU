@@ -2,21 +2,13 @@ package com.xhand.hnu.screens
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -56,7 +48,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -79,7 +70,6 @@ import com.xhand.hnu.components.chart.HourChart
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import com.xhand.hnu.viewmodel.CourseTaskViewModel
 import com.xhand.hnu.viewmodel.GradeViewModel
-import com.xhand.hnu.viewmodel.PersonViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -94,7 +84,6 @@ import java.util.Locale
 @Composable
 fun NavigationPersonScreen(
     viewModel: SettingsViewModel,
-    personViewModel: PersonViewModel,
     courseSearchViewModel: CourseSearchViewModel,
     courseTaskViewModel: CourseTaskViewModel,
     gradeViewModel: GradeViewModel
@@ -128,15 +117,13 @@ fun NavigationPersonScreen(
             PersonScreen(
                 navController = navController,
                 viewModel = viewModel,
-                personViewModel = personViewModel,
                 gradeViewModel = gradeViewModel
             )
         }
         composable("grade_screen") {
             GradeScreen(
                 onBack = { navController.popBackStack() },
-                viewModel = viewModel,
-                gradeViewModel = GradeViewModel(viewModel)
+                gradeViewModel = gradeViewModel
             )
         }
         composable("schedule_screen") {
@@ -193,7 +180,6 @@ fun NavigationPersonScreen(
 fun PersonScreen(
     navController: NavController,
     viewModel: SettingsViewModel,
-    personViewModel: PersonViewModel,
     gradeViewModel: GradeViewModel
 ) {
     val context = LocalContext.current
@@ -208,10 +194,9 @@ fun PersonScreen(
     LaunchedEffect(viewModel.isLoginSuccess) {
         viewModel.checkToken()
         if (viewModel.isLoginSuccess) {
-            viewModel.isGettingGrade = true
             viewModel.todaySchedule()
             viewModel.messageService()
-            viewModel.JDService()
+            gradeViewModel.jDService()
             viewModel.isGettingCourse = false
             // viewModel.holidayService()
         }
@@ -240,7 +225,6 @@ fun PersonScreen(
     }
     // 获取SystemUiController
     val systemUiController = rememberSystemUiController()
-    val useDarkIcons = isSystemInDarkTheme()
     val statueBarColor = MaterialTheme.colorScheme.surfaceContainer
     // 设置状态栏颜色
     SideEffect {
@@ -508,17 +492,17 @@ fun PersonScreen(
                             contentAlignment = Alignment.Center
                         ) {
                         if (viewModel.isLoginSuccess) {
-                            if (viewModel.isGettingJD)
+                            if (gradeViewModel.isGettingJD)
                                 CircularProgressIndicator()
                             else {
-                                if (viewModel.jdList.size == 0)
+                                if (gradeViewModel.jdList.size == 0)
                                     Text(
                                         text = "未能获取到你的成绩信息",
                                         color = Color.Gray
                                     )
                                 else
                                     GPAChangeLineChart(
-                                        viewModel.jdList,
+                                        gradeViewModel.jdList,
                                         gradeViewModel = gradeViewModel
                                     )
                             }
@@ -579,10 +563,8 @@ fun isCurrentTimeBetween(endTimeString: String): Long {
     val formatter = DateTimeFormatter.ofPattern("HH:mm")
 
     val currentTime = LocalTime.now()
-    val currentTimeFormatted = currentTime.format(formatter)
 
     val givenTime = LocalTime.parse(endTimeString, formatter)
-    val givenTimeFormatted = givenTime.format(formatter)
 
     // 使用 Duration.between 来计算两个时间之间的差值
     val duration = Duration.between(currentTime, givenTime)

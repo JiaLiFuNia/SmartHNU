@@ -158,9 +158,9 @@ class MainActivity : ComponentActivity() {
                                     when (selectedItemIndex) {
                                         0 -> NavigationPersonScreen(
                                             viewModel = viewModel,
-                                            personViewModel = PersonViewModel(),
                                             courseSearchViewModel = CourseSearchViewModel(
-                                                LocalContext.current
+                                                LocalContext.current,
+                                                settingsViewModel = viewModel
                                             ),
                                             courseTaskViewModel = CourseTaskViewModel(LocalContext.current),
                                             gradeViewModel = GradeViewModel(viewModel)

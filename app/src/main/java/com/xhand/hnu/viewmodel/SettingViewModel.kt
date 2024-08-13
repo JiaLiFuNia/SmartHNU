@@ -24,16 +24,10 @@ import com.xhand.hnu.model.entity.BookDetailPost
 import com.xhand.hnu.model.entity.BookPost
 import com.xhand.hnu.model.entity.CheckTokenEntity
 import com.xhand.hnu.model.entity.ClassroomPost
-import com.xhand.hnu.model.entity.GradeDetailPost
-import com.xhand.hnu.model.entity.GradeInfo
-import com.xhand.hnu.model.entity.GradePost
 import com.xhand.hnu.model.entity.HourListEntity
-import com.xhand.hnu.model.entity.JDList
-import com.xhand.hnu.model.entity.JDPost
 import com.xhand.hnu.model.entity.Jszylist
 import com.xhand.hnu.model.entity.Jxllist
 import com.xhand.hnu.model.entity.KbList
-import com.xhand.hnu.model.entity.KccjList
 import com.xhand.hnu.model.entity.Kxjcdata
 import com.xhand.hnu.model.entity.LoginPostEntity
 import com.xhand.hnu.model.entity.MessageDetail
@@ -44,7 +38,6 @@ import com.xhand.hnu.model.entity.SecondClassInfo
 import com.xhand.hnu.model.entity.Update
 import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.model.entity.Xdjcdata
-import com.xhand.hnu.model.entity.Xscj
 import com.xhand.hnu.model.entity.Yxjcdata
 import com.xhand.hnu.model.entity.teacherPost
 import com.xhand.hnu.network.GradeService
@@ -145,28 +138,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
     // 今日课程
     var todaySchedule by mutableStateOf(mutableListOf<KbList>())
 
-    // 成绩详情
-    var gradeDetail by mutableStateOf(GradeInfo(0.0, "", "", "", "", "", "", "", "", "", 0, ""))
-    var gradeDetails by mutableStateOf(Xscj("", 0, 0.0, 0, 0.0))
-    private var gradeOrder by mutableStateOf(
-        GradeInfo(
-            0.0,
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            0,
-            ""
-        )
-    )
-
     // 展示登录框
-    var showPersonAlert by mutableStateOf(false)
     var showBookAlert by mutableStateOf(false)
     var showBookSelect by mutableStateOf(false)
 
@@ -202,19 +174,14 @@ class SettingsViewModel(context: Context) : ViewModel() {
     var loginCircle by mutableStateOf(false)
     var loginCode by mutableIntStateOf(0)
 
-    var isGettingDetailGrade by mutableStateOf(true)
     var isGettingCourse by mutableStateOf(true)
-    var isGettingGrade by mutableStateOf(true)
 
     // 是否有消息
     var hasMessage by mutableStateOf(mutableListOf<MessageDetail>())
     private var bulidingsData = mutableListOf<Jxllist>()
     // var holidayData = mutableStateOf(HolidayEntity(-1, Type(0, "", 0), ""))
 
-    // 成绩列表
-    var gradeList = mutableListOf<KccjList>()
     var teacherList by mutableStateOf(mutableListOf<AllPjxxList>())
-    var jdList = mutableListOf<JDList>()
 
     // 学号 年级
     private val grade: String
@@ -276,7 +243,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
         try {
             loginCircle = true
             val res = loginService.loginPost(loginPost)
-            Log.i("TAG666", "${res}")
+            Log.i("TAG666", "$res")
             delay(1200)
             userInfo = if (res.code == 200) {
                 UserInfoEntity(
@@ -325,72 +292,6 @@ class SettingsViewModel(context: Context) : ViewModel() {
             stateCode = 0
             userInfo = null
             loginCode = 0
-        }
-    }
-
-    // 成绩请求
-    suspend fun gradeService() {
-        gradeList.clear() // 下拉刷新时置空
-        var order = 0
-        for (term in gradeTerm) {
-            val res = userInfo?.let {
-                gradeService.gradePost(
-                    GradePost(term),
-                    token = it.token
-                )
-            }
-            if (res != null) {
-                if (res.code.toInt() == 200) {
-                    for (i in res.kccjList) {
-                        order += 1
-                        i.order = order
-                    }
-                    gradeList.addAll(res.kccjList)
-                    Log.i("TAG666", gradeList.toString())
-                } else {
-                    Log.i("TAG666", "null")
-                }
-            }
-        }
-    }
-
-    // 成绩请求
-    suspend fun gradeDetailService(cjdm: String) {
-        try {
-            isGettingDetailGrade = true
-            val res =
-                userInfo?.let { gradeService.gradeDetail(GradeDetailPost(cjdm), it.token) }
-            if (res != null) {
-                if (res.code == 200) {
-                    gradeDetail = res.info1
-                    gradeOrder = res.info
-                }
-            }
-            val detail =
-                userInfo?.let { gradeService.gradeDetails(GradeDetailPost(cjdm), it.token) }
-            if (detail != null) {
-                if (detail.code == 200) {
-                    gradeDetails = detail.xscj
-                }
-            }
-            isGettingDetailGrade = false
-        } catch (e: Exception) {
-            Log.i("TAG666", "$e")
-        }
-    }
-
-    var isGettingJD by mutableStateOf(true)
-    suspend fun JDService() {
-        try {
-            val res = userInfo?.let { gradeService.gradeJDDetail(JDPost("1", "01"), it.token) }
-            if (res != null) {
-                if (res.code == 200) {
-                    jdList = res.list.toMutableList()
-                }
-            }
-            isGettingJD = false
-        } catch (e: Exception) {
-            Log.i("TAG666", "$e")
         }
     }
 

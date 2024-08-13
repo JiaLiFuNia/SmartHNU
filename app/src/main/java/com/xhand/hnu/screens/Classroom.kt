@@ -1,7 +1,6 @@
 package com.xhand.hnu.screens
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -183,7 +182,6 @@ fun ClassroomScreen(
                                     checked = checkedState,
                                     onCheckedChange = {
                                         onStateChange(it)
-                                        Log.i("TAG6", "$checkedState")
                                     }
                                 )
                             }
@@ -195,7 +193,6 @@ fun ClassroomScreen(
     ) {
         val datePickerState = rememberDatePickerState()
         val confirmEnabled = derivedStateOf { datePickerState.selectedDateMillis != null }
-        Log.i("TAG63", confirmEnabled.value.toString())
         if (showDatePicker)
             DatePickerDialog(
                 onDismissRequest = {
@@ -268,9 +265,6 @@ fun ClassroomScreen(
                         .verticalScroll(scrollState)
                 ) {
                     // val buildings = buildingsList.filter { it.jzwmc in buildingsSave }
-                    Log.i("TAG654", buildingsSave.toString())
-                    Log.i("TAG654", haveClassroom.toString())
-                    Log.i("TAG654", allClassroom.toString())
                     buildingsSave.forEachIndexed { index, building ->
                         val arrowRotateDegrees: Float by animateFloatAsState(
                             if (isShowSubList[index]) 0f else -90f,

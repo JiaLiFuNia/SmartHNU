@@ -35,8 +35,8 @@ fun secondClassLoginState(str: String): Int {
     val document: Document = Jsoup.parse(str)
     val states = document.select("div.content div.formRow")
     val userInfo = document.select("div.navbox div.ab_box h3")
-    Log.i("TAG666", userInfo.toString())
-    Log.i("TAG666", states.toString())
+    Log.i("TAG666", "userInfo: $userInfo")
+    Log.i("TAG666", "scLoginState: $states")
     val state = states.last()?.text()
     var stateCode = when (state) {
         "token已失效，请刷新页面重试！" -> -3

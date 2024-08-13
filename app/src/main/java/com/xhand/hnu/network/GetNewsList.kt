@@ -123,7 +123,7 @@ fun getNewsList4(str: String?, type: String): MutableList<ArticleListEntity> {
     val titleElements =
         document.select(titleRule)
     val topsElements = document.select(ifTop)
-    Log.i("TAG666", "${topsElements.size}")
+    Log.i("TAG666", "topSize: ${topsElements.size}")
     val ifTopNum = topsElements.size
     for (index in 0 until timeElements.size) {
         var url = urlElements[index].attr("href")

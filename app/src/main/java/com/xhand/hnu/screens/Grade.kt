@@ -52,7 +52,6 @@ import com.xhand.hnu.components.ModalBottomSheet
 import com.xhand.hnu.components.ShowAlert
 import com.xhand.hnu.model.entity.KccjList
 import com.xhand.hnu.viewmodel.GradeViewModel
-import com.xhand.hnu.viewmodel.SettingsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -60,14 +59,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun GradeScreen(
     onBack: () -> Unit,
-    viewModel: SettingsViewModel,
     gradeViewModel: GradeViewModel
 ) {
     val checkboxes = gradeViewModel.checkboxes
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
-    val gradeList = viewModel.gradeList
-    Log.i("TAG666", gradeList.toString())
     var selectedIndex by remember { mutableIntStateOf(0) }
     val options = listOf("默认", "成绩")
     var cjdm by remember {
@@ -97,18 +93,6 @@ fun GradeScreen(
     val showBottomSheet = remember {
         mutableStateOf(false)
     }
-    val showBottomSheetData = remember {
-        mutableStateOf(false)
-    }
-    /*val pullRefreshState = rememberPullRefreshState(
-        refreshing = viewModel.isRefreshing,
-        onRefresh = {
-            scope.launch {
-                delay(1000)
-                viewModel.gradeService()
-            }
-        }
-    )*/
     var isRefreshing by remember { mutableStateOf(false) }
     val state = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
@@ -116,14 +100,13 @@ fun GradeScreen(
         isRefreshing = true
         coroutineScope.launch {
             delay(timeMillis = 1000)
-                viewModel.gradeService()
+            gradeViewModel.gradeService()
                 isRefreshing = false
         }
     }
     LaunchedEffect(Unit) {
-        viewModel.gradeService()
+        gradeViewModel.gradeService()
         delay(500)
-        viewModel.isGettingGrade = false
     }
     Scaffold(
         modifier = Modifier
@@ -162,7 +145,7 @@ fun GradeScreen(
         },
         floatingActionButtonPosition = FabPosition.End
     ) { values ->
-        if (viewModel.isGettingGrade)
+        if (gradeViewModel.isGettingGrade)
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -183,23 +166,21 @@ fun GradeScreen(
                         .verticalScroll(scrollState)
                 ) {
                     val matchedElements = checkboxes.filter { it.isChecked }
-                    Log.i("TAG62", matchedElements.toString())
-                    gradeList.sortByDescending {
+                    gradeViewModel.gradeList.sortByDescending {
                         when (selectedIndex) {
                             0 -> it.order.toString()
                             1 -> it.zcjfs.toString()
                             else -> null
                         }
                     }
-                    gradeList.forEach { grade ->
-                        Log.i("TAG62", grade.xnxqdm)
+                    gradeViewModel.gradeList.forEach { grade ->
                         if (grade.xnxqmc in matchedElements.map { it.term })
                             GradeListItem(
                                 grade = grade,
                                 modifier = Modifier
                                     .clickable {
                                         showAlert = grade
-                                        viewModel.showPersonAlert = true
+                                        gradeViewModel.showPersonAlert = true
                                         cjdm = grade.cjdm
                                     }
                             )
@@ -208,8 +189,8 @@ fun GradeScreen(
             }
         }
     }
-    if (viewModel.showPersonAlert) {
-        ShowAlert(grade = showAlert, viewModel = viewModel, cjdm = cjdm)
+    if (gradeViewModel.showPersonAlert) {
+        ShowAlert(grade = showAlert, viewModel = gradeViewModel, cjdm = cjdm)
     }
     ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "筛选成绩") {
         Column {
@@ -277,8 +258,5 @@ fun GradeScreen(
                 }
             }
         }
-    }
-    ModalBottomSheet(showModalBottomSheet = showBottomSheetData, text = "数据统计") {
-
     }
 }
