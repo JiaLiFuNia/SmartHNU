@@ -1,12 +1,16 @@
 package com.xhand.hnu.viewmodel
 
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.xhand.hnu.model.UserInfoManager
 import com.xhand.hnu.model.entity.GradeDetailPost
 import com.xhand.hnu.model.entity.GradeInfo
 import com.xhand.hnu.model.entity.GradePost
@@ -15,13 +19,30 @@ import com.xhand.hnu.model.entity.JDPost
 import com.xhand.hnu.model.entity.KccjList
 import com.xhand.hnu.model.entity.Xscj
 import com.xhand.hnu.network.GradeService
+import jakarta.inject.Inject
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 
 data class TermCheckBoxes(
     val isChecked: Boolean,
     val term: String
 )
 
-class GradeViewModel(settingsViewModel: SettingsViewModel) : ViewModel() {
+@SuppressLint("MutableCollectionMutableState")
+class GradeViewModel @Inject constructor(
+    settingsViewModel: SettingsViewModel,
+    context: Context
+) : ViewModel() {
+
+    private val userInfoManager = UserInfoManager(context)
+
+    init {
+        viewModelScope.launch {
+            val userInfoStore = userInfoManager.userInfo.firstOrNull()
+            userInfo = userInfoStore
+        }
+    }
+
     private val grade = settingsViewModel.longGradeTerm
     var checkboxes = mutableStateListOf(
         TermCheckBoxes(
@@ -81,14 +102,14 @@ class GradeViewModel(settingsViewModel: SettingsViewModel) : ViewModel() {
     }
 
     private val gradeTerm = settingsViewModel.gradeTerm
-    private val userInfo = settingsViewModel.userInfo
+    private var userInfo = settingsViewModel.userInfo
 
     // 成绩详情
     var showPersonAlert by mutableStateOf(false)
 
     // 成绩列表
-    var gradeList = mutableListOf<KccjList>()
-    var jdList = mutableListOf<JDList>()
+    var gradeList by mutableStateOf(mutableListOf<KccjList>())
+    var jdList by mutableStateOf(mutableListOf<JDList>())
 
     // 成绩详情
     var gradeDetail by mutableStateOf(GradeInfo(0.0, "", "", "", "", "", "", "", "", "", 0, ""))
@@ -121,6 +142,7 @@ class GradeViewModel(settingsViewModel: SettingsViewModel) : ViewModel() {
 
     // 成绩请求
     suspend fun gradeService() {
+        Log.i("TAG666", "gradeService(): $gradeTerm")
         gradeList.clear() // 下拉刷新时置空
         var order = 0
         try {
@@ -132,23 +154,22 @@ class GradeViewModel(settingsViewModel: SettingsViewModel) : ViewModel() {
                     )
                 }
                 if (res != null) {
+                    Log.i("TAG666", "gradeService(): ${res.kccjList}")
                     if (res.code.toInt() == 200) {
                         for (i in res.kccjList) {
                             order += 1
                             i.order = order
                         }
                         gradeList.addAll(res.kccjList)
-                        Log.i("TAG666", "gradeService(): $gradeList")
                     } else {
                         Log.i("TAG666", "null")
                     }
                 }
             }
             isGettingGrade = false
-            Log.i("TAG666", isGettingGrade.toString())
         } catch (e: Exception) {
             isGettingGrade = false
-            Log.i("TAG666", "$e")
+            Log.i("TAG666", "gradeService: $e")
         }
 
     }
@@ -156,7 +177,6 @@ class GradeViewModel(settingsViewModel: SettingsViewModel) : ViewModel() {
     // 成绩请求
     suspend fun gradeDetailService(cjdm: String) {
         try {
-            isGettingDetailGrade = true
             val res =
                 userInfo?.let { gradeService.gradeDetail(GradeDetailPost(cjdm), it.token) }
             if (res != null) {
@@ -174,7 +194,8 @@ class GradeViewModel(settingsViewModel: SettingsViewModel) : ViewModel() {
             }
             isGettingDetailGrade = false
         } catch (e: Exception) {
-            Log.i("TAG666", "$e")
+            isGettingDetailGrade = false
+            Log.i("TAG666", "gradeDetailService: $e")
         }
     }
 
@@ -185,11 +206,11 @@ class GradeViewModel(settingsViewModel: SettingsViewModel) : ViewModel() {
                 if (res.code == 200) {
                     jdList = res.list.toMutableList()
                 }
-                Log.i("TAG666", jdList.toString())
+                Log.i("TAG666", "jDList: $jdList")
             }
             isGettingJD = false
         } catch (e: Exception) {
-            Log.i("TAG666", "$e")
+            Log.i("TAG666", "jDService: $e")
         }
     }
 

@@ -48,6 +48,8 @@ import com.xhand.hnu.network.SecondClassService
 import com.xhand.hnu.network.UpdateService
 import com.xhand.hnu.network.secondClassLoginState
 import com.xhand.hnu.network.secondClassParsing
+import com.xhand.hnu.screens.navigation.Destinations
+import jakarta.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -56,7 +58,9 @@ import java.time.format.DateTimeFormatter
 
 
 @SuppressLint("MutableCollectionMutableState")
-class SettingsViewModel(context: Context) : ViewModel() {
+class SettingsViewModel @Inject constructor(
+    context: Context
+) : ViewModel() {
     private val userInfoManager = UserInfoManager(context)
     init {
         viewModelScope.launch {
@@ -92,46 +96,46 @@ class SettingsViewModel(context: Context) : ViewModel() {
             isChecked = true,
             text = "今日课程",
             imageVector = Icons.Outlined.DateRange,
-            route = "schedule_screen"
+            route = Destinations.Grade.route
         ),
         ToggleableInfo(
             isChecked = true,
             text = "课程成绩",
             imageVector = Icons.Outlined.Edit,
-            route = "grade_screen"
+            route = Destinations.Grade.route
         ),
         ToggleableInfo(
             isChecked = true,
             text = "第二课堂",
             imageVector = Icons.Outlined.Star,
-            route = "secondClass_screen"
+            route = Destinations.SecondClass.route
         ),
     )
     var functionCards = mutableStateListOf(
         FunctionCard(
             title = "教室查询",
             painterResource = R.drawable.ic_baseline_location_city_24,
-            route = "classroom_screen"
+            route = Destinations.ClassroomSearch.route
         ),
         FunctionCard(
             title = "选订教材",
             painterResource = R.drawable.outline_menu_book_24,
-            route = "search_screen"
+            route = Destinations.BookSelect.route
         ),
         FunctionCard(
             title = "课程查询",
             painterResource = R.drawable.ic_outline_manage_search_24,
-            route = "courseSearch_screen"
+            route = Destinations.CourseSearch.route
         ),
         FunctionCard(
             title = "教学评价",
             painterResource = R.drawable.outline_assessment_24,
-            route = "teacher_screen"
+            route = Destinations.Teacher.route
         ),
         FunctionCard(
             title = "上课任务",
             painterResource = R.drawable.ic_baseline_task_24,
-            route = "task_screen"
+            route = Destinations.ClassTask.route
         )
     )
 
@@ -243,7 +247,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
         try {
             loginCircle = true
             val res = loginService.loginPost(loginPost)
-            Log.i("TAG666", "$res")
+            Log.i("TAG666", "login: $res")
             delay(1200)
             userInfo = if (res.code == 200) {
                 UserInfoEntity(
@@ -268,7 +272,7 @@ class SettingsViewModel(context: Context) : ViewModel() {
             loginCode = res.code
         } catch (e: Exception) {
             loginCircle = false
-            Log.i("TAG666", "$e")
+            Log.i("TAG666", "login: $e")
         }
     }
 
@@ -328,10 +332,8 @@ class SettingsViewModel(context: Context) : ViewModel() {
                 teacherList = res.allPjxxList.toMutableList()
             }
         } catch (e: Exception) {
-            Log.i("TAG666", "$e")
+            Log.i("TAG666", "teacherService: $e")
         }
-        Log.i("TAG6654",longToShort(xnxqdm))
-        Log.i("TAG6654", "$teacherList")
     }
     suspend fun messageService() {
         try {

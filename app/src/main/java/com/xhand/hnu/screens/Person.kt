@@ -1,9 +1,7 @@
 package com.xhand.hnu.screens
 
-import android.util.Log
+import android.content.Context
 import android.widget.Toast
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,14 +49,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
 import com.xhand.hnu.components.CardCourseList
@@ -68,8 +62,7 @@ import com.xhand.hnu.components.ShowLoginDialog
 import com.xhand.hnu.components.ShowSecondClassLoginDialog
 import com.xhand.hnu.components.chart.GPAChangeLineChart
 import com.xhand.hnu.components.chart.HourChart
-import com.xhand.hnu.viewmodel.CourseSearchViewModel
-import com.xhand.hnu.viewmodel.CourseTaskViewModel
+import com.xhand.hnu.screens.navigation.Destinations
 import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
 import kotlinx.coroutines.delay
@@ -81,116 +74,20 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-
-@Composable
-fun NavigationPersonScreen(
-    viewModel: SettingsViewModel,
-    courseSearchViewModel: CourseSearchViewModel,
-    courseTaskViewModel: CourseTaskViewModel,
-    gradeViewModel: GradeViewModel
-) {
-    val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = "person_screen",
-        enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
-            )
-        },
-        exitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
-            )
-        },
-        popEnterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(500)
-            )
-        },
-        popExitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(500)
-            )
-        }
-    ) {
-        composable("person_screen") {
-            PersonScreen(
-                navController = navController,
-                viewModel = viewModel,
-                gradeViewModel = gradeViewModel
-            )
-        }
-        composable("grade_screen") {
-            GradeScreen(
-                onBack = { navController.popBackStack() },
-                gradeViewModel = gradeViewModel
-            )
-        }
-        composable("schedule_screen") {
-            ScheduleScreen(onBack = { navController.popBackStack() })
-        }
-        composable("message_screen") {
-            MessageScreen(
-                onBack = { navController.popBackStack() },
-                viewModel = viewModel,
-                navController = navController
-            )
-        }
-        composable("classroom_screen") {
-            ClassroomScreen(
-                onBack = { navController.popBackStack() },
-                viewModel = viewModel,
-                roomSearchViewModel = courseSearchViewModel
-            )
-        }
-        composable("courseSearch_screen") {
-            CourseSearchScreen(
-                onBack = { navController.popBackStack() },
-                courseSearchViewModel = courseSearchViewModel
-            )
-        }
-        composable("search_screen") {
-            ChooseBookScreen(
-                onBack = { navController.popBackStack() },
-                viewModel = viewModel
-            )
-        }
-        composable("task_screen") {
-            CourseTaskScreen(
-                onBack = { navController.popBackStack() },
-                viewModel = courseTaskViewModel
-            )
-        }
-        composable("teacher_screen") {
-            TeacherScreen(
-                onBack = { navController.popBackStack() },
-                viewModel = viewModel
-            )
-        }
-        composable("secondClass_screen") {
-            SecondClassScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonScreen(
     navController: NavController,
     viewModel: SettingsViewModel,
-    gradeViewModel: GradeViewModel
+    gradeViewModel: GradeViewModel,
+    context: Context
 ) {
-    val context = LocalContext.current
     val checkboxes = viewModel.checkboxes
     val otherCards = viewModel.functionCards
-    val scrollState = rememberScrollState()
     val userInfo = viewModel.userInfo
+
+    val scrollState = rememberScrollState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val schedule = viewModel.todaySchedule
-    val hasMessage = viewModel.hasMessage
 
     LaunchedEffect(viewModel.isLoginSuccess) {
         viewModel.checkToken()
@@ -203,12 +100,10 @@ fun PersonScreen(
         }
     }
     LaunchedEffect(viewModel.stateCode) {
-        if (viewModel.stateCode == 1)
-            viewModel.getHourList()
-    }
-    LaunchedEffect(viewModel.stateCode) {
-        if (viewModel.stateCode == 0)
-            viewModel.secondClassService()
+        when (viewModel.stateCode) {
+            0 -> viewModel.secondClassService()
+            1 -> viewModel.getHourList()
+        }
     }
     var isRefreshing by remember { mutableStateOf(false) }
     val state = rememberPullToRefreshState()
@@ -260,7 +155,7 @@ fun PersonScreen(
                                 if (viewModel.hasMessage.size == 0)
                                     Toast.makeText(context, "没有消息", Toast.LENGTH_SHORT).show()
                                 else
-                                    navController.navigate("message_screen")
+                                    navController.navigate(Destinations.Message.route)
                             }
                         }
                     ) {
@@ -274,7 +169,7 @@ fun PersonScreen(
                             }
                         ) {
                             Icon(
-                                imageVector = if (hasMessage.size > 0) Icons.Default.Email else Icons.Outlined.Email,
+                                imageVector = if (viewModel.hasMessage.size > 0) Icons.Default.Email else Icons.Outlined.Email,
                                 contentDescription = "消息"
                             )
                         }
@@ -336,35 +231,10 @@ fun PersonScreen(
                                     color = Color.Gray
                                 )
                         },
-                        /*trailingContent = {
-                            IconButton(onClick = { ifShowExpandCard = !ifShowExpandCard }) {
-                                Icon(
-                                    imageVector = rememberQrCode(),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp),
-                                )
-                            }
-                        },*/
                         colors = ListItemDefaults.colors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer
                         )
                     )
-                    /*AnimatedVisibility(
-                        visible = ifShowExpandCard,
-                        enter = fadeIn() + expandVertically(),
-                        exit = fadeOut() + shrinkVertically()
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            val bitmap = generateQRCode(userInfo.toString(), 600)
-                            Image(
-                                bitmap = bitmap.asImageBitmap(),
-                                contentDescription = "QR Code"
-                            )
-                        }
-                    }*/
                 }
                 Spacer(modifier = Modifier.height(14.dp))
                 Card(
@@ -427,13 +297,13 @@ fun PersonScreen(
                                     CircularProgressIndicator()
                                 }
                             else {
-                                if (schedule.size != 0)
+                                if (viewModel.todaySchedule.size != 0)
                                     Column(
                                         modifier = Modifier
                                             .fillMaxSize()
                                             .padding(start = 10.dp, top = 8.dp, end = 10.dp)
                                     ) {
-                                        schedule.forEach { schedule ->
+                                        viewModel.todaySchedule.forEach { schedule ->
                                             CardCourseList(
                                                 schedule = schedule,
                                                 onClick = {
@@ -492,7 +362,6 @@ fun PersonScreen(
                                 .fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Log.i("TAG666", "isGettingJD: ${gradeViewModel.isGettingJD}")
                             if (viewModel.isLoginSuccess) {
                                 if (gradeViewModel.isGettingJD)
                                     CircularProgressIndicator()

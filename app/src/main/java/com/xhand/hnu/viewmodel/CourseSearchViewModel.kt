@@ -11,22 +11,32 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.xhand.hnu.components.CourseSearchContentKeys
+import com.xhand.hnu.model.UserInfoManager
 import com.xhand.hnu.model.entity.CourseSearchIndexEntity
 import com.xhand.hnu.model.entity.CourseSearchKBList
 import com.xhand.hnu.model.entity.CourseSearchPost
 import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.network.GradeService
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @SuppressLint("MutableCollectionMutableState")
 class CourseSearchViewModel(
-    context: Context,
-    settingsViewModel: SettingsViewModel
+    context: Context
 ) : ViewModel() {
 
-    private var userInfo: UserInfoEntity? = settingsViewModel.userInfo
+    private val userInfoManager = UserInfoManager(context)
+
+    init {
+        viewModelScope.launch {
+            val userInfoStore = userInfoManager.userInfo.firstOrNull()
+            userInfo = userInfoStore
+        }
+    }
+
+    private var userInfo: UserInfoEntity? = null
     private val searchService = GradeService.instance()
 
     var showDatePicker by mutableStateOf(false)
@@ -108,9 +118,10 @@ class CourseSearchViewModel(
             isGettingCourse = false
             Log.i("TAG2310", "getCourse(): $res")
         } catch (e: Exception) {
-            Log.i("TAG2310", e.toString())
+            Log.i("TAG2310", "getCourse: $e")
         }
     }
+
     fun courseSearch(searchContent: CourseSearchPost) = viewModelScope.launch {
         getCourse(searchContent)
     }

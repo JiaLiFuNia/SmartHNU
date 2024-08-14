@@ -1,6 +1,7 @@
 package com.xhand.hnu.components
 
 import android.widget.Toast
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -148,31 +148,39 @@ fun ShowSecondClassLoginDialog(
                         }
                     }
                 )
-                ClickableText(
+                Text(
                     text = AnnotatedString(
                         text = "如果你频繁遇到验证码错误，请点击此处刷新",
                         spanStyle = SpanStyle(
                             color = MaterialTheme.colorScheme.primary,
                             textDecoration = TextDecoration.Underline
                         )
-                    )
-                ) {
-                    coroutineScope.launch {
-                        viewModel.secondClassService()
-                    }
-                }
-                ClickableText(
+                    ),
+                    modifier = Modifier
+                        .basicMarquee()
+                        .clickable {
+                            coroutineScope.launch {
+                                viewModel.secondClassService()
+                            }
+                        },
+                )
+                Text(
                     text = AnnotatedString(
                         text = "忘记密码？",
                         spanStyle = SpanStyle(
                             color = MaterialTheme.colorScheme.primary,
                             textDecoration = TextDecoration.Underline
                         )
-                    )
-                ) {
-                    Toast.makeText(context, "请联系学校管理员解决", Toast.LENGTH_SHORT)
-                        .show()
-                }
+                    ),
+                    modifier = Modifier.clickable {
+                        Toast.makeText(
+                            context,
+                            "请联系学校管理员解决",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+                )
             }
         },
         onDismissRequest = { viewModel.isShowScDialog = false },

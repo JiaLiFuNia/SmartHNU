@@ -2,6 +2,8 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("kotlin-kapt")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -13,7 +15,7 @@ android {
         minSdk = 29
         targetSdk = 33
         versionCode = 1
-        versionName = "2.1.9"
+        versionName = "2.1.9.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -113,5 +115,9 @@ dependencies {
 
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.10")
 
-
+    val hilt_version = "2.52"
+    implementation("com.google.dagger:hilt-android:$hilt_version")
+    kapt("com.google.dagger:hilt-android-compiler:$hilt_version")
+    implementation("com.google.dagger:hilt-android-gradle-plugin:$hilt_version")
+    runtimeOnly("androidx.hilt:hilt-navigation-compose:1.2.0")
 }

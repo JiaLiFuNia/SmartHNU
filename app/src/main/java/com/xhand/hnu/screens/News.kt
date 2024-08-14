@@ -1,8 +1,6 @@
 package com.xhand.hnu.screens
 
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
@@ -35,7 +33,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.ScrollableTabRow
@@ -67,9 +64,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.placeholder.material.placeholder
@@ -79,63 +73,10 @@ import com.xhand.hnu.components.ArticleListItem
 import com.xhand.hnu.components.ModalBottomSheet
 import com.xhand.hnu.model.entity.ArticleListEntity
 import com.xhand.hnu.network.PictureListItem
+import com.xhand.hnu.screens.navigation.Destinations
 import com.xhand.hnu.viewmodel.NewsViewModel
-import com.xhand.hnu.viewmodel.SettingsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
-
-@Composable
-fun NavigationScreen(
-    viewModel: SettingsViewModel,
-    newsViewModel: NewsViewModel
-) {
-    val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = "newsList_screen",
-        enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(500)
-            )
-        },
-        exitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(500)
-            )
-        },
-        popEnterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(500)
-            )
-        },
-        popExitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(500)
-            )
-        }
-    ) {
-        composable("newsList_screen") {
-            NewsScreen(
-                navController = navController,
-                newsViewModel = newsViewModel
-            )
-        }
-        composable("detail_screen") {
-            ArticleDetailScreen(
-                viewModel = viewModel,
-                newsViewModel = newsViewModel,
-                onClick = {
-                    navController.popBackStack()
-                }
-            )
-        }
-    }
-}
 
 data class NewsOptions(
     val title: String,
@@ -299,7 +240,7 @@ fun NewsScreen(
                                     loaded = false,
                                     modifier = Modifier
                                         .clickable {
-                                            navController.navigate("detail_screen")
+                                            navController.navigate(Destinations.NewsDetail.route)
                                             newsViewModel.article = article
                                         },
                                     color = ListItemDefaults.colors(
@@ -483,7 +424,7 @@ fun NewsList(
                                         "师大要闻",
                                         false
                                     )
-                                    navController.navigate("detail_screen")
+                                    navController.navigate(Destinations.NewsDetail.route)
                                 },
                             contentScale = ContentScale.Crop
                         )
@@ -526,7 +467,7 @@ fun NewsList(
                         loaded = newsViewModel.isRefreshing,
                         modifier = Modifier
                             .clickable {
-                                navController.navigate("detail_screen")
+                                navController.navigate(Destinations.NewsDetail.route)
                                 newsViewModel.article = article
                             }
                     )

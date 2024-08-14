@@ -1,5 +1,6 @@
 package com.xhand.hnu.screens
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -102,8 +103,8 @@ fun GradeScreen(
         }
     }
     LaunchedEffect(Unit) {
-        gradeViewModel.isGettingGrade = true
-        gradeViewModel.gradeService()
+        if (gradeViewModel.gradeList.isEmpty())
+            gradeViewModel.gradeService()
         delay(500)
     }
     Scaffold(
@@ -143,6 +144,7 @@ fun GradeScreen(
         },
         floatingActionButtonPosition = FabPosition.End
     ) { values ->
+        Log.i("GradeScreen", "gradeViewModel ${gradeViewModel.isGettingGrade}")
         if (gradeViewModel.isGettingGrade)
             Box(
                 modifier = Modifier.fillMaxSize(),

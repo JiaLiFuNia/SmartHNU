@@ -44,10 +44,14 @@ fun CourseSearchDropDownTextField(
     val hapticFeedback = LocalHapticFeedback.current
     val focusManager = LocalFocusManager.current
 
-    val courseOptions = getSearchContentValueByKey(
-        courseSearchViewModel.searchCourseIndex,
-        content.courseIndex.toString()
-    ) as List<*>
+    val courseOptions = try {
+        getSearchContentValueByKey(
+            courseSearchViewModel.searchCourseIndex,
+            content.courseIndex.toString()
+        ) as List<*>
+    } catch (e: Exception) {
+        emptyList<Any>()
+    }
 
     ExposedDropdownMenuBox(
         expanded = isDropdownExpanded,

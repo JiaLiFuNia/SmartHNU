@@ -148,7 +148,7 @@ class NewsViewModel(context: Context) : ViewModel() {
             }
             hadGetNew = true
         } catch (e: Exception) {
-            Log.i("TAG666", "$e")
+            Log.i("TAG666", "newsList: $e")
         }
     }
 
@@ -187,6 +187,6 @@ class NewsViewModel(context: Context) : ViewModel() {
         val htmlRes = newsListService.getPicList(url = "https://www.htu.edu.cn/")
         // Log.i("TAG6656","${htmlRes.body()?.string()}")
         pictures = getPicList(str = htmlRes.body()?.string()).toMutableStateList()
-        Log.i("TAG6656", "$pictures")
+        Log.i("TAG6656", "imageLoad: $pictures")
     }
 }

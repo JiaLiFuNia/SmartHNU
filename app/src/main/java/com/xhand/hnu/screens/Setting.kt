@@ -1,10 +1,7 @@
 package com.xhand.hnu.screens
 
 import android.widget.Toast
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,8 +35,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
@@ -52,6 +47,7 @@ import com.xhand.hnu.components.SwitchListItem
 import com.xhand.hnu.components.UpdateDialog
 import com.xhand.hnu.model.entity.DarkMode
 import com.xhand.hnu.model.viewWebsite
+import com.xhand.hnu.screens.navigation.Destinations
 import com.xhand.hnu.viewmodel.SettingsViewModel
 
 fun DarkMode.toStringResourceId(): String {
@@ -62,48 +58,7 @@ fun DarkMode.toStringResourceId(): String {
     }
 }
 
-@Composable
-fun NavigationSettingScreen(viewModel: SettingsViewModel) {
-    val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = "setting_screen",
-        enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(500)
-            )
-        },
-        exitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(500)
-            )
-        },
-        popEnterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(500)
-            )
-        },
-        popExitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(500)
-            )
-        }
-    ) {
-        composable("setting_screen") {
-            SettingScreen(
-                navController = navController,
-                viewModel = viewModel
-            )
-        }
-        composable("guide_screen") {
-            GuideScreen(onBack = { navController.popBackStack() }, viewModel = viewModel)
-        }
-    }
-}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
@@ -196,7 +151,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 supportingText = "功能向导与使用说明",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = {
-                    navController.navigate("guide_screen")
+                    navController.navigate(Destinations.Guide.route)
                 },
                 trailingContent = {
                     Icon(

@@ -12,8 +12,8 @@
       "filters": [],
       "attributes": [],
       "versionCode": 1,
-      "versionName": "2.1.9",
-      "outputFile": "SmartHNNU_2.1.9.apk"
+      "versionName": "2.1.9.1",
+      "outputFile": "app-release.apk"
     }
   ],
   "elementType": "File"
