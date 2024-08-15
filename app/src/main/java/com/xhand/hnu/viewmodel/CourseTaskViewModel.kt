@@ -12,7 +12,7 @@ import com.xhand.hnu.model.entity.Skrwlist
 import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.network.GradeService
 
-class CourseTaskViewModel() : ViewModel() {
+class CourseTaskViewModel : ViewModel() {
 
     private val grade: String
         get() {

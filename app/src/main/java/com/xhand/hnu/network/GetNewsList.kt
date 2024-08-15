@@ -175,6 +175,6 @@ fun getPicList(str: String?): MutableList<PictureListItem> {
 fun preProcessNewsDetail(str: String?): String {
     val document: Document = Jsoup.parse(str.toString())
     document.select("h1").remove()
-    document.select("[class=arti_metas]").remove();
+    document.select("[class=arti_metas]").remove()
     return document.toString()
 }

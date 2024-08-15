@@ -4,7 +4,6 @@ import com.xhand.hnu.model.entity.BookBooks
 import com.xhand.hnu.model.entity.BookDetailEntity
 import com.xhand.hnu.model.entity.BookDetailPost
 import com.xhand.hnu.model.entity.BookPost
-import com.xhand.hnu.model.entity.BuildingEntiy
 import com.xhand.hnu.model.entity.CheckTokenEntity
 import com.xhand.hnu.model.entity.ClassroomEntity
 import com.xhand.hnu.model.entity.ClassroomPost

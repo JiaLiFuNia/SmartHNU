@@ -26,7 +26,6 @@ import com.xhand.hnu.model.entity.CheckTokenEntity
 import com.xhand.hnu.model.entity.ClassroomPost
 import com.xhand.hnu.model.entity.HourListEntity
 import com.xhand.hnu.model.entity.Jszylist
-import com.xhand.hnu.model.entity.Jxllist
 import com.xhand.hnu.model.entity.KbList
 import com.xhand.hnu.model.entity.Kxjcdata
 import com.xhand.hnu.model.entity.LoginPostEntity

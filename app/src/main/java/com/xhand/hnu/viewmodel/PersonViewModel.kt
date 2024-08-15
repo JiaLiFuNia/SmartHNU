@@ -17,6 +17,4 @@ data class FunctionCard(
     val route: String
 )
 
-class PersonViewModel : ViewModel() {
-
-}
+class PersonViewModel : ViewModel()

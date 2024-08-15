@@ -262,11 +262,11 @@ data class MyClass(
     val kcmc: String
 )
 
-data class BuildingEntiy(
+/*data class BuildingEntiy(
     val msg: String,
     val jxllist: List<Jxllist>,
     val code: Int,
-)
+)*/
 
 data class Jxllist(
     val jzwbh: String,
