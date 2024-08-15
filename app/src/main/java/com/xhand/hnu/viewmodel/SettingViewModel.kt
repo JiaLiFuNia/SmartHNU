@@ -358,7 +358,7 @@ class SettingsViewModel(
         }
     }
 
-    suspend fun buildingService() {
+        /*suspend fun buildingService() {
         try {
             val res = userInfo?.let { gradeService.buildingData(token = it.token) }
             if (res != null) {
@@ -369,7 +369,7 @@ class SettingsViewModel(
         } catch (e: Exception) {
             Log.i("TAG666", "$e")
         }
-    }
+    }*/
 
     var haveClassRoom = mutableListOf<Jszylist>()
     var allClassRoom = mutableListOf<Jszylist>()
@@ -481,12 +481,12 @@ class SettingsViewModel(
         }
     }
 
-    fun getCurrentDates(): String {
+    /*fun getCurrentDates(): String {
         val currentDate = LocalDate.now()
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val formattedDate = currentDate.format(formatter)
         return formattedDate
-    }
+    }*/
     /*suspend fun holidayService() {
         try {
             val res = holidayService.holiday()

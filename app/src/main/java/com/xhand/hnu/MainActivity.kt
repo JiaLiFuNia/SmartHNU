@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
                         viewModel = viewModel,
                         newsViewModel = newsViewModel,
                         courseSearchViewModel = CourseSearchViewModel(context),
-                        courseTaskViewModel = CourseTaskViewModel(context),
+                        courseTaskViewModel = CourseTaskViewModel(),
                         context = context
                     )
                 }

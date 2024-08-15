@@ -8,16 +8,12 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.xhand.hnu.model.UserInfoManager
 import com.xhand.hnu.model.entity.GradePost
 import com.xhand.hnu.model.entity.Skrwlist
 import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.network.GradeService
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
 
-class CourseTaskViewModel(context: Context) : ViewModel() {
+class CourseTaskViewModel() : ViewModel() {
 
     private val grade: String
         get() {
