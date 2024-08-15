@@ -12,45 +12,11 @@ import com.xhand.hnu.model.entity.Skrwlist
 import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.network.GradeService
 
-class CourseTaskViewModel : ViewModel() {
-
-    private val grade: String
-        get() {
-            return userInfo?.studentID?.substring(0, 2) ?: "22"
-        }
-    private val gradeInt: Int
-        get() {
-            return grade.toInt()
-        }
-
-    val longGradeTerm: MutableList<String>
-        get() {
-            return mutableListOf(
-                "20${gradeInt}-20${gradeInt + 1}-1",
-                "20${gradeInt}-20${gradeInt + 1}-2",
-                "20${gradeInt + 1}-20${gradeInt + 2}-1",
-                "20${gradeInt + 1}-20${gradeInt + 2}-2",
-                "20${gradeInt + 2}-20${gradeInt + 3}-1",
-                "20${gradeInt + 2}-20${gradeInt + 3}-2",
-                "20${gradeInt + 3}-20${gradeInt + 4}-1",
-                "20${gradeInt + 3}-20${gradeInt + 4}-2"
-            )
-        }
-
-    // 学期
-    val gradeTerm: MutableList<String>
-        get() {
-            return mutableListOf(
-                "20${gradeInt}01",
-                "20${gradeInt}02",
-                "20${gradeInt + 1}01",
-                "20${gradeInt + 1}02",
-                "20${gradeInt + 2}01",
-                "20${gradeInt + 2}02",
-                "20${gradeInt + 3}01",
-                "20${gradeInt + 3}02",
-            )
-        }
+class CourseTaskViewModel(
+    settingsViewModel: SettingsViewModel
+) : ViewModel() {
+    val gradeTerm = settingsViewModel.gradeTerm
+    val longGradeTerm = settingsViewModel.longGradeTerm
 
     var showBookSelect by mutableStateOf(false)
 

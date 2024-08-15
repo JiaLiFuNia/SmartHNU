@@ -44,8 +44,7 @@ data class GradeUiState(
 
 @SuppressLint("MutableCollectionMutableState")
 class GradeViewModel(
-    settingsViewModel: SettingsViewModel,
-    context: Context
+    settingsViewModel: SettingsViewModel
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -55,17 +54,6 @@ class GradeViewModel(
         )
     )
     val uiState: StateFlow<GradeUiState> = _uiState.asStateFlow()
-
-    val checkboxes = mutableStateListOf<TermCheckBoxes>().apply {
-        addAll(settingsViewModel.longGradeTerm.map {
-            TermCheckBoxes(
-                isChecked = it == settingsViewModel.gradeTerm[0],
-                term = it
-            )
-        }
-        )
-    }
-
 
     fun convertTermToIndex(term: MutableList<String>): List<String> {
         term.forEachIndexed { index, _ ->

@@ -1,7 +1,6 @@
 package com.xhand.hnu.viewmodel
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -11,32 +10,19 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.xhand.hnu.components.CourseSearchContentKeys
-import com.xhand.hnu.model.UserInfoManager
 import com.xhand.hnu.model.entity.CourseSearchIndexEntity
 import com.xhand.hnu.model.entity.CourseSearchKBList
 import com.xhand.hnu.model.entity.CourseSearchPost
 import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.network.GradeService
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @SuppressLint("MutableCollectionMutableState")
-class CourseSearchViewModel(
-    context: Context
-) : ViewModel() {
+class CourseSearchViewModel() : ViewModel() {
 
-    private val userInfoManager = UserInfoManager(context)
-
-    init {
-        viewModelScope.launch {
-            val userInfoStore = userInfoManager.userInfo.firstOrNull()
-            userInfo = userInfoStore
-        }
-    }
-
-    private var userInfo: UserInfoEntity? = null
+    var userInfo: UserInfoEntity? = null
     private val searchService = GradeService.instance()
 
     var showDatePicker by mutableStateOf(false)

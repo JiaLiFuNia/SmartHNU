@@ -63,6 +63,7 @@ import com.xhand.hnu.components.ShowSecondClassLoginDialog
 import com.xhand.hnu.components.chart.GPAChangeLineChart
 import com.xhand.hnu.components.chart.HourChart
 import com.xhand.hnu.screens.navigation.Destinations
+import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import com.xhand.hnu.viewmodel.CourseTaskViewModel
 import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
@@ -82,6 +83,7 @@ fun PersonScreen(
     viewModel: SettingsViewModel,
     gradeViewModel: GradeViewModel,
     courseTaskViewModel: CourseTaskViewModel,
+    courseSearchViewModel: CourseSearchViewModel,
     context: Context
 ) {
     val checkboxes = viewModel.checkboxes
@@ -91,9 +93,10 @@ fun PersonScreen(
     val scrollState = rememberScrollState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewModel.isLoginSuccess) {
         gradeViewModel.uiState.value.userInfoEntity = viewModel.userInfo
         courseTaskViewModel.userInfo = viewModel.userInfo
+        courseSearchViewModel.userInfo = viewModel.userInfo
     }
     LaunchedEffect(viewModel.isLoginSuccess) {
         viewModel.checkToken()

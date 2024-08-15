@@ -49,8 +49,8 @@ class MainActivity : ComponentActivity() {
                     NavHostScreen(
                         viewModel = viewModel,
                         newsViewModel = newsViewModel,
-                        courseSearchViewModel = CourseSearchViewModel(context),
-                        courseTaskViewModel = CourseTaskViewModel(),
+                        courseSearchViewModel = CourseSearchViewModel(),
+                        courseTaskViewModel = CourseTaskViewModel(viewModel),
                         context = context
                     )
                 }

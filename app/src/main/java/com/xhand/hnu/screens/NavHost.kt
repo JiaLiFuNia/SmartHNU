@@ -26,7 +26,7 @@ fun NavHostScreen(
 ) {
     val navController = rememberNavController()
     CompositionLocalProvider(
-        LocalGradeViewModel provides GradeViewModel(viewModel, context)
+        LocalGradeViewModel provides GradeViewModel(viewModel)
     ) {
         val gradeViewModel = LocalGradeViewModel.current
         NavHost(
@@ -60,6 +60,7 @@ fun NavHostScreen(
                     navController = navController,
                     gradeViewModel = gradeViewModel,
                     courseTaskViewModel = courseTaskViewModel,
+                    courseSearchViewModel = courseSearchViewModel,
                     context = context
                 )
             }

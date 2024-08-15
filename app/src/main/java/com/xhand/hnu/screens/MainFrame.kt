@@ -38,6 +38,7 @@ import com.xhand.hnu.components.UpdateDialog
 import com.xhand.hnu.model.NetworkConnectionState
 import com.xhand.hnu.model.rememberConnectivityState
 import com.xhand.hnu.ui.icon.rememberWifiOff
+import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import com.xhand.hnu.viewmodel.CourseTaskViewModel
 import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.NewsViewModel
@@ -50,6 +51,7 @@ fun MainFrame(
     navController: NavHostController,
     gradeViewModel: GradeViewModel,
     courseTaskViewModel: CourseTaskViewModel,
+    courseSearchViewModel: CourseSearchViewModel,
     context: Context
 ) {
     val connectionState by rememberConnectivityState()
@@ -128,7 +130,8 @@ fun MainFrame(
                             viewModel = viewModel,
                             gradeViewModel = gradeViewModel,
                             context = context,
-                            courseTaskViewModel = courseTaskViewModel
+                            courseTaskViewModel = courseTaskViewModel,
+                            courseSearchViewModel = courseSearchViewModel
                         )
 
                         1 -> NewsScreen(
