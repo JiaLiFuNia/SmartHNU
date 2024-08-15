@@ -11,7 +11,6 @@ import com.xhand.hnu.screens.NavHostScreen
 import com.xhand.hnu.ui.theme.MyApplicationTheme
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import com.xhand.hnu.viewmodel.CourseTaskViewModel
-import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.LocalNewsViewModel
 import com.xhand.hnu.viewmodel.LocalUserViewModel
 import com.xhand.hnu.viewmodel.NewsViewModel

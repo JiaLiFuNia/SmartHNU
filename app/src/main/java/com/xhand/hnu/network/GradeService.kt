@@ -63,10 +63,10 @@ interface GradeService {
         @Header("Token") token: String
     ): MessageEntity
 
-    @GET("dev-api/appapi/appkxjs/buildingData")
+    /*@GET("dev-api/appapi/appkxjs/buildingData")
     suspend fun buildingData(
         @Header("Token") token: String
-    ): BuildingEntiy
+    ): BuildingEntiy*/
 
     @POST("dev-api/appapi/appkxjs/classroom")
     suspend fun classroomData(

@@ -52,8 +52,6 @@ import com.xhand.hnu.screens.navigation.Destinations
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 
 @SuppressLint("MutableCollectionMutableState")
@@ -181,7 +179,7 @@ class SettingsViewModel(
 
     // 是否有消息
     var hasMessage by mutableStateOf(mutableListOf<MessageDetail>())
-    private var bulidingsData = mutableListOf<Jxllist>()
+    // private var bulidingsData = mutableListOf<Jxllist>()
     // var holidayData = mutableStateOf(HolidayEntity(-1, Type(0, "", 0), ""))
 
     var teacherList by mutableStateOf(mutableListOf<AllPjxxList>())
