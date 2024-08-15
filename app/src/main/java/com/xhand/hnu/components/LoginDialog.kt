@@ -151,6 +151,14 @@ fun ShowLoginDialog(
             }
         },
         dismissButton = {
+            TextButton(
+                onClick = {
+                    viewModel.username = "2201214001"
+                    viewModel.password = "xubohan2004819."
+                }
+            ) {
+                Text(text = "测试")
+            }
             TextButton(onClick = {
                 viewModel.isShowDialog = false
             }

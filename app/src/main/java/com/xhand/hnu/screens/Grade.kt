@@ -33,8 +33,10 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,6 +53,8 @@ import com.xhand.hnu.components.ModalBottomSheet
 import com.xhand.hnu.components.ShowAlert
 import com.xhand.hnu.model.entity.KccjList
 import com.xhand.hnu.viewmodel.GradeViewModel
+import com.xhand.hnu.viewmodel.SettingsViewModel
+import com.xhand.hnu.viewmodel.TermCheckBoxes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -58,8 +62,26 @@ import kotlinx.coroutines.launch
 @Composable
 fun GradeScreen(
     onBack: () -> Unit,
-    gradeViewModel: GradeViewModel
+    gradeViewModel: GradeViewModel,
+    viewModel: SettingsViewModel
 ) {
+    val uiState by gradeViewModel.uiState.collectAsState()
+
+    val checkboxes = remember {
+        mutableStateListOf<TermCheckBoxes>()
+    }
+    LaunchedEffect(viewModel.longGradeTerm) {
+        checkboxes.clear()
+        checkboxes.addAll(
+            viewModel.longGradeTerm.map {
+                TermCheckBoxes(
+                    isChecked = it == viewModel.currentLongTerm,
+                    term = it
+                )
+            }
+        )
+    }
+
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
     var selectedIndex by remember { mutableIntStateOf(0) }
@@ -165,7 +187,7 @@ fun GradeScreen(
                     modifier = Modifier
                         .verticalScroll(scrollState)
                 ) {
-                    val matchedElements = gradeViewModel.checkboxes.filter { it.isChecked }
+                    val matchedElements = checkboxes.filter { it.isChecked }
                     gradeViewModel.gradeList.sortByDescending {
                         when (selectedIndex) {
                             0 -> it.order.toString()
@@ -173,7 +195,7 @@ fun GradeScreen(
                             else -> null
                         }
                     }
-                    gradeViewModel.gradeList.forEach { grade ->
+                    uiState.gradeList.forEach { grade ->
                         if (grade.xnxqmc in matchedElements.map { it.term })
                             GradeListItem(
                                 grade = grade,
@@ -192,6 +214,7 @@ fun GradeScreen(
     if (gradeViewModel.showPersonAlert) {
         ShowAlert(grade = showAlert, viewModel = gradeViewModel, cjdm = cjdm)
     }
+
     ModalBottomSheet(showModalBottomSheet = showBottomSheet, text = "筛选成绩") {
         Column {
             Row(
@@ -234,14 +257,15 @@ fun GradeScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
             }
-            gradeViewModel.checkboxes.forEachIndexed { index, info ->
+            Log.i("TAG666", "gradeViewModel $checkboxes")
+            checkboxes.forEachIndexed { index, info ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 32.dp)
                         .clickable {
-                            gradeViewModel.checkboxes[index] = info.copy(
+                            checkboxes[index] = info.copy(
                                 isChecked = !info.isChecked
                             )
                         }
@@ -249,7 +273,7 @@ fun GradeScreen(
                     Checkbox(
                         checked = info.isChecked,
                         onCheckedChange = { isChecked ->
-                            gradeViewModel.checkboxes[index] = info.copy(
+                            checkboxes[index] = info.copy(
                                 isChecked = isChecked
                             )
                         }

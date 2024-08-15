@@ -15,6 +15,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -45,6 +47,7 @@ import com.xhand.hnu.components.ShowAlert
 import com.xhand.hnu.components.ShowLoginDialog
 import com.xhand.hnu.components.SwitchListItem
 import com.xhand.hnu.components.UpdateDialog
+import com.xhand.hnu.components.copyText
 import com.xhand.hnu.model.entity.DarkMode
 import com.xhand.hnu.model.viewWebsite
 import com.xhand.hnu.screens.navigation.Destinations
@@ -171,15 +174,24 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
             )
             BasicListItem(
                 headlineText = "检查更新",
-                supportingText = "点击以检查更新",
+                supportingText = if (viewModel.ifNeedUpdate) "有新版本可用" else "点击以检查更新",
                 leadingContent = {
                     if (viewModel.isGettingUpdate)
                         CircularProgressIndicator(
                             modifier = Modifier.size(22.dp),
                             strokeWidth = 3.dp
                         )
-                    else
-                        Icon(Icons.Default.Refresh, contentDescription = null)
+                    else {
+                        BadgedBox(
+                            badge = {
+                                if (viewModel.ifNeedUpdate) {
+                                    Badge()
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Default.Refresh, contentDescription = null)
+                        }
+                    }
                 },
                 onClick = {
                     viewModel.updateRes(currentVersion)
@@ -202,7 +214,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 supportingText = "发送邮件提供你的意见及建议",
                 leadingImageVector = R.drawable.ic_outline_chat,
                 onClick = {
-                    viewModel.copyText(cbManager, "smarthnu@proton.me")
+                    copyText(cbManager, "smarthnu@proton.me")
                     Toast.makeText(context, "已复制邮件地址", Toast.LENGTH_SHORT).show()
                 }
             )
@@ -241,13 +253,4 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
         }
         UpdateDialog(viewModel = viewModel)
     }
-}
-
-@Preview
-@Composable
-fun SettingScreenPreview() {
-    SettingScreen(
-        viewModel = SettingsViewModel(LocalContext.current),
-        navController = rememberNavController()
-    )
 }

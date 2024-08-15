@@ -9,75 +9,63 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.xhand.hnu.model.UserInfoManager
 import com.xhand.hnu.model.entity.GradeDetailPost
 import com.xhand.hnu.model.entity.GradeInfo
 import com.xhand.hnu.model.entity.GradePost
 import com.xhand.hnu.model.entity.JDList
 import com.xhand.hnu.model.entity.JDPost
 import com.xhand.hnu.model.entity.KccjList
+import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.model.entity.Xscj
 import com.xhand.hnu.network.GradeService
-import jakarta.inject.Inject
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 data class TermCheckBoxes(
     val isChecked: Boolean,
     val term: String
 )
 
+data class GradeUiState(
+    val isShowPersonAlert: Boolean = false,
+    val isGettingDetailGrade: Boolean = true,
+    val isGettingGrade: Boolean = true,
+    val isGettingJD: Boolean = true,
+    val gradeDetail: GradeInfo? = null,
+    val gradeDetails: Xscj? = null,
+    val gradeList: List<KccjList> = emptyList(),
+    val jdList: List<JDList> = emptyList(),
+    var userInfoEntity: UserInfoEntity? = null,
+    val gradeTerm: List<String>,
+    val longGradeTerm: List<String>
+)
+
 @SuppressLint("MutableCollectionMutableState")
-class GradeViewModel @Inject constructor(
+class GradeViewModel(
     settingsViewModel: SettingsViewModel,
     context: Context
 ) : ViewModel() {
 
-    private val userInfoManager = UserInfoManager(context)
-
-    init {
-        viewModelScope.launch {
-            val userInfoStore = userInfoManager.userInfo.firstOrNull()
-            userInfo = userInfoStore
-        }
-    }
-
-    private val grade = settingsViewModel.longGradeTerm
-    var checkboxes = mutableStateListOf(
-        TermCheckBoxes(
-            isChecked = false,
-            term = grade[0]
-        ),
-        TermCheckBoxes(
-            isChecked = false,
-            term = grade[1]
-        ),
-        TermCheckBoxes(
-            isChecked = true,
-            term = grade[2]
-        ),
-        TermCheckBoxes(
-            isChecked = true,
-            term = grade[3]
-        ),
-        TermCheckBoxes(
-            isChecked = false,
-            term = grade[4]
-        ),
-        TermCheckBoxes(
-            isChecked = false,
-            term = grade[5]
-        ),
-        TermCheckBoxes(
-            isChecked = false,
-            term = grade[6]
-        ),
-        TermCheckBoxes(
-            isChecked = false,
-            term = grade[7]
+    private val _uiState = MutableStateFlow(
+        GradeUiState(
+            gradeTerm = settingsViewModel.gradeTerm,
+            longGradeTerm = settingsViewModel.longGradeTerm
         )
     )
+    val uiState: StateFlow<GradeUiState> = _uiState.asStateFlow()
+
+    val checkboxes = mutableStateListOf<TermCheckBoxes>().apply {
+        addAll(settingsViewModel.longGradeTerm.map {
+            TermCheckBoxes(
+                isChecked = it == settingsViewModel.gradeTerm[0],
+                term = it
+            )
+        }
+        )
+    }
+
 
     fun convertTermToIndex(term: MutableList<String>): List<String> {
         term.forEachIndexed { index, _ ->
@@ -100,9 +88,6 @@ class GradeViewModel @Inject constructor(
         }
         return term
     }
-
-    private val gradeTerm = settingsViewModel.gradeTerm
-    private var userInfo = settingsViewModel.userInfo
 
     // 成绩详情
     var showPersonAlert by mutableStateOf(false)
@@ -142,12 +127,12 @@ class GradeViewModel @Inject constructor(
 
     // 成绩请求
     suspend fun gradeService() {
-        Log.i("TAG666", "gradeService(): $gradeTerm")
+        Log.i("TAG666", "gradeService(): ${_uiState.value.gradeTerm}")
         gradeList.clear() // 下拉刷新时置空
         var order = 0
         try {
-            for (term in gradeTerm) {
-                val res = userInfo?.let {
+            for (term in _uiState.value.gradeTerm) {
+                val res = _uiState.value.userInfoEntity?.let {
                     gradeService.gradePost(
                         GradePost(term),
                         token = it.token
@@ -166,6 +151,9 @@ class GradeViewModel @Inject constructor(
                     }
                 }
             }
+            _uiState.update { uiState ->
+                uiState.copy(gradeList = gradeList)
+            }
             isGettingGrade = false
         } catch (e: Exception) {
             isGettingGrade = false
@@ -178,7 +166,12 @@ class GradeViewModel @Inject constructor(
     suspend fun gradeDetailService(cjdm: String) {
         try {
             val res =
-                userInfo?.let { gradeService.gradeDetail(GradeDetailPost(cjdm), it.token) }
+                _uiState.value.userInfoEntity?.let {
+                    gradeService.gradeDetail(
+                        GradeDetailPost(cjdm),
+                        it.token
+                    )
+                }
             if (res != null) {
                 if (res.code == 200) {
                     gradeDetail = res.info1
@@ -186,7 +179,12 @@ class GradeViewModel @Inject constructor(
                 }
             }
             val detail =
-                userInfo?.let { gradeService.gradeDetails(GradeDetailPost(cjdm), it.token) }
+                _uiState.value.userInfoEntity?.let {
+                    gradeService.gradeDetails(
+                        GradeDetailPost(cjdm),
+                        it.token
+                    )
+                }
             if (detail != null) {
                 if (detail.code == 200) {
                     gradeDetails = detail.xscj
@@ -201,7 +199,13 @@ class GradeViewModel @Inject constructor(
 
     suspend fun jDService() {
         try {
-            val res = userInfo?.let { gradeService.gradeJDDetail(JDPost("1", "01"), it.token) }
+            Log.i("TAG666", "jDService(): ${_uiState.value.userInfoEntity}")
+            val res = _uiState.value.userInfoEntity?.let {
+                gradeService.gradeJDDetail(
+                    JDPost("1", "01"),
+                    it.token
+                )
+            }
             if (res != null) {
                 if (res.code == 200) {
                     jdList = res.list.toMutableList()

@@ -38,6 +38,7 @@ import com.xhand.hnu.components.UpdateDialog
 import com.xhand.hnu.model.NetworkConnectionState
 import com.xhand.hnu.model.rememberConnectivityState
 import com.xhand.hnu.ui.icon.rememberWifiOff
+import com.xhand.hnu.viewmodel.CourseTaskViewModel
 import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
@@ -48,6 +49,7 @@ fun MainFrame(
     newsViewModel: NewsViewModel,
     navController: NavHostController,
     gradeViewModel: GradeViewModel,
+    courseTaskViewModel: CourseTaskViewModel,
     context: Context
 ) {
     val connectionState by rememberConnectivityState()
@@ -60,19 +62,19 @@ fun MainFrame(
             title = "我的",
             selectedIcon = R.drawable.ic_filled_person,
             unselectedIcon = R.drawable.ic_outline_person,
-            hasNews = remember { mutableStateOf(false) }
+            hasNews = false
         ),
         BottomNavigationItem(
             title = "新闻",
             selectedIcon = R.drawable.ic_filled_article,
             unselectedIcon = R.drawable.ic_outline_article,
-            hasNews = remember { mutableStateOf(false) }
+            hasNews = false
         ),
         BottomNavigationItem(
             title = "设置",
             selectedIcon = R.drawable.ic_filled_settings,
             unselectedIcon = R.drawable.ic_outline_settings,
-            hasNews = remember { mutableStateOf(false) }
+            hasNews = viewModel.ifNeedUpdate
         )
     )
     var selectedItemIndex by rememberSaveable {
@@ -90,7 +92,6 @@ fun MainFrame(
                                 selected = selectedItemIndex == index,
                                 onClick = {
                                     selectedItemIndex = index
-                                    bottomNavigationItem.hasNews.value = false
                                 },
                                 label = {
                                     Text(text = bottomNavigationItem.title)
@@ -99,7 +100,7 @@ fun MainFrame(
                                 icon = {
                                     BadgedBox(
                                         badge = {
-                                            if (bottomNavigationItem.hasNews.value) {
+                                            if (bottomNavigationItem.hasNews) {
                                                 Badge()
                                             }
                                         }
@@ -126,7 +127,8 @@ fun MainFrame(
                             navController = navController,
                             viewModel = viewModel,
                             gradeViewModel = gradeViewModel,
-                            context = context
+                            context = context,
+                            courseTaskViewModel = courseTaskViewModel
                         )
 
                         1 -> NewsScreen(

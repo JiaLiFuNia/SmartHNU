@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.xhand.hnu.screens.NavHostScreen
@@ -23,7 +22,7 @@ data class BottomNavigationItem(
     var title: String,
     var selectedIcon: Int,
     val unselectedIcon: Int,
-    val hasNews: MutableState<Boolean>
+    val hasNews: Boolean
 )
 
 @AndroidEntryPoint
@@ -31,13 +30,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val context = LocalContext.current
             CompositionLocalProvider(
-                LocalUserViewModel provides SettingsViewModel(LocalContext.current),
-                LocalNewsViewModel provides NewsViewModel(LocalContext.current),
+                LocalUserViewModel provides SettingsViewModel(context),
+                LocalNewsViewModel provides NewsViewModel(context),
             ) {
                 val viewModel = LocalUserViewModel.current
                 val newsViewModel = LocalNewsViewModel.current
-                val context = LocalContext.current
                 val currentVersion = stringResource(id = R.string.version)
                 LaunchedEffect(Unit) {
                     viewModel.updateService(currentVersion)
@@ -53,7 +52,6 @@ class MainActivity : ComponentActivity() {
                         newsViewModel = newsViewModel,
                         courseSearchViewModel = CourseSearchViewModel(context),
                         courseTaskViewModel = CourseTaskViewModel(context),
-                        gradeViewModel = GradeViewModel(viewModel, context),
                         context = context
                     )
                 }
