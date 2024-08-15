@@ -498,3 +498,13 @@ data class User (
     val userxm: String,
     val token: String
 )
+
+
+
+data class GradeIndexEntity (
+    val msg: String,
+    val xnxqList: List<XnxqList>,
+    val code: Long,
+    val xnxqdm: String,
+    val xnxqmc: String
+)

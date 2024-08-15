@@ -19,15 +19,6 @@ import kotlinx.coroutines.launch
 
 class CourseTaskViewModel(context: Context) : ViewModel() {
 
-    private val userInfoManager = UserInfoManager(context)
-
-    init {
-        viewModelScope.launch {
-            val userInfoStore = userInfoManager.userInfo.firstOrNull()
-            userInfo = userInfoStore
-        }
-    }
-
     private val grade: String
         get() {
             return userInfo?.studentID?.substring(0, 2) ?: "22"
@@ -68,7 +59,7 @@ class CourseTaskViewModel(context: Context) : ViewModel() {
 
     var showBookSelect by mutableStateOf(false)
 
-    private var userInfo: UserInfoEntity? = null
+    var userInfo: UserInfoEntity? = null
     private val taskService = GradeService.instance()
 
     @SuppressLint("MutableCollectionMutableState")

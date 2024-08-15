@@ -16,6 +16,7 @@ import com.xhand.hnu.model.entity.GradeDetailEntity
 import com.xhand.hnu.model.entity.GradeDetailPost
 import com.xhand.hnu.model.entity.GradeDetailsEntity
 import com.xhand.hnu.model.entity.GradeEntity
+import com.xhand.hnu.model.entity.GradeIndexEntity
 import com.xhand.hnu.model.entity.GradePost
 import com.xhand.hnu.model.entity.HadBookDetailEntity
 import com.xhand.hnu.model.entity.JDEntity
@@ -124,6 +125,12 @@ interface GradeService {
     suspend fun courseSearchIndex(
         @Header("Token") token: String
     ): CourseSearchIndexEntity
+
+
+    @POST("dev-api/appapi/Studentcj/index")
+    suspend fun gradeIndex(
+        @Header("Token") token: String
+    ): GradeIndexEntity
 
     companion object {
         fun instance(): GradeService {

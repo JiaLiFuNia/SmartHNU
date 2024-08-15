@@ -50,7 +50,6 @@ fun CourseTaskScreen(
     LaunchedEffect(viewModel.selectTerm) {
         viewModel.isGettingTask = true
         viewModel.getTask(viewModel.gradeTerm[viewModel.selectTerm])
-        viewModel.isGettingTask = false
     }
     var isRefreshing by remember { mutableStateOf(false) }
     val state = rememberPullToRefreshState()

@@ -49,7 +49,6 @@ import com.xhand.hnu.network.UpdateService
 import com.xhand.hnu.network.secondClassLoginState
 import com.xhand.hnu.network.secondClassParsing
 import com.xhand.hnu.screens.navigation.Destinations
-import jakarta.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -58,10 +57,10 @@ import java.time.format.DateTimeFormatter
 
 
 @SuppressLint("MutableCollectionMutableState")
-class SettingsViewModel @Inject constructor(
+class SettingsViewModel(
     context: Context
 ) : ViewModel() {
-    private val userInfoManager = UserInfoManager(context)
+    private val userInfoManager = UserInfoManager(context = context)
     init {
         viewModelScope.launch {
             val isLogged = userInfoManager.logged.firstOrNull()
@@ -187,45 +186,11 @@ class SettingsViewModel @Inject constructor(
 
     var teacherList by mutableStateOf(mutableListOf<AllPjxxList>())
 
-    // 学号 年级
-    private val grade: String
-        get() {
-            return userInfo?.studentID?.substring(0, 2) ?: "22"
-        }
+    private var currentTerm by mutableStateOf("")
+    var currentLongTerm by mutableStateOf("")
 
-    private val gradeInt: Int
-        get() {
-            return grade.toInt()
-        }
-
-    val longGradeTerm: MutableList<String>
-        get() {
-            return mutableListOf(
-                "20${gradeInt}-20${gradeInt + 1}-1",
-                "20${gradeInt}-20${gradeInt + 1}-2",
-                "20${gradeInt + 1}-20${gradeInt + 2}-1",
-                "20${gradeInt + 1}-20${gradeInt + 2}-2",
-                "20${gradeInt + 2}-20${gradeInt + 3}-1",
-                "20${gradeInt + 2}-20${gradeInt + 3}-2",
-                "20${gradeInt + 3}-20${gradeInt + 4}-1",
-                "20${gradeInt + 3}-20${gradeInt + 4}-2"
-            )
-        }
-
-    // 学期
-    val gradeTerm: MutableList<String>
-        get() {
-            return mutableListOf(
-                "20${gradeInt + 3}02",
-                "20${gradeInt + 3}01",
-                "20${gradeInt + 2}02",
-                "20${gradeInt + 2}01",
-                "20${gradeInt + 1}02",
-                "20${gradeInt + 1}01",
-                "20${gradeInt}02",
-                "20${gradeInt}01",
-            )
-        }
+    var longGradeTerm by mutableStateOf(mutableListOf<String>())
+    var gradeTerm by mutableStateOf(mutableListOf<String>())
 
     // 网络请求
     private val gradeService = GradeService.instance()
@@ -296,6 +261,31 @@ class SettingsViewModel @Inject constructor(
             stateCode = 0
             userInfo = null
             loginCode = 0
+        }
+    }
+
+    suspend fun gradeIndex() {
+        try {
+            longGradeTerm.clear()
+            gradeTerm.clear()
+            val res = userInfo?.let { gradeService.gradeIndex(it.token) }
+            if (res != null) {
+                currentTerm = res.xnxqdm
+                currentLongTerm = res.xnxqmc
+                val userGrade = userInfo?.studentID?.substring(0, 2)?.toInt() ?: 0
+                res.xnxqList.forEach {
+                    if (it.value.substring(2, 4).toInt() >= userGrade && it.value.substring(2, 4)
+                            .toInt() <= userGrade + 4
+                    ) {
+                        longGradeTerm.add(it.title)
+                        gradeTerm.add(it.value)
+                    }
+                }
+            }
+        } catch (
+            e: Exception
+        ) {
+            Log.i("TAG666", "gradeIndex: $e")
         }
     }
 

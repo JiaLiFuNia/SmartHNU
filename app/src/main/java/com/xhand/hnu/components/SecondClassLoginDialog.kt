@@ -211,9 +211,3 @@ fun ShowSecondClassLoginDialog(
         }
     )
 }
-
-@Preview
-@Composable
-fun PreviewShowSecondClassLoginDialog() {
-    ShowSecondClassLoginDialog(SettingsViewModel(context = LocalContext.current))
-}

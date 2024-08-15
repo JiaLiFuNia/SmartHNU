@@ -28,5 +28,7 @@ data class XnxqList(
     @SerializedName("xnxqdm")
     val value: String,
     @SerializedName("xnxqmc")
-    val title: String
+    val title: String,
+    val mrczxq: String,
+    val xnd: String
 )
