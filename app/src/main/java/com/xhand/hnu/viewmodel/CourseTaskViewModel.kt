@@ -1,6 +1,5 @@
 package com.xhand.hnu.viewmodel
 
-import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -11,31 +10,51 @@ import com.xhand.hnu.model.entity.GradePost
 import com.xhand.hnu.model.entity.Skrwlist
 import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.network.GradeService
+import com.xhand.hnu.repository.Term
+import com.xhand.hnu.repository.TokenRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
-class CourseTaskViewModel(
-    settingsViewModel: SettingsViewModel
-) : ViewModel() {
-    val gradeTerm = settingsViewModel.gradeTerm
-    val longGradeTerm = settingsViewModel.longGradeTerm
+data class CourseTaskUiState(
+    val isGettingTask: Boolean = true,
+    var taskList: List<Skrwlist> = emptyList(),
+    var userInfo: UserInfoEntity? = null
+)
+
+class CourseTaskViewModel : ViewModel() {
+    private val _uiState = MutableStateFlow(CourseTaskUiState())
+    val uiState: StateFlow<CourseTaskUiState> = _uiState.asStateFlow()
+
+    val term: Term = TokenRepository.getCurrentTerm()
+    val longGradeTerm = term.longGradeTerm
+    val currentTerm = term.currentLongTerm
 
     var showBookSelect by mutableStateOf(false)
 
-    var userInfo: UserInfoEntity? = null
     private val taskService = GradeService.instance()
 
-    @SuppressLint("MutableCollectionMutableState")
-    var taskList = mutableListOf<Skrwlist>()
-    var selectTerm by mutableIntStateOf(4)
+    var selectTerm by mutableIntStateOf(
+        longGradeTerm.indexOf(
+            term.nextLongTerm
+        )
+    )
     var isGettingTask by mutableStateOf(true)
     suspend fun getTask(xnxqdm: String) {
         try {
+            Log.i("TAG666", "getTask: $selectTerm")
             val res =
-                taskService.courseTask(GradePost(xnxqdm), token = userInfo?.token ?: "")
+                taskService.courseTask(GradePost(xnxqdm), token = _uiState.value.userInfo?.token ?: "")
             if (res.code == 200) {
-                taskList = res.skrwlist.toMutableList()
-                Log.i("TAG666", "getTask: $taskList")
+                _uiState.update {
+                    it.copy(taskList = res.skrwlist)
+                }
+                Log.i("TAG666", "getTask: ${_uiState.value.taskList}")
             }
-            isGettingTask = false
+            _uiState.update {
+                it.copy(isGettingTask = false)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }

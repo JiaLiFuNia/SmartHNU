@@ -2,10 +2,8 @@ package com.xhand.hnu.viewmodel
 
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -18,6 +16,7 @@ import com.xhand.hnu.model.entity.KccjList
 import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.model.entity.Xscj
 import com.xhand.hnu.network.GradeService
+import com.xhand.hnu.repository.TokenRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,28 +30,24 @@ data class TermCheckBoxes(
 data class GradeUiState(
     val isShowPersonAlert: Boolean = false,
     val isGettingDetailGrade: Boolean = true,
-    val isGettingGrade: Boolean = true,
+    var isGettingGrade: Boolean = true,
     val isGettingJD: Boolean = true,
     val gradeDetail: GradeInfo? = null,
     val gradeDetails: Xscj? = null,
     val gradeList: List<KccjList> = emptyList(),
     val jdList: List<JDList> = emptyList(),
     var userInfoEntity: UserInfoEntity? = null,
-    val gradeTerm: List<String>,
-    val longGradeTerm: List<String>
 )
 
 @SuppressLint("MutableCollectionMutableState")
-class GradeViewModel(
-    settingsViewModel: SettingsViewModel
-) : ViewModel() {
+class GradeViewModel : ViewModel() {
 
-    private val _uiState = MutableStateFlow(
-        GradeUiState(
-            gradeTerm = settingsViewModel.gradeTerm,
-            longGradeTerm = settingsViewModel.longGradeTerm
-        )
-    )
+    private val term = TokenRepository.getCurrentTerm()
+    val longGradeTerm = term.longGradeTerm
+    val currentLongTerm = term.currentLongTerm
+    private val gradeTerm = term.gradeTerm
+
+    private val _uiState = MutableStateFlow(GradeUiState())
     val uiState: StateFlow<GradeUiState> = _uiState.asStateFlow()
 
     fun convertTermToIndex(term: MutableList<String>): List<String> {
@@ -107,7 +102,6 @@ class GradeViewModel(
 
     // 加载中
     var isGettingDetailGrade by mutableStateOf(true)
-    var isGettingGrade by mutableStateOf(true)
     var isGettingJD by mutableStateOf(true)
 
     // 网络请求
@@ -115,11 +109,11 @@ class GradeViewModel(
 
     // 成绩请求
     suspend fun gradeService() {
-        Log.i("TAG666", "gradeService(): ${_uiState.value.gradeTerm}")
+        Log.i("TAG666", "gradeService(): gradeTerm: $gradeTerm${_uiState.value.userInfoEntity}")
         gradeList.clear() // 下拉刷新时置空
         var order = 0
         try {
-            for (term in _uiState.value.gradeTerm) {
+            for (term in gradeTerm) {
                 val res = _uiState.value.userInfoEntity?.let {
                     gradeService.gradePost(
                         GradePost(term),
@@ -134,20 +128,20 @@ class GradeViewModel(
                             i.order = order
                         }
                         gradeList.addAll(res.kccjList)
-                    } else {
-                        Log.i("TAG666", "null")
                     }
+                } else {
+                    Log.i("TAG666", "$res")
                 }
             }
             _uiState.update { uiState ->
                 uiState.copy(gradeList = gradeList)
             }
-            isGettingGrade = false
+            _uiState.update { uiState ->
+                uiState.copy(isGettingGrade = false)
+            }
         } catch (e: Exception) {
-            isGettingGrade = false
             Log.i("TAG666", "gradeService: $e")
         }
-
     }
 
     // 成绩请求
@@ -187,6 +181,9 @@ class GradeViewModel(
 
     suspend fun jDService() {
         try {
+            _uiState.update {
+                it.copy(userInfoEntity = TokenRepository.getToken())
+            }
             Log.i("TAG666", "jDService(): ${_uiState.value.userInfoEntity}")
             val res = _uiState.value.userInfoEntity?.let {
                 gradeService.gradeJDDetail(

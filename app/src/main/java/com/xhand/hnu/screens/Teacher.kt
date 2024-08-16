@@ -49,6 +49,7 @@ fun TeacherScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
     val teacherList = viewModel.teacherList
+    viewModel.pjSelectTerm = viewModel.longGradeTerm.indexOf(viewModel.currentLongTerm)
     LaunchedEffect(viewModel.pjSelectTerm) {
         viewModel.isGettingTeacher = true
         viewModel.teacherService(viewModel.longGradeTerm[viewModel.pjSelectTerm])

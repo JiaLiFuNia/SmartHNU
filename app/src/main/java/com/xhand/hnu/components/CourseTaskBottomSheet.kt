@@ -23,7 +23,6 @@ import com.xhand.hnu.viewmodel.SettingsViewModel
 @Composable
 fun TaskBottomSheet(courseTaskViewModel: CourseTaskViewModel) {
     val bottomSheetState = rememberModalBottomSheetState()
-    val longTerms = courseTaskViewModel.longGradeTerm
     androidx.compose.material3.ModalBottomSheet(
         onDismissRequest = { courseTaskViewModel.showBookSelect = false },
         sheetState = bottomSheetState
@@ -41,7 +40,7 @@ fun TaskBottomSheet(courseTaskViewModel: CourseTaskViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.Center
             ) {
-                longTerms.forEachIndexed { index, term ->
+                courseTaskViewModel.longGradeTerm.forEachIndexed { index, term ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()

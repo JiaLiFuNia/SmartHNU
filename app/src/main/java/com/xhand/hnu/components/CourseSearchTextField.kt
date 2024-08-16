@@ -1,5 +1,6 @@
 package com.xhand.hnu.components
 
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -36,7 +37,7 @@ fun CourseSearchDropDownTextField(
     content: CourseSearchContentKeys,
     value: String,
     onValueChange: (String) -> Unit,
-    courseSearchViewModel: CourseSearchViewModel
+    searchCourseIndex: CourseSearchIndexEntity
 ) {
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var displayValue by remember { mutableStateOf(value) }
@@ -46,7 +47,7 @@ fun CourseSearchDropDownTextField(
 
     val courseOptions = try {
         getSearchContentValueByKey(
-            courseSearchViewModel.searchCourseIndex,
+            searchCourseIndex,
             content.courseIndex.toString()
         ) as List<*>
     } catch (e: Exception) {

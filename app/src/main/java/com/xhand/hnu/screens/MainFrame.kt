@@ -18,10 +18,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -48,10 +48,8 @@ import com.xhand.hnu.viewmodel.SettingsViewModel
 fun MainFrame(
     viewModel: SettingsViewModel,
     newsViewModel: NewsViewModel,
-    navController: NavHostController,
     gradeViewModel: GradeViewModel,
-    courseTaskViewModel: CourseTaskViewModel,
-    courseSearchViewModel: CourseSearchViewModel,
+    navController: NavHostController,
     context: Context
 ) {
     val connectionState by rememberConnectivityState()
@@ -129,9 +127,7 @@ fun MainFrame(
                             navController = navController,
                             viewModel = viewModel,
                             gradeViewModel = gradeViewModel,
-                            context = context,
-                            courseTaskViewModel = courseTaskViewModel,
-                            courseSearchViewModel = courseSearchViewModel
+                            context = context
                         )
 
                         1 -> NewsScreen(

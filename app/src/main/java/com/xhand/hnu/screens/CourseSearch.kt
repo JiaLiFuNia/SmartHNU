@@ -38,6 +38,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,10 +49,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.xhand.hnu.components.CourseSearchDropDownTextField
 import com.xhand.hnu.components.CourseSearchListItem
 import com.xhand.hnu.components.CourseSearchOutlineTextFiled
-import com.xhand.hnu.model.entity.CourseSearchIndexEntity
 import com.xhand.hnu.model.entity.CourseSearchPost
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import kotlin.reflect.full.memberProperties
@@ -63,15 +64,17 @@ import kotlin.reflect.jvm.isAccessible
 @Composable
 fun CourseSearchScreen(
     onBack: () -> Unit,
-    courseSearchViewModel: CourseSearchViewModel
+    courseSearchViewModel: CourseSearchViewModel = viewModel()
 ) {
+    val uiState by courseSearchViewModel.uiState.collectAsState()
+
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
     var ifShowTextField by remember {
         mutableStateOf(true)
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(uiState) {
         courseSearchViewModel.getCourseIndex()
     }
     Scaffold(
@@ -98,46 +101,47 @@ fun CourseSearchScreen(
             )
         },
         floatingActionButton = {
-            AnimatedVisibility(
-                visible = scrollState.value > 10,
-                enter = slideInVertically(initialOffsetY = { it * 2 }),
-                exit = slideOutVertically(targetOffsetY = { it * 2 }),
-            ) {
-                Column {
-                    ExtendedFloatingActionButton(
-                        onClick = {
-                            courseSearchViewModel.searchContent.value = CourseSearchPost(
-                                1,
-                                50000,
-                                courseSearchViewModel.searchCourseIndex.xnxqdm,
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                rq = getCurrentDates(),
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "",
-                                ""
-                            )
-                        },
-                        text = {
-                            Text(text = "重置")
-                        },
-                        icon = {
-                            Icon(imageVector = Icons.Default.Clear, contentDescription = "重置")
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
+            Column {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        courseSearchViewModel.searchContent.value = CourseSearchPost(
+                            1,
+                            50000,
+                            uiState.searchCourseIndex.xnxqdm,
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            rq = getCurrentDates(),
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            ""
+                        )
+                        courseSearchViewModel.clearSearchResult()
+                    },
+                    text = {
+                        Text(text = "重置")
+                    },
+                    icon = {
+                        Icon(imageVector = Icons.Default.Clear, contentDescription = "重置")
+                    }
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                AnimatedVisibility(
+                    visible = scrollState.value > 10,
+                    enter = slideInVertically(initialOffsetY = { it * 2 }),
+                    exit = slideOutVertically(targetOffsetY = { it * 2 }),
+                ) {
                     ExtendedFloatingActionButton(
                         onClick = {
                             courseSearchViewModel.courseSearch(
@@ -205,7 +209,7 @@ fun CourseSearchScreen(
                                             it
                                         )
                                 },
-                                courseSearchViewModel = courseSearchViewModel
+                                searchCourseIndex = uiState.searchCourseIndex
                             )
                         } else {
                             CourseSearchOutlineTextFiled(
@@ -236,10 +240,10 @@ fun CourseSearchScreen(
             if (courseSearchViewModel.isGettingCourse) {
                 CircularProgressIndicator()
             } else {
-                if (courseSearchViewModel.searchResult.isEmpty()) {
+                if (uiState.searchResult!!.isEmpty()) {
                     Text(text = "无结果")
                 } else {
-                    courseSearchViewModel.searchResult.forEach { room ->
+                    uiState.searchResult!!.forEach { room ->
                         CourseSearchListItem(course = room)
                     }
                 }

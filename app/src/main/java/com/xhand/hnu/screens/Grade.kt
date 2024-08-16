@@ -52,8 +52,8 @@ import com.xhand.hnu.components.GradeListItem
 import com.xhand.hnu.components.ModalBottomSheet
 import com.xhand.hnu.components.ShowAlert
 import com.xhand.hnu.model.entity.KccjList
+import com.xhand.hnu.repository.TokenRepository
 import com.xhand.hnu.viewmodel.GradeViewModel
-import com.xhand.hnu.viewmodel.SettingsViewModel
 import com.xhand.hnu.viewmodel.TermCheckBoxes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -62,24 +62,24 @@ import kotlinx.coroutines.launch
 @Composable
 fun GradeScreen(
     onBack: () -> Unit,
-    gradeViewModel: GradeViewModel,
-    viewModel: SettingsViewModel
+    gradeViewModel: GradeViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     val uiState by gradeViewModel.uiState.collectAsState()
 
     val checkboxes = remember {
         mutableStateListOf<TermCheckBoxes>()
     }
-    LaunchedEffect(viewModel.longGradeTerm) {
+    LaunchedEffect(Unit) {
         checkboxes.clear()
         checkboxes.addAll(
-            viewModel.longGradeTerm.map {
+            gradeViewModel.longGradeTerm.map {
                 TermCheckBoxes(
-                    isChecked = it == viewModel.currentLongTerm,
+                    isChecked = it == gradeViewModel.currentLongTerm,
                     term = it
                 )
             }
         )
+        Log.i("TAG666", "cu: ${gradeViewModel.currentLongTerm}")
     }
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -125,9 +125,9 @@ fun GradeScreen(
         }
     }
     LaunchedEffect(Unit) {
-        if (gradeViewModel.gradeList.isEmpty())
-            gradeViewModel.gradeService()
-        delay(500)
+        uiState.userInfoEntity = TokenRepository.getToken()
+        gradeViewModel.gradeService()
+        uiState.isGettingGrade = false
     }
     Scaffold(
         modifier = Modifier
@@ -166,8 +166,7 @@ fun GradeScreen(
         },
         floatingActionButtonPosition = FabPosition.End
     ) { values ->
-        Log.i("GradeScreen", "gradeViewModel ${gradeViewModel.isGettingGrade}")
-        if (gradeViewModel.isGettingGrade)
+        if (uiState.isGettingGrade)
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center

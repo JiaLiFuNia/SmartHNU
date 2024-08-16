@@ -23,6 +23,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.xhand.hnu.components.TaskBottomSheet
 import com.xhand.hnu.components.TaskCourseListItem
+import com.xhand.hnu.repository.TokenRepository
 import com.xhand.hnu.viewmodel.CourseTaskViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -43,13 +45,16 @@ import kotlinx.coroutines.launch
 @Composable
 fun CourseTaskScreen(
     onBack: () -> Unit,
-    viewModel: CourseTaskViewModel
+    viewModel: CourseTaskViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
     LaunchedEffect(viewModel.selectTerm) {
+        uiState.userInfo = TokenRepository.getToken()
         viewModel.isGettingTask = true
-        viewModel.getTask(viewModel.gradeTerm[viewModel.selectTerm])
+        viewModel.getTask(viewModel.term.gradeTerm[viewModel.selectTerm])
     }
     var isRefreshing by remember { mutableStateOf(false) }
     val state = rememberPullToRefreshState()
@@ -58,7 +63,7 @@ fun CourseTaskScreen(
         isRefreshing = true
         coroutineScope.launch {
             delay(timeMillis = 1000)
-            viewModel.getTask(viewModel.gradeTerm[viewModel.selectTerm])
+            viewModel.getTask(viewModel.currentTerm)
             isRefreshing = false
         }
     }
@@ -94,7 +99,7 @@ fun CourseTaskScreen(
             )
         }
     ) {
-        if (viewModel.isGettingTask)
+        if (uiState.isGettingTask)
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -110,7 +115,7 @@ fun CourseTaskScreen(
                     .padding(paddingValues = it),
                 contentAlignment = Alignment.TopStart
             ) {
-                if (viewModel.taskList.isEmpty()) {
+                if (uiState.taskList.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
                             text = "暂无上课任务",
@@ -122,7 +127,7 @@ fun CourseTaskScreen(
                         modifier = Modifier
                             .verticalScroll(scrollState)
                     ) {
-                        viewModel.taskList.forEach { task ->
+                        uiState.taskList.forEach { task ->
                             TaskCourseListItem(task = task)
                         }
                     }

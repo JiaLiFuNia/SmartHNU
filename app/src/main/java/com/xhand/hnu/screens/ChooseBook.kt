@@ -50,6 +50,7 @@ fun ChooseBookScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
     var xnxqdm by remember { mutableStateOf("") }
+    viewModel.selectTerm = viewModel.longGradeTerm.indexOf(viewModel.nextLongTerm)
     LaunchedEffect(viewModel.selectTerm) {
         viewModel.isGettingBook = true
         viewModel.bookService(viewModel.longGradeTerm[viewModel.selectTerm])

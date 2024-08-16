@@ -63,8 +63,6 @@ import com.xhand.hnu.components.ShowSecondClassLoginDialog
 import com.xhand.hnu.components.chart.GPAChangeLineChart
 import com.xhand.hnu.components.chart.HourChart
 import com.xhand.hnu.screens.navigation.Destinations
-import com.xhand.hnu.viewmodel.CourseSearchViewModel
-import com.xhand.hnu.viewmodel.CourseTaskViewModel
 import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
 import kotlinx.coroutines.delay
@@ -82,8 +80,6 @@ fun PersonScreen(
     navController: NavController,
     viewModel: SettingsViewModel,
     gradeViewModel: GradeViewModel,
-    courseTaskViewModel: CourseTaskViewModel,
-    courseSearchViewModel: CourseSearchViewModel,
     context: Context
 ) {
     val checkboxes = viewModel.checkboxes
@@ -94,19 +90,11 @@ fun PersonScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     LaunchedEffect(viewModel.isLoginSuccess) {
-        gradeViewModel.uiState.value.userInfoEntity = viewModel.userInfo
-        courseTaskViewModel.userInfo = viewModel.userInfo
-        courseSearchViewModel.userInfo = viewModel.userInfo
-    }
-    LaunchedEffect(viewModel.isLoginSuccess) {
         viewModel.checkToken()
         if (viewModel.isLoginSuccess) {
             viewModel.todaySchedule()
             viewModel.messageService()
-            if (gradeViewModel.jdList.isEmpty()) {
-                gradeViewModel.jDService()
-                viewModel.isGettingCourse = false
-            }
+            gradeViewModel.jDService()
             viewModel.gradeIndex()
             // viewModel.holidayService()
         }
@@ -123,7 +111,7 @@ fun PersonScreen(
     val onRefresh = {
         isRefreshing = true
         coroutineScope.launch {
-            delay(timeMillis = 1000)
+            delay(1000)
             if (viewModel.isLoginSuccess) {
                 viewModel.todaySchedule()
                 viewModel.messageService()

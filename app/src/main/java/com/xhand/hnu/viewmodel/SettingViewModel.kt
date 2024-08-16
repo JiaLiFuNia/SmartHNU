@@ -47,6 +47,8 @@ import com.xhand.hnu.network.SecondClassService
 import com.xhand.hnu.network.UpdateService
 import com.xhand.hnu.network.secondClassLoginState
 import com.xhand.hnu.network.secondClassParsing
+import com.xhand.hnu.repository.Term
+import com.xhand.hnu.repository.TokenRepository
 import com.xhand.hnu.screens.navigation.Destinations
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
@@ -185,6 +187,7 @@ class SettingsViewModel(
 
     private var currentTerm by mutableStateOf("")
     var currentLongTerm by mutableStateOf("")
+    var nextLongTerm by mutableStateOf("")
 
     var longGradeTerm by mutableStateOf(mutableListOf<String>())
     var gradeTerm by mutableStateOf(mutableListOf<String>())
@@ -243,6 +246,7 @@ class SettingsViewModel(
         var res: CheckTokenEntity? = null
         if (loginCode != 0) {
             res = gradeService.checkToken(token)
+            userInfo?.let { TokenRepository.saveToken(it) }
         }
         if (res != null) {
             if (res.code != 200 && password.isNotEmpty() && username.isNotEmpty()) {
@@ -269,6 +273,7 @@ class SettingsViewModel(
             if (res != null) {
                 currentTerm = res.xnxqdm
                 currentLongTerm = res.xnxqmc
+                nextLongTerm = getNextTerm(currentLongTerm)
                 val userGrade = userInfo?.studentID?.substring(0, 2)?.toInt() ?: 0
                 res.xnxqList.forEach {
                     if (it.value.substring(2, 4).toInt() >= userGrade && it.value.substring(2, 4)
@@ -278,28 +283,44 @@ class SettingsViewModel(
                         gradeTerm.add(it.value)
                     }
                 }
+                TokenRepository.saveCurrentTerm(
+                    Term(
+                        currentLongTerm,
+                        nextLongTerm,
+                        currentTerm,
+                        longGradeTerm,
+                        gradeTerm
+                    )
+                )
             }
         } catch (
             e: Exception
         ) {
             Log.i("TAG666", "gradeIndex: $e")
+            Log.i("TAG666", "gradeIndex: $nextLongTerm")
         }
     }
 
     // 今日课程
     suspend fun todaySchedule() {
-        val res =
-            userInfo?.let {
-                todayScheduleService.scheduleDetail(
-                    SchedulePost(todaykb = "1"),
-                    token = it.token
-                )
+        try {
+            val res =
+                userInfo?.let {
+                    todayScheduleService.scheduleDetail(
+                        SchedulePost(todaykb = "1"),
+                        token = it.token
+                    )
+                }
+            if (res != null) {
+                if (res.code == 200) {
+                    todaySchedule =
+                        res.kbList.sortedBy { it.qssj.substring(0, 2).toInt() }.toMutableList()
+                }
             }
-        if (res != null) {
-            if (res.code == 200) {
-                todaySchedule =
-                    res.kbList.sortedBy { it.qssj.substring(0, 2).toInt() }.toMutableList()
-            }
+            isGettingCourse = false
+        } catch (e: Exception) {
+            isGettingCourse = false
+            Log.i("TAG666", "todaySchedule: $e")
         }
     }
 
@@ -414,7 +435,8 @@ class SettingsViewModel(
 
     var booksList = mutableListOf<Xdjcdata>()
     var isGettingBook by mutableStateOf(true)
-    var selectTerm by mutableIntStateOf(4)
+    var selectTerm by mutableIntStateOf(0)
+
     suspend fun bookService(xnxqdm: String) {
         try {
             val res =
@@ -429,6 +451,7 @@ class SettingsViewModel(
             Log.i("TAG666", "$e")
         }
     }
+
 
     // 获取可选
     var bookAbleList by mutableStateOf(mutableListOf<Kxjcdata>())
@@ -669,6 +692,20 @@ class SettingsViewModel(
             "${xq.substring(0, 4)}-${xq.substring(0, 4).toInt() + 1}-${xq.last()}"
         } else
             "${xq.substring(0, 4)}0${xq.last()}"
+    }
+
+
+    fun getNextTerm(term: String): String {
+        return when (term.takeLast(1)) {
+            "1" -> term.dropLast(1) + "2"
+            "2" -> when (term.length) {
+                6 -> "${term.toInt() + 100 - 1}"
+                11 -> "${term.substring(0, 4).toInt() + 1}-${term.substring(5, 9).toInt() + 1}-1"
+                else -> term
+            }
+
+            else -> term
+        }
     }
 }
 
