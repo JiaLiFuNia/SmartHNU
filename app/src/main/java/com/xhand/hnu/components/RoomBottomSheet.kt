@@ -15,6 +15,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,7 +25,12 @@ import com.xhand.hnu.viewmodel.CourseSearchViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RoomBottomSheet(viewModel: CourseSearchViewModel, room: String) {
+fun RoomBottomSheet(
+    viewModel: CourseSearchViewModel,
+    room: String
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
     val bottomSheetState = rememberModalBottomSheetState()
     val scrollState = rememberScrollState()
     ModalBottomSheet(
@@ -40,11 +47,12 @@ fun RoomBottomSheet(viewModel: CourseSearchViewModel, room: String) {
                 style = MaterialTheme.typography.headlineSmall
             )
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .verticalScroll(scrollState),
                 verticalArrangement = Arrangement.Center
             ) {
-                if (viewModel.isGettingCourse) {
+                if (uiState.isGettingCourse) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -54,7 +62,7 @@ fun RoomBottomSheet(viewModel: CourseSearchViewModel, room: String) {
                         CircularProgressIndicator()
                     }
                 } else
-                    if (viewModel.searchResult.isEmpty())
+                    if (uiState.searchResult!!.isEmpty())
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -64,8 +72,8 @@ fun RoomBottomSheet(viewModel: CourseSearchViewModel, room: String) {
                             Text(text = "今天这个教室很空...", color = Color.Gray)
                         }
                     else {
-                        viewModel.searchResult.sortBy { it.jcdm.takeLast(2).toInt() }
-                        viewModel.searchResult.forEach { room ->
+                        uiState.searchResult!!.sortBy { it.jcdm.takeLast(2).toInt() }
+                        uiState.searchResult!!.forEach { room ->
                             CourseSearchListItem(course = room)
                         }
                     }

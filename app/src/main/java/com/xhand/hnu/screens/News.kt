@@ -63,6 +63,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -83,23 +84,24 @@ data class NewsOptions(
     val source: String
 )
 
+private val newsOptions = listOf(
+    NewsOptions("通知公告", "河南师范大学主页"),
+    NewsOptions("师大要闻", "河南师范大学主页"),
+    NewsOptions("新闻速递", "河南师范大学主页"),
+    NewsOptions("教务通知", "河南师范大学教务处"),
+    NewsOptions("公示公告", "河南师范大学教务处"),
+    NewsOptions("考务管理", "河南师范大学教务处"),
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewsScreen(
     navController: NavController,
-    newsViewModel: NewsViewModel
+    newsViewModel: NewsViewModel = viewModel()
 ) {
     val showBottomSheet = remember {
         mutableStateOf(false)
     }
-    val newsOptions = listOf(
-        NewsOptions("通知公告", "河南师范大学主页"),
-        NewsOptions("师大要闻", "河南师范大学主页"),
-        NewsOptions("新闻速递", "河南师范大学主页"),
-        NewsOptions("教务通知", "河南师范大学教务处"),
-        NewsOptions("公示公告", "河南师范大学教务处"),
-        NewsOptions("考务管理", "河南师范大学教务处"),
-    )
     val newsTypes = listOf(
         "河南师范大学主页",
         "河南师范大学教务处",
@@ -150,7 +152,7 @@ fun NewsScreen(
                 SearchBarDefaults.InputField(
                     query = newsViewModel.searchText,
                     onQueryChange = { newsViewModel.searchText = it },
-                    onSearch = { newsViewModel.searchBarExpand = false },
+                    onSearch = { },
                     expanded = newsViewModel.searchBarExpand,
                     onExpandedChange = {
                         newsViewModel.searchBarExpand = it
@@ -336,7 +338,6 @@ fun NewsScreen(
                             newsViewModel = newsViewModel,
                             navController = navController,
                             selectedTabIndex = newsIndex,
-                            newsOptions = newsOptions
                         )
                     }
                 }
@@ -378,7 +379,6 @@ fun NewsList(
     newsViewModel: NewsViewModel,
     navController: NavController,
     selectedTabIndex: Int,
-    newsOptions: List<NewsOptions>,
     pictures: List<PictureListItem> = newsViewModel.pictures
 ) {
     val pagerState = rememberPagerState(pageCount = { pictures.size })

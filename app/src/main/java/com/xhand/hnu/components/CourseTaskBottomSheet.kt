@@ -16,13 +16,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.xhand.hnu.repository.TokenRepository
 import com.xhand.hnu.viewmodel.CourseTaskViewModel
-import com.xhand.hnu.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskBottomSheet(courseTaskViewModel: CourseTaskViewModel) {
     val bottomSheetState = rememberModalBottomSheetState()
+    val term = TokenRepository.getCurrentTerm()
+    val longGradeTerm = term.longGradeTerm
+
     androidx.compose.material3.ModalBottomSheet(
         onDismissRequest = { courseTaskViewModel.showBookSelect = false },
         sheetState = bottomSheetState
@@ -40,20 +43,20 @@ fun TaskBottomSheet(courseTaskViewModel: CourseTaskViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.Center
             ) {
-                courseTaskViewModel.longGradeTerm.forEachIndexed { index, term ->
+                longGradeTerm.forEachIndexed { index, term ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
                             .selectable(
-                                selected = courseTaskViewModel.longGradeTerm[courseTaskViewModel.selectTerm] == term,
+                                selected = longGradeTerm[courseTaskViewModel.selectTerm] == term,
                                 onClick = { courseTaskViewModel.selectTerm = index }
                             )
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
-                            selected = courseTaskViewModel.longGradeTerm[courseTaskViewModel.selectTerm] == term,
+                            selected = longGradeTerm[courseTaskViewModel.selectTerm] == term,
                             onClick = null
                         )
                         Text(

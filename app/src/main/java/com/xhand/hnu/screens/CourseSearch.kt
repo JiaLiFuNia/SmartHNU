@@ -237,7 +237,7 @@ fun CourseSearchScreen(
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            if (courseSearchViewModel.isGettingCourse) {
+            if (uiState.isGettingCourse) {
                 CircularProgressIndicator()
             } else {
                 if (uiState.searchResult!!.isEmpty()) {

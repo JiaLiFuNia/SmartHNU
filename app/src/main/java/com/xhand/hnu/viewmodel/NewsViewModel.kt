@@ -58,7 +58,6 @@ class NewsViewModel(context: Context) : ViewModel() {
     var searchList by mutableStateOf(
         mutableListOf<ArticleListEntity>()
     )
-    var searchListTotal by mutableStateOf("")
 
     var searchHistory by mutableStateOf(
         mutableListOf<String>()
@@ -163,14 +162,14 @@ class NewsViewModel(context: Context) : ViewModel() {
                 val searchRes = searchService.pushPost(searchKeyEncode)
                 searchList.addAll(getNewsList(searchRes.body()?.data, "搜索", 2))
                 Log.i("TAG666", "searchList $searchList")
-                if (searchList.isEmpty() || searchList.size < 10)
+                if (searchList.isEmpty() || searchList.size < 10) {
                     break
-                searchListTotal = searchRes.body()?.total ?: ""
+                }
             }
-            isSearching = false
         } catch (e: Exception) {
             Log.i("TAG666", "searchRes: $e")
         }
+        isSearching = false
         if (searchList.isNotEmpty()) {
             if (content !in searchHistory) {
                 Log.i("TAG666", "searchHistory $searchHistory")

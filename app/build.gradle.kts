@@ -2,8 +2,6 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
-    id("kotlin-kapt")
-    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -114,10 +112,4 @@ dependencies {
     // implementation("io.github.ehsannarmani:compose-charts:0.0.13")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.10")
-
-    val hilt_version = "2.52"
-    implementation("com.google.dagger:hilt-android:$hilt_version")
-    kapt("com.google.dagger:hilt-android-compiler:$hilt_version")
-    implementation("com.google.dagger:hilt-android-gradle-plugin:$hilt_version")
-    runtimeOnly("androidx.hilt:hilt-navigation-compose:1.2.0")
 }

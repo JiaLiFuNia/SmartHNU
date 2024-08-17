@@ -42,7 +42,8 @@ data class CourseSearchUiState(
         kkjysList = mutableListOf(),
         xsnjList = mutableListOf()
     ),
-    var searchResult: List<CourseSearchKBList>? = emptyList()
+    var searchResult: MutableList<CourseSearchKBList>? = mutableListOf(),
+    val isGettingCourse: Boolean = false
 )
 
 @SuppressLint("MutableCollectionMutableState")
@@ -51,10 +52,19 @@ class CourseSearchViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(CourseSearchUiState())
     val uiState: StateFlow<CourseSearchUiState> = _uiState.asStateFlow()
 
+    init {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(userInfo = TokenRepository.getToken())
+            }
+        }
+    }
+
     private val searchService = GradeService.instance()
 
     var showDatePicker by mutableStateOf(false)
     var showRoomSheet by mutableStateOf(false)
+
     val searchContentKeys = listOf(
         CourseSearchContentKeys("pageNumber", "页码", icon = null, false),
         CourseSearchContentKeys("pageSize", "每页大小", icon = null, false),
@@ -103,21 +113,24 @@ class CourseSearchViewModel : ViewModel() {
             ""
         )
     )
-    var searchResult by mutableStateOf(mutableListOf<CourseSearchKBList>())
-    var isGettingCourse by mutableStateOf(false)
+
     suspend fun getCourse(searchContent: CourseSearchPost) {
         try {
-            isGettingCourse = true
+            _uiState.update {
+                it.copy(isGettingCourse = true)
+            }
             Log.i("TAG2310", "getCourse(): $searchContent")
             val res =
                 searchService.courseSearch(searchContent, _uiState.value.userInfo?.token ?: "")
             _uiState.update {
-                it.copy(searchResult = res.kbList)
+                it.copy(searchResult = res.kbList.toMutableList())
             }
         } catch (e: Exception) {
             Log.i("TAG2310", "getCourse: $e")
         }
-        isGettingCourse = false
+        _uiState.update {
+            it.copy(isGettingCourse = false)
+        }
     }
 
     fun courseSearch(searchContent: CourseSearchPost) = viewModelScope.launch {
@@ -126,9 +139,6 @@ class CourseSearchViewModel : ViewModel() {
 
     suspend fun getCourseIndex() {
         try {
-            _uiState.update { uiState ->
-                uiState.copy(userInfo = TokenRepository.getToken())
-            }
             val searchCourseIndex =
                 searchService.courseSearchIndex(_uiState.value.userInfo?.token ?: "")
             _uiState.update { uiState ->
@@ -140,11 +150,12 @@ class CourseSearchViewModel : ViewModel() {
         }
     }
 
-    fun clearSearchResult() = viewModelScope.launch {
+    fun clearSearchResult() {
         _uiState.update {
-            it.copy(searchResult = emptyList())
+            it.copy(searchResult = mutableListOf())
         }
     }
+
     private fun getCurrentDates(): String {
         val currentDate = LocalDate.now()
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")

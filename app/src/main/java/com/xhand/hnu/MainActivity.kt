@@ -16,7 +16,6 @@ import com.xhand.hnu.viewmodel.LocalNewsViewModel
 import com.xhand.hnu.viewmodel.LocalUserViewModel
 import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
-import dagger.hilt.android.AndroidEntryPoint
 
 data class BottomNavigationItem(
     var title: String,
@@ -25,7 +24,6 @@ data class BottomNavigationItem(
     val hasNews: Boolean
 )
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

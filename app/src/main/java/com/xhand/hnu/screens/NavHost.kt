@@ -76,8 +76,7 @@ fun NavHostScreen(
         }
         composable(Destinations.CourseSearch.route) {
             CourseSearchScreen(
-                onBack = { navController.popBackStack() },
-                courseSearchViewModel = CourseSearchViewModel()
+                onBack = { navController.popBackStack() }
             )
         }
         composable(Destinations.BookSelect.route) {

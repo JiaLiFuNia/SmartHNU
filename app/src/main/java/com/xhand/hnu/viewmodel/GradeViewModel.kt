@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.xhand.hnu.model.entity.GradeDetailPost
 import com.xhand.hnu.model.entity.GradeInfo
 import com.xhand.hnu.model.entity.GradePost
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class TermCheckBoxes(
     val isChecked: Boolean,
@@ -43,12 +45,23 @@ data class GradeUiState(
 class GradeViewModel : ViewModel() {
 
     private val term = TokenRepository.getCurrentTerm()
+    private val gradeTerm = term.gradeTerm
+
     val longGradeTerm = term.longGradeTerm
     val currentLongTerm = term.currentLongTerm
-    private val gradeTerm = term.gradeTerm
 
     private val _uiState = MutableStateFlow(GradeUiState())
     val uiState: StateFlow<GradeUiState> = _uiState.asStateFlow()
+
+    private val userInfo = TokenRepository.getToken()
+
+    init {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(userInfoEntity = userInfo)
+            }
+        }
+    }
 
     fun convertTermToIndex(term: MutableList<String>): List<String> {
         term.forEachIndexed { index, _ ->
@@ -172,11 +185,10 @@ class GradeViewModel : ViewModel() {
                     gradeDetails = detail.xscj
                 }
             }
-            isGettingDetailGrade = false
         } catch (e: Exception) {
-            isGettingDetailGrade = false
             Log.i("TAG666", "gradeDetailService: $e")
         }
+        isGettingDetailGrade = false
     }
 
     suspend fun jDService() {
@@ -197,10 +209,10 @@ class GradeViewModel : ViewModel() {
                 }
                 Log.i("TAG666", "jDList: $jdList")
             }
-            isGettingJD = false
         } catch (e: Exception) {
             Log.i("TAG666", "jDService: $e")
         }
+        isGettingJD = false
     }
 
 }

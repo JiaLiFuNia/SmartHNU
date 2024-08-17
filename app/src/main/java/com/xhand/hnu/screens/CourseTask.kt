@@ -1,6 +1,7 @@
 package com.xhand.hnu.screens
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -52,9 +53,8 @@ fun CourseTaskScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
     LaunchedEffect(viewModel.selectTerm) {
-        uiState.userInfo = TokenRepository.getToken()
-        viewModel.isGettingTask = true
-        viewModel.getTask(viewModel.term.gradeTerm[viewModel.selectTerm])
+        Log.i("TAG666", "CourseTaskScreen: ${uiState.term}")
+        viewModel.getTask(uiState.term!!.gradeTerm[viewModel.selectTerm])
     }
     var isRefreshing by remember { mutableStateOf(false) }
     val state = rememberPullToRefreshState()
@@ -63,7 +63,7 @@ fun CourseTaskScreen(
         isRefreshing = true
         coroutineScope.launch {
             delay(timeMillis = 1000)
-            viewModel.getTask(viewModel.currentTerm)
+            viewModel.getTask(uiState.term!!.gradeTerm[viewModel.selectTerm])
             isRefreshing = false
         }
     }

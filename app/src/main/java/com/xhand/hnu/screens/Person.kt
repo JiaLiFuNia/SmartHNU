@@ -95,7 +95,8 @@ fun PersonScreen(
             viewModel.todaySchedule()
             viewModel.messageService()
             gradeViewModel.jDService()
-            viewModel.gradeIndex()
+            if (viewModel.gradeTerm.isEmpty())
+                viewModel.gradeIndex()
             // viewModel.holidayService()
         }
     }

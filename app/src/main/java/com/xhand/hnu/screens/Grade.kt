@@ -52,7 +52,6 @@ import com.xhand.hnu.components.GradeListItem
 import com.xhand.hnu.components.ModalBottomSheet
 import com.xhand.hnu.components.ShowAlert
 import com.xhand.hnu.model.entity.KccjList
-import com.xhand.hnu.repository.TokenRepository
 import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.TermCheckBoxes
 import kotlinx.coroutines.delay
@@ -125,9 +124,7 @@ fun GradeScreen(
         }
     }
     LaunchedEffect(Unit) {
-        uiState.userInfoEntity = TokenRepository.getToken()
         gradeViewModel.gradeService()
-        uiState.isGettingGrade = false
     }
     Scaffold(
         modifier = Modifier
@@ -256,7 +253,6 @@ fun GradeScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
             }
-            Log.i("TAG666", "gradeViewModel $checkboxes")
             checkboxes.forEachIndexed { index, info ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
