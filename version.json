@@ -1,5 +1,5 @@
 {
-  "version": "2.1.9.5",
+  "version": "2.1.9.6",
   "message": "1. 新增 相关链接\n2. 优化 部分文字表述\n3. 修复 部分页面切换时数据重复请求",
   "confirm": "https://www.123pan.com/s/uyHuVv-dTdjH.html",
   "type": "update"

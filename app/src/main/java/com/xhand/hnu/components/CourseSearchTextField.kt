@@ -1,6 +1,5 @@
 package com.xhand.hnu.components
 
-import android.util.Log
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -121,6 +120,7 @@ fun CourseSearchOutlineTextFiled(
     content: CourseSearchContentKeys,
     value: String,
     onValueChange: (String) -> Unit,
+    enabled: Int = 0,
     courseSearchViewModel: CourseSearchViewModel
 ) {
     OutlinedTextField(
@@ -129,6 +129,9 @@ fun CourseSearchOutlineTextFiled(
             onValueChange(it)
         },
         readOnly = content.readOnly,
+        enabled = if (content.key == "rq" || content.key == "zc" || content.key == "xq") {
+            if (content.key == "rq") enabled == 0 else enabled == 1
+        } else true,
         label = { Text(text = content.name) },
         modifier = Modifier
             .fillMaxWidth()

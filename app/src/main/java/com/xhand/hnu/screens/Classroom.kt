@@ -67,7 +67,7 @@ import java.time.format.DateTimeFormatter
 fun ClassroomScreen(
     onBack: () -> Unit,
     viewModel: SettingsViewModel,
-    roomSearchViewModel: CourseSearchViewModel,
+    roomSearchViewModel: CourseSearchViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
@@ -109,7 +109,7 @@ fun ClassroomScreen(
             CourseSearchPost(
                 1,
                 50,
-                "202302",
+                "202401",
                 "",
                 "",
                 "",

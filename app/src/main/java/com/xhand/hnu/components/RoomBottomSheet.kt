@@ -27,7 +27,7 @@ import com.xhand.hnu.viewmodel.CourseSearchViewModel
 @Composable
 fun RoomBottomSheet(
     viewModel: CourseSearchViewModel,
-    room: String
+    room: String,
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

@@ -12,7 +12,7 @@ import com.xhand.hnu.model.entity.Skrwlist
 import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.network.GradeService
 import com.xhand.hnu.repository.Term
-import com.xhand.hnu.repository.TokenRepository
+import com.xhand.hnu.repository.Repository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,10 +33,10 @@ class CourseTaskViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             _uiState.update {
-                it.copy(userInfo = TokenRepository.getToken())
+                it.copy(userInfo = Repository.getToken())
             }
             _uiState.update {
-                it.copy(term = TokenRepository.getCurrentTerm())
+                it.copy(term = Repository.getCurrentTerm())
             }
         }
     }

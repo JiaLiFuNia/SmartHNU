@@ -17,7 +17,7 @@ import com.xhand.hnu.model.entity.KccjList
 import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.model.entity.Xscj
 import com.xhand.hnu.network.GradeService
-import com.xhand.hnu.repository.TokenRepository
+import com.xhand.hnu.repository.Repository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,7 +44,7 @@ data class GradeUiState(
 @SuppressLint("MutableCollectionMutableState")
 class GradeViewModel : ViewModel() {
 
-    private val term = TokenRepository.getCurrentTerm()
+    private val term = Repository.getCurrentTerm()
     private val gradeTerm = term.gradeTerm
 
     val longGradeTerm = term.longGradeTerm
@@ -53,7 +53,7 @@ class GradeViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(GradeUiState())
     val uiState: StateFlow<GradeUiState> = _uiState.asStateFlow()
 
-    private val userInfo = TokenRepository.getToken()
+    private val userInfo = Repository.getToken()
 
     init {
         viewModelScope.launch {
@@ -194,7 +194,7 @@ class GradeViewModel : ViewModel() {
     suspend fun jDService() {
         try {
             _uiState.update {
-                it.copy(userInfoEntity = TokenRepository.getToken())
+                it.copy(userInfoEntity = Repository.getToken())
             }
             Log.i("TAG666", "jDService(): ${_uiState.value.userInfoEntity}")
             val res = _uiState.value.userInfoEntity?.let {

@@ -16,14 +16,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.xhand.hnu.repository.TokenRepository
+import com.xhand.hnu.repository.Repository
 import com.xhand.hnu.viewmodel.CourseTaskViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskBottomSheet(courseTaskViewModel: CourseTaskViewModel) {
     val bottomSheetState = rememberModalBottomSheetState()
-    val term = TokenRepository.getCurrentTerm()
+    val term = Repository.getCurrentTerm()
     val longGradeTerm = term.longGradeTerm
 
     androidx.compose.material3.ModalBottomSheet(

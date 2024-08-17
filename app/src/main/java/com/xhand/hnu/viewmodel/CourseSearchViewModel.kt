@@ -15,7 +15,7 @@ import com.xhand.hnu.model.entity.CourseSearchKBList
 import com.xhand.hnu.model.entity.CourseSearchPost
 import com.xhand.hnu.model.entity.UserInfoEntity
 import com.xhand.hnu.network.GradeService
-import com.xhand.hnu.repository.TokenRepository
+import com.xhand.hnu.repository.Repository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -55,7 +55,7 @@ class CourseSearchViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             _uiState.update {
-                it.copy(userInfo = TokenRepository.getToken())
+                it.copy(userInfo = Repository.getToken())
             }
         }
     }
@@ -66,21 +66,21 @@ class CourseSearchViewModel : ViewModel() {
     var showRoomSheet by mutableStateOf(false)
 
     val searchContentKeys = listOf(
-        CourseSearchContentKeys("pageNumber", "页码", icon = null, false),
-        CourseSearchContentKeys("pageSize", "每页大小", icon = null, false),
-        CourseSearchContentKeys("xnxqdm", "学期", courseIndex = "xnxqList", readOnly = true),
-        CourseSearchContentKeys("xqdm", "校区", courseIndex = "xqList", readOnly = true),
-        CourseSearchContentKeys("zydm", "专业", courseIndex = "zyList", readOnly = true),
-        CourseSearchContentKeys("kcmc", "课程名称", null),
-        CourseSearchContentKeys("kcywmc", ""),
-        CourseSearchContentKeys("teaxm", "教师", null),
-        CourseSearchContentKeys("jxbmc", "教学班", null, show = false),
-        CourseSearchContentKeys("jzwdm", "教学楼", courseIndex = "jxlList", readOnly = true),
-        CourseSearchContentKeys("gnqdm", "功能区", courseIndex = "gnqList", readOnly = true, show = false),
         CourseSearchContentKeys("rq", "日期", icon = Icons.Filled.DateRange, readOnly = true),
         CourseSearchContentKeys("zc", "周数", null),
         CourseSearchContentKeys("xq", "星期", null),
+        CourseSearchContentKeys("kcmc", "课程名称", null),
+        CourseSearchContentKeys("zydm", "专业", courseIndex = "zyList", readOnly = true),
         CourseSearchContentKeys("jcdm", "节次(如:0304)", null),
+        CourseSearchContentKeys("xnxqdm", "学期", courseIndex = "xnxqList", readOnly = true),
+        CourseSearchContentKeys("jzwdm", "教学楼", courseIndex = "jxlList", readOnly = true),
+        CourseSearchContentKeys("pageNumber", "页码", icon = null, false),
+        CourseSearchContentKeys("pageSize", "每页大小", icon = null, false),
+        CourseSearchContentKeys("xqdm", "校区", courseIndex = "xqList", readOnly = true),
+        CourseSearchContentKeys("kcywmc", ""),
+        CourseSearchContentKeys("teaxm", "教师", null),
+        CourseSearchContentKeys("jxbmc", "教学班", null, show = false),
+        CourseSearchContentKeys("gnqdm", "功能区", courseIndex = "gnqList", readOnly = true, show = false),
         CourseSearchContentKeys("kkyxdm", "开课单位", courseIndex = "kkyxList", readOnly = true),
         CourseSearchContentKeys("kkjysdm", "", readOnly = true),
         CourseSearchContentKeys("xsyxdm", "学生院系", courseIndex = "xsyxList", readOnly = true),
@@ -92,7 +92,7 @@ class CourseSearchViewModel : ViewModel() {
         CourseSearchPost(
             1,
             50000,
-            "202302",
+            "202401",
             "",
             "",
             "",

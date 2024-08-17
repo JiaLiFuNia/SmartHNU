@@ -48,7 +48,7 @@ import com.xhand.hnu.network.UpdateService
 import com.xhand.hnu.network.secondClassLoginState
 import com.xhand.hnu.network.secondClassParsing
 import com.xhand.hnu.repository.Term
-import com.xhand.hnu.repository.TokenRepository
+import com.xhand.hnu.repository.Repository
 import com.xhand.hnu.screens.navigation.Destinations
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
@@ -246,7 +246,7 @@ class SettingsViewModel(
         var res: CheckTokenEntity? = null
         if (loginCode != 0) {
             res = gradeService.checkToken(token)
-            userInfo?.let { TokenRepository.saveToken(it) }
+            userInfo?.let { Repository.saveToken(it) }
         }
         if (res != null) {
             if (res.code != 200 && password.isNotEmpty() && username.isNotEmpty()) {
@@ -283,7 +283,7 @@ class SettingsViewModel(
                         gradeTerm.add(it.value)
                     }
                 }
-                TokenRepository.saveCurrentTerm(
+                Repository.saveCurrentTerm(
                     Term(
                         currentLongTerm,
                         nextLongTerm,

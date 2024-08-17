@@ -10,7 +10,7 @@ data class Term(
     val gradeTerm: MutableList<String>
 )
 
-object TokenRepository {
+object Repository {
     private var token: UserInfoEntity? = null
 
     fun saveToken(newToken: UserInfoEntity) {
@@ -20,7 +20,6 @@ object TokenRepository {
     fun getToken(): UserInfoEntity? {
         return token
     }
-
 
     private var term: Term = Term("", "", "", mutableListOf(), mutableListOf())
 
