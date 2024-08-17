@@ -9,7 +9,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.xhand.hnu.screens.navigation.Destinations
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
-import com.xhand.hnu.viewmodel.CourseTaskViewModel
 import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
