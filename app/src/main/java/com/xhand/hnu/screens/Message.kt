@@ -38,6 +38,7 @@ import com.xhand.hnu.components.AllMessageRead
 import com.xhand.hnu.components.MessageDetailDialog
 import com.xhand.hnu.components.MessageListItem
 import com.xhand.hnu.model.entity.MessageDetail
+import com.xhand.hnu.screens.navigation.Destinations
 import com.xhand.hnu.viewmodel.SettingsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -132,7 +133,7 @@ fun MessageScreen(
                                 viewModel.showMessageDetail = true
                                 aMessageDetail = messageDetail
                                 if (messageDetail.type == "cycjtz" || messageDetail.type == "cjtz")
-                                    navController.navigate("grade_screen")
+                                    navController.navigate(Destinations.Grade.route)
                             },
                             viewModel = viewModel
                         )

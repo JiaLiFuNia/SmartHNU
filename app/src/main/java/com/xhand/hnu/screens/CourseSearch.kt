@@ -1,10 +1,7 @@
 package com.xhand.hnu.screens
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -64,7 +61,10 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.isAccessible
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnrememberedMutableState")
+@SuppressLint(
+    "UnusedMaterial3ScaffoldPaddingParameter", "UnrememberedMutableState",
+    "UseOfNonLambdaOffsetOverload"
+)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CourseSearchScreen(
@@ -110,6 +110,24 @@ fun CourseSearchScreen(
             Column {
                 ExtendedFloatingActionButton(
                     onClick = {
+                        courseSearchViewModel.courseSearch(
+                            courseSearchViewModel.searchContent.value
+                        )
+                        ifShowTextField = false
+                    },
+                    text = { Text(text = "搜索") },
+                    expanded = scrollState.value == 0,
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "搜索"
+                        )
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                ExtendedFloatingActionButton(
+                    onClick = {
                         courseSearchViewModel.searchContent.value = CourseSearchPost(
                             1,
                             50000,
@@ -136,34 +154,17 @@ fun CourseSearchScreen(
                         courseSearchViewModel.clearSearchResult()
                         ifShowTextField = true
                     },
-                    text = {
-                        Text(text = "重置")
-                    },
-                    icon = {
-                        Icon(imageVector = Icons.Default.Clear, contentDescription = "重置")
-                    }
+                    text = { Text(text = "重置") },
+                    expanded = scrollState.value == 0,
+                    icon = { Icon(imageVector = Icons.Default.Clear, contentDescription = "重置") },
+                    modifier = Modifier.align(Alignment.End)
                 )
-                Spacer(modifier = Modifier.height(10.dp))
-                AnimatedVisibility(
-                    visible = scrollState.value > 10,
+                /*AnimatedVisibility(
+                    visible = scrollState.value > 0,
                     enter = slideInVertically(initialOffsetY = { it * 2 }),
                     exit = slideOutVertically(targetOffsetY = { it * 2 }),
-                ) {
-                    ExtendedFloatingActionButton(
-                        onClick = {
-                            courseSearchViewModel.courseSearch(
-                                courseSearchViewModel.searchContent.value
-                            )
-                            ifShowTextField = false
-                        },
-                        text = {
-                            Text(text = "搜索")
-                        },
-                        icon = {
-                            Icon(imageVector = Icons.Default.Search, contentDescription = "搜索")
-                        }
-                    )
-                }
+                ) {*/
+                // }
             }
         },
         floatingActionButtonPosition = FabPosition.End

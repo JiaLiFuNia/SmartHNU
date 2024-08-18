@@ -18,7 +18,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -29,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -38,8 +38,6 @@ import com.xhand.hnu.components.UpdateDialog
 import com.xhand.hnu.model.NetworkConnectionState
 import com.xhand.hnu.model.rememberConnectivityState
 import com.xhand.hnu.ui.icon.rememberWifiOff
-import com.xhand.hnu.viewmodel.CourseSearchViewModel
-import com.xhand.hnu.viewmodel.CourseTaskViewModel
 import com.xhand.hnu.viewmodel.GradeViewModel
 import com.xhand.hnu.viewmodel.NewsViewModel
 import com.xhand.hnu.viewmodel.SettingsViewModel
@@ -160,12 +158,13 @@ fun NetworkScreen() {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(imageVector = rememberWifiOff(), contentDescription = null)
+            Icon(imageVector = rememberWifiOff(), contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "无网络连接",
+                text = "当前网络状况不佳，请重试",
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
             )
         }
 

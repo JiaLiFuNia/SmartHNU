@@ -153,19 +153,20 @@ class NewsViewModel(context: Context) : ViewModel() {
 
     // 搜索列表请求
     suspend fun searchRes(content: String) {
-        searchList.clear()
         try {
+            val searchListTemp = mutableListOf<ArticleListEntity>()
             for (i in 1..sliderPosition.toInt()) {
                 val searchKeys =
                     """[{"field":"pageIndex","value":$i},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$content"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
                 val searchKeyEncode = Base64.encodeToString(searchKeys.toByteArray(), 0)
                 val searchRes = searchService.pushPost(searchKeyEncode)
-                searchList.addAll(getNewsList(searchRes.body()?.data, "搜索", 2))
-                Log.i("TAG666", "searchList $searchList")
-                if (searchList.isEmpty() || searchList.size < 10) {
+                searchListTemp.addAll(getNewsList(searchRes.body()?.data, "搜索", 2))
+                Log.i("TAG666", "searchList $searchListTemp")
+                if (searchListTemp.isEmpty() || searchListTemp.size < 10) {
                     break
                 }
             }
+            searchList = searchListTemp
         } catch (e: Exception) {
             Log.i("TAG666", "searchRes: $e")
         }

@@ -131,7 +131,7 @@ fun NewsScreen(
         }
     }
     LaunchedEffect(newsViewModel.searchText) {
-        if (newsViewModel.searchText != "" && newsViewModel.searchBarExpand) {
+        if (newsViewModel.searchText != "" && newsViewModel.searchBarExpand && newsViewModel.searchList.isEmpty()) {
             newsViewModel.isSearching = true
             newsViewModel.searchRes(newsViewModel.searchText)
         }
@@ -212,7 +212,7 @@ fun NewsScreen(
                 newsViewModel.searchBarExpand = it
             }
         ) {
-            if (newsViewModel.isSearching && newsViewModel.searchText.isNotEmpty()) {
+            if (newsViewModel.isSearching && newsViewModel.searchText != "" && newsViewModel.searchList.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize(),
@@ -221,7 +221,7 @@ fun NewsScreen(
                     CircularProgressIndicator()
                 }
             } else {
-                if (newsViewModel.searchList.isEmpty() && newsViewModel.searchText.isNotEmpty())
+                if (newsViewModel.searchList.isEmpty() && newsViewModel.searchText != "")
                     Box(
                         modifier = Modifier
                             .fillMaxSize(),
@@ -230,7 +230,7 @@ fun NewsScreen(
                         Text(text = "没有找到相关新闻或通知", color = Color.Gray)
                     }
                 else {
-                    if (newsViewModel.searchText.isNotEmpty())
+                    if (newsViewModel.searchText != "")
                         Column(
                             modifier = Modifier
                                 .verticalScroll(scrollState),

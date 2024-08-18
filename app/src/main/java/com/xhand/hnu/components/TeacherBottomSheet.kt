@@ -47,7 +47,7 @@ fun TeacherBottomSheet(viewModel: SettingsViewModel) {
                             .fillMaxWidth()
                             .height(56.dp)
                             .selectable(
-                                selected = viewModel.longGradeTerm[viewModel.pjSelectTerm] == term,
+                                selected = viewModel.pjSelectTerm == index,
                                 onClick = { viewModel.pjSelectTerm = index }
                             )
                             .padding(horizontal = 16.dp),

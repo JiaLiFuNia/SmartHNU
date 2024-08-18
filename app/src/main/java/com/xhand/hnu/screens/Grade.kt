@@ -179,11 +179,16 @@ fun GradeScreen(
                     .padding(paddingValues = values),
                 contentAlignment = Alignment.TopStart
             ) {
-                Column(
+                val matchedElements = checkboxes.filter { it.isChecked }
+                if (matchedElements.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("暂无数据")
+                    }
+                } else {
+                    Column(
                     modifier = Modifier
                         .verticalScroll(scrollState)
                 ) {
-                    val matchedElements = checkboxes.filter { it.isChecked }
                     gradeViewModel.gradeList.sortByDescending {
                         when (selectedIndex) {
                             0 -> it.order.toString()
@@ -192,7 +197,7 @@ fun GradeScreen(
                         }
                     }
                     uiState.gradeList.forEach { grade ->
-                        if (grade.xnxqmc in matchedElements.map { it.term })
+                        if (grade.xnxqmc in matchedElements.map { it.term }) {
                             GradeListItem(
                                 grade = grade,
                                 modifier = Modifier
@@ -202,8 +207,11 @@ fun GradeScreen(
                                         cjdm = grade.cjdm
                                     }
                             )
+                        }
+                    }
                     }
                 }
+
             }
         }
     }
@@ -241,7 +249,7 @@ fun GradeScreen(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier

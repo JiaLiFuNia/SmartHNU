@@ -325,7 +325,7 @@ class SettingsViewModel(
     }
 
     var isGettingTeacher by mutableStateOf(true)
-    var pjSelectTerm by mutableIntStateOf(3)
+    var pjSelectTerm by mutableIntStateOf(2)
     // 教师评价
     suspend fun teacherService(xnxqdm: String) {
         try {
@@ -435,7 +435,7 @@ class SettingsViewModel(
 
     var booksList = mutableListOf<Xdjcdata>()
     var isGettingBook by mutableStateOf(true)
-    var selectTerm by mutableIntStateOf(0)
+    var selectTerm by mutableIntStateOf(1)
 
     suspend fun bookService(xnxqdm: String) {
         try {

@@ -151,7 +151,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
             BasicListItem(leadingText = "关于")
             BasicListItem(
                 headlineText = "帮助",
-                supportingText = "功能向导与使用说明",
+                supportingText = "用户协议与使用说明",
                 leadingImageVector = R.drawable.ic_outline_info,
                 onClick = {
                     navController.navigate(Destinations.Guide.route)
@@ -166,7 +166,7 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
             val currentVersion = stringResource(R.string.version)
             BasicListItem(
                 headlineText = stringResource(R.string.app_name),
-                supportingText = "Version: release-${currentVersion}",
+                supportingText = "版本号: release-${currentVersion}",
                 leadingImageVector = R.drawable.ic_outline_article,
                 onClick = {
                     viewWebsite("https://github.com/JiaLiFuNia/SmartHNU", context)

@@ -60,7 +60,7 @@ fun GPAChangeLineChart(jdLists: List<JDList>, gradeViewModel: GradeViewModel) {
             persistentMarkers = rememberExtraLambda(marker) { marker at gpaList.size - 1 },
             decorations = listOf(
                 rememberHorizontalLine(
-                    label = { "AVG:${gpaAvg.toFloat()}" },
+                    label = { "AVG:%.2f".format(gpaAvg.toFloat()) },
                     line = LineComponent(
                         color = MaterialTheme.colorScheme.primary.toArgb(),
                         thicknessDp = 2f
@@ -81,24 +81,4 @@ fun GPAChangeLineChart(jdLists: List<JDList>, gradeViewModel: GradeViewModel) {
         modelProducer = modelProducer,
         zoomState = rememberVicoZoomState(zoomEnabled = false),
     )
-    /*LineChart(
-        modifier = Modifier
-            .fillMaxSize(),
-        data = listOf(
-            Line(
-                label = "Windows",
-                values = jdLists.map { it.pjxfjd.toDouble() },
-                color = SolidColor(MaterialTheme.colorScheme.primary),
-                curvedEdges = true,
-                dotProperties = DotProperties(
-                    enabled = true,
-                    color = SolidColor(Color.White),
-                    strokeWidth = 2f.dp,
-                    radius = 3f.dp,
-                    strokeColor = SolidColor(MaterialTheme.colorScheme.primary),
-                )
-            )
-        ),
-        curvedEdges = true
-    )*/
 }

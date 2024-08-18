@@ -63,9 +63,7 @@ fun ArticleDetailScreen(
     var showMenu by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val cbManager = LocalClipboardManager.current
-    var showHtml by remember {
-        mutableStateOf(false)
-    }
+    var showHtml by remember { mutableStateOf(false) }
     val articleTitle = newsViewModel.article
     val webView = remember {
         WebView(context).apply {
@@ -182,144 +180,144 @@ fun ArticleDetailScreen(
                 )
             }
         ) {
-        val readability4J = Readability4J(newsViewModel.article.url, newsViewModel.htmlParsing)
+            val readability4J = Readability4J(newsViewModel.article.url, newsViewModel.htmlParsing)
             val article: Article = readability4J.parse()
 
-        val content: String = article.articleContent.toString()
+            val content: String = article.articleContent.toString()
         /*.replace("img src", "imgFLAGsrc")
         .replace("a href", "aFLAGhref").replace("span lang", "spanFLAGlang").replace("img data-layer="photo" src", "imgFLAGdata-layer="photo"FLAGsrc")
         .replace(" ", "").replace("FLAG", " ")*/
-        Log.i("TAG666", "title: $content")
+            Log.i("TAG666", "title: $content")
 
-        val darkTheme = when (viewModel.darkModeIndex) {
-            DarkMode.ON.ordinal -> true
-            DarkMode.OFF.ordinal -> false
-            else -> isSystemInDarkTheme()
-        }
-
-        val fontColor: String = if (darkTheme) "rgb(255,255,255)" else "rgb(0,0,0)"
-        // html头部
-        val htmlHeader = """
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-            <title></title>
-            <style>
-                body {
-                  font-size: 17px;
-                  background-color: rgb(${(MaterialTheme.colorScheme.background.red) * 256}, ${(MaterialTheme.colorScheme.background.green) * 256}, ${(MaterialTheme.colorScheme.background.blue) * 256});
-                  color: ${fontColor};
-                  line-height: 30.6px;
-                  font-weight: normal;
-                  font-family: Arial, Helvetica;
-                  text-align: justify;
-                  word-wrap: break-word;
-                }
-                img[data-layer="photo"] {
-                    display: block;
-                    margin-left: auto;
-                    margin-right: auto;
-                    width: 80%;
-                    height: auto;
-                }
-                a:link {
-                    color: ${fontColor};
-                    text-decoration:underline;
-                }
-                a:visited {
-                    color: ${fontColor};
-                    text-decoration:underline;
-                }
-                p:not(:first-of-type) {  
-                    text-indent: 2em; /* 设置首行缩进为2em */  
-                }
-                .right-align {
-                    text-align: right;
-                }
-                .indent {
-                    text-indent: 2em;
-                }
-            </style>
-        </head>
-        <body>
-    """
-            // html尾部
-        val htmlFooter = """
-                    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var paragraphs = document.querySelectorAll('p'); // 获取所有的p标签  
-
-            var firstParagraph = document.querySelector('p'); // 获取第一个p标签 
-            if (firstParagraph.textContent.trim().length > 10) {
-                firstParagraph.classList.add('indent'); // 如果文本长度大于10，则添加缩进类  
+            val darkTheme = when (viewModel.darkModeIndex) {
+                DarkMode.ON.ordinal -> true
+                DarkMode.OFF.ordinal -> false
+                else -> isSystemInDarkTheme()
             }
 
-            var lastParagraph = paragraphs[paragraphs.length - 1]; // 获取最后一个p标签  
-            if (lastParagraph.textContent.trim().startsWith('（')) {
-                lastParagraph.style.textAlign = 'right'; // 将文本居右对齐  
-            }
-
-            var lastTwo = Array.from(paragraphs).slice(-2); // 选取最后两个p标签  
-            lastTwo.forEach(function (paragraph) {
-                if (!paragraph.querySelector('img') && !paragraph.textContent.trim().startsWith('附') && paragraph.textContent.trim().length < 15) {
-                    paragraph.style.textAlign = 'right'; // 将每个p标签的文本居右对齐  
+            val fontColor: String = if (darkTheme) "rgb(255,255,255)" else "rgb(0,0,0)"
+            // html头部
+            val htmlHeader = """
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+                <title></title>
+                <style>
+                    body {
+                      font-size: 17px;
+                      background-color: rgb(${(MaterialTheme.colorScheme.background.red) * 256}, ${(MaterialTheme.colorScheme.background.green) * 256}, ${(MaterialTheme.colorScheme.background.blue) * 256});
+                      color: ${fontColor};
+                      line-height: 30.6px;
+                      font-weight: normal;
+                      font-family: Arial, Helvetica;
+                      text-align: justify;
+                      word-wrap: break-word;
+                    }
+                    img[data-layer="photo"] {
+                        display: block;
+                        margin-left: auto;
+                        margin-right: auto;
+                        width: 80%;
+                        height: auto;
+                    }
+                    a:link {
+                        color: ${fontColor};
+                        text-decoration:underline;
+                    }
+                    a:visited {
+                        color: ${fontColor};
+                        text-decoration:underline;
+                    }
+                    p:not(:first-of-type) {  
+                        text-indent: 2em; /* 设置首行缩进为2em */  
+                    }
+                    .right-align {
+                        text-align: right;
+                    }
+                    .indent {
+                        text-indent: 2em;
+                    }
+                </style>
+            </head>
+            <body>
+        """
+                // html尾部
+            val htmlFooter = """
+                        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var paragraphs = document.querySelectorAll('p'); // 获取所有的p标签  
+    
+                var firstParagraph = document.querySelector('p'); // 获取第一个p标签 
+                if (firstParagraph.textContent.trim().length > 10) {
+                    firstParagraph.classList.add('indent'); // 如果文本长度大于10，则添加缩进类  
                 }
+    
+                var lastParagraph = paragraphs[paragraphs.length - 1]; // 获取最后一个p标签  
+                if (lastParagraph.textContent.trim().startsWith('（')) {
+                    lastParagraph.style.textAlign = 'right'; // 将文本居右对齐  
+                }
+    
+                var lastTwo = Array.from(paragraphs).slice(-2); // 选取最后两个p标签  
+                lastTwo.forEach(function (paragraph) {
+                    if (!paragraph.querySelector('img') && !paragraph.textContent.trim().startsWith('附') && paragraph.textContent.trim().length < 15) {
+                        paragraph.style.textAlign = 'right'; // 将每个p标签的文本居右对齐  
+                    }
+                });
             });
-        });
-    </script>
-</body>
-</html>
-    """
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(paddingValues = it)
-                .verticalScroll(scrollState)
-        ) {
-            if (!showHtml) {
-                Text(
-                    text = articleTitle.title,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.W800,
-                    lineHeight = 35.sp,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 10.dp),
-                    textAlign = TextAlign.Justify
-                )
-                if (newsViewModel.isDetailLoading) {
-                    Box(
+        </script>
+    </body>
+    </html>
+        """
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues = it)
+                    .verticalScroll(scrollState)
+            ) {
+                if (!showHtml) {
+                    Text(
+                        text = articleTitle.title,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.W800,
+                        lineHeight = 35.sp,
                         modifier = Modifier
                             .fillMaxSize()
-                            .height(300.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
+                            .padding(horizontal = 10.dp),
+                        textAlign = TextAlign.Justify
+                    )
+                    if (newsViewModel.isDetailLoading) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .height(300.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else {
+                        AndroidView(
+                            factory = { context ->
+                                WebView(context).apply {
+                                    settings.javaScriptEnabled = true
+                                }
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 5.dp)
+                        ) { view ->
+                            view.loadDataWithBaseURL(
+                                "",
+                                "$htmlHeader$content$htmlFooter",
+                                null,
+                                "utf-8",
+                                null
+                            )
+                        }
                     }
                 } else {
-                    AndroidView(
-                        factory = { context ->
-                            WebView(context).apply {
-                                settings.javaScriptEnabled = true
-                            }
-                        },
-                        modifier = Modifier
-                            .padding(horizontal = 5.dp)
-                    ) { view ->
-                        view.loadDataWithBaseURL(
-                            "",
-                            "$htmlHeader$content$htmlFooter",
-                            null,
-                            "utf-8",
-                            null
-                        )
-                    }
+                    AndroidView(factory = { webView })
                 }
-            } else {
-                AndroidView(factory = { webView })
             }
-        }
     }
 }
