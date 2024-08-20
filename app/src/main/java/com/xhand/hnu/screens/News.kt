@@ -39,13 +39,15 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -61,6 +63,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -68,13 +71,13 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.placeholder.material.placeholder
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.xhand.hnu.R
 import com.xhand.hnu.components.ArticleListItem
 import com.xhand.hnu.components.ModalBottomSheet
 import com.xhand.hnu.model.entity.ArticleListEntity
 import com.xhand.hnu.network.PictureListItem
 import com.xhand.hnu.screens.navigation.Destinations
+import com.xhand.hnu.viewmodel.NewsUiState
 import com.xhand.hnu.viewmodel.NewsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -85,6 +88,7 @@ data class NewsOptions(
 )
 
 private val newsOptions = listOf(
+    NewsOptions("历史记录",""),
     NewsOptions("通知公告", "河南师范大学主页"),
     NewsOptions("师大要闻", "河南师范大学主页"),
     NewsOptions("新闻速递", "河南师范大学主页"),
@@ -99,6 +103,8 @@ fun NewsScreen(
     navController: NavController,
     newsViewModel: NewsViewModel = viewModel()
 ) {
+    val uiState by newsViewModel.uiState.collectAsState()
+
     val showBottomSheet = remember {
         mutableStateOf(false)
     }
@@ -120,28 +126,22 @@ fun NewsScreen(
         }
     }
     val scrollState = rememberScrollState()
-    val newsPagerState = rememberPagerState(pageCount = { newsOptions.size })
+    val newsPagerState = rememberPagerState(
+        pageCount = { newsOptions.size },
+        initialPage = 1
+    )
     val selectedTabIndex = remember { derivedStateOf { newsPagerState.currentPage } }
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
-        if (!newsViewModel.hadGetNew) {
+        if (!uiState.hadGetNew) {
             newsViewModel.newsList()
             newsViewModel.imageLoad()
-            newsViewModel.isRefreshing = false
         }
     }
     LaunchedEffect(newsViewModel.searchText) {
         if (newsViewModel.searchText != "" && newsViewModel.searchBarExpand && newsViewModel.searchList.isEmpty()) {
-            newsViewModel.isSearching = true
             newsViewModel.searchRes(newsViewModel.searchText)
         }
-    }
-    // 获取SystemUiController
-    val systemUiController = rememberSystemUiController()
-    val statueBarColor = colorScheme.background
-    // 设置状态栏颜色
-    SideEffect {
-        systemUiController.setStatusBarColor(color = statueBarColor)
     }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
@@ -212,7 +212,7 @@ fun NewsScreen(
                 newsViewModel.searchBarExpand = it
             }
         ) {
-            if (newsViewModel.isSearching && newsViewModel.searchText != "" && newsViewModel.searchList.isEmpty()) {
+            if (uiState.isSearching && newsViewModel.searchText != "" && newsViewModel.searchList.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize(),
@@ -271,10 +271,9 @@ fun NewsScreen(
                                 )
                                 TextButton(
                                     onClick = {
-                                        newsViewModel.searchHistory.clear()
                                         newsViewModel.clearHistoryList()
                                     },
-                                    enabled = newsViewModel.searchHistory.isNotEmpty(),
+                                    enabled = uiState.searchHistory.isNotEmpty(),
                                     modifier = Modifier
                                         .padding(end = 10.dp),
                                 ) {
@@ -284,7 +283,7 @@ fun NewsScreen(
                                     )
                                 }
                             }
-                            newsViewModel.searchHistory.forEach { article ->
+                            uiState.searchHistory.forEach { article ->
                                 ListItem(
                                     headlineContent = { Text(text = article) },
                                     leadingContent = {
@@ -304,7 +303,16 @@ fun NewsScreen(
                 }
             }
         }
-        ScrollableTabRow(selectedTabIndex = selectedTabIndex.value) {
+        ScrollableTabRow(
+            selectedTabIndex = selectedTabIndex.value,
+            indicator = { tabPositions ->
+                TabRowDefaults.PrimaryIndicator(
+                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex.value]),
+                    width = 40.dp,
+                    shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)
+                )
+            }
+        ) {
             newsOptions.forEachIndexed { index, newsOption ->
                 Tab(
                     selected = selectedTabIndex.value == index,
@@ -313,6 +321,8 @@ fun NewsScreen(
                             newsPagerState.animateScrollToPage(index)
                         }
                     },
+                    selectedContentColor = colorScheme.primary,
+                    unselectedContentColor = colorScheme.onSurface,
                     text = { Text(text = newsOption.title) }
                 )
             }
@@ -324,7 +334,7 @@ fun NewsScreen(
                     isRefreshing = isRefreshing,
                     contentAlignment = Alignment.TopStart
             ) {
-                    if (newsViewModel.isRefreshing) {
+                if (uiState.isLoadingNewsList) {
                         Box(
                             modifier = Modifier
                                 .padding(top = 40.dp)
@@ -338,6 +348,7 @@ fun NewsScreen(
                             newsViewModel = newsViewModel,
                             navController = navController,
                             selectedTabIndex = newsIndex,
+                            uiState = uiState
                         )
                     }
                 }
@@ -379,7 +390,8 @@ fun NewsList(
     newsViewModel: NewsViewModel,
     navController: NavController,
     selectedTabIndex: Int,
-    pictures: List<PictureListItem> = newsViewModel.pictures
+    pictures: List<PictureListItem> = newsViewModel.pictures,
+    uiState: NewsUiState
 ) {
     val pagerState = rememberPagerState(pageCount = { pictures.size })
     LaunchedEffect(Unit) {
@@ -398,7 +410,7 @@ fun NewsList(
             modifier = Modifier
                 .verticalScroll(scrollState),
         ) {
-            if (selectedTabIndex == 0) {
+            if (selectedTabIndex == 1) {
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier
@@ -445,7 +457,7 @@ fun NewsList(
                                 .padding(5.dp)
                                 .height(25.dp)
                                 .width(50.dp)
-                                .placeholder(visible = newsViewModel.isRefreshing)
+                                .placeholder(visible = uiState.isLoadingNewsList)
                         ) {
                             Box(
                                 contentAlignment = Alignment.Center,
@@ -460,11 +472,11 @@ fun NewsList(
                     }
                 }
             }
-            newsViewModel.list.forEach { article ->
+            uiState.list.forEach { article ->
                 if (article.type == newsOptions[selectedTabIndex].title) {
                     ArticleListItem(
                         article = article,
-                        loaded = newsViewModel.isRefreshing,
+                        loaded = uiState.isLoadingNewsList,
                         modifier = Modifier
                             .clickable {
                                 navController.navigate(Destinations.NewsDetail.route)
@@ -498,4 +510,14 @@ fun NewsList(
             }
         }
     }
+}
+
+@Composable
+@Preview
+fun NewsScreenPreview() {
+    NewsScreen(
+        navController = NavController(LocalContext.current), newsViewModel = NewsViewModel(
+            LocalContext.current
+        )
+    )
 }

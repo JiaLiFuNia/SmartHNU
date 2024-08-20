@@ -1,39 +1,42 @@
 package com.xhand.hnu.screens
 
 import android.content.Context
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.xhand.hnu.BottomNavigationItem
 import com.xhand.hnu.R
+import com.xhand.hnu.components.SlideTransition
 import com.xhand.hnu.components.UpdateDialog
 import com.xhand.hnu.model.NetworkConnectionState
 import com.xhand.hnu.model.rememberConnectivityState
@@ -78,66 +81,84 @@ fun MainFrame(
     var selectedItemIndex by rememberSaveable {
         mutableIntStateOf(1)
     }
+    val savableStateHolder = rememberSaveableStateHolder()
     if (isConnected) {
+        val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
         Surface(
             modifier = Modifier.fillMaxSize()
         ) {
-            Scaffold(
-                bottomBar = {
-                    NavigationBar {
-                        bottomNavigationItems.forEachIndexed { index, bottomNavigationItem ->
-                            NavigationBarItem(
-                                selected = selectedItemIndex == index,
-                                onClick = {
-                                    selectedItemIndex = index
-                                },
-                                label = {
-                                    Text(text = bottomNavigationItem.title)
-                                },
-                                alwaysShowLabel = true,
-                                icon = {
-                                    BadgedBox(
-                                        badge = {
-                                            if (bottomNavigationItem.hasNews) {
-                                                Badge()
-                                            }
-                                        }
-                                    ) {
-                                        Icon(
-                                            painterResource(
-                                                id = if (index == selectedItemIndex) {
-                                                    bottomNavigationItem.selectedIcon
-                                                } else
-                                                    bottomNavigationItem.unselectedIcon
-                                            ),
-                                            contentDescription = bottomNavigationItem.title
-                                        )
-                                    }
+            NavigationSuiteScaffold(
+                navigationSuiteItems = {
+                    bottomNavigationItems.forEachIndexed { index, bottomNavigationItem ->
+                        item(
+                            icon = {
+                                Icon(
+                                    painterResource(
+                                        id = if (index == selectedItemIndex) {
+                                            bottomNavigationItem.selectedIcon
+                                        } else
+                                            bottomNavigationItem.unselectedIcon
+                                    ),
+                                    contentDescription = bottomNavigationItem.title
+                                )
+                            },
+                            label = {
+                                Text(text = bottomNavigationItem.title)
+                            },
+                            selected = selectedItemIndex == index,
+                            onClick = {
+                                selectedItemIndex = index
+                            },
+                            badge = {
+                                if (bottomNavigationItem.hasNews) {
+                                    Badge()
                                 }
-                            )
-                        }
+                            }
+                        )
                     }
+                },
+                layoutType = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) {
+                    NavigationSuiteType.NavigationRail
+                } else {
+                    NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
+                        currentWindowAdaptiveInfo()
+                    )
                 }
             ) {
-                Box(modifier = Modifier.padding(it)) {
-                    when (selectedItemIndex) {
-                        0 -> PersonScreen(
-                            navController = navController,
-                            viewModel = viewModel,
-                            gradeViewModel = gradeViewModel,
-                            context = context
-                        )
+                AnimatedContent(
+                    modifier = Modifier.fillMaxSize(),
+                    label = "home-content",
+                    targetState = selectedItemIndex,
+                    transitionSpec = {
+                        SlideTransition.slideLeft.enterTransition()
+                            .togetherWith(SlideTransition.slideLeft.exitTransition())
+                    },
+                ) { page ->
+                    savableStateHolder.SaveableStateProvider(
+                        key = page,
+                        content = {
+                            Box(modifier = Modifier) {
+                                when (page) {
+                                    0 -> PersonScreen(
+                                        navController = navController,
+                                        viewModel = viewModel,
+                                        gradeViewModel = gradeViewModel,
+                                        context = context
+                                    )
 
-                        1 -> NewsScreen(
-                            navController = navController,
-                            newsViewModel = newsViewModel
-                        )
+                                    1 -> NewsScreen(
+                                        navController = navController,
+                                        newsViewModel = newsViewModel
+                                    )
 
-                        2 -> SettingScreen(
-                            viewModel = viewModel,
-                            navController = navController
-                        )
-                    }
+                                    2 -> SettingScreen(
+                                        viewModel = viewModel,
+                                        navController = navController
+                                    )
+                                }
+                            }
+                        }
+                    )
                 }
             }
             UpdateDialog(viewModel = viewModel)

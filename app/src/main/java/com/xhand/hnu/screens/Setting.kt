@@ -69,13 +69,6 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     val cbManager = LocalClipboardManager.current
-    // 获取SystemUiController
-    val systemUiController = rememberSystemUiController()
-    val statueBarColor = colorScheme.surfaceContainer
-    // 设置状态栏颜色
-    SideEffect {
-        systemUiController.setStatusBarColor(color = statueBarColor)
-    }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()

@@ -22,45 +22,77 @@ import com.xhand.hnu.network.getNewsList
 import com.xhand.hnu.network.getPicList
 import com.xhand.hnu.network.preProcessNewsDetail
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+data class NewsUiState(
+    val isLoadingNewsList: Boolean = true,
+    val isSearching: Boolean = true,
+    val isDetailLoading: Boolean = true,
+    val hadGetNew: Boolean = false,
+    val searchBarExpand: Boolean = false,
+    val searchText: String = "",
+    val list: MutableList<ArticleListEntity> = mutableListOf(),
+    val searchList: MutableList<ArticleListEntity> = mutableListOf(),
+    val searchHistory: MutableList<String> = mutableListOf(),
+    val pictures: MutableList<PictureListItem> = mutableListOf(),
+    val htmlParsing: String = "",
+    val article: ArticleListEntity = ArticleListEntity("", "", "", "", false)
+)
 
 @SuppressLint("MutableCollectionMutableState")
 class NewsViewModel(context: Context) : ViewModel() {
+    private val _uiState = MutableStateFlow(NewsUiState())
+    val uiState: StateFlow<NewsUiState> = _uiState.asStateFlow()
+
     private val dataManager = DataManager(context)
 
     init {
         viewModelScope.launch {
             val historyList = dataManager.historyList.firstOrNull()
-            searchHistory = historyList?.toMutableList() ?: mutableListOf()
+            _uiState.update {
+                it.copy(searchHistory = historyList?.toMutableList() ?: mutableListOf())
+            }
         }
     }
 
     fun clearHistoryList() {
         viewModelScope.launch {
+            _uiState.update {
+                it.copy(searchHistory = mutableListOf())
+            }
             dataManager.clearHistoryList()
-            searchHistory.clear()
         }
     }
 
-    var hadGetNew by mutableStateOf(false)
+    private fun addSearchHistory(searchHistory: String) {
+        val searchHistoryTemp: MutableList<String> = _uiState.value.searchHistory
+        searchHistoryTemp.add(searchHistory)
+        viewModelScope.launch {
+            dataManager.saveHistoryList(searchHistoryTemp)
+            _uiState.update {
+                it.copy(searchHistory = searchHistoryTemp)
+            }
+        }
+    }
+
+    fun changeSearchText(searchText: String) {
+        _uiState.update {
+            it.copy(searchText = searchText)
+        }
+    }
 
     var searchText by mutableStateOf("")
 
     var searchBarExpand by mutableStateOf(false)
 
-    // 新闻列表
-    var list by mutableStateOf(
-        mutableListOf<ArticleListEntity>()
-    )
-
     // 搜索列表
     var searchList by mutableStateOf(
         mutableListOf<ArticleListEntity>()
-    )
-
-    var searchHistory by mutableStateOf(
-        mutableListOf<String>()
     )
 
     // 主页新闻类型
@@ -92,10 +124,6 @@ class NewsViewModel(context: Context) : ViewModel() {
     private val searchService = SearchService.instance()
     private val detailService = NewsDetailService.instance()
 
-    // 是否正在刷新
-    var isRefreshing by mutableStateOf(true)
-    var isSearching by mutableStateOf(true)
-
     // 网页源码请求
     var htmlParsing by mutableStateOf("")
     var isDetailLoading by mutableStateOf(true)
@@ -119,12 +147,15 @@ class NewsViewModel(context: Context) : ViewModel() {
     private var sliderPosition by mutableFloatStateOf(4f)
     // 新闻列表请求
     suspend fun newsList() {
-        list.clear()
+        _uiState.update {
+            it.copy(list = mutableListOf())
+        }
         try {
+            val newsList: MutableList<ArticleListEntity> = mutableListOf()
             for (type in newsListType) {
                 for (i in 1..sliderPosition.toInt()) {
                     val htmlRes = newsListService.getNewsList(i.toString(), type.key)
-                    list.addAll(
+                    newsList.addAll(
                         getNewsList(
                             str = htmlRes.body()?.string(),
                             type = type.value,
@@ -136,7 +167,7 @@ class NewsViewModel(context: Context) : ViewModel() {
             for (type in teacherNewsListType) {
                 for (i in 1..sliderPosition.toInt()) {
                     val htmlRes = newsListService.getTeacherNewsList(i.toString(), type.key)
-                    list.addAll(
+                    newsList.addAll(
                         getNewsList(
                             htmlRes.body()?.string(),
                             type.value,
@@ -145,7 +176,15 @@ class NewsViewModel(context: Context) : ViewModel() {
                     )
                 }
             }
-            hadGetNew = true
+            _uiState.update {
+                it.copy(list = newsList)
+            }
+            _uiState.update {
+                it.copy(hadGetNew = true)
+            }
+            _uiState.update {
+                it.copy(isLoadingNewsList = false)
+            }
         } catch (e: Exception) {
             Log.i("TAG666", "newsList: $e")
         }
@@ -154,6 +193,9 @@ class NewsViewModel(context: Context) : ViewModel() {
     // 搜索列表请求
     suspend fun searchRes(content: String) {
         try {
+            _uiState.update {
+                it.copy(isSearching = true)
+            }
             val searchListTemp = mutableListOf<ArticleListEntity>()
             for (i in 1..sliderPosition.toInt()) {
                 val searchKeys =
@@ -166,19 +208,16 @@ class NewsViewModel(context: Context) : ViewModel() {
                     break
                 }
             }
+            if (content !in _uiState.value.searchHistory) {
+                addSearchHistory(content)
+                Log.i("TAG666", "searchHistory ${_uiState.value.searchHistory}")
+            }
             searchList = searchListTemp
         } catch (e: Exception) {
             Log.i("TAG666", "searchRes: $e")
         }
-        isSearching = false
-        if (searchList.isNotEmpty()) {
-            if (content !in searchHistory) {
-                Log.i("TAG666", "searchHistory $searchHistory")
-                searchHistory.add(content)
-                viewModelScope.launch {
-                    dataManager.saveHistoryList(searchHistory)
-                }
-            }
+        _uiState.update {
+            it.copy(isSearching = false)
         }
     }
 

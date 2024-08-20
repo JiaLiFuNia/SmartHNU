@@ -9,16 +9,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -69,13 +72,26 @@ fun BookBottomSheet(viewModel: SettingsViewModel, kcrwdm: String, xnxqdm: String
             var selectedTabIndex by remember { mutableIntStateOf(0) }
             PrimaryTabRow(
                 selectedTabIndex = selectedTabIndex,
-                containerColor = Color.Transparent
+                containerColor = Color.Transparent,
+                indicator = {
+                    TabRowDefaults.PrimaryIndicator(
+                        modifier = Modifier.tabIndicatorOffset(
+                            selectedTabIndex,
+                            matchContentSize = true
+                        ),
+                        width = 40.dp,
+                        shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)
+                    )
+                },
+                divider = {}
             ) {
                 tabs.forEachIndexed { index, tab ->
                     Tab(
                         selected = selectedTabIndex == index,
                         onClick = { selectedTabIndex = index },
-                        text = { Text(text = tab) }
+                        text = { Text(text = tab) },
+                        selectedContentColor = colorScheme.primary,
+                        unselectedContentColor = colorScheme.onSurface,
                     )
                 }
             }

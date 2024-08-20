@@ -160,6 +160,7 @@ class GradeViewModel : ViewModel() {
     // 成绩请求
     suspend fun gradeDetailService(cjdm: String) {
         try {
+            isGettingDetailGrade = true
             val res =
                 _uiState.value.userInfoEntity?.let {
                     gradeService.gradeDetail(

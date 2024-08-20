@@ -13,7 +13,7 @@ android {
         minSdk = 29
         targetSdk = 33
         versionCode = 1
-        versionName = "2.2.0"
+        versionName = "2.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -77,14 +77,14 @@ dependencies {
     // runtimeOnly("com.google.accompanist:accompanist-permissions:0.35.1-alpha")
 
     // html解析
-    implementation("org.jsoup:jsoup:1.16.1")
+    implementation("org.jsoup:jsoup:1.18.1")
     implementation("com.chimbori.crux:crux:5.0.0")
     implementation("net.dankito.readability4j:readability4j:1.0.8")
 
     // Network
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.google.code.gson:gson:2.11.0")
     implementation("com.github.franmontiel:PersistentCookieJar:1.0.1")
 
@@ -112,4 +112,7 @@ dependencies {
     // implementation("io.github.ehsannarmani:compose-charts:0.0.13")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.10")
+
+    implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.3.0-beta05")
+
 }
