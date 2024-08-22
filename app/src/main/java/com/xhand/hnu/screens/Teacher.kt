@@ -91,7 +91,7 @@ fun TeacherScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.showBookSelect = true }) {
+                    IconButton(onClick = { viewModel.showTermSelect = true }) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = "more"
@@ -139,7 +139,7 @@ fun TeacherScreen(
                     }
                 }
             }
-        if (viewModel.showBookSelect)
+        if (viewModel.showTermSelect)
             TeacherBottomSheet(viewModel = viewModel)
     }
 }

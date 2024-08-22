@@ -1,12 +1,12 @@
 package com.xhand.hnu.screens
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.Toast
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,10 +28,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,68 +41,73 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.xhand.hnu.R
-import com.xhand.hnu.model.entity.DarkMode
+import com.xhand.hnu.components.WebView
+import com.xhand.hnu.components.copyText
 import com.xhand.hnu.model.viewWebsite
 import com.xhand.hnu.viewmodel.NewsViewModel
-import com.xhand.hnu.viewmodel.SettingsViewModel
+import com.xhand.hnu.viewmodel.NewsViewModelFactory
 import net.dankito.readability4j.Article
 import net.dankito.readability4j.Readability4J
+import java.net.URL
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun ArticleDetailScreen(
-    viewModel: SettingsViewModel, newsViewModel: NewsViewModel, onClick: () -> Unit
+    context: Context,
+    onClick: () -> Unit,
+    url: String,
+    title: String
 ) {
-    var showMenu by remember { mutableStateOf(false) }
-    val context = LocalContext.current
+    val newsViewModel: NewsViewModel = viewModel(
+        factory = NewsViewModelFactory(context)
+    )
+    val uiState by newsViewModel.uiState.collectAsState()
     val cbManager = LocalClipboardManager.current
-    var showHtml by remember { mutableStateOf(false) }
-    val articleTitle = newsViewModel.article
-    val webView = remember {
-        WebView(context).apply {
-            settings.javaScriptEnabled = true
-            webViewClient = WebViewClient()
-            settings.builtInZoomControls = true
-            loadUrl(newsViewModel.article.url)
+    var showMenu by remember { mutableStateOf(false) }
+    if (url != "") {
+        val domain = URL(url).host
+        if (!domain.endsWith("htu.edu.cn")) newsViewModel.switchDisplayStyle(true)
+    }
+    var webView: WebView? by remember { mutableStateOf(null) }
+    val scrollState = rememberScrollState()
+    LaunchedEffect(url) {
+        newsViewModel.changeWebViewError("")
+        if (url != "" && !uiState.displayStyle) {
+            newsViewModel.loadDetail() // true
+            newsViewModel.detailService(url)
         }
     }
-    LaunchedEffect(Unit) {
-        newsViewModel.isDetailLoading = true
-        newsViewModel.detailService()
-    }
-    val scrollState = rememberScrollState()
-    // val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
-        // modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier
+            .fillMaxSize(),
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface
+                    containerColor = if (scrollState.value > 0) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surface
                 ),
-                // scrollBehavior = scrollBehavior,
                 title = { Text(text = "详情") },
                 navigationIcon = {
-                        IconButton(onClick = { onClick() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "返回"
-                            )
-                        }
-                    },
+                    IconButton(onClick = { onClick() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "返回"
+                        )
+                    }
+                },
                 actions = {
                     IconButton(
                             onClick = {
                                 Intent(Intent.ACTION_SEND).also {
-                                    it.putExtra(Intent.EXTRA_TEXT, newsViewModel.article.url)
+                                    it.putExtra(Intent.EXTRA_TEXT, url)
                                     it.type = "text/plain"
                                     if (it.resolveActivity(context.packageManager) != null) {
                                         context.startActivity(it)
@@ -129,7 +136,7 @@ fun ArticleDetailScreen(
                             DropdownMenuItem(
                                 text = { Text(text = "刷新页面") },
                                 onClick = {
-                                    webView.reload()
+                                    webView?.reload()
                                 },
                                 leadingIcon = {
                                     Icon(
@@ -139,9 +146,13 @@ fun ArticleDetailScreen(
                                 }
                             )
                             DropdownMenuItem(
-                                text = { if (!showHtml) Text(text = "查看原文") else Text(text = "提取内容") },
+                                text = {
+                                    if (!uiState.displayStyle) Text(text = "查看原文") else Text(
+                                        text = "提取内容"
+                                    )
+                                },
                                 onClick = {
-                                    showHtml = !showHtml
+                                    newsViewModel.switchDisplayStyle(!uiState.displayStyle)
                                 },
                                 leadingIcon = {
                                     Icon(
@@ -153,7 +164,7 @@ fun ArticleDetailScreen(
                             DropdownMenuItem(
                                 text = { Text(text = "复制链接") },
                                 onClick = {
-                                    viewModel.copyText(cbManager, newsViewModel.article.url)
+                                    copyText(cbManager, url)
                                     Toast.makeText(context, "已复制", Toast.LENGTH_SHORT).show()
                                 },
                                 leadingIcon = {
@@ -166,7 +177,7 @@ fun ArticleDetailScreen(
                             DropdownMenuItem(
                                 text = { Text(text = "外部打开") },
                                 onClick = {
-                                    viewWebsite(newsViewModel.article.url, context)
+                                    viewWebsite(url, context)
                                 },
                                 leadingIcon = {
                                     Icon(
@@ -177,27 +188,17 @@ fun ArticleDetailScreen(
                             )
                         }
                     }
-                )
-            }
-        ) {
-            val readability4J = Readability4J(newsViewModel.article.url, newsViewModel.htmlParsing)
-            val article: Article = readability4J.parse()
-
-            val content: String = article.articleContent.toString()
-        /*.replace("img src", "imgFLAGsrc")
-        .replace("a href", "aFLAGhref").replace("span lang", "spanFLAGlang").replace("img data-layer="photo" src", "imgFLAGdata-layer="photo"FLAGsrc")
-        .replace(" ", "").replace("FLAG", " ")*/
-            Log.i("TAG666", "title: $content")
-
-            val darkTheme = when (viewModel.darkModeIndex) {
-                DarkMode.ON.ordinal -> true
-                DarkMode.OFF.ordinal -> false
-                else -> isSystemInDarkTheme()
-            }
-
-            val fontColor: String = if (darkTheme) "rgb(255,255,255)" else "rgb(0,0,0)"
+            )
+        }
+    ) {
+        val readability4J = Readability4J(url, uiState.htmlParsing)
+        val article: Article = readability4J.parse()
+        val content: String = article.articleContent.toString()
+        Log.i("TAG666", "title: $content")
+        val fontColor =
+            "rgb(${(MaterialTheme.colorScheme.onSurface.red) * 256}, ${(MaterialTheme.colorScheme.onSurface.green) * 256}, ${(MaterialTheme.colorScheme.onSurface.blue) * 256})"
             // html头部
-            val htmlHeader = """
+        val htmlHeader = """
             <!DOCTYPE html>
             <html lang="en">
             <head>
@@ -214,12 +215,21 @@ fun ArticleDetailScreen(
                       font-family: Arial, Helvetica;
                       text-align: justify;
                       word-wrap: break-word;
+                      max-width: 100vw;
+                      overflow-x: hidden;
                     }
-                    img[data-layer="photo"] {
+                    img {
                         display: block;
                         margin-left: auto;
                         margin-right: auto;
                         width: 80%;
+                        height: auto;
+                    }
+                    img.attach {
+                        display: inline;
+                        width: auto;
+                        margin-left: 0;
+                        margin-right: 0;
                         height: auto;
                     }
                     a:link {
@@ -239,46 +249,60 @@ fun ArticleDetailScreen(
                     .indent {
                         text-indent: 2em;
                     }
-                </style>
+                    </style>
             </head>
             <body>
         """
-                // html尾部
-            val htmlFooter = """
-                        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                var paragraphs = document.querySelectorAll('p'); // 获取所有的p标签  
-    
-                var firstParagraph = document.querySelector('p'); // 获取第一个p标签 
-                if (firstParagraph.textContent.trim().length > 10) {
-                    firstParagraph.classList.add('indent'); // 如果文本长度大于10，则添加缩进类  
-                }
-    
-                var lastParagraph = paragraphs[paragraphs.length - 1]; // 获取最后一个p标签  
-                if (lastParagraph.textContent.trim().startsWith('（')) {
-                    lastParagraph.style.textAlign = 'right'; // 将文本居右对齐  
-                }
-    
-                var lastTwo = Array.from(paragraphs).slice(-2); // 选取最后两个p标签  
-                lastTwo.forEach(function (paragraph) {
-                    if (!paragraph.querySelector('img') && !paragraph.textContent.trim().startsWith('附') && paragraph.textContent.trim().length < 15) {
-                        paragraph.style.textAlign = 'right'; // 将每个p标签的文本居右对齐  
+        // html尾部
+        val htmlFooter = """
+            <script>
+                document.querySelectorAll('img').forEach(img => {
+                    img.removeAttribute('width');
+                    img.removeAttribute('height');
+                });
+                document.querySelectorAll('img').forEach(img => {
+                    if (img.src.startsWith('http://www.htu.edu.cn/_ueditor/themes/') || img.src.startsWith('https://www.htu.edu.cn/_ueditor/themes/')) {
+                        img.classList.add('attach'); // 为符合条件的 img 元素添加类名 'attach'
                     }
                 });
-            });
-        </script>
-    </body>
-    </html>
+                document.addEventListener('DOMContentLoaded', function () {
+                    var paragraphs = document.querySelectorAll('p'); // 获取所有的p标签  
+                
+                    var firstParagraph = document.querySelector('p'); // 获取第一个p标签 
+                    if (firstParagraph.textContent.trim().length > 10) {
+                        firstParagraph.classList.add('indent'); // 如果文本长度大于10，则添加缩进类  
+                    }
+                
+                    var lastParagraph = paragraphs[paragraphs.length - 1]; // 获取最后一个p标签  
+                    if (lastParagraph.textContent.trim().startsWith('（')) {
+                        lastParagraph.style.textAlign = 'right'; // 将文本居右对齐  
+                    }
+                
+                    var lastTwo = Array.from(paragraphs).slice(-2); // 选取最后两个p标签  
+                    lastTwo.forEach(function (paragraph) {
+                        if (!paragraph.querySelector('img') && !paragraph.textContent.trim().startsWith('附') && paragraph.textContent.trim().length < 15) {
+                            paragraph.style.textAlign = 'right'; // 将每个p标签的文本居右对齐  
+                        }
+                    });
+                });
+            </script>
+            </body>
+            </html>
         """
+        if (url == "") {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = "选择一个进行浏览")
+            }
+        } else {
             Column(
                 Modifier
                     .fillMaxSize()
                     .padding(paddingValues = it)
                     .verticalScroll(scrollState)
             ) {
-                if (!showHtml) {
+                if (!uiState.displayStyle) {
                     Text(
-                        text = articleTitle.title,
+                        text = title,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.W800,
                         lineHeight = 35.sp,
@@ -287,7 +311,7 @@ fun ArticleDetailScreen(
                             .padding(horizontal = 10.dp),
                         textAlign = TextAlign.Justify
                     )
-                    if (newsViewModel.isDetailLoading) {
+                    if (uiState.isDetailLoading) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -316,8 +340,36 @@ fun ArticleDetailScreen(
                         }
                     }
                 } else {
-                    AndroidView(factory = { webView })
+                    if (uiState.webViewError != "") {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .height(300.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(text = "加载失败，错误：${uiState.webViewError}")
+                            TextButton(onClick = { webView?.reload() }) {
+                                Text(text = "重新加载")
+                            }
+                            TextButton(onClick = { viewWebsite(url, context) }) {
+                                Text(text = "点击此处跳转到浏览器打开")
+                            }
+                        }
+                    } else {
+                        WebView(
+                            url = url,
+                            webViewSetter = { web ->
+                                webView = web
+                            },
+                            onError = { error ->
+                                newsViewModel.changeWebViewError(error)
+                            }
+                        )
+                    }
+
                 }
             }
+        }
     }
 }

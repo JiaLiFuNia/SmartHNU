@@ -30,11 +30,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
             CompositionLocalProvider(
-                LocalUserViewModel provides SettingsViewModel(context),
-                LocalNewsViewModel provides NewsViewModel(context),
+                LocalUserViewModel provides SettingsViewModel(context)
             ) {
                 val viewModel = LocalUserViewModel.current
-                val newsViewModel = LocalNewsViewModel.current
                 val currentVersion = stringResource(id = R.string.version)
                 LaunchedEffect(Unit) {
                     viewModel.updateService(currentVersion)
@@ -47,9 +45,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     NavHostScreen(
                         viewModel = viewModel,
-                        newsViewModel = newsViewModel,
-                        context = context,
-                        gradeViewModel = GradeViewModel()
+                        context = context
                     )
                 }
             }

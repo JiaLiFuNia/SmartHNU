@@ -25,7 +25,7 @@ fun TeacherBottomSheet(viewModel: SettingsViewModel) {
     val bottomSheetState = rememberModalBottomSheetState()
     val terms = viewModel.longGradeTerm
     ModalBottomSheet(
-        onDismissRequest = { viewModel.showBookSelect = false },
+        onDismissRequest = { viewModel.showTermSelect = false },
         sheetState = bottomSheetState
     ) {
         Column(

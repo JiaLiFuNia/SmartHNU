@@ -1,6 +1,7 @@
 package com.xhand.hnu.screens
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,7 +38,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.xhand.hnu.components.BookBottomSheet
 import com.xhand.hnu.components.BookSelectBottomSheet
 import com.xhand.hnu.components.BooksListItem
-import com.xhand.hnu.viewmodel.SettingsViewModel
+import com.xhand.hnu.viewmodel.BookViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -45,16 +47,17 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChooseBookScreen(
     onBack: () -> Unit,
-    viewModel: SettingsViewModel
+    viewModel: BookViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scrollState = rememberScrollState()
     var xnxqdm by remember { mutableStateOf("") }
 
     LaunchedEffect(viewModel.selectTerm) {
-        viewModel.isGettingBook = true
-        viewModel.bookService(viewModel.longGradeTerm[viewModel.selectTerm])
-        viewModel.isGettingBook = false
+        viewModel.bookService(uiState.term!!.gradeTerm[viewModel.selectTerm])
+        Log.i("TAG666", "ChooseBookScreen: ${uiState.term!!.gradeTerm[viewModel.selectTerm]}")
     }
     var isRefreshing by remember { mutableStateOf(false) }
     val state = rememberPullToRefreshState()
@@ -63,7 +66,7 @@ fun ChooseBookScreen(
         isRefreshing = true
         coroutineScope.launch {
             delay(timeMillis = 1000)
-            viewModel.bookService(viewModel.longGradeTerm[viewModel.selectTerm])
+            viewModel.bookService(uiState.term!!.gradeTerm[viewModel.selectTerm])
             isRefreshing = false
         }
     }
@@ -103,7 +106,7 @@ fun ChooseBookScreen(
         var kcmc by remember {
             mutableStateOf("")
         }
-        if (viewModel.isGettingBook)
+        if (uiState.isGettingBook)
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -119,7 +122,7 @@ fun ChooseBookScreen(
                     .padding(paddingValues = it),
                 contentAlignment = Alignment.TopStart
             ) {
-                if (viewModel.booksList.isEmpty()) {
+                if (uiState.booksList.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
                             text = "没有教材",
@@ -131,8 +134,8 @@ fun ChooseBookScreen(
                         modifier = Modifier
                             .verticalScroll(scrollState)
                     ) {
-                        viewModel.booksList.sortedBy { it.kcdlmc }
-                        viewModel.booksList.forEach { book ->
+                        uiState.booksList.sortedBy { it.kcdlmc }
+                        uiState.booksList.forEach { book ->
                             BooksListItem(
                                 book = book,
                                 modifier = Modifier.clickable {
@@ -148,8 +151,14 @@ fun ChooseBookScreen(
             }
         }
         if (viewModel.showBookAlert)
-            BookBottomSheet(viewModel = viewModel, kcrwdm = kcrwdm, xnxqdm = xnxqdm, kcmc = kcmc)
+            BookBottomSheet(
+                viewModel = viewModel,
+                kcrwdm = kcrwdm,
+                xnxqdm = xnxqdm,
+                kcmc = kcmc,
+                uiState = uiState
+            )
         if (viewModel.showBookSelect)
-            BookSelectBottomSheet(viewModel = viewModel)
+            BookSelectBottomSheet(viewModel = viewModel, uiState = uiState)
     }
 }

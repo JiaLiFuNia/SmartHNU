@@ -40,12 +40,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.xhand.hnu.model.entity.Yxjcdata
-import com.xhand.hnu.viewmodel.SettingsViewModel
+import com.xhand.hnu.repository.Repository
+import com.xhand.hnu.viewmodel.BookUiState
+import com.xhand.hnu.viewmodel.BookViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BookBottomSheet(viewModel: SettingsViewModel, kcrwdm: String, xnxqdm: String, kcmc: String) {
+fun BookBottomSheet(
+    viewModel: BookViewModel,
+    kcrwdm: String,
+    xnxqdm: String,
+    kcmc: String,
+    uiState: BookUiState
+) {
     val bottomSheetState = rememberModalBottomSheetState()
     val tabs = listOf("可选教材", "已选教材")
     val cbManager = LocalClipboardManager.current
@@ -101,7 +108,7 @@ fun BookBottomSheet(viewModel: SettingsViewModel, kcrwdm: String, xnxqdm: String
                     .verticalScroll(scrollState),
             ) {
                 if (selectedTabIndex == 0) {
-                    if (viewModel.isGettingBookDetail)
+                    if (uiState.isGettingBookDetail)
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -111,7 +118,7 @@ fun BookBottomSheet(viewModel: SettingsViewModel, kcrwdm: String, xnxqdm: String
                             CircularProgressIndicator()
                         }
                     else
-                        if (viewModel.bookAbleList.isEmpty())
+                        if (uiState.bookAbleList.isEmpty())
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -121,13 +128,13 @@ fun BookBottomSheet(viewModel: SettingsViewModel, kcrwdm: String, xnxqdm: String
                                 Text(text = "没有可选教材", color = Color.Gray)
                             }
                         else
-                            viewModel.bookAbleList.forEach { book ->
+                            uiState.bookAbleList.forEach { book ->
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(top = 10.dp),
                                     onClick = {
-                                        viewModel.copyText(
+                                        copyText(
                                             cbManager,
                                             book.isbn
                                         )
@@ -190,7 +197,7 @@ fun BookBottomSheet(viewModel: SettingsViewModel, kcrwdm: String, xnxqdm: String
                                         ) {
                                             TextButton(
                                                 onClick = {
-                                                    viewModel.copyText(
+                                                    copyText(
                                                         cbManager,
                                                         book.isbn
                                                     )
@@ -207,9 +214,8 @@ fun BookBottomSheet(viewModel: SettingsViewModel, kcrwdm: String, xnxqdm: String
                             }
                 } else {
                     BookList(
-                        viewModel = viewModel,
                         cbManager = cbManager,
-                        bookList = viewModel.bookSelectedList
+                        uiState = uiState
                     )
                 }
             }
@@ -220,8 +226,8 @@ fun BookBottomSheet(viewModel: SettingsViewModel, kcrwdm: String, xnxqdm: String
 
 
 @Composable
-fun BookList(viewModel: SettingsViewModel, cbManager: ClipboardManager, bookList: List<Yxjcdata>) {
-    if (viewModel.isGettingBookSelected)
+fun BookList(cbManager: ClipboardManager, uiState: BookUiState) {
+    if (uiState.isGettingBookSelected)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -231,7 +237,7 @@ fun BookList(viewModel: SettingsViewModel, cbManager: ClipboardManager, bookList
             CircularProgressIndicator()
         }
     else
-        if (bookList.isEmpty())
+        if (uiState.bookSelectedList.isEmpty())
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -241,13 +247,13 @@ fun BookList(viewModel: SettingsViewModel, cbManager: ClipboardManager, bookList
                 Text(text = "没有已选教材", color = Color.Gray)
             }
         else
-            bookList.forEach { book ->
+            uiState.bookSelectedList.forEach { book ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 10.dp),
                     onClick = {
-                        viewModel.copyText(
+                        copyText(
                             cbManager,
                             book.isbn
                         )
@@ -319,7 +325,7 @@ fun BookList(viewModel: SettingsViewModel, cbManager: ClipboardManager, bookList
                         ) {
                             TextButton(
                                 onClick = {
-                                    viewModel.copyText(
+                                    copyText(
                                         cbManager,
                                         book.isbn
                                     )
@@ -338,8 +344,13 @@ fun BookList(viewModel: SettingsViewModel, cbManager: ClipboardManager, bookList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BookSelectBottomSheet(viewModel: SettingsViewModel) {
+fun BookSelectBottomSheet(
+    viewModel: BookViewModel,
+    uiState: BookUiState
+) {
     val bottomSheetState = rememberModalBottomSheetState()
+    val term = Repository.getCurrentTerm()
+    val longGradeTerm = term.longGradeTerm
     ModalBottomSheet(
         onDismissRequest = { viewModel.showBookSelect = false },
         sheetState = bottomSheetState
@@ -357,20 +368,20 @@ fun BookSelectBottomSheet(viewModel: SettingsViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.Center
             ) {
-                viewModel.longGradeTerm.forEachIndexed { index, term ->
+                uiState.term!!.longGradeTerm.forEachIndexed { index, term ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
                             .selectable(
-                                selected = viewModel.longGradeTerm[viewModel.selectTerm] == term,
+                                selected = longGradeTerm[viewModel.selectTerm] == term,
                                 onClick = { viewModel.selectTerm = index }
                             )
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
-                            selected = viewModel.longGradeTerm[viewModel.selectTerm] == term,
+                            selected = longGradeTerm[viewModel.selectTerm] == term,
                             onClick = null
                         )
                         Text(

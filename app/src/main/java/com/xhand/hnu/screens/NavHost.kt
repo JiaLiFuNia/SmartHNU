@@ -4,9 +4,11 @@ import android.content.Context
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.xhand.hnu.screens.navigation.Destinations
 import com.xhand.hnu.viewmodel.CourseSearchViewModel
 import com.xhand.hnu.viewmodel.GradeViewModel
@@ -16,8 +18,6 @@ import com.xhand.hnu.viewmodel.SettingsViewModel
 @Composable
 fun NavHostScreen(
     viewModel: SettingsViewModel,
-    newsViewModel: NewsViewModel,
-    gradeViewModel: GradeViewModel,
     context: Context
 ) {
     val navController = rememberNavController()
@@ -48,9 +48,7 @@ fun NavHostScreen(
         composable(Destinations.Person.route) {
             MainFrame(
                 viewModel = viewModel,
-                newsViewModel = newsViewModel,
                 navController = navController,
-                gradeViewModel = gradeViewModel,
                 context = context
             )
         }
@@ -80,8 +78,7 @@ fun NavHostScreen(
         }
         composable(Destinations.BookSelect.route) {
             ChooseBookScreen(
-                onBack = { navController.popBackStack() },
-                viewModel = viewModel
+                onBack = { navController.popBackStack() }
             )
         }
         composable(Destinations.ClassTask.route) {
@@ -103,16 +100,26 @@ fun NavHostScreen(
         composable(Destinations.News.route) {
             NewsScreen(
                 navController = navController,
-                newsViewModel = newsViewModel
+                context = context
             )
         }
-        composable(Destinations.NewsDetail.route) {
+        composable(
+            route = "${Destinations.NewsDetail.route}/{url}/{title}",
+            arguments = listOf(
+                navArgument("url") {
+                    type = NavType.StringType
+                },
+                navArgument("title") {
+                    type = NavType.StringType
+                })
+        ) { news ->
             ArticleDetailScreen(
-                viewModel = viewModel,
-                newsViewModel = newsViewModel,
+                context = context,
                 onClick = {
                     navController.popBackStack()
-                }
+                },
+                url = news.arguments?.getString("url") ?: "",
+                title = news.arguments?.getString("title") ?: ""
             )
         }
         composable(Destinations.Setting.route) {

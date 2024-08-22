@@ -12,22 +12,17 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.ClipboardManager
-import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.xhand.hnu.R
 import com.xhand.hnu.components.RSAEncryptionHelper
 import com.xhand.hnu.model.UserInfoManager
 import com.xhand.hnu.model.entity.AllPjxxList
-import com.xhand.hnu.model.entity.BookDetailPost
-import com.xhand.hnu.model.entity.BookPost
 import com.xhand.hnu.model.entity.CheckTokenEntity
 import com.xhand.hnu.model.entity.ClassroomPost
 import com.xhand.hnu.model.entity.HourListEntity
 import com.xhand.hnu.model.entity.Jszylist
 import com.xhand.hnu.model.entity.KbList
-import com.xhand.hnu.model.entity.Kxjcdata
 import com.xhand.hnu.model.entity.LoginPostEntity
 import com.xhand.hnu.model.entity.MessageDetail
 import com.xhand.hnu.model.entity.MessagePost
@@ -36,8 +31,6 @@ import com.xhand.hnu.model.entity.SchedulePost
 import com.xhand.hnu.model.entity.SecondClassInfo
 import com.xhand.hnu.model.entity.Update
 import com.xhand.hnu.model.entity.UserInfoEntity
-import com.xhand.hnu.model.entity.Xdjcdata
-import com.xhand.hnu.model.entity.Yxjcdata
 import com.xhand.hnu.model.entity.teacherPost
 import com.xhand.hnu.network.GradeService
 import com.xhand.hnu.network.GuideService
@@ -47,8 +40,8 @@ import com.xhand.hnu.network.SecondClassService
 import com.xhand.hnu.network.UpdateService
 import com.xhand.hnu.network.secondClassLoginState
 import com.xhand.hnu.network.secondClassParsing
-import com.xhand.hnu.repository.Term
 import com.xhand.hnu.repository.Repository
+import com.xhand.hnu.repository.Term
 import com.xhand.hnu.screens.navigation.Destinations
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
@@ -62,8 +55,9 @@ class SettingsViewModel(
     private val userInfoManager = UserInfoManager(context = context)
     init {
         viewModelScope.launch {
-            val isLogged = userInfoManager.logged.firstOrNull()
-            val userInfoStore = userInfoManager.userInfo.firstOrNull()
+            loginCode = userInfoManager.logged.firstOrNull() ?: 0
+            userInfo = userInfoManager.userInfo.firstOrNull()
+            avatarIndex = userInfoManager.avatar.firstOrNull() ?: 0
             val logInfo = userInfoManager.logInfo.firstOrNull()
             val scUserInfo = userInfoManager.scUserInfo.firstOrNull()
             val scHourLists = userInfoManager.scHours.firstOrNull()
@@ -79,8 +73,6 @@ class SettingsViewModel(
                 cookie = scUserInfo.cookie
                 stateCode = if (cookie == "") 0 else 1
             }
-            userInfo = userInfoStore
-            loginCode = isLogged ?: 0
             if (logInfo != null) {
                 password = logInfo.password
                 username = logInfo.username
@@ -137,12 +129,12 @@ class SettingsViewModel(
         )
     )
 
+    var avatarIndex by mutableIntStateOf(9)
+
     // 今日课程
     var todaySchedule by mutableStateOf(mutableListOf<KbList>())
 
-    // 展示登录框
-    var showBookAlert by mutableStateOf(false)
-    var showBookSelect by mutableStateOf(false)
+    var showTermSelect by mutableStateOf(false)
 
     // 展示信息详情
     var showMessageDetail by mutableStateOf(false)
@@ -186,8 +178,8 @@ class SettingsViewModel(
     var teacherList by mutableStateOf(mutableListOf<AllPjxxList>())
 
     private var currentTerm by mutableStateOf("")
-    var currentLongTerm by mutableStateOf("")
-    var nextLongTerm by mutableStateOf("")
+    private var currentLongTerm by mutableStateOf("")
+    private var nextLongTerm by mutableStateOf("")
 
     var longGradeTerm by mutableStateOf(mutableListOf<String>())
     var gradeTerm by mutableStateOf(mutableListOf<String>())
@@ -242,17 +234,21 @@ class SettingsViewModel(
     }
 
     fun checkToken() = viewModelScope.launch {
-        val token = userInfo?.token ?: ""
-        var res: CheckTokenEntity? = null
-        if (loginCode != 0) {
-            res = gradeService.checkToken(token)
-            userInfo?.let { Repository.saveToken(it) }
-        }
-        if (res != null) {
-            if (res.code != 200 && password.isNotEmpty() && username.isNotEmpty()) {
-                loginCode = 0
-                login()
+        try {
+            val token = userInfo?.token ?: ""
+            var res: CheckTokenEntity? = null
+            if (loginCode != 0) {
+                res = gradeService.checkToken(token)
+                userInfo?.let { Repository.saveToken(it) }
             }
+            if (res != null) {
+                if (res.code != 200 && password.isNotEmpty() && username.isNotEmpty()) {
+                    loginCode = 0
+                    login()
+                }
+            }
+        } catch (e: Exception) {
+            Log.i("TAG666", "checkToken: $e")
         }
     }
 
@@ -262,6 +258,13 @@ class SettingsViewModel(
             stateCode = 0
             userInfo = null
             loginCode = 0
+        }
+    }
+
+    fun saveAvatar(avatar: Int) {
+        avatarIndex = avatar
+        viewModelScope.launch {
+            userInfoManager.saveAvatar(avatar)
         }
     }
 
@@ -431,74 +434,6 @@ class SettingsViewModel(
             Log.i("TAG667", "$e")
         }
         isGettingRoom = false
-    }
-
-    var booksList = mutableListOf<Xdjcdata>()
-    var isGettingBook by mutableStateOf(true)
-    var selectTerm by mutableIntStateOf(1)
-
-    suspend fun bookService(xnxqdm: String) {
-        try {
-            val res =
-                userInfo?.let { gradeService.bookDetail(BookPost("", longToShort(xnxqdm)), token = it.token) }
-            if (res != null) {
-                Log.i("TAG667", "$res")
-                if (res.code == 200)
-                    booksList = res.xdjcdatas.toMutableList()
-                Log.i("TAG667", "$booksList")
-            }
-        } catch (e: Exception) {
-            Log.i("TAG666", "$e")
-        }
-    }
-
-
-    // 获取可选
-    var bookAbleList by mutableStateOf(mutableListOf<Kxjcdata>())
-    var isGettingBookDetail by mutableStateOf(true)
-    suspend fun bookDetailService(kcrwdm: String, xnxqdm: String) {
-        try {
-            isGettingBookDetail = true
-            val res = userInfo?.let {
-                gradeService.bookDetail2(
-                    BookDetailPost(kcrwdm, xnxqdm),
-                    token = it.token
-                )
-            }
-            if (res != null) {
-                Log.i("TAG667", "$res")
-                if (res.code == 200)
-                    bookAbleList = res.kxjcdatas.toMutableList()
-                Log.i("TAG667", "$bookAbleList")
-            }
-            isGettingBookDetail = false
-        } catch (e: Exception) {
-            Log.i("TAG666", "$e")
-        }
-    }
-
-    // 获取已选
-    var bookSelectedList by mutableStateOf(mutableListOf<Yxjcdata>())
-    var isGettingBookSelected by mutableStateOf(true)
-    suspend fun bookSelectedService(kcrwdm: String, xnxqdm: String) {
-        try {
-            isGettingBookSelected = true
-            val res = userInfo?.let {
-                gradeService.bookDetail3(
-                    BookDetailPost(kcrwdm, xnxqdm),
-                    token = it.token
-                )
-            }
-            if (res != null) {
-                Log.i("TAG667", "$res")
-                if (res.code == 200)
-                    bookSelectedList = res.yxjcdatas.toMutableList()
-                Log.i("TAG667", "$bookSelectedList")
-            }
-            isGettingBookSelected = false
-        } catch (e: Exception) {
-            Log.i("TAG666", "$e")
-        }
     }
 
     /*fun getCurrentDates(): String {
@@ -680,14 +615,8 @@ class SettingsViewModel(
         }
     }
 
-    // 复制内容到剪切板
-    @SuppressLint("StaticFieldLeak")
-    fun copyText(cbManager: ClipboardManager, text: String) {
-        cbManager.setText(AnnotatedString(text))
-    }
-
     // 学期转换
-    fun longToShort(xq: String): String {
+    private fun longToShort(xq: String): String {
         return if (xq.length == 6) {
             "${xq.substring(0, 4)}-${xq.substring(0, 4).toInt() + 1}-${xq.last()}"
         } else
@@ -695,7 +624,7 @@ class SettingsViewModel(
     }
 
 
-    fun getNextTerm(term: String): String {
+    private fun getNextTerm(term: String): String {
         return when (term.takeLast(1)) {
             "1" -> term.dropLast(1) + "2"
             "2" -> when (term.length) {

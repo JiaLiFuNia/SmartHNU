@@ -21,6 +21,7 @@ import com.xhand.hnu.network.SearchService
 import com.xhand.hnu.network.getNewsList
 import com.xhand.hnu.network.getPicList
 import com.xhand.hnu.network.preProcessNewsDetail
+import com.xhand.hnu.screens.NewsListItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,12 +37,15 @@ data class NewsUiState(
     val hadGetNew: Boolean = false,
     val searchBarExpand: Boolean = false,
     val searchText: String = "",
-    val list: MutableList<ArticleListEntity> = mutableListOf(),
-    val searchList: MutableList<ArticleListEntity> = mutableListOf(),
-    val searchHistory: MutableList<String> = mutableListOf(),
-    val pictures: MutableList<PictureListItem> = mutableListOf(),
+    val list: List<ArticleListEntity> = emptyList(),
+    val searchList: List<ArticleListEntity> = emptyList(),
+    val searchHistory: List<String> = emptyList(),
+    val pictures: List<PictureListItem> = emptyList(),
     val htmlParsing: String = "",
-    val article: ArticleListEntity = ArticleListEntity("", "", "", "", false)
+    val article: ArticleListEntity = ArticleListEntity("", "", "", "", false),
+    val newsListItem: NewsListItem = NewsListItem("", ""),
+    val displayStyle: Boolean = false,
+    val webViewError: String = ""
 )
 
 @SuppressLint("MutableCollectionMutableState")
@@ -54,8 +58,10 @@ class NewsViewModel(context: Context) : ViewModel() {
     init {
         viewModelScope.launch {
             val historyList = dataManager.historyList.firstOrNull()
-            _uiState.update {
-                it.copy(searchHistory = historyList?.toMutableList() ?: mutableListOf())
+            if (historyList != null) {
+                _uiState.update {
+                    it.copy(searchHistory = historyList.toList())
+                }
             }
         }
     }
@@ -70,7 +76,7 @@ class NewsViewModel(context: Context) : ViewModel() {
     }
 
     private fun addSearchHistory(searchHistory: String) {
-        val searchHistoryTemp: MutableList<String> = _uiState.value.searchHistory
+        val searchHistoryTemp: MutableList<String> = _uiState.value.searchHistory.toMutableList()
         searchHistoryTemp.add(searchHistory)
         viewModelScope.launch {
             dataManager.saveHistoryList(searchHistoryTemp)
@@ -86,14 +92,39 @@ class NewsViewModel(context: Context) : ViewModel() {
         }
     }
 
+    fun loadDetail() {
+        _uiState.update {
+            it.copy(isDetailLoading = true)
+        }
+    }
+
+    fun clearSearchList() {
+        _uiState.update {
+            it.copy(searchList = emptyList())
+        }
+    }
+
+    fun changeNewsListItem(newsListItem: NewsListItem) {
+        _uiState.update {
+            it.copy(newsListItem = newsListItem)
+        }
+    }
+
+    fun switchDisplayStyle(displayStyle: Boolean) {
+        _uiState.update {
+            it.copy(displayStyle = displayStyle)
+        }
+    }
+
+    fun changeWebViewError(webViewError: String) {
+        _uiState.update {
+            it.copy(webViewError = webViewError)
+        }
+    }
+
     var searchText by mutableStateOf("")
 
     var searchBarExpand by mutableStateOf(false)
-
-    // 搜索列表
-    var searchList by mutableStateOf(
-        mutableListOf<ArticleListEntity>()
-    )
 
     // 主页新闻类型
     private val newsListType = mapOf(
@@ -124,21 +155,19 @@ class NewsViewModel(context: Context) : ViewModel() {
     private val searchService = SearchService.instance()
     private val detailService = NewsDetailService.instance()
 
-    // 网页源码请求
-    var htmlParsing by mutableStateOf("")
-    var isDetailLoading by mutableStateOf(true)
-
-    // 新闻链接
-    var article by mutableStateOf(ArticleListEntity("", "", "", "", false))
-
     // 新闻页面详情请求
-    suspend fun detailService() {
+    suspend fun detailService(url: String) {
         try {
-            val res = detailService.getNewsDetail(article.url)
+            val res = detailService.getNewsDetail(url)
             delay(500)
-            htmlParsing = preProcessNewsDetail(res.body()?.string() ?: "")
+            val htmlParsing = preProcessNewsDetail(res.body()?.string() ?: "")
             Log.i("TAG666", "htmlParsing $htmlParsing")
-            isDetailLoading = false
+            _uiState.update {
+                it.copy(htmlParsing = htmlParsing)
+            }
+            _uiState.update {
+                it.copy(isDetailLoading = false)
+            }
         } catch (e: Exception) {
             Log.i("TAG666", "detailService: $e")
         }
@@ -147,9 +176,6 @@ class NewsViewModel(context: Context) : ViewModel() {
     private var sliderPosition by mutableFloatStateOf(4f)
     // 新闻列表请求
     suspend fun newsList() {
-        _uiState.update {
-            it.copy(list = mutableListOf())
-        }
         try {
             val newsList: MutableList<ArticleListEntity> = mutableListOf()
             for (type in newsListType) {
@@ -212,7 +238,9 @@ class NewsViewModel(context: Context) : ViewModel() {
                 addSearchHistory(content)
                 Log.i("TAG666", "searchHistory ${_uiState.value.searchHistory}")
             }
-            searchList = searchListTemp
+            _uiState.update {
+                it.copy(searchList = searchListTemp)
+            }
         } catch (e: Exception) {
             Log.i("TAG666", "searchRes: $e")
         }
