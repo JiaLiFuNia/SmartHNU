@@ -195,14 +195,6 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                 }
             )
             BasicListItem(
-                headlineText = "开发人员",
-                supportingText = "JiaLiFuNia",
-                leadingImageVector = R.drawable.ic_outline_person,
-                onClick = {
-                    viewWebsite("https://github.com/JiaLiFuNia", context)
-                }
-            )
-            BasicListItem(
                 headlineText = "反馈",
                 supportingText = "发送邮件提供你的意见及建议",
                 leadingImageVector = R.drawable.ic_outline_chat,

@@ -2,8 +2,10 @@ package com.xhand.hnu.screens
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -81,7 +84,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun PersonScreen(
     navController: NavController,
@@ -220,9 +223,6 @@ fun PersonScreen(
                                 Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
                                 viewModel.isShowDialog = true
                             }
-                            if (viewModel.isLoginSuccess) {
-                                ifShowChangeAvatarDialog = true
-                            }
                         },
                         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
                     ) {
@@ -250,6 +250,19 @@ fun PersonScreen(
                                         text = "${userInfo?.academy}",
                                         color = Color.Gray
                                     )
+                            },
+                            trailingContent = {
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    modifier = Modifier.combinedClickable(
+                                        onLongClick = {
+                                            if (viewModel.isLoginSuccess) {
+                                                ifShowChangeAvatarDialog = true
+                                            }
+                                        }
+                                    ) { }
+                                )
                             },
                             colors = ListItemDefaults.colors(
                                 containerColor = MaterialTheme.colorScheme.primaryContainer
@@ -455,7 +468,7 @@ fun PersonScreen(
             },
             onConfirmation = {
                 ifShowChangeAvatarDialog = false
-                viewModel.saveAvatar(it)
+                if (it != -1) viewModel.saveAvatar(it)
             }
         )
     }

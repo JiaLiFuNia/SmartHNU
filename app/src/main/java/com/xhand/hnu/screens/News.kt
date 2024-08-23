@@ -100,7 +100,6 @@ data class NewsOptions(
 )
 
 private val newsOptions = listOf(
-    NewsOptions("历史记录",""),
     NewsOptions("通知公告", "河南师范大学主页"),
     NewsOptions("师大要闻", "河南师范大学主页"),
     NewsOptions("新闻速递", "河南师范大学主页"),
@@ -144,7 +143,7 @@ fun NewsScreen(
     }
     val newsPagerState = rememberPagerState(
         pageCount = { newsOptions.size },
-        initialPage = 1
+        initialPage = 0
     )
     val selectedTabIndex = remember { derivedStateOf { newsPagerState.currentPage } }
     LaunchedEffect(Unit) {
@@ -467,7 +466,7 @@ fun NewsList(
             modifier = Modifier
                 .verticalScroll(scrollState),
         ) {
-            if (selectedTabIndex == 1) {
+            if (selectedTabIndex == 0) {
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier
@@ -486,23 +485,25 @@ fun NewsList(
                                 .clip(RoundedCornerShape(8.dp))
                                 .aspectRatio(16 / 9f)
                                 .clickable {
-                                    newsViewModel.switchDisplayStyle(false)
-                                    if (windowWidthClass == WindowWidthSizeClass.EXPANDED) {
-                                        navigator.navigateTo(
-                                            pane = ListDetailPaneScaffoldRole.Detail,
-                                            content = NewsListItem(
-                                                title = pictures[index].title,
-                                                url = pictures[index].newsUrl
-                                            )
-                                        )
-                                    } else {
-                                        navController.navigate(
-                                            route = "${Destinations.NewsDetail.route}/${
-                                                Uri.encode(
-                                                    pictures[index].newsUrl
+                                    if (pictures[index].url != "") {
+                                        newsViewModel.switchDisplayStyle(false)
+                                        if (windowWidthClass == WindowWidthSizeClass.EXPANDED) {
+                                            navigator.navigateTo(
+                                                pane = ListDetailPaneScaffoldRole.Detail,
+                                                content = NewsListItem(
+                                                    title = pictures[index].title,
+                                                    url = pictures[index].newsUrl
                                                 )
-                                            }/${pictures[index].title}"
-                                        )
+                                            )
+                                        } else {
+                                            navController.navigate(
+                                                route = "${Destinations.NewsDetail.route}/${
+                                                    Uri.encode(
+                                                        pictures[index].newsUrl
+                                                    )
+                                                }/${pictures[index].title}"
+                                            )
+                                        }
                                     }
                                 },
                             contentScale = ContentScale.Crop

@@ -143,9 +143,9 @@ class NewsViewModel(context: Context) : ViewModel() {
     var pictures by mutableStateOf(
         mutableStateListOf(
             PictureListItem(
-                "https://www.htu.edu.cn/upload/2021/10/202110201013271.jpg",
+                "https://gitee.com/xhand_xbh/hnu/raw/master/placeholder.png",
                 "加载中...",
-                "https://www.htu.edu.cn/"
+                ""
             )
         )
     )
