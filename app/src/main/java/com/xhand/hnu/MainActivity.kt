@@ -48,7 +48,6 @@ class MainActivity : ComponentActivity() {
                         context = context
                     )
                 }
-
             }
         }
     }
