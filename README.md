@@ -1,6 +1,6 @@
 # 师韵
 
-[![GitHub repo file or directory count](https://img.shields.io/github/directory-file-count/JiaLiFuNia/SmartHNU)](https://img.shields.io/github/stars/JiaLiFuNia/SmartHNU)
+![GitHub Repo stars](https://img.shields.io/github/stars/JiaLiFuNia/SmartHNU)
 
 ## 简介
 
