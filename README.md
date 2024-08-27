@@ -1,5 +1,5 @@
 # 师韵
-
+![GitHub repo file or directory count](https://img.shields.io/github/directory-file-count/JiaLiFuNia/SmartHNU)
 ## 简介
 
 这是一款HNU新闻阅览与第三方教务系统app。旨在为学生浏览学校（[HNU河南师范大学](https://www.htu.edu.cn/)）发布的新闻和通知，以及收取个人教务信息提供便捷的服务。
