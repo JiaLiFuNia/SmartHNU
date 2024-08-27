@@ -1,6 +1,6 @@
 # 师韵
 
-![Gitea Stars](https://img.shields.io/gitea/stars/JiaLiFuNia/SmartHNU?style=flat-square)
+![Gitea Stars](https://img.shields.io/github/stars/JiaLiFuNia/SmartHNU?style=flat-square)
 
 ## 简介
 
