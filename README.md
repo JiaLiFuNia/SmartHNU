@@ -1,9 +1,8 @@
-# 师韵
+<h1 align="center">师韵</h1>
 
 ![Gitea Stars](https://img.shields.io/github/stars/JiaLiFuNia/SmartHNU?style=flat)
 ![GitHub top language](https://img.shields.io/github/languages/top/JiaLiFuNia/SmartHNU)
 ![GitHub License](https://img.shields.io/github/license/JiaLiFuNia/SmartHNU)
-
 
 ## 简介
 
