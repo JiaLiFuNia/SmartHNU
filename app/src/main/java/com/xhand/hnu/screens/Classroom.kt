@@ -109,7 +109,7 @@ fun ClassroomScreen(
             CourseSearchPost(
                 1,
                 50,
-                "202401",
+                viewModel.currentTerm,
                 "",
                 "",
                 "",

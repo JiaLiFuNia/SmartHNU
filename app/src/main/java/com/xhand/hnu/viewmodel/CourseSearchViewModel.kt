@@ -51,6 +51,8 @@ class CourseSearchViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(CourseSearchUiState())
     val uiState: StateFlow<CourseSearchUiState> = _uiState.asStateFlow()
+    private val term = Repository.getCurrentTerm()
+    private val currentTerm = term.currentLongTerm
 
     init {
         viewModelScope.launch {
@@ -92,7 +94,7 @@ class CourseSearchViewModel : ViewModel() {
         CourseSearchPost(
             1,
             50000,
-            "202401",
+            currentTerm,
             "",
             "",
             "",

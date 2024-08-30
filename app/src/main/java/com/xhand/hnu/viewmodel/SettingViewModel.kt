@@ -177,9 +177,10 @@ class SettingsViewModel(
 
     var teacherList by mutableStateOf(mutableListOf<AllPjxxList>())
 
-    private var currentTerm by mutableStateOf("")
+    var currentTerm by mutableStateOf("")
     private var currentLongTerm by mutableStateOf("")
     private var nextLongTerm by mutableStateOf("")
+    private var lastLongTerm by mutableStateOf("")
 
     var longGradeTerm by mutableStateOf(mutableListOf<String>())
     var gradeTerm by mutableStateOf(mutableListOf<String>())
@@ -277,6 +278,7 @@ class SettingsViewModel(
                 currentTerm = res.xnxqdm
                 currentLongTerm = res.xnxqmc
                 nextLongTerm = getNextTerm(currentLongTerm)
+                lastLongTerm = getLastTerm(currentLongTerm)
                 val userGrade = userInfo?.studentID?.substring(0, 2)?.toInt() ?: 0
                 res.xnxqList.forEach {
                     if (it.value.substring(2, 4).toInt() >= userGrade && it.value.substring(2, 4)
@@ -292,7 +294,8 @@ class SettingsViewModel(
                         nextLongTerm,
                         currentTerm,
                         longGradeTerm,
-                        gradeTerm
+                        gradeTerm,
+                        lastLongTerm
                     )
                 )
             }
@@ -630,6 +633,19 @@ class SettingsViewModel(
             "2" -> when (term.length) {
                 6 -> "${term.toInt() + 100 - 1}"
                 11 -> "${term.substring(0, 4).toInt() + 1}-${term.substring(5, 9).toInt() + 1}-1"
+                else -> term
+            }
+
+            else -> term
+        }
+    }
+
+    private fun getLastTerm(term: String): String {
+        return when (term.takeLast(1)) {
+            "2" -> term.dropLast(1) + "1"
+            "1" -> when (term.length) {
+                6 -> "${term.toInt() - 100 + 1}"
+                11 -> "${term.substring(0, 4).toInt() - 1}-${term.substring(5, 9).toInt() - 1}-2"
                 else -> term
             }
 

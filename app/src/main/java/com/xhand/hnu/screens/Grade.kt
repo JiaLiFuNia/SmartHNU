@@ -74,7 +74,7 @@ fun GradeScreen(
         checkboxes.addAll(
             gradeViewModel.longGradeTerm.map {
                 TermCheckBoxes(
-                    isChecked = it == gradeViewModel.currentLongTerm,
+                    isChecked = it == gradeViewModel.currentLongTerm || it == gradeViewModel.lastLongTerm,
                     term = it
                 )
             }

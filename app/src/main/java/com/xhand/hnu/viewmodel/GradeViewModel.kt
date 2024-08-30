@@ -49,6 +49,7 @@ class GradeViewModel : ViewModel() {
 
     val longGradeTerm = term.longGradeTerm
     val currentLongTerm = term.currentLongTerm
+    val lastLongTerm = term.lastLongTerm
 
     private val _uiState = MutableStateFlow(GradeUiState())
     val uiState: StateFlow<GradeUiState> = _uiState.asStateFlow()

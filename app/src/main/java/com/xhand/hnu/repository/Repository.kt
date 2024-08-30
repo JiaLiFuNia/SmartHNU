@@ -7,7 +7,8 @@ data class Term(
     val nextLongTerm: String,
     val currentTerm: String,
     val longGradeTerm: MutableList<String>,
-    val gradeTerm: MutableList<String>
+    val gradeTerm: MutableList<String>,
+    val lastLongTerm: String
 )
 
 object Repository {
@@ -21,7 +22,7 @@ object Repository {
         return token
     }
 
-    private var term: Term = Term("", "", "", mutableListOf(), mutableListOf())
+    private var term: Term = Term("", "", "", mutableListOf(), mutableListOf(), "")
 
     fun saveCurrentTerm(newTerm: Term) {
         term = newTerm
