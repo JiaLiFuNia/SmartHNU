@@ -113,8 +113,6 @@ fun ArticleDetailScreen(
                                         context.startActivity(it)
                                     }
                                 }
-                                Toast.makeText(context, "请选择分享的应用", Toast.LENGTH_SHORT)
-                                    .show()
                             }
                     ) {
                         Icon(
