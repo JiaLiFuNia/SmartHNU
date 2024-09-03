@@ -3,6 +3,9 @@
 ![Gitea Stars](https://img.shields.io/github/stars/JiaLiFuNia/SmartHNU?style=flat)
 ![GitHub top language](https://img.shields.io/github/languages/top/JiaLiFuNia/SmartHNU)
 ![GitHub License](https://img.shields.io/github/license/JiaLiFuNia/SmartHNU)
+![GitHub Release Date](https://img.shields.io/github/release-date/JiaLiFuNia/SmartHNU)
+![GitHub Release](https://img.shields.io/github/v/release/JiaLiFuNia/SmartHNU)
+
 
 ## 简介
 
@@ -18,31 +21,42 @@
 
 教务数据：[河南师大智慧教务](https://jwc.htu.edu.cn/app/)
 
+第二课堂数据：[河南师范大学第二课堂管理系统](http://dekt.htu.edu.cn)
+
 ## 功能介绍（包括未开发的功能）
 
 ### 1. 新闻阅览
 
-使用 Kotlin+Retrofit 获取了HNU官网的部分新闻。新闻详情采用了 Android 原生 WebView 直接浏览网页和 [Readability4J库](https://github.com/dankito/Readability4J) 解析获取正文文本两种方式。
+- [x] 新闻列表
+- [x] 搜索新闻
+- [x] 正文解析
+- [ ] 优化正文样式
 
 ### 2.成绩查询
 
-用于查看各科的学分、成绩、绩点、排名、平时成绩、期末成绩及其占比等等
+- [x] 成绩列表
+- [x] 成绩详情
+- [ ] 成绩统计表
 
 ### 3.今日课表
 
-用于查看当天课程安排
+- [x] 今日课表
 
 ### 4.其他功能
 
-包括上课任务、培养计划、教学评价、教室查询、课程查询、教材选订等
+- [x] 上课任务
+- [x] 教室查询
+- [x] 课程查询
+- [ ] 教学评价
+- [ ] 选定教材
 
 ### 5.第二课堂
 
-由于第二课堂和教务系统采取了不同的登录平台，以及在登录时需要使用图形验证码，因此在本 app 使用第二课堂板块时，需要重新登录以获取第二课堂的数据。
+- [ ] 第二课堂
 
 ### 6.消息中心
 
-消息中心包含了教务系统信息（如：调课申请、成绩更新等）
+- [x] 消息列表
 
 ## 界面预览
 
