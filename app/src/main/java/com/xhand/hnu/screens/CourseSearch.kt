@@ -1,10 +1,14 @@
 package com.xhand.hnu.screens
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,13 +21,14 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +55,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -81,6 +87,15 @@ fun CourseSearchScreen(
     }
     val options = listOf("按日期", "按周数")
     var selectedIndex by remember { mutableIntStateOf(0) }
+
+    val isAtBottom by remember {
+        derivedStateOf {
+            val maxScroll = scrollState.maxValue
+            val currentScroll = scrollState.value
+            currentScroll >= maxScroll
+        }
+    }
+
     LaunchedEffect(uiState) {
         courseSearchViewModel.getCourseIndex()
     }
@@ -108,6 +123,11 @@ fun CourseSearchScreen(
             )
         },
         floatingActionButton = {
+            AnimatedVisibility(
+                visible = !isAtBottom,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
             Column {
                 ExtendedFloatingActionButton(
                     onClick = {
@@ -117,7 +137,7 @@ fun CourseSearchScreen(
                         ifShowTextField = false
                     },
                     text = { Text(text = "搜索") },
-                    expanded = scrollState.value == 0,
+                    expanded = false,
                     icon = {
                         Icon(
                             imageVector = Icons.Default.Search,
@@ -156,16 +176,11 @@ fun CourseSearchScreen(
                         ifShowTextField = true
                     },
                     text = { Text(text = "重置") },
-                    expanded = scrollState.value == 0,
+                    expanded = true,
                     icon = { Icon(imageVector = Icons.Default.Clear, contentDescription = "重置") },
                     modifier = Modifier.align(Alignment.End)
                 )
-                /*AnimatedVisibility(
-                    visible = scrollState.value > 0,
-                    enter = slideInVertically(initialOffsetY = { it * 2 }),
-                    exit = slideOutVertically(targetOffsetY = { it * 2 }),
-                ) {*/
-                // }
+            }
             }
         },
         floatingActionButtonPosition = FabPosition.End
@@ -185,15 +200,25 @@ fun CourseSearchScreen(
             ListItem(
                 headlineContent = { Text(text = "搜索选项") },
                 trailingContent = {
-                    IconButton(
-                        onClick = { ifShowTextField = !ifShowTextField }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .rotate(subArrowRotateDegrees),
+                    FilledTonalButton(
+                        onClick = { ifShowTextField = !ifShowTextField },
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.primary
                         )
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = "展开")
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .rotate(subArrowRotateDegrees),
+                            )
+                        }
                     }
                 },
                 modifier = Modifier.clickable { ifShowTextField = !ifShowTextField }

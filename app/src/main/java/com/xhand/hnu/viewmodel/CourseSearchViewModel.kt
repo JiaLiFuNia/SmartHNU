@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.xhand.hnu.components.CourseSearchContentKeys
+import com.xhand.hnu.components.longToShort
 import com.xhand.hnu.model.entity.CourseSearchIndexEntity
 import com.xhand.hnu.model.entity.CourseSearchKBList
 import com.xhand.hnu.model.entity.CourseSearchPost
@@ -94,7 +95,7 @@ class CourseSearchViewModel : ViewModel() {
         CourseSearchPost(
             1,
             50000,
-            currentTerm,
+            longToShort(currentTerm),
             "",
             "",
             "",
@@ -124,6 +125,7 @@ class CourseSearchViewModel : ViewModel() {
             Log.i("TAG2310", "getCourse(): $searchContent")
             val res =
                 searchService.courseSearch(searchContent, _uiState.value.userInfo?.token ?: "")
+            Log.i("TAG2310", "getCourse: $res")
             _uiState.update {
                 it.copy(searchResult = res.kbList.toMutableList())
             }

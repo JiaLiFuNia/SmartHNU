@@ -20,7 +20,6 @@ fun ShowAlert(
                 TextButton(
                     onClick = {
                         viewModel.isShowAlert = false
-                        viewModel.userInfo = null
                         viewModel.cookie = ""
                         viewModel.stateCode = 0
                         viewModel.loginCode = 0

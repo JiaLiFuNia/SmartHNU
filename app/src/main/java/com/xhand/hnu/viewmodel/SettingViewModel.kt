@@ -44,19 +44,31 @@ import com.xhand.hnu.repository.Repository
 import com.xhand.hnu.repository.Term
 import com.xhand.hnu.screens.navigation.Destinations
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+data class PersonUiState(
+    val userInfo: UserInfoEntity? = null
+)
 
 @SuppressLint("MutableCollectionMutableState")
 class SettingsViewModel(
     context: Context
 ) : ViewModel() {
     private val userInfoManager = UserInfoManager(context = context)
+    private val _uiState = MutableStateFlow(PersonUiState())
+    val uiState: StateFlow<PersonUiState> = _uiState.asStateFlow()
+
     init {
         viewModelScope.launch {
             loginCode = userInfoManager.logged.firstOrNull() ?: 0
-            userInfo = userInfoManager.userInfo.firstOrNull()
+            _uiState.update {
+                it.copy(userInfo = userInfoManager.userInfo.firstOrNull())
+            }
             avatarIndex = userInfoManager.avatar.firstOrNull() ?: 0
             val logInfo = userInfoManager.logInfo.firstOrNull()
             val scUserInfo = userInfoManager.scUserInfo.firstOrNull()
@@ -145,9 +157,6 @@ class SettingsViewModel(
     var password by mutableStateOf("")
     var scPassword by mutableStateOf("")
 
-    // 登录信息
-    var userInfo: UserInfoEntity? = null
-
     // 软件更新
     var ifNeedUpdate by mutableStateOf(false) // 是否有更新
 
@@ -207,15 +216,19 @@ class SettingsViewModel(
             val res = loginService.loginPost(loginPost)
             Log.i("TAG666", "login: $res")
             delay(1200)
-            userInfo = if (res.code == 200) {
-                UserInfoEntity(
-                    name = res.user!!.userxm,
-                    studentID = res.user.userAccount,
-                    academy = res.user.userdwmc,
-                    token = res.user.token
+            _uiState.update {
+                it.copy(
+                    userInfo = if (res.code == 200) {
+                        UserInfoEntity(
+                            name = res.user!!.userxm,
+                            studentID = res.user.userAccount,
+                            academy = res.user.userdwmc,
+                            token = res.user.token
+                        )
+                    } else {
+                        null
+                    }
                 )
-            } else {
-                null
             }
             val logInfo = LoginPostEntity(
                 username = username,
@@ -224,7 +237,7 @@ class SettingsViewModel(
                 appid = null
             )
             viewModelScope.launch {
-                userInfo?.let { userInfoManager.save(it, res.code, logInfo) }
+                _uiState.value.userInfo?.let { userInfoManager.save(it, res.code, logInfo) }
             }
             loginCircle = false
             loginCode = res.code
@@ -236,11 +249,11 @@ class SettingsViewModel(
 
     fun checkToken() = viewModelScope.launch {
         try {
-            val token = userInfo?.token ?: ""
+            val token = _uiState.value.userInfo?.token ?: ""
             var res: CheckTokenEntity? = null
             if (loginCode != 0) {
                 res = gradeService.checkToken(token)
-                userInfo?.let { Repository.saveToken(it) }
+                _uiState.value.userInfo?.let { Repository.saveToken(it) }
             }
             if (res != null) {
                 if (res.code != 200 && password.isNotEmpty() && username.isNotEmpty()) {
@@ -257,7 +270,9 @@ class SettingsViewModel(
         viewModelScope.launch {
             userInfoManager.clear()
             stateCode = 0
-            userInfo = null
+            _uiState.update {
+                it.copy(userInfo = null)
+            }
             loginCode = 0
         }
     }
@@ -273,13 +288,13 @@ class SettingsViewModel(
         try {
             longGradeTerm.clear()
             gradeTerm.clear()
-            val res = userInfo?.let { gradeService.gradeIndex(it.token) }
+            val res = _uiState.value.userInfo?.let { gradeService.gradeIndex(it.token) }
             if (res != null) {
                 currentTerm = res.xnxqdm
                 currentLongTerm = res.xnxqmc
                 nextLongTerm = getNextTerm(currentLongTerm)
                 lastLongTerm = getLastTerm(currentLongTerm)
-                val userGrade = userInfo?.studentID?.substring(0, 2)?.toInt() ?: 0
+                val userGrade = _uiState.value.userInfo?.studentID?.substring(0, 2)?.toInt() ?: 0
                 res.xnxqList.forEach {
                     if (it.value.substring(2, 4).toInt() >= userGrade && it.value.substring(2, 4)
                             .toInt() <= userGrade + 4
@@ -311,7 +326,7 @@ class SettingsViewModel(
     suspend fun todaySchedule() {
         try {
             val res =
-                userInfo?.let {
+                _uiState.value.userInfo?.let {
                     todayScheduleService.scheduleDetail(
                         SchedulePost(todaykb = "1"),
                         token = it.token
@@ -336,7 +351,7 @@ class SettingsViewModel(
     suspend fun teacherService(xnxqdm: String) {
         try {
             val res =
-                userInfo?.let {
+                _uiState.value.userInfo?.let {
                     gradeService.teacherDetails(
                         teacherPost(longToShort(xnxqdm)),
                         token = it.token
@@ -351,7 +366,7 @@ class SettingsViewModel(
     }
     suspend fun messageService() {
         try {
-            val res = userInfo?.let {
+            val res = _uiState.value.userInfo?.let {
                 gradeService.messageDetails(
                     MessagePost(1, 1000000),
                     token = it.token
@@ -372,7 +387,7 @@ class SettingsViewModel(
         try {
             val res = gradeService.readMessage(
                 ReadMessagePost(xxids),
-                token = userInfo?.token ?: ""
+                token = _uiState.value.userInfo?.token ?: ""
             )
             if (res.code == 200 && res.msg.contains("success")) {
                 messageService()
@@ -416,7 +431,7 @@ class SettingsViewModel(
         try {
             for (i in buildingsSave) {
                 i.rq = date
-                val res = userInfo?.let {
+                val res = _uiState.value.userInfo?.let {
                     gradeService.classroomData(i, token = it.token)
                 }
                 if (res != null) {

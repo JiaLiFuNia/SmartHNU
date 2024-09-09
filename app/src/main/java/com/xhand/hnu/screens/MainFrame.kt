@@ -66,7 +66,7 @@ fun MainFrame(
         )
     )
     var selectedItemIndex by rememberSaveable {
-        mutableIntStateOf(1)
+        mutableIntStateOf(0)
     }
     val savableStateHolder = rememberSaveableStateHolder()
     val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass

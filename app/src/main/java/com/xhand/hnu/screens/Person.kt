@@ -20,8 +20,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
@@ -43,6 +43,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -92,9 +93,11 @@ fun PersonScreen(
     gradeViewModel: GradeViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     context: Context
 ) {
+    val uiState = viewModel.uiState.collectAsState().value
+
     val checkboxes = viewModel.checkboxes
     val otherCards = viewModel.functionCards
-    val userInfo = viewModel.userInfo
+    val userInfo = uiState.userInfo
 
     val scrollState = rememberScrollState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -196,16 +199,19 @@ fun PersonScreen(
         ) {
             val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
             if (windowWidthClass == WindowWidthSizeClass.EXPANDED) {
-                PersonScreenExpand(
-                    scrollState = scrollState,
-                    viewModel = viewModel,
-                    context = context,
-                    navController = navController,
-                    gradeViewModel = gradeViewModel,
-                    ifShowChangeAvatarDialog = {
-                        ifShowChangeAvatarDialog = it
-                    }
-                )
+                uiState.userInfo?.let {
+                    PersonScreenExpand(
+                        scrollState = scrollState,
+                        viewModel = viewModel,
+                        context = context,
+                        navController = navController,
+                        gradeViewModel = gradeViewModel,
+                        ifShowChangeAvatarDialog = {
+                            ifShowChangeAvatarDialog = it
+                        },
+                        userInfo = it
+                    )
+                }
             } else {
                 Column(
                     modifier = Modifier
@@ -218,12 +224,19 @@ fun PersonScreen(
                         elevation = CardDefaults.cardElevation(
                             defaultElevation = 3.dp
                         ),
-                        onClick = {
+                        modifier = Modifier.combinedClickable(
+                            onClick = {
                             if (userInfo == null) {
                                 Toast.makeText(context, "请先登录", Toast.LENGTH_SHORT).show()
                                 viewModel.isShowDialog = true
                             }
-                        },
+                            },
+                            onLongClick = {
+                                if (viewModel.isLoginSuccess) {
+                                    ifShowChangeAvatarDialog = true
+                                }
+                            }
+                        ),
                         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
                     ) {
                         ListItem(
@@ -252,17 +265,21 @@ fun PersonScreen(
                                     )
                             },
                             trailingContent = {
-                                Icon(
-                                    imageVector = Icons.Default.KeyboardArrowDown,
-                                    contentDescription = null,
-                                    modifier = Modifier.combinedClickable(
-                                        onLongClick = {
-                                            if (viewModel.isLoginSuccess) {
-                                                ifShowChangeAvatarDialog = true
-                                            }
-                                        }
-                                    ) { }
-                                )
+                                IconButton(
+                                    onClick = {
+                                        Toast.makeText(
+                                            context,
+                                            "长按可以修改头像",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Info,
+                                        contentDescription = null,
+                                    )
+                                }
+
                             },
                             colors = ListItemDefaults.colors(
                                 containerColor = MaterialTheme.colorScheme.primaryContainer
@@ -513,7 +530,7 @@ fun PersonScreenExpand(
     context: Context,
     navController: NavController,
     checkboxes: SnapshotStateList<ToggleableInfo> = viewModel.checkboxes,
-    userInfo: UserInfoEntity? = viewModel.userInfo,
+    userInfo: UserInfoEntity?,
     otherCards: SnapshotStateList<FunctionCard> = viewModel.functionCards,
     gradeViewModel: GradeViewModel,
     ifShowChangeAvatarDialog: (Boolean) -> Unit
