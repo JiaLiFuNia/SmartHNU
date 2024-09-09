@@ -197,6 +197,7 @@ fun PersonScreen(
                 .padding(values),
             contentAlignment = Alignment.TopStart
         ) {
+
             val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
             if (windowWidthClass == WindowWidthSizeClass.EXPANDED) {
                 uiState.userInfo?.let {
