@@ -300,16 +300,6 @@ fun ArticleDetailScreen(
                     .verticalScroll(scrollState)
             ) {
                 if (!uiState.displayStyle) {
-                    Text(
-                        text = title,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.W800,
-                        lineHeight = 35.sp,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 10.dp),
-                        textAlign = TextAlign.Justify
-                    )
                     if (uiState.isDetailLoading) {
                         Box(
                             modifier = Modifier
@@ -331,7 +321,7 @@ fun ArticleDetailScreen(
                         ) { view ->
                             view.loadDataWithBaseURL(
                                 "",
-                                "$htmlHeader$content$htmlFooter",
+                                "$htmlHeader\n<h2>${title}</h1>\n$content$htmlFooter",
                                 null,
                                 "utf-8",
                                 null

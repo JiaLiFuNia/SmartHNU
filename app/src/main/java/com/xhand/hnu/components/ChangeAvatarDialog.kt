@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -25,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.xhand.hnu.R
+import com.xhand.hnu.viewmodel.SettingsViewModel
 
 @Composable
 fun ChangeAvatarDialog(
@@ -56,14 +58,13 @@ fun ChangeAvatarDialog(
         },
         text = {
             LazyVerticalGrid(
-                columns = GridCells.Fixed(4),
+                columns = GridCells.Fixed(4)
             ) {
                 items(ic_ids.size) { index ->
                     Image(
                         painter = painterResource(id = ic_ids[index]),
                         contentDescription = null,
                         modifier = Modifier
-                            .size(70.dp) // 图片大小
                             .padding(5.dp)// 图片内边距
                             .clip(CircleShape)
                             .clickable {

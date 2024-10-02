@@ -21,7 +21,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
@@ -270,13 +269,13 @@ fun PersonScreen(
                                     onClick = {
                                         Toast.makeText(
                                             context,
-                                            "长按可以修改头像",
+                                            "长按本栏修改头像",
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Outlined.Info,
+                                        painterResource(id = R.drawable.outline_lightbulb_24),
                                         contentDescription = null,
                                     )
                                 }
@@ -438,8 +437,6 @@ fun PersonScreen(
                         onclick = {
                             if (viewModel.stateCode != 1) {
                                 viewModel.isShowScDialog = true
-                            } else {
-                                checkboxes[2].route?.let { navController.navigate(it) }
                             }
                         },
                         rightText = "合计：${(viewModel.scHourList.map { it.value }).sum()}",

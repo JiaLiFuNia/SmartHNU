@@ -1,6 +1,8 @@
 package com.xhand.hnu.screens
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.webkit.WebView
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -18,17 +20,22 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import com.xhand.hnu.components.WebView
 import com.xhand.hnu.viewmodel.SettingsViewModel
-import dev.jeziellago.compose.markdowntext.MarkdownText
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GuideScreen(
     onBack: () -> Unit,
-    viewModel: SettingsViewModel
+    viewModel: SettingsViewModel,
+    context: Context
 ) {
     LaunchedEffect(Unit) {
         viewModel.guideService()
@@ -56,17 +63,21 @@ fun GuideScreen(
             )
         }
     ) {
+        var webView: WebView? by remember { mutableStateOf(null) }
+        var weberror by remember { mutableStateOf("") }
         Column(
             modifier = Modifier
                 .padding(paddingValues = it)
                 .verticalScroll(scrollState)
         ) {
-            val markdownContent = viewModel.guideText
-            MarkdownText(
-                markdown = markdownContent.trimIndent(),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(10.dp)
+            WebView(
+                url = "https://smarthnu.pages.dev/user.html",
+                webViewSetter = { web ->
+                    webView = web
+                },
+                onError = { error ->
+                    weberror = error
+                }
             )
         }
     }

@@ -107,7 +107,8 @@ fun NavHostScreen(
         animatedComposable(Destinations.Guide.route) {
             GuideScreen(
                 onBack = { navController.popBackStack() },
-                viewModel = viewModel
+                viewModel = viewModel,
+                context = context
             )
         }
     }
