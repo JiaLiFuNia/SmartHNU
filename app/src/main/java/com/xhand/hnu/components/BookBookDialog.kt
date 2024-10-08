@@ -1,5 +1,6 @@
 package com.xhand.hnu.components
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,6 +59,7 @@ fun BookBottomSheet(
     val tabs = listOf("可选教材", "已选教材")
     val cbManager = LocalClipboardManager.current
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
     LaunchedEffect(kcrwdm.isNotEmpty()) {
         viewModel.bookDetailService(kcrwdm, xnxqdm)
         viewModel.bookSelectedService(kcrwdm, xnxqdm)
@@ -201,11 +204,24 @@ fun BookBottomSheet(
                                                         cbManager,
                                                         book.isbn
                                                     )
+                                                    Toast.makeText(
+                                                        context,
+                                                        "已复制",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
                                                 }
                                             ) {
                                                 Text(text = "复制")
                                             }
-                                            TextButton(onClick = { /*TODO*/ }) {
+                                            TextButton(
+                                                onClick = {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "暂未实现该功能",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            ) {
                                                 Text(text = "选订")
                                             }
                                         }
@@ -227,6 +243,7 @@ fun BookBottomSheet(
 
 @Composable
 fun BookList(cbManager: ClipboardManager, uiState: BookUiState) {
+    val context = LocalContext.current
     if (uiState.isGettingBookSelected)
         Box(
             modifier = Modifier
@@ -329,11 +346,22 @@ fun BookList(cbManager: ClipboardManager, uiState: BookUiState) {
                                         cbManager,
                                         book.isbn
                                     )
+                                    Toast.makeText(
+                                        context,
+                                        "已复制",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             ) {
                                 Text(text = "复制")
                             }
-                            TextButton(onClick = { /*TODO*/ }) {
+                            TextButton(onClick = {
+                                Toast.makeText(
+                                    context,
+                                    "暂未实现该功能",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }) {
                                 Text(text = "退订")
                             }
                         }

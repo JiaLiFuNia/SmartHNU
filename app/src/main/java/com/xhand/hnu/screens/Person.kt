@@ -102,15 +102,19 @@ fun PersonScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     var ifShowChangeAvatarDialog by remember { mutableStateOf(false) }
+    var loadAll by remember {
+        mutableStateOf(false)
+    }
     LaunchedEffect(viewModel.isLoginSuccess) {
         viewModel.checkToken()
         if (viewModel.isLoginSuccess) {
+            if (viewModel.gradeTerm.isEmpty())
+                viewModel.gradeIndex()
             viewModel.todaySchedule()
             viewModel.messageService()
             gradeViewModel.jDService()
-            if (viewModel.gradeTerm.isEmpty())
-                viewModel.gradeIndex()
             // viewModel.holidayService()
+            loadAll = true
         }
     }
     LaunchedEffect(viewModel.stateCode) {
@@ -209,7 +213,8 @@ fun PersonScreen(
                         ifShowChangeAvatarDialog = {
                             ifShowChangeAvatarDialog = it
                         },
-                        userInfo = it
+                        userInfo = it,
+                        loadAll = loadAll
                     )
                 }
             } else {
@@ -260,7 +265,7 @@ fun PersonScreen(
                             supportingContent = {
                                 if (viewModel.isLoginSuccess)
                                     Text(
-                                        text = "${userInfo?.academy}",
+                                        text = "${userInfo?.academy ?: ""}",
                                         color = Color.Gray
                                     )
                             },
@@ -310,7 +315,8 @@ fun PersonScreen(
                                         } else {
                                             navController.navigate(functionCard.route)
                                         }
-                                    }
+                                    },
+                                    enable = loadAll
                                 )
                             }
                         }
@@ -531,7 +537,8 @@ fun PersonScreenExpand(
     userInfo: UserInfoEntity?,
     otherCards: SnapshotStateList<FunctionCard> = viewModel.functionCards,
     gradeViewModel: GradeViewModel,
-    ifShowChangeAvatarDialog: (Boolean) -> Unit
+    ifShowChangeAvatarDialog: (Boolean) -> Unit,
+    loadAll: Boolean
 ) {
     Column(
         modifier = Modifier
@@ -615,7 +622,8 @@ fun PersonScreenExpand(
                                     } else {
                                         navController.navigate(functionCard.route)
                                     }
-                                }
+                                },
+                                enable = loadAll
                             )
                         }
                     }

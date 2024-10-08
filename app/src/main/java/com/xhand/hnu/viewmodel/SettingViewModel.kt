@@ -41,6 +41,7 @@ import com.xhand.hnu.network.UpdateService
 import com.xhand.hnu.network.secondClassLoginState
 import com.xhand.hnu.network.secondClassParsing
 import com.xhand.hnu.repository.Repository
+import com.xhand.hnu.repository.Repository.saveCurrentTerm
 import com.xhand.hnu.repository.Term
 import com.xhand.hnu.screens.navigation.Destinations
 import kotlinx.coroutines.delay
@@ -50,6 +51,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 data class PersonUiState(
     val userInfo: UserInfoEntity? = null
@@ -64,11 +66,13 @@ class SettingsViewModel(
     val uiState: StateFlow<PersonUiState> = _uiState.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            loginCode = userInfoManager.logged.firstOrNull() ?: 0
+        runBlocking {
             _uiState.update {
                 it.copy(userInfo = userInfoManager.userInfo.firstOrNull())
             }
+        }
+        viewModelScope.launch {
+            loginCode = userInfoManager.logged.firstOrNull() ?: 0
             avatarIndex = userInfoManager.avatar.firstOrNull() ?: 0
             val logInfo = userInfoManager.logInfo.firstOrNull()
             val scUserInfo = userInfoManager.scUserInfo.firstOrNull()
@@ -181,8 +185,6 @@ class SettingsViewModel(
 
     // 是否有消息
     var hasMessage by mutableStateOf(mutableListOf<MessageDetail>())
-    // private var bulidingsData = mutableListOf<Jxllist>()
-    // var holidayData = mutableStateOf(HolidayEntity(-1, Type(0, "", 0), ""))
 
     var teacherList by mutableStateOf(mutableListOf<AllPjxxList>())
 
@@ -303,7 +305,7 @@ class SettingsViewModel(
                         gradeTerm.add(it.value)
                     }
                 }
-                Repository.saveCurrentTerm(
+                saveCurrentTerm(
                     Term(
                         currentLongTerm,
                         nextLongTerm,

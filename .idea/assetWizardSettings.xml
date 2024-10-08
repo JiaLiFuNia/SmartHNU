@@ -328,7 +328,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="file:/$PROJECT_DIR$/../../../SDK/icons/material/materialicons/arrow_upward/baseline_arrow_upward_24.xml" />
+                                      <entry key="url" value="file:/$PROJECT_DIR$/../../../SDK/icons/material/materialiconsoutlined/lightbulb/outline_lightbulb_24.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -338,9 +338,8 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="assetSourceType" value="FILE" />
                             <entry key="autoMirrored" value="true" />
-                            <entry key="outputName" value="hack_htu" />
+                            <entry key="outputName" value="outline_lightbulb_24" />
                             <entry key="sourceFile" value="D:\下载\path.svg" />
                           </map>
                         </option>

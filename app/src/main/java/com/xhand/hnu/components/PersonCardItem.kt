@@ -85,10 +85,12 @@ fun PersonFunctionCardItem(
     modifier: Modifier,
     title: String,
     painterResource: Int,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    enable: Boolean
 ) {
     Card(
-        modifier = modifier.clickable { onClick() },
+        enabled = enable,
+        modifier = modifier,
         colors = CardDefaults.cardColors(
             Color.Transparent
         ),

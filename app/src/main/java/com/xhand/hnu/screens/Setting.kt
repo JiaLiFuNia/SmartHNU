@@ -227,6 +227,15 @@ fun SettingScreen(viewModel: SettingsViewModel, navController: NavController) {
                     viewWebsite("https://hackhtu.pages.dev", context)
                 }
             )
+            BasicListItem(
+                headlineText = "Read HNU",
+                supportingText = "河南师范大学新闻速览",
+                leadingImageVector =  R.drawable.ic_outline_article,
+                leadingImageVectorModifier = Modifier.size(28.dp),
+                onClick = {
+                    viewWebsite("https://smarthnu.pages.dev", context)
+                }
+            )
         }
         ShowAlert(viewModel = viewModel, text = "确定要退出登录吗？")
         if (viewModel.isShowDialog) {

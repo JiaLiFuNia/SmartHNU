@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 data class CourseTaskUiState(
     val isGettingTask: Boolean = true,
@@ -31,12 +32,12 @@ class CourseTaskViewModel : ViewModel() {
     val uiState: StateFlow<CourseTaskUiState> = _uiState.asStateFlow()
 
     init {
-        viewModelScope.launch {
+        runBlocking {
             _uiState.update {
-                it.copy(userInfo = Repository.getToken())
-            }
-            _uiState.update {
-                it.copy(term = Repository.getCurrentTerm())
+                it.copy(
+                    userInfo = Repository.getToken(),
+                    term = Repository.getCurrentTerm()
+                )
             }
         }
     }
