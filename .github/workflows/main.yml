@@ -40,3 +40,11 @@ jobs:
         artifacts: "*.apk"
         token: ${{ github.token }}
         generateReleaseNotes: true
+
+    - name: Send data
+      uses: BorisTestov/tg_sender_action@latest
+      env:
+          TG_SENDER_TG_CHAT_ID: ${{ secrets.TG_SENDER_TG_CHAT_ID }}
+          TG_SENDER_TG_BOT_TOKEN: ${{ secrets.TG_SENDER_TG_BOT_TOKEN }}
+          TG_SENDER_PAYLOAD_MESSAGE: "Hello World!"
+          TG_SENDER_PAYLOAD_PARSE_MODE: "HTML"
