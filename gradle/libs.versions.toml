@@ -1,0 +1,64 @@
+[versions]
+accompanistSystemuicontroller = "0.36.0"
+adaptiveNavigationAndroid = "1.0.0"
+agp = "8.5.2"
+composeWebviewMultiplatform = "1.9.40"
+datastorePreferences = "1.1.1"
+haze = "1.0.2"
+hiltAndroid = "2.51.1"
+hiltNavigationCompose = "1.2.0"
+kotlin = "1.9.0"
+coreKtx = "1.15.0"
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+kotlinxSerializationJson = "1.6.0"
+lifecycleRuntimeKtx = "2.8.6"
+activityCompose = "1.9.3"
+composeBom = "2024.11.00"
+lunarVersion = "1.6.3"
+material3AdaptiveNavigationSuite = "1.3.1"
+navigationCompose = "2.8.4"
+coil = "2.6.0"
+appcompat = "1.7.0"
+webkit = "1.12.1"
+
+[libraries]
+
+accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
+coil-base = { group = "io.coil-kt", name = "coil-base", version.ref = "coil" }
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+
+androidx-adaptive-navigation-android = { module = "androidx.compose.material3.adaptive:adaptive-navigation-android", version.ref = "adaptiveNavigationAndroid" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
+androidx-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite", version.ref = "material3AdaptiveNavigationSuite" }
+compose-webview-multiplatform = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "composeWebviewMultiplatform" }
+haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
+hilt-android-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+xtail-lunar = { module = "cn.6tail:lunar", version.ref = "lunarVersion" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+

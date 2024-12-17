@@ -1,0 +1,95 @@
+package com.smart.htu.component
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.smart.htu.screens.main.entity.SingleCourseEntity
+
+@Composable
+fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: SingleCourseEntity) {
+    Card(
+        modifier = modifier,
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(5.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Card(
+                Modifier
+                    .width(5.dp)
+                    .height(35.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.primary)
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "${message.investigationOrExamination}-${message.courseName}",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth(),
+                    softWrap = false,
+                    fontSize = 17.sp
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = message.teacher)
+                    Text(text = message.time)
+                    Text(text = message.position)
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun SingleCourseCardPreview() {
+    SingleCourseCard(
+        modifier = Modifier.fillMaxSize(),
+        onClick = {},
+        message = SingleCourseEntity(
+            "习近平新时代中国特色社会主义思想",
+            "",
+            "宋晓可",
+            "启智楼304",
+            "14:30-16:10",
+            "考试"
+        )
+    )
+}
