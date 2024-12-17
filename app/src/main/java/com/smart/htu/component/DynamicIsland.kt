@@ -58,26 +58,3 @@ fun DynamicIsland(text: String, onClick: () -> Unit, clickAble: Boolean = true) 
         }
     }
 }
-
-@Preview
-@Composable
-fun DynamicIslandPreview() {
-    Row(
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(
-            onClick = { }
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.avator_1),
-                contentDescription = null,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
-            )
-        }
-        DynamicIsland(text = "<- 立即登录", onClick = { /*TODO*/ })
-    }
-
-}
