@@ -285,6 +285,18 @@ fun SettingScreen(
                                 openInBrowser("https://github.com/JiaLiFuNia")
                             }
                         )
+                        PreferenceItem(
+                            title = stringResource(id = R.string.participate),
+                            description = "前往 GitHub 参与贡献",
+                            icon = painterResource(id = R.drawable.outline_auto_awesome_24),
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                )
+                            }
+                        )
                     }
                 }
             }

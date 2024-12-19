@@ -1,5 +1,6 @@
 package com.smart.htu.ui.theme
 
+import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -12,7 +13,10 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.smart.htu.screens.main.entity.DarkMode
@@ -101,7 +105,6 @@ fun SmartHNUTheme(
     content: @Composable () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val systemUiController = rememberSystemUiController()
 
     val darkTheme = when (uiState.isDarkTheme) {
         DarkMode.ON.ordinal -> true
@@ -118,15 +121,14 @@ fun SmartHNUTheme(
         else -> lightScheme
     }
 
-    SideEffect {
-        systemUiController.setSystemBarsColor(
-            color = Color.Transparent,
-            darkIcons = !darkTheme
-        )
-        systemUiController.setNavigationBarColor(
-            color = Color.Transparent,
-            darkIcons = !darkTheme
-        )
+    val view = LocalView.current
+    val window = (view.context as Activity).window
+    if (!view.isInEditMode) {
+        SideEffect {
+            window.navigationBarColor = colorScheme.surfaceContainer.toArgb()
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+        }
     }
 
     MaterialTheme(
