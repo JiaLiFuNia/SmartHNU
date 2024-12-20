@@ -80,6 +80,8 @@ dependencies {
     implementation(libs.androidx.adaptive.navigation.android)
     implementation(libs.accompanist.systemuicontroller)
 
+    implementation(libs.androidx.security.crypto)
+
     // Coil
     implementation(libs.coil.base)
     implementation(libs.coil.compose)
@@ -96,5 +98,15 @@ dependencies {
 
     // json
     implementation(libs.kotlinx.serialization.json)
+    // Jsoup
+    implementation(libs.jsoup)
+
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.retrofit2.converter.scalars)
+
+    // Coroutine 支持
+    implementation(libs.kotlinx.coroutines.android)
 
 }

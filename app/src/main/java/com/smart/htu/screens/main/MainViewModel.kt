@@ -2,12 +2,8 @@ package com.smart.htu.screens.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.smart.htu.R
-import com.smart.htu.di.DataStoreRepo
-import com.smart.htu.screens.application.ApplicationViewModel
-import com.smart.htu.screens.application.entity.SmallCardContent
+import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.screens.main.entity.SingleCourseEntity
-import com.smart.htu.screens.navigation.Destinations
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

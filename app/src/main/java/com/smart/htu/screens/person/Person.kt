@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -60,7 +58,6 @@ import com.smart.htu.component.PreferencesHintCard
 import com.smart.htu.component.SettingItemCard
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.utils.openInBrowser
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,7 +75,7 @@ fun PersonScreen(
     val onRefresh: () -> Unit = {
         isRefreshing = true
         coroutineScope.launch {
-            delay(2000)
+            viewModel.getStudentInfo()
             isRefreshing = false
         }
     }
@@ -102,7 +99,10 @@ fun PersonScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() }) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "back")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "back"
+                        )
                     }
                 },
                 actions = {
@@ -171,7 +171,7 @@ fun PersonScreen(
                             title = stringResource(id = R.string.username),
                             trailingIcon = {
                                 Text(
-                                    text = uiState.uneditableMessage.username,
+                                    text = uiState.uneditableMessage.username ?: "",
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                     modifier = Modifier.padding(horizontal = 5.dp)
                                 )
@@ -181,7 +181,7 @@ fun PersonScreen(
                             title = stringResource(id = R.string.student_id),
                             trailingIcon = {
                                 Text(
-                                    text = uiState.uneditableMessage.studentId,
+                                    text = uiState.uneditableMessage.studentId ?: "",
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                     modifier = Modifier.padding(horizontal = 5.dp)
                                 )
@@ -191,7 +191,7 @@ fun PersonScreen(
                             title = stringResource(id = R.string.academic),
                             trailingIcon = {
                                 Text(
-                                    text = uiState.uneditableMessage.academic,
+                                    text = uiState.uneditableMessage.academic ?: "",
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                     modifier = Modifier.padding(horizontal = 5.dp)
                                 )
@@ -211,7 +211,7 @@ fun PersonScreen(
                             title = stringResource(id = R.string.email),
                             trailingIcon = {
                                 Text(
-                                    text = uiState.uneditableMessage.emailNumber,
+                                    text = uiState.uneditableMessage.emailNumber ?: "",
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                     modifier = Modifier.padding(horizontal = 5.dp)
                                 )
@@ -531,7 +531,7 @@ fun PersonalStateMessage(label: String, state: Int, onClick: () -> Unit = {}) {
                         color = MaterialTheme.colorScheme.primary
                     )
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = "icon",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(18.dp)

@@ -3,7 +3,7 @@ package com.smart.htu.screens.setting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.component.SelectionItem
-import com.smart.htu.di.DataStoreRepo
+import com.smart.htu.repo.DataStoreRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

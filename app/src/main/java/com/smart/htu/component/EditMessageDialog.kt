@@ -52,7 +52,7 @@ fun EditMessageDialog(
                 TextButton(
                     onClick = {
                         viewModel.changeEditableMessage(
-                            if (customUsername == "") uiState.uneditableMessage.username else customUsername,
+                            customUsername,
                             customQQ
                         )
                         onDismissRequests()

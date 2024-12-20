@@ -1,4 +1,4 @@
-package com.smart.htu.di
+package com.smart.htu.repo
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -8,6 +8,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.smart.htu.R
 import com.smart.htu.api.DataStoreService
 import com.smart.htu.screens.application.entity.SmallCardContent
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import okhttp3.Cookie
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,7 +38,9 @@ class DataStoreRepo @Inject constructor(
         val DARK_THEME = intPreferencesKey("DARK_THEME")
         val DYNAMIC_COLOR = booleanPreferencesKey("DYNAMIC_COLOR")
         val COMMON_APP_LIST = stringPreferencesKey("COMMON_APP_LIST")
+        val COOKIES = stringPreferencesKey("COOKIES")
 
+        const val DEFAULT_VALUE_COOKIES = "[]"
         const val DEFAULT_DYNAMIC_COLOR = true
         const val DEFAULT_DARK_THEME = 0
         val DEFAULT_EDITABLE_PERSONAL_MESSAGE = EditablePersonalMessage("新用户", "")
@@ -90,6 +95,12 @@ class DataStoreRepo @Inject constructor(
         }
     }
 
+    override suspend fun changeCookies(cookies: List<Cookie>) {
+        context.dataStore.edit {
+            it[COOKIES] = Gson().toJson(cookies)
+        }
+    }
+
 
     override fun observeDynamicTheme(): Flow<Boolean> {
         return context.dataStore.data
@@ -130,6 +141,18 @@ class DataStoreRepo @Inject constructor(
     override fun observeLoginState(): Flow<Int> {
         return context.dataStore.data.map {
             it[LOGIN_STATE] ?: 0
+        }
+    }
+
+    override fun observeCookies(): Flow<List<Cookie>> {
+        return context.dataStore.data.map {
+            val json = it[COOKIES] ?: DEFAULT_VALUE_COOKIES
+            if (json == DEFAULT_VALUE_COOKIES) {
+                emptyList<Cookie>()
+            } else {
+                val typeOfT = object : TypeToken<List<Cookie>>() {}.type
+                Gson().fromJson(json, typeOfT)
+            }
         }
     }
 }

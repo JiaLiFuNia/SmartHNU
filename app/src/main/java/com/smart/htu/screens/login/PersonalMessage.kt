@@ -9,10 +9,11 @@ data class EditablePersonalMessage(
     val qqNumber: String
 )
 
+@Serializable
 data class UneditablePersonalMessage(
     val username: String,
     val academic: String,
     val studentId: String,
-    val phoneNumber: Number,
+    val phoneNumber: Long,
     val emailNumber: String
 )

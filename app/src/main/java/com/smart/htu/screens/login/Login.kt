@@ -4,21 +4,26 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -36,15 +41,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.smart.htu.R
 import com.smart.htu.component.LogTipDialog
+import com.smart.htu.component.SettingItemCard
 import com.smart.htu.component.WebView
 import com.smart.htu.screens.person.PersonScreen
 
@@ -58,30 +69,37 @@ fun LoginNavHostScreen(
     var loginWay by remember {
         mutableIntStateOf(0)
     }
-    if (uiState.isLogSuccess)
+    if (uiState.loginState == 1)
         PersonScreen(
             navController = navController,
             logoutClick = { viewModel.changeLogSuccess(false) },
             viewModel = viewModel
         )
     else
-        when (loginWay) {
-            0 -> LoginScreen(
-                navController = navController,
-                viewModel = viewModel,
-                changLoginWay = {
-                    loginWay = 1
-                }
-            )
+        LoginScreen(
+            navController = navController,
+            viewModel = viewModel,
+            changLoginWay = {
+                loginWay = 1
+            }
+        )
+    /*when (loginWay) {
+        0 -> LoginScreen(
+            navController = navController,
+            viewModel = viewModel,
+            changLoginWay = {
+                loginWay = 1
+            }
+        )
 
-            1 -> LoginWebView(
-                navController = navController,
-                viewModel = viewModel,
-                changLoginWay = {
-                    loginWay = 0
-                }
-            )
-        }
+        1 -> LoginWebView(
+            navController = navController,
+            viewModel = viewModel,
+            changLoginWay = {
+                loginWay = 0
+            }
+        )
+    }*/
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,6 +117,9 @@ fun LoginScreen(
 
     displayPassword = isPressed
 
+    val passwordFocusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -106,16 +127,19 @@ fun LoginScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() }) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "back")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "back"
+                        )
                     }
                 },
                 actions = {
-                    IconButton(onClick = { changLoginWay() }) {
+                    /*IconButton(onClick = { changLoginWay() }) {
                         Icon(
                             painter = painterResource(id = R.drawable.swap_horiz_24px),
                             contentDescription = "null"
                         )
-                    }
+                    }*/
                 }
             )
         }
@@ -132,7 +156,7 @@ fun LoginScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(text = "统一认证登录", style = MaterialTheme.typography.titleLarge)
+                    Text(text = "HNU 统一身份认证系统", style = MaterialTheme.typography.titleLarge)
                     Spacer(modifier = Modifier.height(20.dp))
                     OutlinedTextField(
                         leadingIcon = {
@@ -147,13 +171,23 @@ fun LoginScreen(
                         },
                         label = { Text(text = "学号") },
                         modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                        isError = uiState.loginState == -1,
+                        readOnly = uiState.isLoading,
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = {
+                                focusManager.moveFocus(FocusDirection.Down)
+                            }
+                        )
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     OutlinedTextField(
                         leadingIcon = {
                             Icon(
-                                painter = painterResource(id = R.drawable.outline_key_24),
+                                painter = painterResource(id = R.drawable.key_24px),
                                 contentDescription = "key"
                             )
                         },
@@ -162,7 +196,8 @@ fun LoginScreen(
                             viewModel.changePassword(it)
                         },
                         label = { Text(text = "密码") },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth(),
                         visualTransformation = if (displayPassword) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
                             IconButton(onClick = { displayPassword = !displayPassword }) {
@@ -172,21 +207,62 @@ fun LoginScreen(
                                 )
                             }
                         },
-                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password)
-
+                        isError = uiState.loginState == -1,
+                        readOnly = uiState.isLoading,
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                viewModel.login()
+                            }
+                        )
                     )
-                    Spacer(modifier = Modifier.height(15.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
+                    SettingItemCard(
+                        modifier = Modifier
+                    ) {
+                        Card(
+                            onClick = {
+                                viewModel.login()
+                            },
+                            enabled = !uiState.isLoading,
+                            modifier = Modifier.height(50.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                            )
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (uiState.isLoading) {
+                                    CircularProgressIndicator(modifier = Modifier.size(30.dp))
+                                } else {
+                                    Text(
+                                        text = stringResource(id = R.string.login),
+                                        textAlign = TextAlign.Center,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+                    }
                     Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         TextButton(onClick = { /*TODO*/ }) {
-                            Text(text = "忘记密码？")
-                        }
-                        FilledTonalButton(onClick = { viewModel.changeLogSuccess(true) }) {
-                            Text(text = "登录")
+                            Text(text = "忘记密码?")
                         }
                     }
+
+                    Text(
+                        text = "Tip：该登录使用河南师范大学智慧校园统一认证系统(与 i 师大 App 相同)。你的账号和密码会被加密储存在本地，不会上传到除学校服务器之外的其他地方。",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
                 }
             }
         }

@@ -1,11 +1,10 @@
 package com.smart.htu.screens.application
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.R
-import com.smart.htu.di.DataStoreRepo
-import com.smart.htu.di.DataStoreRepo.Companion.INIT_COMMON_APP_LIST
+import com.smart.htu.repo.DataStoreRepo
+import com.smart.htu.repo.DataStoreRepo.Companion.INIT_COMMON_APP_LIST
 import com.smart.htu.screens.application.entity.SmallCardContent
 import com.smart.htu.screens.navigation.Destinations
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,7 +12,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
