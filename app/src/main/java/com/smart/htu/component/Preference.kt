@@ -502,8 +502,7 @@ fun PreferenceSwitchWithDivider(
 fun PreferencesHintCard(
     title: String = "Title ".repeat(2),
     description: String? = "Description text ".repeat(3),
-    icon: ImageVector? = null,
-    @DrawableRes iconRes: Int? = null,
+    icon: Any? = null,
     containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
     onClick: () -> Unit = {},
 ) {
@@ -516,29 +515,37 @@ fun PreferencesHintCard(
             .padding(horizontal = 10.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        icon?.let {
-            Icon(
+        when (icon) {
+            is ImageVector -> Icon(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier
                     .padding(start = 8.dp, end = 16.dp)
                     .size(24.dp)
             )
-        }
-        iconRes?.let {
-            Icon(
-                painter = painterResource(id = iconRes),
+
+            is Int -> Icon(
+                painter = painterResource(id = icon),
                 contentDescription = null,
                 modifier = Modifier
                     .padding(start = 8.dp, end = 16.dp)
                     .size(40.dp)
+            )
+
+            is Painter -> Image(
+                painter = icon,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(start = 8.dp, end = 16.dp)
+                    .clip(CircleShape)
+                    .size(50.dp)
             )
         }
         Column(
             modifier =
             Modifier
                 .weight(1f)
-                .padding(start = if (icon == null && iconRes == null) 12.dp else 0.dp, end = 12.dp)
+                .padding(start = if (icon == null) 12.dp else 0.dp, end = 12.dp)
         ) {
             with(MaterialTheme) {
                 Text(

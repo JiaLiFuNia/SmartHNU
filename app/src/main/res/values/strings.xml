@@ -67,7 +67,7 @@
     <string name="student_id">学号</string>
     <string name="academic">学院</string>
     <string name="phone">联系方式</string>
-    <string name="email">邮箱</string>
+    <string name="email">教育邮箱</string>
     <string name="no_login">未登录</string>
     <string name="logged">已登录</string>
     <string name="login_expired">登录过期</string>

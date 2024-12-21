@@ -37,13 +37,12 @@ class LoginViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(
         LoginUiState(
-            editableMessage = EditablePersonalMessage("", ""),
+            editableMessage = EditablePersonalMessage("新用户", ""),
             uneditableMessage = PersonalMessage(
-                username = "许博涵",
-                academic = "数学与统计学院",
-                studentId = "2201214001",
-                phoneNumber = "11111111111111",
-                emailNumber = "2695520089@qq.com",
+                username = "-",
+                academic = "-",
+                studentId = "-",
+                phoneNumber = "-"
             )
         )
     )
@@ -110,6 +109,9 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val res = networkRepo.getStudentInfo()
+                _uiState.update {
+                    it.copy(uneditableMessage = res!!)
+                }
                 Log.i("TAG666 longViewModel", res.toString())
             } catch (e: Exception) {
                 Log.i("TAG666 viewModel", "Failed to get student info")
@@ -117,7 +119,7 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private fun changLoginState(state: Int) {
+    fun changLoginState(state: Int) {
         viewModelScope.launch {
             dataStoreRepo.changeLoginState(state)
             _uiState.update {

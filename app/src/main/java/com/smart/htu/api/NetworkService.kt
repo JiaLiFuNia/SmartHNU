@@ -30,7 +30,7 @@ interface NetworkService {
     ): Response<ResponseBody>
 
     @GET("psfw/sys/pubbiinfaapphtu/api/select_xsjbxx.do")
-    suspend fun getStudentInfo(): PersonalMessageRes
+    suspend fun getStudentInfo(): Response<PersonalMessageRes>
 
     companion object {
         const val BASE_URL = "https://authserver2.htu.edu.cn/"

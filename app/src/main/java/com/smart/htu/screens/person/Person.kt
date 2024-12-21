@@ -60,6 +60,7 @@ import com.smart.htu.component.PreferencesHintCard
 import com.smart.htu.component.SettingItemCard
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.utils.openInBrowser
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,6 +79,7 @@ fun PersonScreen(
         isRefreshing = true
         coroutineScope.launch {
             viewModel.getStudentInfo()
+            delay(2000)
             isRefreshing = false
         }
     }
@@ -130,7 +132,7 @@ fun PersonScreen(
                     PreferencesHintCard(
                         title = "河南师范大学",
                         description = "省属重点大学、省特色骨干大学建设高校",
-                        iconRes = R.drawable.hnu,
+                        icon = R.drawable.hnu,
                         onClick = {
                             openInBrowser("https://www.htu.edu.cn/")
                         }
@@ -213,10 +215,13 @@ fun PersonScreen(
                             title = stringResource(id = R.string.email),
                             trailingIcon = {
                                 Text(
-                                    text = uiState.uneditableMessage.emailNumber ?: "",
+                                    text = uiState.uneditableMessage.emailNumber,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                     modifier = Modifier.padding(horizontal = 5.dp)
                                 )
+                            },
+                            onClick = {
+                                openInBrowser("mailto:${uiState.uneditableMessage.emailNumber}")
                             }
                         )
                     }
@@ -227,10 +232,10 @@ fun PersonScreen(
                         modifier = Modifier
                     ) {
                         PreferenceItem(
-                            title = "统一认证登录",
+                            title = "统一身份认证系统",
                             trailingIcon = {
                                 Text(
-                                    text = stringResource(id = loginStateString(1)),
+                                    text = stringResource(id = loginStateString(uiState.loginState)),
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                     modifier = Modifier.padding(horizontal = 5.dp)
                                 )

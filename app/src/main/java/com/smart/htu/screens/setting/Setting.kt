@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +31,7 @@ import com.smart.htu.R
 import com.smart.htu.component.DropdownListItem
 import com.smart.htu.component.PreferenceItem
 import com.smart.htu.component.PreferenceSwitchWithDivider
+import com.smart.htu.component.PreferencesHintCard
 import com.smart.htu.component.SelectionItem
 import com.smart.htu.component.SettingItemCard
 import com.smart.htu.screens.login.LoginViewModel
@@ -62,7 +61,7 @@ fun SettingScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() }) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "back")
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
                     }
                 }
             )
@@ -74,28 +73,15 @@ fun SettingScreen(
                 .padding(horizontal = 15.dp)
         ) {
             item {
-                SettingItemCard(
-                    modifier = Modifier
-                ) {
-                    PreferenceItem(
-                        title = if (loginUiState.isLogSuccess) loginUiState.editableMessage.customUsername
+                PreferencesHintCard(
+                    title = if (loginUiState.isLogSuccess) loginUiState.editableMessage.customUsername
                         else stringResource(id = R.string.login_now),
-                        description = stringResource(id = R.string.person_description),
-                        icon = if (loginUiState.isLogSuccess) R.drawable.avator_1 else painterResource(
-                            id = R.drawable.outline_account_circle_24
-                        ),
-                        trailingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.KeyboardArrowRight,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                            )
-                        },
-                        onClick = {
-                            navController.navigate(Destinations.Login.route)
-                        }
-                    )
-                }
+                    description = stringResource(id = R.string.person_description),
+                    icon = if (loginUiState.isLogSuccess) painterResource(id = R.drawable.avator_1) else R.drawable.outline_account_circle_24,
+                    onClick = {
+                        navController.navigate(Destinations.Login.route)
+                    }
+                )
             }
             item {
                 SettingItemCard(
@@ -150,7 +136,7 @@ fun SettingScreen(
                             icon = painterResource(id = R.drawable.outline_home_24),
                             trailingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 )
@@ -164,7 +150,7 @@ fun SettingScreen(
                             icon = painterResource(id = R.drawable.widgets_24px_outline),
                             trailingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 )
@@ -178,7 +164,7 @@ fun SettingScreen(
                             icon = painterResource(id = R.drawable.ic_outline_article),
                             trailingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 )
@@ -202,7 +188,7 @@ fun SettingScreen(
                             icon = painterResource(id = R.drawable.ic_outline_article),
                             trailingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 )
@@ -232,7 +218,7 @@ fun SettingScreen(
                             icon = painterResource(id = R.drawable.book_ribbon_24px),
                             trailingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 )
@@ -243,7 +229,7 @@ fun SettingScreen(
                             icon = painterResource(id = R.drawable.outline_gavel_24),
                             trailingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 )
@@ -255,7 +241,7 @@ fun SettingScreen(
                             icon = painterResource(id = R.drawable.outline_auto_awesome_24),
                             trailingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 )
@@ -276,7 +262,7 @@ fun SettingScreen(
                             icon = R.drawable.developer_icon,
                             trailingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 )
@@ -291,7 +277,7 @@ fun SettingScreen(
                             icon = painterResource(id = R.drawable.outline_auto_awesome_24),
                             trailingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 )

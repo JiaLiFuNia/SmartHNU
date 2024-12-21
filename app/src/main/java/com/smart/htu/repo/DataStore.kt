@@ -101,6 +101,11 @@ class DataStoreRepo @Inject constructor(
         }
     }
 
+    suspend fun clearCookies() {
+        context.dataStore.edit {
+            it[COOKIES] = DEFAULT_VALUE_COOKIES
+        }
+    }
 
     override fun observeDynamicTheme(): Flow<Boolean> {
         return context.dataStore.data

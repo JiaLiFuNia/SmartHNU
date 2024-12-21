@@ -26,6 +26,7 @@ navigationCompose = "2.8.4"
 coil = "2.6.0"
 appcompat = "1.7.0"
 retrofit = "2.11.0"
+retrofit2KotlinxSerializationConverterVersion = "0.8.0"
 securityCryptoVersion = "1.0.0"
 webkit = "1.12.1"
 
@@ -48,6 +49,7 @@ converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref
 haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }
+jakewharton-retrofit2-kotlinx-serialization-converter = { module = "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter", version.ref = "retrofit2KotlinxSerializationConverterVersion" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

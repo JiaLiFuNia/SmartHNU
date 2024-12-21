@@ -19,3 +19,20 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-ignorewarnings
+
+-keep class retrofit2.** { *; }
+-keep class okhttp3.** { *; }
+-keep class okhttp3.Cookie { *; }
+-keep class okhttp3.OkHttpClient { *; }
+-keep class com.google.gson.** { *; }
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+-keep class com.smart.htu.api.module.PersonalMessageRes { *; }
+-keep class com.smart.htu.api.module.PersonalMessage { *; }
+
+-keepattributes Signature

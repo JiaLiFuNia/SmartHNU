@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -36,7 +37,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -67,22 +67,16 @@ fun LoginNavHostScreen(
     viewModel: LoginViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var loginWay by remember {
-        mutableIntStateOf(0)
-    }
     if (uiState.loginState == 1)
         PersonScreen(
             navController = navController,
-            logoutClick = { viewModel.changeLogSuccess(false) },
+            logoutClick = { viewModel.changLoginState(0) },
             viewModel = viewModel
         )
     else
         LoginScreen(
             navController = navController,
-            viewModel = viewModel,
-            changLoginWay = {
-                loginWay = 1
-            }
+            viewModel = viewModel
         )
     /*when (loginWay) {
         0 -> LoginScreen(
@@ -107,8 +101,7 @@ fun LoginNavHostScreen(
 @Composable
 fun LoginScreen(
     navController: NavController,
-    viewModel: LoginViewModel,
-    changLoginWay: () -> Unit
+    viewModel: LoginViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -163,7 +156,10 @@ fun LoginScreen(
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Outlined.Person,
-                                contentDescription = "account"
+                                contentDescription = "account",
+                                tint = if (uiState.loginState == -1 || uiState.loginState == 2 || uiState.studentID.length > 10)
+                                    MaterialTheme.colorScheme.error
+                                else MaterialTheme.colorScheme.primary
                             )
                         },
                         value = uiState.studentID,
@@ -172,7 +168,7 @@ fun LoginScreen(
                         },
                         label = { Text(text = "学号") },
                         modifier = Modifier.fillMaxWidth(),
-                        isError = uiState.loginState == -1,
+                        isError = uiState.loginState == -1 || uiState.loginState == 2 || uiState.studentID.length > 10,
                         readOnly = uiState.isLoading,
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Number,
@@ -182,14 +178,18 @@ fun LoginScreen(
                             onNext = {
                                 focusManager.moveFocus(FocusDirection.Down)
                             }
-                        )
+                        ),
+                        shape = RoundedCornerShape(8.dp)
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     OutlinedTextField(
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(id = R.drawable.key_24px),
-                                contentDescription = "key"
+                                contentDescription = "key",
+                                tint = if (uiState.loginState == -1 || uiState.loginState == 2)
+                                    MaterialTheme.colorScheme.error
+                                else MaterialTheme.colorScheme.primary
                             )
                         },
                         value = uiState.password,
@@ -208,7 +208,7 @@ fun LoginScreen(
                                 )
                             }
                         },
-                        isError = uiState.loginState == -1,
+                        isError = uiState.loginState == -1 || uiState.loginState == 2,
                         readOnly = uiState.isLoading,
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Password,
@@ -218,7 +218,9 @@ fun LoginScreen(
                             onDone = {
                                 viewModel.login()
                             }
-                        )
+                        ),
+                        maxLines = 1,
+                        shape = RoundedCornerShape(10.dp)
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     SettingItemCard(
@@ -259,12 +261,18 @@ fun LoginScreen(
                         }
                     }
 
-                    Text(
-                        text = "Tip：该登录使用河南师范大学智慧校园统一认证系统(与 i 师大 App 相同)。你的账号和密码会被加密储存在本地，不会上传到除学校服务器之外的其他地方。",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
                 }
+            }
+            item {
+                Text(
+                    text = "Tip：本界面登录方式使用河南师范大学智慧校园统一认证系统(与 i 师大 App 相同)。你的账号和密码会被加密储存在本地，不会上传到除学校服务器之外的其他地方。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                )
             }
         }
     }

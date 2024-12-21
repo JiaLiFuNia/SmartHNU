@@ -27,11 +27,11 @@ import javax.inject.Singleton
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
-annotation class FirstNetworkService
+annotation class AuthLoginNetworkService
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
-annotation class SecondNetworkService
+annotation class AuthMessageNetworkService
 
 
 @InstallIn(SingletonComponent::class)
@@ -40,28 +40,32 @@ class NetworkModule {
 
     @Singleton
     @Provides
-    @FirstNetworkService
-    fun provideNetworkService(
+    @AuthLoginNetworkService
+    fun provideFirstNetworkService(
         dataStoreRepo: DataStoreRepo
     ): NetworkService {
-        return createRetrofitService(NetworkService.BASE_URL, dataStoreRepo)
+        return createRetrofitService(
+            NetworkService.BASE_URL,
+            dataStoreRepo,
+            createOkHttpClient(dataStoreRepo)
+        )
     }
 
     @Singleton
     @Provides
-    @SecondNetworkService
+    @AuthMessageNetworkService
     fun provideSecondNetworkService(
         dataStoreRepo: DataStoreRepo
     ): NetworkService {
-        return createRetrofitService(NetworkService.E_HALL_BASE_URL, dataStoreRepo)
+        return createRetrofitService(
+            NetworkService.E_HALL_BASE_URL,
+            dataStoreRepo,
+            createOkHttpClient(dataStoreRepo)
+        )
     }
 
-    private fun createRetrofitService(
-        baseUrl: String,
-        dataStoreRepo: DataStoreRepo
-    ): NetworkService {
-        val client = OkHttpClient.Builder()
-            .followRedirects(true)
+    private fun createOkHttpClient(dataStoreRepo: DataStoreRepo): OkHttpClient {
+        return OkHttpClient.Builder()
             .cookieJar(NetworkCookieJar(dataStoreRepo))
             .addInterceptor { chain ->
                 try {
@@ -76,17 +80,40 @@ class NetworkModule {
                 }
             }
             .build()
+    }
 
-        val retrofit = Retrofit.Builder()
-            .baseUrl(baseUrl)
+    private fun createRetrofitService(
+        baseUrl: String,
+        dataStoreRepo: DataStoreRepo,
+        client: OkHttpClient
+    ): NetworkService {
+        val retrofitBuilder = Retrofit.Builder()
             .client(client)
-            .addConverterFactory(ScalarsConverterFactory.create())
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
 
+        configureRetrofitBuilder(baseUrl, retrofitBuilder)
+
+        val retrofit = retrofitBuilder.build()
         return retrofit.create(NetworkService::class.java)
     }
 
+    private fun configureRetrofitBuilder(baseUrl: String, retrofitBuilder: Retrofit.Builder) {
+        when (baseUrl) {
+            NetworkService.BASE_URL -> {
+                retrofitBuilder.baseUrl(baseUrl)
+                    .addConverterFactory(ScalarsConverterFactory.create())
+                    .addConverterFactory(GsonConverterFactory.create())
+            }
+
+            NetworkService.E_HALL_BASE_URL -> {
+                retrofitBuilder.baseUrl(baseUrl)
+                    .addConverterFactory(GsonConverterFactory.create())
+            }
+
+            else -> {
+                retrofitBuilder.baseUrl(baseUrl)
+            }
+        }
+    }
 }
 
 class NetworkCookieJar @Inject constructor(

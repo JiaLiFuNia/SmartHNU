@@ -2,9 +2,9 @@ package com.smart.htu.repo
 
 import android.util.Log
 import com.smart.htu.api.NetworkService
-import com.smart.htu.api.module.PersonalMessageRes
-import com.smart.htu.di.FirstNetworkService
-import com.smart.htu.di.SecondNetworkService
+import com.smart.htu.api.module.PersonalMessage
+import com.smart.htu.di.AuthLoginNetworkService
+import com.smart.htu.di.AuthMessageNetworkService
 import com.smart.htu.utils.AESUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -15,22 +15,23 @@ import javax.inject.Inject
 
 
 class NetworkRepo @Inject constructor(
-    @FirstNetworkService private val networkService: NetworkService,
-    @SecondNetworkService private val eHallNetworkService: NetworkService,
+    @AuthLoginNetworkService private val networkService: NetworkService,
+    @AuthMessageNetworkService private val eHallNetworkService: NetworkService,
     private val dataStoreRepo: DataStoreRepo,
 ) {
 
-    suspend fun getStudentInfo(): PersonalMessageRes {
+    suspend fun getStudentInfo(): PersonalMessage? {
         try {
             val res = eHallNetworkService.getStudentInfo()
-            Log.i("TAG666", "repo ${res.data}")
-            return res
+            Log.i("TAG666", res.body().toString())
+            return res.body()?.data?.first()
         } catch (e: IOException) {
-            Log.e("TAG666", "IOException while fetching student info: ${e.message}")
+            Log.e("TAG666", "${e.message}")
             throw e
         } catch (e: Exception) {
-            Log.e("TAG666", "Unexpected error while fetching student info: ${e.message}")
-            throw IOException("Failed to fetch student info due to unexpected error")
+            Log.e("TAG666", "${e.message}")
+            e.printStackTrace()
+            throw IOException("error")
         }
     }
 
@@ -39,16 +40,17 @@ class NetworkRepo @Inject constructor(
 
     private suspend fun getLoginPage() {
         withContext(Dispatchers.IO) {
+            dataStoreRepo.clearCookies()
             try {
                 val loginPage = networkService.authServer()
                 parseLoginPage(loginPage.body()?.string() ?: "")
                 Log.i("TAG666", "repo ${pwdEncryptSalt}\n${execution}")
             } catch (e: IOException) {
-                Log.e("TAG666", "IOException while fetching login page: ${e.message}")
+                Log.e("TAG666", "${e.message}")
                 throw e
             } catch (e: Exception) {
-                Log.e("TAG666", "Unexpected error while fetching login page: ${e.message}")
-                throw IOException("Failed to fetch login page due to unexpected error")
+                Log.e("TAG666", "${e.message}")
+                throw IOException("error")
             }
         }
     }
@@ -64,7 +66,7 @@ class NetworkRepo @Inject constructor(
         password: String,
         captcha: String? = ""
     ): Int {
-        dataStoreRepo.changeCookies(emptyList())
+        dataStoreRepo.clearCookies()
         try {
             getLoginPage()
             val response = networkService.authLogin(
@@ -73,7 +75,6 @@ class NetworkRepo @Inject constructor(
                 captcha = captcha ?: "",
                 execution = execution
             )
-            Log.i("TAG666 code", "${response.code()}${response.headers()}")
             val document = Jsoup.parse(response.body()?.string() ?: "")
             val errorTip = document.getElementById("showErrorTip")?.text() ?: ""
             Log.d("TAG666 tip", errorTip)

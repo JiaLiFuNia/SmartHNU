@@ -26,10 +26,8 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
-            isShrinkResources = true
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
         }
     }
@@ -93,11 +91,14 @@ dependencies {
 
     // 阴历
     implementation(libs.xtail.lunar)
+
     implementation(libs.haze)
     implementation(libs.androidx.webkit)
 
     // json
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.jakewharton.retrofit2.kotlinx.serialization.converter)
+
     // Jsoup
     implementation(libs.jsoup)
 
