@@ -1,96 +1,83 @@
 package com.smart.htu.screens.application
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.smart.htu.component.SmallMediumCardDisplay
-import com.smart.htu.screens.main.MainViewModel
+import com.smart.htu.screens.login.LoginViewModel
+import com.smart.htu.screens.navigateWithAuthCheck
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Application(
     navController: NavHostController,
     viewModel: ApplicationViewModel,
-    mainViewModel: MainViewModel
+    loginViewModel: LoginViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
-        SearchBar(
-            inputField = {
-                SearchBarDefaults.InputField(
-                    query = "",
-                    onQueryChange = { },
-                    onSearch = { },
-                    expanded = false,
-                    onExpandedChange = { },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Outlined.Search,
-                            contentDescription = "search"
-                        )
-                    },
-                    trailingIcon = {
-                        FilledTonalIconButton(onClick = { /*TODO*/ }) {
-                            Icon(imageVector = Icons.Outlined.Add, contentDescription = "add")
-                        }
-                    },
-                    placeholder = {
-                        Text(text = "搜索应用...")
-                    }
-                )
-            },
-            expanded = false,
-            onExpandedChange = { },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 15.dp)
-        ) {
+    val loginUiState by loginViewModel.uiState.collectAsState()
 
-        }
-        Spacer(modifier = Modifier.height(10.dp))
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
+    val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "应用") },
+                actions = {
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "add")
+                    }
+                }
+            )
+        },
+    ) { innerPadding ->
+        Column(
             modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
                 .padding(horizontal = 15.dp)
         ) {
-            items(uiState.appList.size) { item ->
-                SmallMediumCardDisplay(
-                    content = uiState.appList[item],
-                    navController = navController,
-                    modifier = Modifier
-                        .padding(5.dp),
-                    onLongClick = {
-                        viewModel.changeCommonAppListState(item)
-                    },
-                    addToCommonClick = !uiState.appListIsCommonList.contains(uiState.appList[item])
-                )
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 2),
+                modifier = Modifier
+            ) {
+                items(uiState.appList.size) { item ->
+                    SmallMediumCardDisplay(
+                        content = uiState.appList[item],
+                        modifier = Modifier
+                            .padding(5.dp),
+                        onLongClick = {
+                            viewModel.changeCommonAppListState(item)
+                        },
+                        onCLick = {
+                            navController.navigateWithAuthCheck(
+                                route = uiState.appList[item].route,
+                                url = uiState.appList[item].url,
+                                logState = loginUiState.isLogSuccess,
+                                label = uiState.appList[item].label
+                            )
+                        },
+                        isCommon = !uiState.appListIsCommonList.contains(uiState.appList[item])
+                    )
+                }
             }
         }
-        Spacer(modifier = Modifier.height(20.dp))
     }
 }

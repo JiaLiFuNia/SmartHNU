@@ -33,7 +33,6 @@ import com.smart.htu.R
 import com.smart.htu.component.DropdownListItem
 import com.smart.htu.component.PreferenceItem
 import com.smart.htu.component.PreferenceSwitchWithDivider
-import com.smart.htu.component.PreferencesHintCard
 import com.smart.htu.component.SelectionItem
 import com.smart.htu.component.SettingItemCard
 import com.smart.htu.screens.login.LoginViewModel
@@ -75,15 +74,49 @@ fun SettingScreen(
                 .padding(horizontal = 15.dp)
         ) {
             item {
-                PreferencesHintCard(
-                    title = if (loginUiState.isLogSuccess) loginUiState.editableMessage.customUsername
+                SettingItemCard(
+                    label = "开发与贡献",
+                    modifier = Modifier
+                ) {
+                    Column {
+                        PreferenceItem(
+                            title = stringResource(id = R.string.developer_name),
+                            description = stringResource(id = R.string.developer_description),
+                            icon = R.drawable.developer_icon,
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                )
+                            },
+                            onClick = {
+                                openInBrowser("https://github.com/JiaLiFuNia")
+                            }
+                        )
+                        PreferenceItem(
+                            title = stringResource(id = R.string.participate),
+                            icon = painterResource(id = R.drawable.outline_auto_awesome_24),
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                )
+                            }
+                        )
+                    }
+                }
+                /*PreferencesHintCard(
+                    title = if (loginUiState.isLogSuccess)
+                        loginUiState.username
                         else stringResource(id = R.string.login_now),
                     description = stringResource(id = R.string.person_description),
                     icon = if (loginUiState.isLogSuccess) painterResource(id = R.drawable.avator_1) else R.drawable.outline_account_circle_24,
                     onClick = {
                         navController.navigate(Destinations.Login.route)
                     }
-                )
+                )*/
             }
             item {
                 SettingItemCard(
@@ -206,37 +239,6 @@ fun SettingScreen(
                             description = stringResource(id = R.string.version),
                             icon = Icons.Outlined.Info
                         )
-                    }
-                }
-            }
-            item {
-                SettingItemCard(
-                    label = stringResource(id = R.string.other),
-                    modifier = Modifier
-                ) {
-                    Column {
-                        PreferenceItem(
-                            title = stringResource(id = R.string.privacy),
-                            icon = painterResource(id = R.drawable.book_ribbon_24px),
-                            trailingIcon = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                                )
-                            }
-                        )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.user_agreement),
-                            icon = painterResource(id = R.drawable.outline_gavel_24),
-                            trailingIcon = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                                )
-                            }
-                        )
                         PreferenceItem(
                             title = stringResource(id = R.string.appreciate),
                             description = stringResource(id = R.string.appreciate_description),
@@ -247,42 +249,9 @@ fun SettingScreen(
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 )
-                            }
-                        )
-                    }
-                }
-            }
-            item {
-                SettingItemCard(
-                    label = stringResource(id = R.string.developer),
-                    modifier = Modifier
-                ) {
-                    Column {
-                        PreferenceItem(
-                            title = stringResource(id = R.string.developer_name),
-                            description = stringResource(id = R.string.developer_description),
-                            icon = R.drawable.developer_icon,
-                            trailingIcon = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                                )
                             },
                             onClick = {
-                                openInBrowser("https://github.com/JiaLiFuNia")
-                            }
-                        )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.participate),
-                            description = "前往 GitHub 参与贡献",
-                            icon = painterResource(id = R.drawable.outline_auto_awesome_24),
-                            trailingIcon = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                                )
+                                navController.navigate(Destinations.Appreciate.route)
                             }
                         )
                     }

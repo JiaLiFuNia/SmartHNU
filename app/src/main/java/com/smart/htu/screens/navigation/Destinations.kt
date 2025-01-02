@@ -16,4 +16,6 @@ sealed class Destinations(
     data object AppSetting : Destinations("app_setting")
     data object ClassroomSearch : Destinations("classroom_search")
     data object WebView : Destinations("webview")
+    data object Appreciate : Destinations("appreciate")
+    data object LibrarySearch : Destinations("library_search")
 }

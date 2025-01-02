@@ -33,7 +33,7 @@ class ApplicationViewModel @Inject constructor(
             icon = R.drawable.today_24px,
             description = "没有课程",
             label = R.string.today_course,
-            route = ""
+            route = null
         ),
         SmallCardContent(
             label = R.string.dorm_air_conditioner,
@@ -49,22 +49,22 @@ class ApplicationViewModel @Inject constructor(
         SmallCardContent(
             label = R.string.book_search,
             icon = R.drawable.book_4_24px,
-            route = ""
+            route = Destinations.LibrarySearch.route
         ),
         SmallCardContent(
             icon = R.drawable.finance_24px,
             label = R.string.course_grade,
-            route = ""
+            route = null
         ),
         SmallCardContent(
             icon = R.drawable.near_me_24px,
             label = R.string.live_service,
-            route = ""
+            route = null
         ),
         SmallCardContent(
             icon = R.drawable.app_registration_24px,
             label = R.string.common_applications,
-            route = ""
+            route = null
         )
     )
 

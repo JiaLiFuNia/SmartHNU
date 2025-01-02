@@ -25,7 +25,7 @@
     <string name="person_description">我的信息、账号管理、退出登录</string>
     <string name="display_color">显示与颜色</string>
     <string name="theme_color">主题颜色</string>
-    <string name="theme_color_description">使用动态或自定义主题颜色</string>
+    <string name="theme_color_description">使用动态或师大主题色</string>
     <string name="dark_theme">深色主题</string>
     <string name="language">界面语言</string>
     <string name="screen_style">界面与样式</string>
@@ -43,7 +43,7 @@
     <string name="user_agreement">用户协议</string>
     <string name="appreciate">致谢</string>
     <string name="appreciate_description">资源与开源软件</string>
-    <string name="developer">开发者</string>
+    <string name="developer">开发</string>
     <string name="developer_name">JiaLiFuNia</string>
     <string name="developer_description">开发者、主题设计</string>
     <string name="classroom_search">空闲教室</string>
@@ -79,4 +79,7 @@
     <string name="book_search">图书查询</string>
     <string name="live_service">生活服务</string>
     <string name="participate">参与贡献</string>
+    <string name="class_name">班级</string>
+    <string name="political_outlook">政治面貌</string>
+    <string name="birthday">出生日期</string>
 </resources>

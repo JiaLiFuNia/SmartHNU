@@ -80,4 +80,7 @@
     <string name="book_search">Book Search</string>
     <string name="live_service">Life Services</string>
     <string name="participate">Participate and Contribute</string>
+    <string name="class_name">Class</string>
+    <string name="political_outlook">Political Outlook</string>
+    <string name="birthday">Birthday</string>
 </resources>

@@ -32,9 +32,22 @@ interface NetworkService {
     @GET("psfw/sys/pubbiinfaapphtu/api/select_xsjbxx.do")
     suspend fun getStudentInfo(): Response<PersonalMessageRes>
 
+    @GET("m/weixin/wsearch.action")
+    suspend fun librarySearch(
+        @Query("q") keyword: String,
+        @Query("page") page: Int,
+        @Query("t") type: String = "any"
+    ): Response<ResponseBody>
+
+    @GET("m/weixin/wdetail.action")
+    suspend fun libraryBookDetails(
+        @Query("id") id: String
+    ): Response<ResponseBody>
+
     companion object {
         const val BASE_URL = "https://authserver2.htu.edu.cn/"
         const val E_HALL_BASE_URL = "https://ehall2.htu.edu.cn/"
+        const val LIBRARY_URL = "http://libmsg.htu.cn/"
     }
 
 }

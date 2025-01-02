@@ -39,6 +39,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,11 +67,10 @@ fun LoginNavHostScreen(
     navController: NavController,
     viewModel: LoginViewModel
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    if (uiState.loginState == 1)
+    val uiState = viewModel.uiState.collectAsState().value
+    if (uiState.isLogSuccess)
         PersonScreen(
             navController = navController,
-            logoutClick = { viewModel.changLoginState(0) },
             viewModel = viewModel
         )
     else
@@ -103,30 +103,21 @@ fun LoginScreen(
     navController: NavController,
     viewModel: LoginViewModel
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState = viewModel.uiState.collectAsState().value
 
-    var displayPassword by remember { mutableStateOf(false) }
+    var displayPassword by rememberSaveable { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
     displayPassword = isPressed
 
-    val passwordFocusRequester = remember { FocusRequester() }
+    // val passwordFocusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.login)) },
-                navigationIcon = {
-                    IconButton(
-                        onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "back"
-                        )
-                    }
-                },
                 actions = {
                     /*IconButton(onClick = { changLoginWay() }) {
                         Icon(
@@ -301,7 +292,7 @@ fun LoginWebView(
         ExtendedFloatingActionButton(
             text = { Text(text = "刷新登录") },
             icon = { Icon(imageVector = Icons.Default.Refresh, contentDescription = "") },
-            onClick = { viewModel.changeLogSuccess(true) },
+            onClick = { viewModel.setLogSuccess(true) },
         )
         /*TextButton(onClick = { viewModel.changeLogSuccess(true) }) {
             Text(text = stringResource(id = R.string.login))

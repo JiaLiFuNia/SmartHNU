@@ -1,6 +1,5 @@
 package com.smart.htu.component
 
-import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
@@ -39,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.smart.htu.screens.application.entity.SmallCardContent
+import com.smart.htu.screens.navigateWithAuthCheck
 import com.smart.htu.screens.navigation.Destinations
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -46,11 +46,9 @@ import com.smart.htu.screens.navigation.Destinations
 fun SmallCardDisplay(
     content: SmallCardContent,
     onLongClick: () -> Unit,
-    navController: NavController
+    onCLick: () -> Unit,
 ) {
-    var showDropDownMenu by remember {
-        mutableStateOf(false)
-    }
+    var showDropDownMenu by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
             .width(70.dp)
@@ -58,19 +56,7 @@ fun SmallCardDisplay(
             .clip(RoundedCornerShape(10.dp))
             .combinedClickable(
                 onClick = {
-                    if (content.route != "")
-                        content.route?.let {
-                            navController.navigate(it)
-                        }
-                    else
-                        if (content.url != "")
-                            content.url?.let {
-                                navController.navigate(
-                                    "${Destinations.WebView.route}/${
-                                        Uri.encode(content.url)
-                                    }/${content.label}"
-                                )
-                            }
+                    onCLick()
                 },
                 onLongClick = {
                     showDropDownMenu = true

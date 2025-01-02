@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Badge
@@ -22,7 +21,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -32,14 +30,14 @@ import com.smart.htu.R
 import com.smart.htu.component.animation.SlideTransition
 import com.smart.htu.screens.application.Application
 import com.smart.htu.screens.application.ApplicationViewModel
+import com.smart.htu.screens.login.LoginNavHostScreen
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.Main
 import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.navigation.BottomNavigationItem
 import com.smart.htu.screens.news.NewsScreen
+import com.smart.htu.screens.person.PersonScreen
 import com.smart.htu.utils.DoubleBackToExitApp
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -70,6 +68,11 @@ fun MainFrame(
             selectedIcon = R.drawable.ic_filled_article,
             unselectedIcon = R.drawable.ic_outline_article,
             badge = true
+        ),
+        BottomNavigationItem(
+            title = R.string.my,
+            selectedIcon = R.drawable.ic_filled_person,
+            unselectedIcon = R.drawable.ic_outline_person
         )
     )
 
@@ -147,10 +150,15 @@ fun MainFrame(
                                 1 -> Application(
                                     navController = navController,
                                     viewModel = applicationViewModel,
-                                    mainViewModel = mainViewModel
+                                    loginViewModel = loginViewModel
                                 )
 
                                 2 -> NewsScreen(navController = navController)
+
+                                3 -> LoginNavHostScreen(
+                                    navController = navController,
+                                    viewModel = loginViewModel
+                                )
                             }
                         }
                     )

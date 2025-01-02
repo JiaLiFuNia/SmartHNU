@@ -1,6 +1,5 @@
 package com.smart.htu.component
 
-import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
@@ -28,18 +27,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.smart.htu.screens.application.entity.SmallCardContent
-import com.smart.htu.screens.navigation.Destinations
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SmallMediumCardDisplay(
     content: SmallCardContent,
-    navController: NavController,
     modifier: Modifier,
     onLongClick: () -> Unit,
-    addToCommonClick: Boolean
+    onCLick: () -> Unit,
+    isCommon: Boolean
 ) {
     var showDropDownMenu by remember {
         mutableStateOf(false)
@@ -53,19 +50,7 @@ fun SmallMediumCardDisplay(
             .combinedClickable(
                 onLongClick = { showDropDownMenu = true },
                 onClick = {
-                    if (content.route != "")
-                        content.route?.let {
-                            navController.navigate(it)
-                        }
-                    else
-                        if (content.url != "")
-                            content.url?.let {
-                                navController.navigate(
-                                    "${Destinations.WebView.route}/${
-                                        Uri.encode(content.url)
-                                    }/${content.label}"
-                                )
-                            }
+                    onCLick()
                 }
             ),
         colors = CardDefaults.cardColors(
@@ -110,7 +95,7 @@ fun SmallMediumCardDisplay(
             shape = RoundedCornerShape(15.dp),
         ) {
             DropdownMenuItem(
-                enabled = addToCommonClick,
+                enabled = isCommon,
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Outlined.Add,

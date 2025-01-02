@@ -4,8 +4,11 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.PersonalMessage
+import com.smart.htu.di.NetworkCookieJar
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_EDITABLE_PERSONAL_MESSAGE
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_MESSAGE
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
 import com.smart.htu.repo.NetworkRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,30 +23,26 @@ import javax.inject.Inject
 
 data class LoginUiState(
     val isLogSuccess: Boolean = false,
-    val loginState: Int = 0, // -1 密码错误   0 未尝试登录   1 登录成功   2 账号或密码为空
+    val loginState: Int = 0, // -1 密码错误   0 未登录   1 登录成功   2 账号或密码为空  3 登录过期
     val isLoading: Boolean = false,
-    var editableMessage: EditablePersonalMessage, // 本地
+    var qqNumber: String = "",
     var uneditableMessage: PersonalMessage, // 联网获取
     val studentID: String = "",
     val password: String = "",
+    val username: String = DEFAULT_USERNAME,
     val cookies: List<Cookie> = emptyList()
 )
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val networkRepo: NetworkRepo,
-    private val dataStoreRepo: DataStoreRepo
+    private val dataStoreRepo: DataStoreRepo,
+    private val networkCookieJar: NetworkCookieJar
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
         LoginUiState(
-            editableMessage = EditablePersonalMessage("新用户", ""),
-            uneditableMessage = PersonalMessage(
-                username = "-",
-                academic = "-",
-                studentId = "-",
-                phoneNumber = "-"
-            )
+            uneditableMessage = DEFAULT_MESSAGE
         )
     )
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
@@ -66,11 +65,17 @@ class LoginViewModel @Inject constructor(
         emptyList()
     )
 
+    private val _username = dataStoreRepo.observeUsername().stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        DEFAULT_USERNAME
+    )
+
     init {
         viewModelScope.launch {
             _editablePersonalMessage.collect { value ->
                 _uiState.update {
-                    it.copy(editableMessage = value)
+                    it.copy(qqNumber = value)
                 }
             }
         }
@@ -88,6 +93,13 @@ class LoginViewModel @Inject constructor(
                 }
             }
         }
+        viewModelScope.launch {
+            _username.collect { value ->
+                _uiState.update {
+                    it.copy(username = value)
+                }
+            }
+        }
     }
 
     fun login() {
@@ -97,6 +109,7 @@ class LoginViewModel @Inject constructor(
                 val res = networkRepo.authLogin(_uiState.value.studentID, _uiState.value.password)
                 Log.i("TAG666 longViewModel", res.toString())
                 changLoginState(res)
+
                 Log.i("TAG666 loginCookie", _uiState.value.cookies.toString())
             } catch (e: Exception) {
                 Log.i("TAG666 viewModel", "Failed to login")
@@ -109,12 +122,16 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val res = networkRepo.getStudentInfo()
-                _uiState.update {
-                    it.copy(uneditableMessage = res!!)
-                }
                 Log.i("TAG666 longViewModel", res.toString())
+                dataStoreRepo.changeUsername(res?.username ?: DEFAULT_USERNAME)
+                dataStoreRepo.changeLoginState(1)
+                _uiState.update { it.copy(loginState = 1) }
+                _uiState.update { it.copy(uneditableMessage = res!!) }
+                _uiState.update { it.copy(username = res?.username ?: DEFAULT_USERNAME) }
             } catch (e: Exception) {
                 Log.i("TAG666 viewModel", "Failed to get student info")
+                dataStoreRepo.changeLoginState(3)
+                _uiState.update { it.copy(loginState = 3) }
             }
         }
     }
@@ -128,24 +145,17 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun changeLogSuccess(isLogSuccess: Boolean) {
+    fun setLogSuccess(isLogSuccess: Boolean) {
         _uiState.update {
             it.copy(isLogSuccess = isLogSuccess)
         }
     }
 
-    fun changeEditableMessage(customUsername: String, customQQNumber: String) {
+    fun changeEditableMessage(customQQNumber: String) {
         viewModelScope.launch {
-            dataStoreRepo.changPersonalMessage(
-                EditablePersonalMessage(customUsername, customQQNumber)
-            )
+            dataStoreRepo.changPersonalMessage(customQQNumber)
             _uiState.update {
-                it.copy(
-                    editableMessage = EditablePersonalMessage(
-                        customUsername,
-                        customQQNumber
-                    )
-                )
+                it.copy(qqNumber = customQQNumber)
             }
 
         }
@@ -161,6 +171,10 @@ class LoginViewModel @Inject constructor(
         _uiState.update {
             it.copy(password = password)
         }
+    }
+
+    fun cleanCookies() {
+        networkCookieJar.clear()
     }
 
 }

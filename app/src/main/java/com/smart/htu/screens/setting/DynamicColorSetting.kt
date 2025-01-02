@@ -14,13 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -36,9 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.smart.htu.R
 import com.smart.htu.component.BlockButton
@@ -68,7 +62,7 @@ fun DynamicColorSettingScreen(
                     IconButton(
                         onClick = { navController.popBackStack() }
                     ) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "back")
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
                     }
                 }
             )
@@ -105,25 +99,6 @@ fun DynamicColorSettingScreen(
                                 .padding(30.dp)
                         )
                     }
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(15.dp)
-                    ) {
-                        Text(
-                            text = "什么是动态颜色？",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp,
-                            lineHeight = 20.sp,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                        Text(
-                            text = "动态颜色是 Google 的 Material Design 团队为现代设备设计的个性化配色系统。它会根据您设备的系统主题或壁纸的主色调，自动生成与整体风格一致的主题颜色。",
-                            fontSize = 14.sp,
-                            lineHeight = 20.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                        )
-                    }
                 }
             }
             item {
@@ -134,7 +109,7 @@ fun DynamicColorSettingScreen(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val tabTitles = listOf("壁纸颜色", "师大主题色")
+                    val tabTitles = listOf("动态主题色", "师大主题色")
                     tabTitles.forEachIndexed { index, tab ->
                         BlockButton(
                             text = tab,
@@ -149,10 +124,7 @@ fun DynamicColorSettingScreen(
                     }
                 }
                 when (selectedIndex) {
-                    0 -> SettingItemCard(
-                        modifier = Modifier
-                    ) {
-                        Column {
+                    0 -> SettingItemCard(modifier = Modifier) {
                             PreferenceSwitch(
                                 iconRes = R.drawable.outline_colorize_24,
                                 title = "动态颜色",
@@ -163,7 +135,6 @@ fun DynamicColorSettingScreen(
                                 }
                             )
                         }
-                    }
 
                     1 -> SettingItemCard(modifier = Modifier.fillMaxWidth()) {
                         Box(

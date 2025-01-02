@@ -5,60 +5,99 @@ import com.smart.htu.api.NetworkService
 import com.smart.htu.api.module.PersonalMessage
 import com.smart.htu.di.AuthLoginNetworkService
 import com.smart.htu.di.AuthMessageNetworkService
+import com.smart.htu.di.CleanMessageNetworkService
+import com.smart.htu.di.NetworkCookieJar
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_MESSAGE
+import com.smart.htu.screens.application.librarySearch.LibraryBookDetail
+import com.smart.htu.screens.application.librarySearch.LibraryBookListEntity
 import com.smart.htu.utils.AESUtils
-import kotlinx.coroutines.Dispatchers
+import com.smart.htu.utils.parseLibraryBookDetail
+import com.smart.htu.utils.parseLibrarySearchResult
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import java.io.IOException
 import javax.inject.Inject
 
 
 class NetworkRepo @Inject constructor(
-    @AuthLoginNetworkService private val networkService: NetworkService,
-    @AuthMessageNetworkService private val eHallNetworkService: NetworkService,
+    @AuthLoginNetworkService private val authLoginNetworkService: NetworkService,
+    @AuthMessageNetworkService private val authNetworkService: NetworkService,
+    @CleanMessageNetworkService private val libraryNetworkService: NetworkService,
     private val dataStoreRepo: DataStoreRepo,
+    private val networkCookieJar: NetworkCookieJar
 ) {
 
-    suspend fun getStudentInfo(): PersonalMessage? {
+    suspend fun librarySearch(keyword: String): List<LibraryBookListEntity> {
+        val bookList: List<LibraryBookListEntity>
         try {
-            val res = eHallNetworkService.getStudentInfo()
-            Log.i("TAG666", res.body().toString())
-            return res.body()?.data?.first()
+            val res = libraryNetworkService.librarySearch(keyword, 1)
+            bookList = if (res.code() == 200) {
+                parseLibrarySearchResult(res.body()?.string() ?: "")
+            } else {
+                emptyList()
+            }
+            Log.i("TAG666", bookList.toString())
+            return bookList
         } catch (e: IOException) {
             Log.e("TAG666", "${e.message}")
             throw e
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
+            throw IOException("error")
+        }
+    }
+
+    suspend fun libraryBookDetails(id: String): List<LibraryBookDetail> {
+        val bookList: List<LibraryBookDetail>
+        try {
+            val res = libraryNetworkService.libraryBookDetails(id)
+            bookList = if (res.code() == 200) {
+                parseLibraryBookDetail(res.body()?.string() ?: "")
+            } else {
+                emptyList()
+            }
+            return bookList
+        } catch (e: IOException) {
+            Log.e("TAG666", "${e.message}")
+            throw e
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            throw IOException("error")
+        }
+    }
+
+    suspend fun getStudentInfo(): PersonalMessage? {
+        try {
+            val res = authNetworkService.getStudentInfo()
+            Log.i("TAG666", res.headers().toString())
+            if (res.code() == 200) {
+                Log.i("TAG666", res.body()?.data.toString())
+                return res.body()?.data?.first()
+            } else
+                return DEFAULT_MESSAGE
+        } catch (e: IOException) {
+            Log.i("TAG666 message", "${e.message}")
+            throw e
+        } catch (e: Exception) {
+            Log.i("TAG666 message", "${e.message}")
             e.printStackTrace()
             throw IOException("error")
         }
     }
 
-    private var pwdEncryptSalt: String = ""
-    private var execution: String = ""
-
     private suspend fun getLoginPage() {
-        withContext(Dispatchers.IO) {
-            dataStoreRepo.clearCookies()
-            try {
-                val loginPage = networkService.authServer()
-                parseLoginPage(loginPage.body()?.string() ?: "")
-                Log.i("TAG666", "repo ${pwdEncryptSalt}\n${execution}")
-            } catch (e: IOException) {
-                Log.e("TAG666", "${e.message}")
-                throw e
-            } catch (e: Exception) {
-                Log.e("TAG666", "${e.message}")
-                throw IOException("error")
-            }
+        networkCookieJar.clear()
+        try {
+            val loginPage = authLoginNetworkService.authServer()
+            parseLoginPage(loginPage.body()?.string() ?: "")
+            Log.i("TAG666", "repo ${pwdEncryptSalt}\n${execution}")
+        } catch (e: IOException) {
+            Log.e("TAG666", "${e.message}")
+            throw e
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            throw IOException("error")
         }
-    }
-
-    private fun parseLoginPage(html: String) {
-        val document = Jsoup.parse(html)
-        pwdEncryptSalt = document.getElementById("pwdEncryptSalt")?.attr("value") ?: ""
-        execution = document.getElementById("execution")?.attr("value") ?: ""
     }
 
     suspend fun authLogin(
@@ -66,10 +105,10 @@ class NetworkRepo @Inject constructor(
         password: String,
         captcha: String? = ""
     ): Int {
-        dataStoreRepo.clearCookies()
+        networkCookieJar.clear()
         try {
             getLoginPage()
-            val response = networkService.authLogin(
+            val response = authLoginNetworkService.authLogin(
                 username = username,
                 password = AESUtils.encryptPassword(password, pwdEncryptSalt),
                 captcha = captcha ?: "",
@@ -95,5 +134,13 @@ class NetworkRepo @Inject constructor(
             Log.e("TAG666 Unexpected error while logging in", "${e.message}")
             return -1
         }
+    }
+
+    private var pwdEncryptSalt: String = ""
+    private var execution: String = ""
+    private fun parseLoginPage(html: String) {
+        val document = Jsoup.parse(html)
+        pwdEncryptSalt = document.getElementById("pwdEncryptSalt")?.attr("value") ?: ""
+        execution = document.getElementById("execution")?.attr("value") ?: ""
     }
 }

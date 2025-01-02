@@ -1,8 +1,10 @@
 package com.smart.htu.screens
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
@@ -12,7 +14,9 @@ import com.smart.htu.component.animation.animatedComposable
 import com.smart.htu.screens.application.Application
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.classroom.ClassroomSearchScreen
+import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
 import com.smart.htu.screens.login.LoginNavHostScreen
+import com.smart.htu.screens.login.LoginScreen
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.message.MessageScreen
@@ -20,6 +24,7 @@ import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsScreen
 import com.smart.htu.screens.person.PersonScreen
 import com.smart.htu.screens.setting.AppSettingScreen
+import com.smart.htu.screens.setting.AppreciateScreen
 import com.smart.htu.screens.setting.DynamicColorSettingScreen
 import com.smart.htu.screens.setting.MainSettingScreen
 import com.smart.htu.screens.setting.NewsSettingScreen
@@ -52,7 +57,7 @@ fun NavHostScreen(
             )
         }
         animatedComposable(Destinations.Login.route) {
-            LoginNavHostScreen(
+            LoginScreen(
                 navController = navController,
                 viewModel = loginViewModel
             )
@@ -61,13 +66,12 @@ fun NavHostScreen(
             Application(
                 navController = navController,
                 viewModel = applicationViewModel,
-                mainViewModel = mainViewModel
+                loginViewModel = loginViewModel
             )
         }
         animatedComposable(Destinations.Person.route) {
             PersonScreen(
                 navController = navController,
-                logoutClick = { },
                 viewModel = loginViewModel
             )
         }
@@ -127,5 +131,29 @@ fun NavHostScreen(
                 initTitle = webview.arguments?.getInt("title") ?: 0
             )
         }
+        animatedComposable(Destinations.Appreciate.route) {
+            AppreciateScreen(navController = navController)
+        }
+        animatedComposable(Destinations.LibrarySearch.route) {
+            LibrarySearchScreen(navController = navController)
+        }
+    }
+}
+
+fun NavController.navigateWithAuthCheck(
+    route: String? = null,
+    url: String? = null,
+    label: Int,
+    logState: Boolean,
+    loginRoute: String = Destinations.Login.route
+) {
+    Log.i("TAG nav", "$route $url $logState")
+    if (logState) {
+        if (route != null)
+            this.navigate(route)
+        if (url != null)
+            this.navigate("${Destinations.WebView.route}/${Uri.encode(url)}/${label}")
+    } else {
+        this.navigate(loginRoute)
     }
 }

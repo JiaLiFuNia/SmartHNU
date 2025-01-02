@@ -19,7 +19,9 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,19 +30,36 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun NewsScreen(
     navController: NavHostController,
 ) {
+
+    val hazeState = remember { HazeState() }
     Scaffold(
         topBar = {
-            MediumTopAppBar(title = { Text(text = "新闻") })
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(Color.Transparent),
+                modifier = Modifier.hazeChild(
+                    state = hazeState,
+                    style = HazeMaterials.ultraThin()
+                ),
+                title = { Text(text = "新闻") }
+            )
         }
     ) {
         LazyColumn(
-            Modifier.padding(it)
+            modifier = Modifier
+                .padding(it)
+                .padding(horizontal = 16.dp)
+                .haze(state = hazeState)
         )  {
             item {
                 val colors = MaterialTheme.colorScheme

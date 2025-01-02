@@ -12,7 +12,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
@@ -44,6 +44,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,13 +71,13 @@ fun ClassroomSearchScreen(
     navController: NavHostController,
     viewModel: ClassroomSearchViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState = viewModel.uiState.collectAsState().value
 
-    var selectedDate by remember { mutableStateOf(getCurrentDates()) }
-    var selectedRoomIndex by remember { mutableIntStateOf(0) }
-    var selectedTimeIndex by remember { mutableIntStateOf(checkTimeInterval()) }
+    var selectedDate by rememberSaveable { mutableStateOf(getCurrentDates()) }
+    var selectedRoomIndex by rememberSaveable { mutableIntStateOf(0) }
+    var selectedTimeIndex by rememberSaveable { mutableIntStateOf(checkTimeInterval()) }
 
-    var showDatePicker by remember { mutableStateOf(false) }
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
     val currentDate = LocalDate.now()
     val datePickerState = rememberDatePickerState(
         yearRange = currentDate.year..currentDate.year + 1,
@@ -109,7 +110,7 @@ fun ClassroomSearchScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() }) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "back")
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
                     }
                 },
                 actions = {

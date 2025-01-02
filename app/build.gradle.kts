@@ -3,7 +3,8 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
-    kotlin("plugin.serialization") version "1.9.0"
+    alias(libs.plugins.aboutlibraries)
+    kotlin("plugin.serialization") version "2.0.0"
 }
 
 android {
@@ -26,8 +27,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
             )
         }
     }
@@ -78,6 +81,7 @@ dependencies {
     implementation(libs.androidx.adaptive.navigation.android)
     implementation(libs.accompanist.systemuicontroller)
 
+    // Crypt
     implementation(libs.androidx.security.crypto)
 
     // Coil
@@ -92,22 +96,28 @@ dependencies {
     // 阴历
     implementation(libs.xtail.lunar)
 
+    // haze
     implementation(libs.haze)
+
+    // webview
     implementation(libs.androidx.webkit)
 
     // json
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.jakewharton.retrofit2.kotlinx.serialization.converter)
+    implementation(libs.converter.gson)
 
     // Jsoup
     implementation(libs.jsoup)
 
     // Retrofit
     implementation(libs.retrofit)
-    implementation(libs.converter.gson)
     implementation(libs.retrofit2.converter.scalars)
 
     // Coroutine 支持
     implementation(libs.kotlinx.coroutines.android)
 
+    // About
+    implementation(libs.aboutlibraries.core)
+    implementation(libs.aboutlibraries.compose.m3)
 }

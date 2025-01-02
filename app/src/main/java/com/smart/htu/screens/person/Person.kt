@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Card
@@ -26,14 +25,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,21 +51,26 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.smart.htu.R
 import com.smart.htu.component.EditMessageDialog
+import com.smart.htu.component.LargeCardDisplay
 import com.smart.htu.component.LogoutDialog
 import com.smart.htu.component.PreferenceItem
 import com.smart.htu.component.PreferencesHintCard
 import com.smart.htu.component.SettingItemCard
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.utils.openInBrowser
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun PersonScreen(
     navController: NavController,
-    viewModel: LoginViewModel,
-    logoutClick: () -> Unit
+    viewModel: LoginViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -79,41 +81,28 @@ fun PersonScreen(
         isRefreshing = true
         coroutineScope.launch {
             viewModel.getStudentInfo()
-            delay(2000)
+            delay(1000)
             isRefreshing = false
         }
     }
 
-    LaunchedEffect(Unit) {
-        onRefresh()
-    }
-    var showLogoutDialog by remember {
-        mutableStateOf(false)
-    }
-    var showEditMessageDialog by remember {
-        mutableStateOf(false)
-    }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    var showEditMessageDialog by remember { mutableStateOf(false) }
+    val hazeState = remember { HazeState() }
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            MediumTopAppBar(
-                scrollBehavior = scrollBehavior,
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(Color.Transparent),
                 title = { Text(text = stringResource(id = R.string.my)) },
-                navigationIcon = {
-                    IconButton(
-                        onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "back"
-                        )
-                    }
-                },
                 actions = {
                     IconButton(onClick = { onRefresh() }) {
                         Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "refresh")
                     }
-                }
+                },
+                modifier = Modifier.hazeChild(
+                    state = hazeState,
+                    style = HazeMaterials.ultraThin()
+                ),
             )
         }
     ) {
@@ -127,8 +116,10 @@ fun PersonScreen(
             LazyColumn(
                 Modifier
                     .padding(horizontal = 15.dp)
+                    .haze(state = hazeState)
             ) {
                 item {
+                    Spacer(modifier = Modifier.height(20.dp))
                     PreferencesHintCard(
                         title = "河南师范大学",
                         description = "省属重点大学、省特色骨干大学建设高校",
@@ -139,9 +130,11 @@ fun PersonScreen(
                     )
                 }
                 item {
-                    SettingItemCard(
-                        label = "我的信息",
-                        modifier = Modifier
+                    Spacer(modifier = Modifier.height(20.dp))
+                    LargeCardDisplay(
+                        modifier = Modifier,
+                        title = "我的信息",
+                        leadingIconPainting = R.drawable.outline_account_box_24
                     ) {
                         PreferenceItem(
                             title = stringResource(id = R.string.avatar),
@@ -159,23 +152,20 @@ fun PersonScreen(
                             }
                         )
                         PreferenceItem(
-                            title = stringResource(id = R.string.nickname),
-                            trailingIcon = {
-                                Text(
-                                    text = uiState.editableMessage.customUsername,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    modifier = Modifier.padding(horizontal = 5.dp)
-                                )
-                            },
-                            onClick = {
-                                showEditMessageDialog = true
-                            }
-                        )
-                        PreferenceItem(
                             title = stringResource(id = R.string.username),
                             trailingIcon = {
                                 Text(
                                     text = uiState.uneditableMessage.username ?: "",
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                    modifier = Modifier.padding(horizontal = 5.dp)
+                                )
+                            }
+                        )
+                        PreferenceItem(
+                            title = stringResource(id = R.string.birthday),
+                            trailingIcon = {
+                                Text(
+                                    text = uiState.uneditableMessage.birthday,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                     modifier = Modifier.padding(horizontal = 5.dp)
                                 )
@@ -192,10 +182,30 @@ fun PersonScreen(
                             }
                         )
                         PreferenceItem(
+                            title = stringResource(id = R.string.class_name),
+                            trailingIcon = {
+                                Text(
+                                    text = uiState.uneditableMessage.className ?: "",
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                    modifier = Modifier.padding(horizontal = 5.dp)
+                                )
+                            }
+                        )
+                        PreferenceItem(
                             title = stringResource(id = R.string.academic),
                             trailingIcon = {
                                 Text(
                                     text = uiState.uneditableMessage.academic ?: "",
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                    modifier = Modifier.padding(horizontal = 5.dp)
+                                )
+                            }
+                        )
+                        PreferenceItem(
+                            title = stringResource(id = R.string.political_outlook),
+                            trailingIcon = {
+                                Text(
+                                    text = uiState.uneditableMessage.politicalProfile ?: "",
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                     modifier = Modifier.padding(horizontal = 5.dp)
                                 )
@@ -227,9 +237,11 @@ fun PersonScreen(
                     }
                 }
                 item {
-                    SettingItemCard(
-                        label = "账号管理",
-                        modifier = Modifier
+                    Spacer(modifier = Modifier.height(20.dp))
+                    LargeCardDisplay(
+                        modifier = Modifier,
+                        title = "账号管理",
+                        leadingIconPainting = R.drawable.admin_panel_settings_24px
                     ) {
                         PreferenceItem(
                             title = "统一身份认证系统",
@@ -298,6 +310,7 @@ fun PersonScreen(
                             }
                         }
                     }
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
                 /*item {
                     Spacer(modifier = Modifier.height(60.dp))
@@ -431,7 +444,8 @@ fun PersonScreen(
         showDialog = showLogoutDialog,
         onDismissRequests = { showLogoutDialog = false },
         onConfirmClick = {
-            logoutClick()
+            viewModel.changLoginState(0)
+            viewModel.cleanCookies()
             showLogoutDialog = false
         }
     )
@@ -441,7 +455,7 @@ fun loginStateString(state: Int): Int {
     return when (state) {
         0 -> R.string.no_login
         1 -> R.string.logged
-        2 -> R.string.login_expired
+        3 -> R.string.login_expired
         else -> R.string.unknown_status
     }
 }

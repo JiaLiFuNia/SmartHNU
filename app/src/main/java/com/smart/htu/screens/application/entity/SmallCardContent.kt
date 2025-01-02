@@ -8,6 +8,6 @@ data class SmallCardContent(
     val label: Int,
     val description: String? = null,
     @DrawableRes val icon: Int,
-    val route: String? = "",
-    val url: String? = ""
+    val route: String? = null,
+    val url: String? = null
 )

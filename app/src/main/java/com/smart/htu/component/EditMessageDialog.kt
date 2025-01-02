@@ -51,10 +51,7 @@ fun EditMessageDialog(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.changeEditableMessage(
-                            customUsername,
-                            customQQ
-                        )
+                        viewModel.changeEditableMessage(customQQ)
                         onDismissRequests()
                         customUsername = ""
                     },
@@ -78,28 +75,6 @@ fun EditMessageDialog(
                     modifier = Modifier,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = "当前用户名为：${uiState.editableMessage.customUsername}",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 5.dp),
-                        textAlign = TextAlign.Start
-                    )
-                    TextField(
-                        value = customUsername,
-                        onValueChange = { customUsername = it },
-                        label = {
-                            Text(text = "请输入新的用户名")
-                        },
-                        maxLines = 1,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Outlined.AccountCircle,
-                                contentDescription = "username"
-                            )
-                        },
-                        singleLine = true
-                    )
                     Spacer(modifier = Modifier.height(10.dp))
                     TextField(
                         value = customQQ,
@@ -124,7 +99,7 @@ fun EditMessageDialog(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     )
                     Text(
-                        text = "Tip：你可以修改你的用户名和 QQ 号，QQ 号仅用于获取你的 QQ 头像。",
+                        text = "Tip：通过设置 QQ 号码，你可以将头像设置为你的 QQ 头像。",
                         textAlign = TextAlign.Start,
                         modifier = Modifier.fillMaxWidth(),
                         color = Color.Gray

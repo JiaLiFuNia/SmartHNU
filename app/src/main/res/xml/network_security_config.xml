@@ -3,5 +3,7 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">authserver2.htu.edu.cn</domain>
         <domain includeSubdomains="true">ehall2.htu.edu.cn</domain>
+        <domain includeSubdomains="true">libmsg.htu.cn</domain>
+        <domain includeSubdomains="true">img3.doubanio.com</domain>
     </domain-config>
 </network-security-config>

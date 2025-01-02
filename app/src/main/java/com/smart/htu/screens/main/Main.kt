@@ -1,8 +1,7 @@
 package com.smart.htu.screens.main
 
+import android.annotation.SuppressLint
 import android.content.Context
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,9 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -29,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
@@ -41,7 +40,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -60,11 +58,16 @@ import com.smart.htu.component.SmallCardDisplay
 import com.smart.htu.screens.application.ApplicationUiState
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.login.LoginViewModel
+import com.smart.htu.screens.navigateWithAuthCheck
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.ui.icon.WeatherIcon
 import com.smart.htu.ui.icon.weatherIcon._303
-import com.smart.htu.component.DynamicIsland
 import com.smart.htu.utils.openCalendar
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -73,7 +76,8 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.ceil
 
-@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("RestrictedApi")
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun Main(
     navController: NavController,
@@ -86,6 +90,8 @@ fun Main(
     val loginUiState by loginViewModel.uiState.collectAsState()
     val appUiState by applicationViewModel.uiState.collectAsState()
 
+    val hazeState = remember { HazeState() }
+
     val state = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -97,37 +103,64 @@ fun Main(
             isRefreshing = false
         }
     }
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(Color.Transparent),
+                modifier = Modifier.hazeChild(
+                    state = hazeState,
+                    style = HazeMaterials.ultraThin()
+                ),
                 title = {
-                    DynamicIsland(
+                    Text(text = "欢迎！${loginUiState.username}")
+                    /*DynamicIsland(
                         text = if (!loginUiState.isLogSuccess)
                             stringResource(id = R.string.login_now)
                         else
                             if (isRefreshing)
                                 stringResource(id = R.string.loading)
                             else
-                                loginUiState.editableMessage.customUsername,
+                                loginUiState.username,
                         onClick = {
                             navController.navigate(Destinations.Login.route)
                         },
                         clickAble = !isRefreshing
-                    )
+                    )*/
                 },
                 actions = {
-                    IconButton(onClick = { navController.navigate(Destinations.Message.route) }) {
+                    IconButton(
+                        onClick = {
+                            navController.navigateWithAuthCheck(
+                                route = Destinations.Message.route,
+                                label = R.string.message_center,
+                                logState = loginUiState.isLogSuccess
+                            )
+                        }
+                    ) {
                         Icon(
                             painter = painterResource(id = R.drawable.notifications_24px),
                             contentDescription = null
                         )
                     }
+                    IconButton(
+                        onClick = {
+                            navController.navigate(Destinations.Setting.route)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Settings,
+                            contentDescription = "setting"
+                        )
+                    }
                 },
                 navigationIcon = {
-                    IconButton(
-                        onClick = { navController.navigate(Destinations.Setting.route) },
+                    /*IconButton(
+                        onClick = {
+                            navController.navigate(Destinations.Setting.route)
+                        },
                         modifier = Modifier.padding(start = 10.dp)
                     ) {
                         if (loginUiState.isLogSuccess)
@@ -145,7 +178,7 @@ fun Main(
                                 modifier = Modifier.size(40.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
-                    }
+                    }*/
                 }
             )
         }
@@ -155,14 +188,17 @@ fun Main(
             onRefresh = { onRefresh() },
             state = state,
             modifier = Modifier
-                .padding(innerPadding)
+                .fillMaxSize()
+                .padding(innerPadding),
         ) {
             LazyColumn(
                 modifier = Modifier
-                    .padding(horizontal = 15.dp)
+                    .haze(state = hazeState)
+                    .fillMaxSize()
+                    .padding(horizontal = 15.dp),
             ) {
                 item {
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Row(
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -181,7 +217,8 @@ fun Main(
                         uiState = appUiState,
                         navController = navController,
                         navigateToApplication = navigateToApplication,
-                        applicationViewModel = applicationViewModel
+                        applicationViewModel = applicationViewModel,
+                        logState = loginUiState.isLogSuccess
                     )
                 }
                 item {
@@ -311,7 +348,8 @@ fun CommonAppsCard(
     uiState: ApplicationUiState,
     navController: NavController,
     navigateToApplication: () -> Unit,
-    applicationViewModel: ApplicationViewModel
+    applicationViewModel: ApplicationViewModel,
+    logState: Boolean
 ) {
     val appList = uiState.appListIsCommonList
     val lazyVerticalGridHeight by remember {
@@ -351,7 +389,14 @@ fun CommonAppsCard(
                                 onLongClick = {
                                     applicationViewModel.changeCommonAppListState(index, false)
                                 },
-                                navController = navController
+                                onCLick = {
+                                    navController.navigateWithAuthCheck(
+                                        route = appList[index].route,
+                                        url = appList[index].url,
+                                        logState = logState,
+                                        label = appList[index].label
+                                    )
+                                }
                             )
                         }
                     }
