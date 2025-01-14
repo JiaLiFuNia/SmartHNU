@@ -4,10 +4,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -34,10 +32,8 @@ import com.smart.htu.screens.login.LoginViewModel
 fun EditMessageDialog(
     showDialog: Boolean,
     onDismissRequests: () -> Unit,
-    viewModel: LoginViewModel
+    onConfirmRequests: (String) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    var customUsername by remember { mutableStateOf("") }
     var customQQ by remember { mutableStateOf("") }
     if (showDialog) {
         AlertDialog(
@@ -51,11 +47,10 @@ fun EditMessageDialog(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.changeEditableMessage(customQQ)
+                        onConfirmRequests(customQQ)
                         onDismissRequests()
-                        customUsername = ""
                     },
-                    enabled = customUsername.isNotEmpty() || (customQQ.isNotEmpty() && customQQ.length <= 11)
+                    enabled = (customQQ.isNotEmpty() && customQQ.length <= 11)
                 ) {
                     Text(text = "确定")
                 }
@@ -64,7 +59,6 @@ fun EditMessageDialog(
                 TextButton(
                     onClick = {
                         onDismissRequests()
-                        customUsername = ""
                     }
                 ) {
                     Text(text = "取消")
@@ -99,7 +93,7 @@ fun EditMessageDialog(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     )
                     Text(
-                        text = "Tip：通过设置 QQ 号码，你可以将头像设置为你的 QQ 头像。",
+                        text = "Tip：现在你可以通过设置任意 QQ 号码以更改你的头像。",
                         textAlign = TextAlign.Start,
                         modifier = Modifier.fillMaxWidth(),
                         color = Color.Gray

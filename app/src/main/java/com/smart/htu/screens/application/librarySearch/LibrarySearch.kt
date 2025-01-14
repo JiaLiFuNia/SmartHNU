@@ -2,9 +2,14 @@ package com.smart.htu.screens.application.librarySearch
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -20,8 +25,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Search
@@ -29,6 +36,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,6 +51,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -75,6 +84,10 @@ import com.smart.htu.R
 import com.smart.htu.component.LargeCardDisplay
 import com.smart.htu.utils.copyContent
 import com.smart.htu.utils.sendToast
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -86,18 +99,17 @@ fun LibrarySearchScreen(
     viewModel: LibrarySearchViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState().value
-    val keyword = rememberSaveable { mutableStateOf("") }
-    val bookState = rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    val hazeState = remember { HazeState() }
+    var showBottomSheet by rememberSaveable { mutableStateOf(false) }
+    var expand by rememberSaveable { mutableStateOf(false) }
+    val keyword = rememberSaveable { mutableStateOf("概率论") }
+
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val bottomSheetState = rememberModalBottomSheetState()
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-
-    var showBottomSheet by rememberSaveable { mutableStateOf(false) }
-    var expand by rememberSaveable { mutableStateOf(false) }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val context = LocalContext.current
-
-
     val state = rememberPullToRefreshState()
     var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
@@ -122,6 +134,10 @@ fun LibrarySearchScreen(
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+                ),
                 title = {
                     Text(text = "图书查询")
                 },
@@ -135,36 +151,65 @@ fun LibrarySearchScreen(
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(imageVector = Icons.Outlined.Info, contentDescription = "info")
                     }
-                }
+                },
+                modifier = Modifier.hazeEffect(
+                    state = hazeState,
+                    style = HazeMaterials.regular()
+                ) {
+                    blurRadius = 30.dp
+                    blurEnabled = uiState.blurEffect
+                },
             )
         },
         floatingActionButton = {
             if (expand)
-                FloatingActionButton(
-                    onClick = { scope.launch { lazyListState.scrollToItem(0) } }
+                AnimatedVisibility(
+                    modifier = Modifier,
+                    visible = lazyListState.firstVisibleItemIndex != 0,
+                    enter = slideInVertically(initialOffsetY = { it * 2 }),
+                    exit = slideOutVertically(targetOffsetY = { it * 2 }),
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.outline_arrow_upward_24),
-                        contentDescription = "up"
-                    )
+                    FloatingActionButton(
+                        onClick = { scope.launch { lazyListState.scrollToItem(0) } }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_arrow_upward_24),
+                            contentDescription = "up"
+                        )
+                    }
                 }
         }
-    ) { innerPadding ->
+    ) {
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = { onRefresh() },
             state = state,
+            indicator = {
+                Indicator(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = it.calculateTopPadding()),
+                    isRefreshing = isRefreshing,
+                    state = state
+                )
+            },
             modifier = Modifier
-                .padding(innerPadding)
+                .padding()
         ) {
             LazyColumn(
+                contentPadding = PaddingValues(
+                    top = it.calculateTopPadding() + 15.dp,
+                    start = 15.dp,
+                    end = 15.dp,
+                    bottom = 15.dp
+                ),
                 state = lazyListState,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 15.dp)
+                    .hazeSource(state = hazeState)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 item {
-                    Spacer(modifier = Modifier.height(15.dp))
                     TextField(
                         colors = TextFieldDefaults.colors(
                             focusedIndicatorColor = Color.Transparent,
@@ -205,7 +250,6 @@ fun LibrarySearchScreen(
                 if (expand) {
                     if (uiState.isSearching) {
                         item {
-                            Spacer(modifier = Modifier.height(15.dp))
                             Box(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
@@ -216,28 +260,26 @@ fun LibrarySearchScreen(
                     } else {
                         if (uiState.searchResult.isNotEmpty()) {
                             itemsIndexed(uiState.searchResult) { _, item ->
-                                Spacer(modifier = Modifier.height(10.dp))
                                 LibrarySingleBook(
                                     state = uiState.rentList.any { item.id == it.id },
                                     content = item,
                                     onClick = {
                                         showBottomSheet = true
                                         viewModel.libraryBookDetail(item.id)
-                                        bookState.value = uiState.rentList.any { item.id == it.id }
                                     },
                                     onFavorite = {
-                                        if (uiState.rentList.size <= 4) {
-                                            viewModel.changeRentBookState(
-                                                RentBookEntity(
-                                                    item.title, item.publisher, item.id
-                                                )
-                                            )
-                                            sendToast(
-                                                context = context,
-                                                "现已添加 ${uiState.rentList.size}/5 本书"
-                                            )
-                                        } else
-                                            sendToast(context = context, "最多只能添加 5 本书")
+                                        viewModel.changeRentBookState(
+                                            RentBookEntity(item.title, item.publisher, item.id)
+                                        )
+                                        val message = when {
+                                            uiState.rentList.size > 4 && !uiState.rentList.any { item.id == it.id } -> "最多添加 5 本"
+                                            uiState.rentList.any { item.id == it.id } -> "已取消"
+                                            else -> "已添加到待借清单"
+                                        }
+                                        sendToast(
+                                            context = context,
+                                            text = message
+                                        )
                                     }
                                 )
                             }
@@ -256,7 +298,7 @@ fun LibrarySearchScreen(
                     }
                 } else {
                     item {
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                         RentBooksList(
                             uiState = uiState,
                             viewModel = viewModel,
@@ -333,13 +375,13 @@ fun RentBooksList(
 ) {
     LargeCardDisplay(
         modifier = Modifier,
-        title = "借阅清单(${uiState.rentList.size}/5)",
+        title = "待借清单(${uiState.rentList.size}/5)",
         leadingIconPainting = R.drawable.book_4_24px
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+            modifier = Modifier
         ) {
-            uiState.rentList.forEach {
+            uiState.rentList.forEachIndexed { index, it ->
                 Card(
                     colors = CardDefaults.cardColors(Color.Transparent),
                     onClick = {
@@ -348,26 +390,32 @@ fun RentBooksList(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 5.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(5.dp)
+                        modifier = Modifier.padding(
+                            horizontal = 12.dp,
+                            vertical = if (index == 0) 10.dp else 5.dp
+                        )
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.outline_book_24),
                             contentDescription = "book",
-                            modifier = Modifier.padding(end = 10.dp)
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
                         )
                         Column(
                             modifier = Modifier
                                 .weight(1f)
+                                .padding(horizontal = 10.dp)
                         ) {
                             Text(
                                 text = it.bookName,
                                 fontSize = 18.sp,
                                 maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                modifier = Modifier.basicMarquee(
+                                    repeatDelayMillis = 2_000,
+                                )
                             )
                             Text(
                                 text = it.publisher,
@@ -376,13 +424,16 @@ fun RentBooksList(
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
-                        TextButton(onClick = { viewModel.changeRentBookState(it, false) }) {
-                            Text(text = "已借")
+                        FilledTonalIconButton(onClick = { viewModel.changeRentBookState(it) }) {
+                            Icon(
+                                imageVector = Icons.Outlined.CheckCircle,
+                                contentDescription = null
+                            )
                         }
                     }
                 }
             }
-            if (uiState.rentList.size == 5)
+            if (uiState.rentList.size != 5)
                 Card(
                     colors = CardDefaults.cardColors(Color.Transparent),
                     onClick = {
@@ -390,13 +441,12 @@ fun RentBooksList(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp)
-                        .padding(vertical = 5.dp)
+                        .height(60.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(5.dp)
+                            .padding(horizontal = 15.dp, vertical = 5.dp)
                             .fillMaxSize()
                     ) {
                         Icon(
@@ -407,6 +457,7 @@ fun RentBooksList(
                         Text(text = "添加书籍", fontSize = 18.sp)
                     }
                 }
+
         }
     }
 }
@@ -503,7 +554,7 @@ fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
                     text = content.bookName,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(5.dp))

@@ -1,10 +1,13 @@
 package com.smart.htu.screens.setting
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -13,6 +16,7 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
@@ -21,57 +25,77 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.alorma.compose.settings.ui.SettingsMenuLink
+import com.alorma.compose.settings.ui.SettingsSwitch
 import com.smart.htu.R
 import com.smart.htu.component.DropdownListItem
-import com.smart.htu.component.PreferenceItem
-import com.smart.htu.component.PreferenceSwitchWithDivider
 import com.smart.htu.component.SelectionItem
 import com.smart.htu.component.SettingItemCard
-import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.entity.DarkMode
 import com.smart.htu.screens.navigation.Destinations
-import com.smart.htu.utils.openInBrowser
+import com.smart.htu.utils.APPVersion
+import com.smart.htu.utils.startWebUrl
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
 
-@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun SettingScreen(
     navController: NavController,
-    viewModel: SettingViewModel,
-    loginViewModel: LoginViewModel
+    viewModel: SettingViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val loginUiState by loginViewModel.uiState.collectAsState()
-
-    val context = LocalContext.current
+    val hazeState = remember { HazeState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val coroutineScope = rememberCoroutineScope()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.mediumTopAppBarColors(
+                    containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+                ),
                 title = { Text(text = stringResource(id = R.string.setting)) },
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
                     }
+                },
+                modifier = Modifier.hazeEffect(
+                    state = hazeState,
+                    style = HazeMaterials.regular()
+                ) {
+                    blurRadius = 30.dp
+                    blurEnabled = uiState.blurEffect
                 }
             )
         }
-    ) { innerPadding ->
+    ) {
         LazyColumn(
             modifier = Modifier
-                .padding(innerPadding)
-                .padding(horizontal = 15.dp)
+                .hazeSource(state = hazeState)
+                .fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = 15.dp,
+                end = 15.dp,
+                top = it.calculateTopPadding(),
+                bottom = it.calculateBottomPadding() + 15.dp
+            )
         ) {
             item {
                 SettingItemCard(
@@ -79,11 +103,21 @@ fun SettingScreen(
                     modifier = Modifier
                 ) {
                     Column {
-                        PreferenceItem(
-                            title = stringResource(id = R.string.developer_name),
-                            description = stringResource(id = R.string.developer_description),
-                            icon = R.drawable.developer_icon,
-                            trailingIcon = {
+                        SettingsMenuLink(
+                            title = { Text(text = stringResource(id = R.string.developer_name)) },
+                            subtitle = {
+                                Text(text = stringResource(id = R.string.developer_description))
+                            },
+                            icon = {
+                                Image(
+                                    painter = painterResource(id = R.drawable.avator_1),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                )
+                            },
+                            action = {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
@@ -91,19 +125,27 @@ fun SettingScreen(
                                 )
                             },
                             onClick = {
-                                openInBrowser("https://github.com/JiaLiFuNia")
-                            }
+                                startWebUrl("https://github.com/JiaLiFuNia")
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.participate),
-                            icon = painterResource(id = R.drawable.outline_auto_awesome_24),
-                            trailingIcon = {
+                        SettingsMenuLink(
+                            title = { Text(text = stringResource(id = R.string.participate)) },
+                            icon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.outline_auto_awesome_24),
+                                    contentDescription = null
+                                )
+                            },
+                            action = {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 )
-                            }
+                            },
+                            onClick = {},
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
                     }
                 }
@@ -124,17 +166,35 @@ fun SettingScreen(
                     modifier = Modifier
                 ) {
                     Column {
-                        PreferenceSwitchWithDivider(
-                            icon = R.drawable.outline_color_lens_24,
-                            title = stringResource(id = R.string.theme_color),
-                            description = stringResource(id = R.string.theme_color_description),
-                            isChecked = uiState.dynamicColor,
-                            onClick = {
-                                navController.navigate(Destinations.DynamicColorSetting.route)
+                        SettingsSwitch(
+                            icon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.outline_color_lens_24),
+                                    contentDescription = null
+                                )
                             },
-                            onChecked = {
+                            title = { Text(text = stringResource(id = R.string.theme_color)) },
+                            subtitle = { Text(text = stringResource(id = R.string.theme_color_description)) },
+                            state = uiState.dynamicColor,
+                            onCheckedChange = {
                                 viewModel.changeDynamicTheme(enabled = !uiState.dynamicColor)
-                            }
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        )
+                        SettingsSwitch(
+                            icon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.blur_on_24px),
+                                    contentDescription = null
+                                )
+                            },
+                            title = { Text(text = "实时模糊") },
+                            subtitle = { Text(text = "开启后部分页面将具有模糊效果，具体效果因机型、系统而异") },
+                            state = uiState.blurEffect,
+                            onCheckedChange = {
+                                viewModel.changeBlurState()
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
                         DropdownListItem(
                             leadingImageVector = R.drawable.outline_nightlight_24,
@@ -166,10 +226,15 @@ fun SettingScreen(
                     modifier = Modifier
                 ) {
                     Column {
-                        PreferenceItem(
-                            title = stringResource(id = R.string.main_screen),
-                            icon = painterResource(id = R.drawable.outline_home_24),
-                            trailingIcon = {
+                        SettingsMenuLink(
+                            title = { Text(text = stringResource(id = R.string.main_screen)) },
+                            icon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.outline_home_24),
+                                    contentDescription = null
+                                )
+                            },
+                            action = {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
@@ -178,12 +243,18 @@ fun SettingScreen(
                             },
                             onClick = {
                                 navController.navigate(Destinations.MainSetting.route)
-                            }
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.application_screen),
-                            icon = painterResource(id = R.drawable.widgets_24px_outline),
-                            trailingIcon = {
+                        SettingsMenuLink(
+                            title = { Text(text = stringResource(id = R.string.application_screen)) },
+                            icon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.widgets_24px_outline),
+                                    contentDescription = null
+                                )
+                            },
+                            action = {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
@@ -192,12 +263,18 @@ fun SettingScreen(
                             },
                             onClick = {
                                 navController.navigate(Destinations.AppSetting.route)
-                            }
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.news_screen),
-                            icon = painterResource(id = R.drawable.ic_outline_article),
-                            trailingIcon = {
+                        SettingsMenuLink(
+                            title = { Text(text = stringResource(id = R.string.news_screen)) },
+                            icon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_outline_article),
+                                    contentDescription = null
+                                )
+                            },
+                            action = {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
@@ -206,7 +283,8 @@ fun SettingScreen(
                             },
                             onClick = {
                                 navController.navigate(Destinations.NewsSetting.route)
-                            }
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
                     }
                 }
@@ -217,48 +295,63 @@ fun SettingScreen(
                     modifier = Modifier
                 ) {
                     Column {
-                        PreferenceItem(
-                            title = stringResource(id = R.string.about_app),
-                            description = stringResource(id = R.string.about_app_description),
-                            icon = painterResource(id = R.drawable.ic_outline_article),
-                            trailingIcon = {
+                        SettingsMenuLink(
+                            title = { Text(text = stringResource(id = R.string.about_app)) },
+                            subtitle = { Text(text = stringResource(id = R.string.about_app_description)) },
+                            icon = {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                    painter = painterResource(id = R.drawable.ic_outline_article),
+                                    contentDescription = null
                                 )
-                            }
-                        )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.check_update),
-                            description = stringResource(id = R.string.check_update_description),
-                            icon = Icons.Outlined.Refresh
-                        )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.current_version),
-                            description = stringResource(id = R.string.version),
-                            icon = Icons.Outlined.Info
-                        )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.appreciate),
-                            description = stringResource(id = R.string.appreciate_description),
-                            icon = painterResource(id = R.drawable.outline_auto_awesome_24),
-                            trailingIcon = {
+                            },
+                            action = {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 )
                             },
-                            onClick = {
-                                navController.navigate(Destinations.Appreciate.route)
-                            }
+                            onClick = { },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        )
+                        SettingsMenuLink(
+                            title = { Text(text = stringResource(id = R.string.check_update)) },
+                            subtitle = { Text(text = stringResource(id = R.string.check_update_description)) },
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Refresh,
+                                    contentDescription = null
+                                )
+                            },
+                            onClick = { },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        )
+                        SettingsMenuLink(
+                            title = { Text(text = "版本信息") },
+                            subtitle = { Text(text = "当前为最新版本 ${APPVersion.getVersionName()} | 第 ${APPVersion.getVersionCode()} 次更新") },
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Info,
+                                    contentDescription = null
+                                )
+                            },
+                            onClick = { },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        )
+                        SettingsMenuLink(
+                            title = { Text(text = stringResource(id = R.string.appreciate)) },
+                            subtitle = { Text(text = stringResource(id = R.string.appreciate_description)) },
+                            icon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.outline_auto_awesome_24),
+                                    contentDescription = null
+                                )
+                            },
+                            onClick = { navController.navigate(Destinations.Appreciate.route) },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
                     }
                 }
-            }
-            item {
-                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }

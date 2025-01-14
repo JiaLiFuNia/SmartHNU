@@ -1,8 +1,10 @@
 package com.smart.htu.di
 
 import android.util.Log
-import com.google.gson.GsonBuilder
-import com.smart.htu.api.NetworkService
+import com.smart.htu.api.network.AuthLoginService
+import com.smart.htu.api.network.EHallService
+import com.smart.htu.api.network.JWCService
+import com.smart.htu.api.network.LibraryService
 import com.smart.htu.repo.DataStoreRepo
 import dagger.Module
 import dagger.Provides
@@ -11,15 +13,12 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
-import okhttp3.Protocol
-import okhttp3.ResponseBody.Companion.toResponseBody
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
@@ -27,116 +26,93 @@ import java.net.CookieManager
 import java.net.CookiePolicy
 import java.net.HttpCookie
 import java.net.URI
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import javax.inject.Qualifier
 import javax.inject.Singleton
 
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class AuthLoginNetworkService
 
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class AuthMessageNetworkService
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class CleanMessageNetworkService
-
-@InstallIn(SingletonComponent::class)
 @Module
-class NetworkModule {
+@InstallIn(SingletonComponent::class)
+object NetworkModule {
 
-    @Singleton
-    @Provides
-    @AuthLoginNetworkService
-    fun provideAuthLoginNetworkService(
-        dataStoreRepo: DataStoreRepo
-    ): NetworkService {
-        return createRetrofitService(
-            NetworkService.BASE_URL,
-            dataStoreRepo,
-            createOkHttpClient(dataStoreRepo)
-        )
+    object ApiConstants {
+        const val AUTH_SERVER_BASE_URL = "https://authserver2.htu.edu.cn/"
+        const val JWC_BASE_URL = "https://jwc.htu.edu.cn/"
+        const val E_HALL_BASE_URL = "https://ehall2.htu.edu.cn/"
+        const val QQ_BASE_URL = "https://q1.qlogo.cn/"
+        const val LIBRARY_BASE_URL = "http://libmsg.htu.cn/"
     }
 
-    @Singleton
     @Provides
-    @AuthMessageNetworkService
-    fun provideAuthMessageNetworkService(
+    @Singleton
+    fun provideNetworkCookieJar(
         dataStoreRepo: DataStoreRepo
-    ): NetworkService {
-        return createRetrofitService(
-            NetworkService.E_HALL_BASE_URL,
-            dataStoreRepo,
-            createOkHttpClient(dataStoreRepo)
-        )
+    ): NetworkCookieJar {
+        return NetworkCookieJar(dataStoreRepo)
     }
 
-    @Singleton
     @Provides
-    @CleanMessageNetworkService
-    fun provideLibraryMessageNetworkService(
-        dataStoreRepo: DataStoreRepo
-    ): NetworkService {
-        val retrofit = Retrofit.Builder().baseUrl(NetworkService.LIBRARY_URL).build()
-        return retrofit.create(NetworkService::class.java)
-    }
-
-    private fun createOkHttpClient(dataStoreRepo: DataStoreRepo): OkHttpClient {
+    @Singleton
+    fun provideOkHttpClient(
+        cookieJar: NetworkCookieJar
+    ): OkHttpClient {
         return OkHttpClient.Builder()
-            .cookieJar(NetworkCookieJar(dataStoreRepo))
-            .addInterceptor { chain ->
-                try {
-                    chain.proceed(chain.request())
-                } catch (e: Exception) {
-                    okhttp3.Response.Builder()
-                        .protocol(Protocol.HTTP_1_1)
-                        .request(chain.request())
-                        .message("Network connection error")
-                        .body("Network connection error".toResponseBody())
-                        .build()
-                }
-            }
+            .followRedirects(true)
+            .cookieJar(cookieJar)
+            .connectTimeout(30L, TimeUnit.SECONDS)
+            .readTimeout(30L, TimeUnit.SECONDS)
+            .writeTimeout(30L, TimeUnit.SECONDS)
             .build()
     }
 
-    private fun createRetrofitService(
-        baseUrl: String,
-        dataStoreRepo: DataStoreRepo,
-        client: OkHttpClient
-    ): NetworkService {
-        val retrofitBuilder = Retrofit.Builder()
-            .client(client)
-
-        configureRetrofitBuilder(baseUrl, retrofitBuilder)
-
-        val retrofit = retrofitBuilder.build()
-        return retrofit.create(NetworkService::class.java)
+    @Provides
+    @Singleton
+    fun provideAuthLoginService(
+        okHttpClient: OkHttpClient
+    ): AuthLoginService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(ApiConstants.AUTH_SERVER_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(AuthLoginService::class.java)
     }
 
-    private val gson = GsonBuilder()
-        .setLenient()
-        .create()
 
-    private fun configureRetrofitBuilder(baseUrl: String, retrofitBuilder: Retrofit.Builder) {
-        when (baseUrl) {
-            NetworkService.BASE_URL -> {
-                retrofitBuilder.baseUrl(baseUrl)
-                    .addConverterFactory(ScalarsConverterFactory.create())
-                // .addConverterFactory(GsonConverterFactory.create())
-            }
+    @Provides
+    @Singleton
+    fun provideEHallService(
+        okHttpClient: OkHttpClient
+    ): EHallService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(ApiConstants.E_HALL_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(EHallService::class.java)
+    }
 
-            NetworkService.E_HALL_BASE_URL -> {
-                retrofitBuilder.baseUrl(baseUrl)
-                    .addConverterFactory(GsonConverterFactory.create(gson))
-                // .addConverterFactory(ScalarsConverterFactory.create())
-            }
+    @Provides
+    @Singleton
+    fun provideLibraryService(): LibraryService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(ApiConstants.LIBRARY_BASE_URL)
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(LibraryService::class.java)
+    }
 
-            else -> {
-                retrofitBuilder.baseUrl(baseUrl)
-            }
-        }
+    @Provides
+    @Singleton
+    fun provideJWCService(): JWCService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(ApiConstants.JWC_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(JWCService::class.java)
     }
 }
 
@@ -181,15 +157,10 @@ class NetworkCookieJar @Inject constructor(
                     cookieManager.cookieStore.add(url.toUri(), httpCookie)
                 }
             }
-
             scope.launch {
-                try {
-                    val allCookies =
-                        cookieManager.cookieStore.cookies.mapNotNull { it.toOkHttpCookie() }
-                    dataStoreRepo.changeCookies(allCookies)
-                } catch (e: Exception) {
-                    Log.e("NetworkCookieJar", "Error saving cookies to DataStore: ${e.message}")
-                }
+                val allCookies = cookieManager.cookieStore.cookies
+                    .mapNotNull { it.toOkHttpCookie() }
+                dataStoreRepo.saveCookies(allCookies)
             }
         } catch (e: Exception) {
             Log.e("NetworkCookieJar", "Error saving cookies: ${e.message}")
@@ -203,10 +174,6 @@ class NetworkCookieJar @Inject constructor(
                 path = this@toHttpCookie.path
                 secure = this@toHttpCookie.secure
                 isHttpOnly = this@toHttpCookie.httpOnly
-                // 设置过期时间
-                if (this@toHttpCookie.expiresAt != Long.MIN_VALUE) {
-                    maxAge = (this@toHttpCookie.expiresAt - System.currentTimeMillis()) / 1000
-                }
             }
         } catch (e: Exception) {
             Log.e("NetworkCookieJar", "Error converting to HttpCookie: ${e.message}")
@@ -239,18 +206,10 @@ class NetworkCookieJar @Inject constructor(
         }
     }
 
-    private fun HttpUrl.toUri(): URI {
-        return try {
-            URI(toString())
-        } catch (e: Exception) {
-            Log.e("NetworkCookieJar", "Error converting HttpUrl to URI: ${e.message}")
-            URI.create(host)
-        }
+    suspend fun clearCookies() {
+        cookieManager.cookieStore.removeAll()
+        dataStoreRepo.saveCookies(emptyList())
     }
 
-    // 清理资源
-    fun clear() {
-        scope.cancel()
-        cookieManager.cookieStore.removeAll()
-    }
 }
+

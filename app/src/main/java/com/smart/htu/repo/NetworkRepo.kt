@@ -1,36 +1,41 @@
 package com.smart.htu.repo
 
 import android.util.Log
-import com.smart.htu.api.NetworkService
+import com.smart.htu.api.module.LoginJWCEntity
+import com.smart.htu.api.module.LoginPost
 import com.smart.htu.api.module.PersonalMessage
-import com.smart.htu.di.AuthLoginNetworkService
-import com.smart.htu.di.AuthMessageNetworkService
-import com.smart.htu.di.CleanMessageNetworkService
+import com.smart.htu.api.network.AuthLoginService
+import com.smart.htu.api.network.EHallService
+import com.smart.htu.api.network.JWCService
+import com.smart.htu.api.network.LibraryService
 import com.smart.htu.di.NetworkCookieJar
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_MESSAGE
 import com.smart.htu.screens.application.librarySearch.LibraryBookDetail
 import com.smart.htu.screens.application.librarySearch.LibraryBookListEntity
 import com.smart.htu.utils.AESUtils
+import com.smart.htu.utils.RSAEncryptionHelper
 import com.smart.htu.utils.parseLibraryBookDetail
 import com.smart.htu.utils.parseLibrarySearchResult
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import java.io.IOException
 import javax.inject.Inject
 
-
 class NetworkRepo @Inject constructor(
-    @AuthLoginNetworkService private val authLoginNetworkService: NetworkService,
-    @AuthMessageNetworkService private val authNetworkService: NetworkService,
-    @CleanMessageNetworkService private val libraryNetworkService: NetworkService,
+    private val authServerService: AuthLoginService,
+    private val eHallService: EHallService,
+    private val libraryService: LibraryService,
+    private val jwcService: JWCService,
     private val dataStoreRepo: DataStoreRepo,
     private val networkCookieJar: NetworkCookieJar
 ) {
 
+    // 图书搜索
     suspend fun librarySearch(keyword: String): List<LibraryBookListEntity> {
         val bookList: List<LibraryBookListEntity>
         try {
-            val res = libraryNetworkService.librarySearch(keyword, 1)
+            val res = libraryService.librarySearch(keyword, 1)
             bookList = if (res.code() == 200) {
                 parseLibrarySearchResult(res.body()?.string() ?: "")
             } else {
@@ -38,57 +43,52 @@ class NetworkRepo @Inject constructor(
             }
             Log.i("TAG666", bookList.toString())
             return bookList
-        } catch (e: IOException) {
-            Log.e("TAG666", "${e.message}")
-            throw e
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
-            throw IOException("error")
+            return emptyList()
         }
     }
 
+    // 图书详情
     suspend fun libraryBookDetails(id: String): List<LibraryBookDetail> {
         val bookList: List<LibraryBookDetail>
         try {
-            val res = libraryNetworkService.libraryBookDetails(id)
+            val res = libraryService.libraryBookDetails(id)
             bookList = if (res.code() == 200) {
                 parseLibraryBookDetail(res.body()?.string() ?: "")
             } else {
                 emptyList()
             }
             return bookList
-        } catch (e: IOException) {
-            Log.e("TAG666", "${e.message}")
-            throw e
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
-            throw IOException("error")
+            return emptyList()
         }
     }
 
+    // 获取个人信息
     suspend fun getStudentInfo(): PersonalMessage? {
-        try {
-            val res = authNetworkService.getStudentInfo()
-            Log.i("TAG666", res.headers().toString())
-            if (res.code() == 200) {
-                Log.i("TAG666", res.body()?.data.toString())
-                return res.body()?.data?.first()
-            } else
-                return DEFAULT_MESSAGE
-        } catch (e: IOException) {
-            Log.i("TAG666 message", "${e.message}")
-            throw e
-        } catch (e: Exception) {
-            Log.i("TAG666 message", "${e.message}")
-            e.printStackTrace()
-            throw IOException("error")
+        return withContext(Dispatchers.IO) {
+            try {
+                val res = eHallService.getStudentInfo()
+                if (res.code() == 200) {
+                    Log.i("TAG666", res.body()?.data.toString())
+                    res.body()?.data?.first()
+                } else {
+                    DEFAULT_MESSAGE
+                }
+            } catch (e: Exception) {
+                Log.i("TAG666 message", "${e.message}")
+                throw IOException("error")
+            }
         }
     }
 
+    // 解析登录参数
     private suspend fun getLoginPage() {
-        networkCookieJar.clear()
         try {
-            val loginPage = authLoginNetworkService.authServer()
+            networkCookieJar.clearCookies()
+            val loginPage = authServerService.authServer()
             parseLoginPage(loginPage.body()?.string() ?: "")
             Log.i("TAG666", "repo ${pwdEncryptSalt}\n${execution}")
         } catch (e: IOException) {
@@ -100,39 +100,56 @@ class NetworkRepo @Inject constructor(
         }
     }
 
+    // 登录
     suspend fun authLogin(
-        username: String,
+        studentId: String,
         password: String,
         captcha: String? = ""
-    ): Int {
-        networkCookieJar.clear()
+    ): Result<String> {
         try {
             getLoginPage()
-            val response = authLoginNetworkService.authLogin(
-                username = username,
+            val response = authServerService.authLogin(
+                username = studentId,
                 password = AESUtils.encryptPassword(password, pwdEncryptSalt),
                 captcha = captcha ?: "",
                 execution = execution
             )
-            val document = Jsoup.parse(response.body()?.string() ?: "")
-            val errorTip = document.getElementById("showErrorTip")?.text() ?: ""
-            Log.d("TAG666 tip", errorTip)
+            val loggedPage = Jsoup.parse(response.body()?.string() ?: "")
+            val errorTip = loggedPage.getElementById("showErrorTip")?.text() ?: ""
+            return when (response.code()) {
+                401 -> Result.failure(Exception(response.code().toString() + errorTip))
+                200 -> {
+                    if (errorTip != "") {
+                        Result.failure(Exception(response.code().toString() + errorTip))
+                    } else {
+                        Result.success("登录成功" + response.code())
+                    }
+                }
 
-            val cookies = dataStoreRepo.observeCookies().first()
-            val isLoggedIn = cookies.any { it.name == "MOD_AUTH_CAS" }
-
-            return when {
-                response.code() == 401 -> -1 // Account or password error
-                isLoggedIn -> 1 // Login successful if MOD_AUTH_CAS cookie is present
-                "必须录入" in errorTip -> 2 // Account or password is empty
-                else -> -1 // Other cases
+                else -> Result.failure(Exception("未知错误"))
             }
-        } catch (e: IOException) {
-            Log.e("TAG666 IOException while logging in", "${e.message}")
-            return -1
         } catch (e: Exception) {
-            Log.e("TAG666 Unexpected error while logging in", "${e.message}")
-            return -1
+            Log.e("TAG666 log", "${e.message}")
+            return Result.failure(e)
+        }
+    }
+
+    suspend fun jwcLogin(
+        username: String,
+        password: String
+    ): Result<LoginJWCEntity> {
+        try {
+            val publicKey = RSAEncryptionHelper.getPublicKeyFromString()
+            val passwordEncrypt = RSAEncryptionHelper.encryptText(password, publicKey)
+            val logState = jwcService.login(LoginPost(username, passwordEncrypt))
+            return if (logState.code == 200) {
+                Result.success(logState)
+            } else {
+                Result.failure(Exception("登录失败"))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            throw e
         }
     }
 

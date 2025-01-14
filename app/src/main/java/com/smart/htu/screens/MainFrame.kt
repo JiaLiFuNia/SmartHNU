@@ -15,8 +15,12 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
@@ -27,16 +31,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.smart.htu.R
+import com.smart.htu.component.LoginDialog
 import com.smart.htu.component.animation.SlideTransition
 import com.smart.htu.screens.application.Application
 import com.smart.htu.screens.application.ApplicationViewModel
-import com.smart.htu.screens.login.LoginNavHostScreen
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.Main
 import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.navigation.BottomNavigationItem
+import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsScreen
+import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.person.PersonScreen
+import com.smart.htu.screens.setting.SettingViewModel
 import com.smart.htu.utils.DoubleBackToExitApp
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -45,34 +52,39 @@ fun MainFrame(
     navController: NavHostController,
     mainViewModel: MainViewModel,
     loginViewModel: LoginViewModel,
+    settingViewModel: SettingViewModel,
+    newsViewModel: NewsViewModel,
     applicationViewModel: ApplicationViewModel
 ) {
     val context = LocalContext.current
     val savableStateHolder = rememberSaveableStateHolder()
-    var selectedItemIndex by rememberSaveable {
-        mutableIntStateOf(0)
-    }
+    var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
+    val loginUiState = loginViewModel.uiState.collectAsState().value
     val navigationItem = listOf(
         BottomNavigationItem(
             title = R.string.main,
             selectedIcon = R.drawable.baseline_home_24,
-            unselectedIcon = R.drawable.outline_home_24
+            unselectedIcon = R.drawable.outline_home_24,
+            badge = 3
         ),
         BottomNavigationItem(
             title = R.string.application,
             selectedIcon = R.drawable.widgets_24px_filled,
-            unselectedIcon = R.drawable.widgets_24px_outline
+            unselectedIcon = R.drawable.widgets_24px_outline,
+            badge = 0
         ),
         BottomNavigationItem(
             title = R.string.news,
             selectedIcon = R.drawable.ic_filled_article,
             unselectedIcon = R.drawable.ic_outline_article,
-            badge = true
+            badge = 1
         ),
         BottomNavigationItem(
+            enabled = loginUiState.isLogSuccess,
             title = R.string.my,
             selectedIcon = R.drawable.ic_filled_person,
-            unselectedIcon = R.drawable.ic_outline_person
+            unselectedIcon = R.drawable.ic_outline_person,
+            badge = 0
         )
     )
 
@@ -82,7 +94,7 @@ fun MainFrame(
     ) {
         NavigationSuiteScaffold(
             navigationSuiteItems = {
-                navigationItem.forEachIndexed { index, bottomNavigationItem ->
+                navigationItem.filter { it.enabled }.forEachIndexed { index, bottomNavigationItem ->
                     item(
                         icon = {
                             Icon(
@@ -103,8 +115,8 @@ fun MainFrame(
                             selectedItemIndex = index
                         },
                         badge = {
-                            if (bottomNavigationItem.badge == true) {
-                                Badge()
+                            if (bottomNavigationItem.badge > 0) {
+                                Badge { Text(text = bottomNavigationItem.badge.toString()) }
                             }
                         },
                         modifier = Modifier
@@ -140,10 +152,10 @@ fun MainFrame(
                                 0 -> Main(
                                     navController = navController,
                                     mainViewModel = mainViewModel,
-                                    loginViewModel = loginViewModel,
                                     navigateToApplication = {
                                         selectedItemIndex = 1
                                     },
+                                    loginViewModel = loginViewModel,
                                     applicationViewModel = applicationViewModel
                                 )
 
@@ -153,9 +165,12 @@ fun MainFrame(
                                     loginViewModel = loginViewModel
                                 )
 
-                                2 -> NewsScreen(navController = navController)
+                                2 -> NewsScreen(
+                                    navController = navController,
+                                    viewModel = newsViewModel
+                                )
 
-                                3 -> LoginNavHostScreen(
+                                3 -> PersonScreen(
                                     navController = navController,
                                     viewModel = loginViewModel
                                 )
@@ -167,10 +182,25 @@ fun MainFrame(
         }
     }
 
-
     DoubleBackToExitApp(
         onExit = {
             (context as? Activity)?.finish()
+        }
+    )
+
+    var showLoginDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(key1 = loginUiState.isLogSuccess, key2 = loginUiState.isGuest) {
+        showLoginDialog = !(loginUiState.isLogSuccess || loginUiState.isGuest)
+    }
+    LoginDialog(
+        showDialog = showLoginDialog,
+        onDismissRequests = {
+            loginViewModel.guest()
+            showLoginDialog = true
+        },
+        onConfirmClick = {
+            showLoginDialog = false
+            navController.navigate(Destinations.Login.route)
         }
     )
 }

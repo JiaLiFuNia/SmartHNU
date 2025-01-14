@@ -7,7 +7,7 @@ data class LibraryBookListEntity(
     val availability: String,
     private val _id: String
 ) {
-    private val regex = "^[a-zA-Z0-9-*:#@./]+".toRegex()
+    private val regex = "^[a-zA-Z0-9-+*:#@./]+".toRegex()
     private val bookPosition = regex.find(description)?.value ?: ""
     private val info = description.replace(" ", "").substring(bookPosition.length).split("/")
     val publishYear = info.last()
@@ -26,7 +26,7 @@ data class LibraryBookDetail(
 ) {
     val bookName = bookPosition
     val publisher: String
-        get() = library.substring(5)
+        get() = if (library.length > 6) library.substring(5) else library
     private val info: String
         get() = description.replace("　", "").replace(" ", "").replace(" ", "")
 

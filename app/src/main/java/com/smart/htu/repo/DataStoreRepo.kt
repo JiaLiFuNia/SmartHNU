@@ -40,14 +40,18 @@ class DataStoreRepo @Inject constructor(
         val DARK_THEME = intPreferencesKey("DARK_THEME")
         val DYNAMIC_COLOR = booleanPreferencesKey("DYNAMIC_COLOR")
         val COMMON_APP_LIST = stringPreferencesKey("COMMON_APP_LIST")
-        val COOKIES = stringPreferencesKey("COOKIES")
+        val SSO_TICKET = stringPreferencesKey("SSO_TICKET")
         val RENT_BOOK_LIST = stringPreferencesKey("RENT_BOOK_LIST")
+        val BLUR_EFFECT = booleanPreferencesKey("BLUR_EFFECT")
+        val STUDENT_ID = stringPreferencesKey("STUDENT_ID")
 
         const val DEFAULT_VALUE_COOKIES = "[]"
         const val DEFAULT_DYNAMIC_COLOR = true
+        const val DEFAULT_BLUR_EFFECT = true
+        const val DEFAULT_LOGIN_STATE = 0
         const val DEFAULT_DARK_THEME = 0
-        const val DEFAULT_EDITABLE_PERSONAL_MESSAGE = ""
-        const val DEFAULT_USERNAME = "新用户"
+        const val DEFAULT_QQ_NUMBER = ""
+        const val DEFAULT_USERNAME = "HNUer"
         val DEFAULT_MESSAGE = PersonalMessage(
             username = DEFAULT_USERNAME,
             academic = "-",
@@ -56,17 +60,20 @@ class DataStoreRepo @Inject constructor(
         )
         val INIT_COMMON_APP_LIST = listOf(
             SmallCardContent(
+                guestEnable = false,
                 label = R.string.classroom_search,
                 icon = R.drawable.apartment_24px,
                 route = Destinations.ClassroomSearch.route
             ),
             SmallCardContent(
+                guestEnable = false,
                 icon = R.drawable.today_24px,
                 description = "没有课程",
                 label = R.string.today_course,
                 route = null
             ),
             SmallCardContent(
+                guestEnable = false,
                 label = R.string.dorm_air_conditioner,
                 icon = R.drawable.bolt_24px,
                 description = "电费剩余 00 度",
@@ -99,30 +106,30 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[LOGIN_STATE] = state }
     }
 
-    override suspend fun changeCookies(cookies: List<Cookie>) {
-        context.dataStore.edit { it[COOKIES] = Gson().toJson(cookies) }
+    override suspend fun saveCookies(cookies: List<Cookie>) {
+        context.dataStore.edit { it[SSO_TICKET] = Gson().toJson(cookies) }
     }
 
     override suspend fun changeRentBookList(list: List<RentBookEntity>) {
         context.dataStore.edit { it[RENT_BOOK_LIST] = Gson().toJson(list) }
     }
 
-    suspend fun clearCookies() {
-        context.dataStore.edit { it[COOKIES] = DEFAULT_VALUE_COOKIES }
+    override suspend fun changeBlurState(state: Boolean) {
+        context.dataStore.edit { it[BLUR_EFFECT] = state }
+    }
+
+    override suspend fun saveStudentId(id: String) {
+        context.dataStore.edit { it[STUDENT_ID] = id }
     }
 
     override fun observeDynamicTheme(): Flow<Boolean> {
         return context.dataStore.data
-            .map {
-                it[DYNAMIC_COLOR] ?: DEFAULT_DYNAMIC_COLOR
-            }
+            .map { it[DYNAMIC_COLOR] ?: DEFAULT_DYNAMIC_COLOR }
     }
 
     override fun observeDarkTheme(): Flow<Int> {
         return context.dataStore.data
-            .map {
-                it[DARK_THEME] ?: DEFAULT_DARK_THEME
-            }
+            .map { it[DARK_THEME] ?: DEFAULT_DARK_THEME }
     }
 
     override fun observeSmallCard(): Flow<List<SmallCardContent>> {
@@ -137,10 +144,7 @@ class DataStoreRepo @Inject constructor(
     }
 
     override fun observePersonalMessage(): Flow<String> {
-        return context.dataStore.data
-            .map {
-                it[EDITABLE_PERSONAL_MESSAGE] ?: ""
-            }
+        return context.dataStore.data.map { it[EDITABLE_PERSONAL_MESSAGE] ?: "" }
     }
 
     override fun observeUsername(): Flow<String> {
@@ -148,14 +152,12 @@ class DataStoreRepo @Inject constructor(
     }
 
     override fun observeLoginState(): Flow<Int> {
-        return context.dataStore.data.map {
-            it[LOGIN_STATE] ?: 0
-        }
+        return context.dataStore.data.map { it[LOGIN_STATE] ?: 0 }
     }
 
     override fun observeCookies(): Flow<List<Cookie>> {
         return context.dataStore.data.map {
-            val json = it[COOKIES] ?: DEFAULT_VALUE_COOKIES
+            val json = it[SSO_TICKET] ?: DEFAULT_VALUE_COOKIES
             if (json == DEFAULT_VALUE_COOKIES) {
                 emptyList()
             } else {
@@ -175,5 +177,13 @@ class DataStoreRepo @Inject constructor(
                 Gson().fromJson(json, typeOfT)
             }
         }
+    }
+
+    override fun observerBlurState(): Flow<Boolean> {
+        return context.dataStore.data.map { it[BLUR_EFFECT] ?: DEFAULT_BLUR_EFFECT }
+    }
+
+    override fun observeStudentId(): Flow<String> {
+        return context.dataStore.data.map { it[STUDENT_ID] ?: "" }
     }
 }

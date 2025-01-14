@@ -5,9 +5,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SmallCardContent(
+    val guestEnable: Boolean = true,
     val label: Int,
     val description: String? = null,
     @DrawableRes val icon: Int,
     val route: String? = null,
-    val url: String? = null
+    val url: String? = null,
+    val appUrl: String? = null
 )

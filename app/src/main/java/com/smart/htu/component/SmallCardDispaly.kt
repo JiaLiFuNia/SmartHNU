@@ -19,6 +19,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,6 +45,7 @@ import com.smart.htu.screens.navigation.Destinations
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SmallCardDisplay(
+    enabled: Boolean,
     content: SmallCardContent,
     onLongClick: () -> Unit,
     onCLick: () -> Unit,
@@ -81,18 +83,21 @@ fun SmallCardDisplay(
                     painter = painterResource(id = content.icon),
                     contentDescription = "",
                     modifier = Modifier.size(35.dp),
-                    tint = colorScheme.primary
+                    tint = if (enabled) colorScheme.primary
+                    else colorScheme.primary.copy(0.38f)
                 )
             }
             Text(
                 text = stringResource(id = content.label),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontSize = 14.sp,
+                fontSize = 13.sp,
                 modifier = Modifier
                     .basicMarquee(
                         repeatDelayMillis = 2_000,
                     ),
+                color = if (enabled) colorScheme.onBackground
+                else colorScheme.onBackground.copy(0.38f),
                 textAlign = TextAlign.Center
             )
         }

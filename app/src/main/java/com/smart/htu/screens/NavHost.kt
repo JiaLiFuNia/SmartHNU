@@ -15,13 +15,13 @@ import com.smart.htu.screens.application.Application
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.classroom.ClassroomSearchScreen
 import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
-import com.smart.htu.screens.login.LoginNavHostScreen
 import com.smart.htu.screens.login.LoginScreen
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.message.MessageScreen
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsScreen
+import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.person.PersonScreen
 import com.smart.htu.screens.setting.AppSettingScreen
 import com.smart.htu.screens.setting.AppreciateScreen
@@ -30,13 +30,16 @@ import com.smart.htu.screens.setting.MainSettingScreen
 import com.smart.htu.screens.setting.NewsSettingScreen
 import com.smart.htu.screens.setting.SettingScreen
 import com.smart.htu.screens.setting.SettingViewModel
+import com.smart.htu.utils.Constants.Companion.SHOWER_ALIPAY_URL
+import com.smart.htu.utils.startAppUrl
 
 @Composable
 fun NavHostScreen(
     settingViewModel: SettingViewModel = hiltViewModel(),
     mainViewModel: MainViewModel = hiltViewModel(),
     loginViewModel: LoginViewModel = hiltViewModel(),
-    applicationViewModel: ApplicationViewModel = hiltViewModel()
+    applicationViewModel: ApplicationViewModel = hiltViewModel(),
+    newsViewModel: NewsViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
     NavHost(
@@ -48,12 +51,15 @@ fun NavHostScreen(
                 navController = navController,
                 mainViewModel = mainViewModel,
                 loginViewModel = loginViewModel,
-                applicationViewModel = applicationViewModel
+                applicationViewModel = applicationViewModel,
+                newsViewModel = newsViewModel,
+                settingViewModel = settingViewModel
             )
         }
         animatedComposable(Destinations.News.route) {
             NewsScreen(
-                navController = navController
+                navController = navController,
+                viewModel = newsViewModel
             )
         }
         animatedComposable(Destinations.Login.route) {
@@ -83,8 +89,7 @@ fun NavHostScreen(
         animatedComposable(Destinations.Setting.route) {
             SettingScreen(
                 navController = navController,
-                viewModel = settingViewModel,
-                loginViewModel = loginViewModel
+                viewModel = settingViewModel
             )
         }
         animatedComposable(Destinations.DynamicColorSetting.route) {
@@ -141,19 +146,26 @@ fun NavHostScreen(
 }
 
 fun NavController.navigateWithAuthCheck(
+    isGuest: Boolean = false,
     route: String? = null,
     url: String? = null,
+    appUrl: String? = null,
     label: Int,
     logState: Boolean,
     loginRoute: String = Destinations.Login.route
 ) {
     Log.i("TAG nav", "$route $url $logState")
-    if (logState) {
+    if (logState || isGuest) {
         if (route != null)
             this.navigate(route)
         if (url != null)
             this.navigate("${Destinations.WebView.route}/${Uri.encode(url)}/${label}")
+        if (appUrl != null)
+            startAppUrl(SHOWER_ALIPAY_URL)
     } else {
+        this.currentBackStackEntry?.savedStateHandle?.set("original_route", route)
+        this.currentBackStackEntry?.savedStateHandle?.set("original_url", url)
+        this.currentBackStackEntry?.savedStateHandle?.set("original_label", label)
         this.navigate(loginRoute)
     }
 }

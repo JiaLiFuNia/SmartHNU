@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
@@ -50,8 +48,8 @@ import com.multiplatform.webview.web.rememberWebViewNavigator
 import com.multiplatform.webview.web.rememberWebViewState
 import com.smart.htu.R
 import com.smart.htu.utils.copyContent
-import com.smart.htu.utils.openInBrowser
 import com.smart.htu.utils.sendToast
+import com.smart.htu.utils.startWebUrl
 import kotlinx.coroutines.launch
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -135,11 +133,9 @@ fun WebView(
                     )
                 },
                 actions = {
-                    IconButton(onClick = { openInBrowser(url) }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.public_24px),
-                            contentDescription = "outside"
-                        )
+                    IconButton(onClick = { navigator.reload() }) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+
                     }
                     IconButton(onClick = { showDropDownMenu = true }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "more")
@@ -163,17 +159,23 @@ fun WebView(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text(text = stringResource(id = R.string.refresh)) },
-                            onClick = { navigator.reload() },
+                            text = { Text(text = stringResource(id = R.string.open_outside)) },
+                            onClick = { startWebUrl(url) },
                             leadingIcon = {
-                                Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                                Icon(
+                                    painter = painterResource(id = R.drawable.public_24px),
+                                    contentDescription = "outside"
+                                )
                             }
                         )
                         DropdownMenuItem(
                             text = { Text(text = stringResource(id = R.string.forward)) },
                             onClick = { if (navigator.canGoForward) navigator.navigateForward() },
                             leadingIcon = {
-                                Icon(Icons.Default.ArrowForward, contentDescription = "forward")
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = "forward"
+                                )
                             },
                             enabled = navigator.canGoForward
                         )
@@ -192,7 +194,7 @@ fun WebView(
                                     navController.popBackStack()
                             }
                         ) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "back")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
                         }
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(Icons.Default.Close, contentDescription = "close")

@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,16 +16,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -109,7 +109,8 @@ fun ClassroomSearchScreen(
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }) {
+                        onClick = { navController.popBackStack() }
+                    ) {
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
                     }
                 },
@@ -133,27 +134,23 @@ fun ClassroomSearchScreen(
                 .padding(innerPadding)
         ) {
             LazyColumn(
-                modifier = Modifier
-                    .padding(horizontal = 15.dp)
+                contentPadding = PaddingValues(15.dp),
+                modifier = Modifier.fillMaxSize()
             ) {
                 item {
                     PreferenceSubtitle(text = stringResource(id = R.string.building))
+                }
+                item {
                     LazyVerticalGridCustom(
                         list = uiState.buildingsList,
                         columnSize = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 3
                     ) { currentIndex, building ->
-                        OutlinedButton(
-                            onClick = {
-                                selectedRoomIndex = currentIndex
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (selectedRoomIndex == currentIndex) colorScheme.primaryContainer else colorScheme.background,
-                                contentColor = colorScheme.onBackground
-                            ),
+                        FilterChip(
+                            selected = currentIndex == selectedRoomIndex,
+                            onClick = { selectedRoomIndex = currentIndex },
+                            label = { Text(text = building.buildingName) },
                             modifier = Modifier.padding(horizontal = 4.dp)
-                        ) {
-                            Text(text = building.buildingName)
-                        }
+                        )
                     }
                 }
                 item {
@@ -162,19 +159,12 @@ fun ClassroomSearchScreen(
                         list = viewModel.haveCourseTime,
                         columnSize = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 5 else 3
                     ) { currentIndex, timeLabel ->
-                        OutlinedButton(
-                            onClick = {
-                                selectedTimeIndex = currentIndex
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (selectedTimeIndex == currentIndex) colorScheme.primaryContainer else colorScheme.background,
-                                contentColor = colorScheme.onBackground
-                            ),
-                            modifier = Modifier.padding(horizontal = 4.dp),
-                            shape = MaterialTheme.shapes.medium
-                        ) {
-                            Text(text = stringResource(id = timeLabel))
-                        }
+                        FilterChip(
+                            selected = currentIndex == selectedTimeIndex,
+                            onClick = { selectedTimeIndex = currentIndex },
+                            label = { Text(text = stringResource(id = timeLabel)) },
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
                     }
                 }
                 item {
@@ -202,7 +192,7 @@ fun ClassroomSearchScreen(
                                     TabRowDefaults.PrimaryIndicator(
                                         modifier = Modifier
                                             .tabIndicatorOffset(tabPositions[newsPagerState.currentPage]),
-                                        width = tabPositions[newsPagerState.currentPage].width,
+                                        width = tabPositions[newsPagerState.currentPage].width / 1.5f,
                                         shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
                                     )
                                 },
@@ -235,14 +225,14 @@ fun ClassroomSearchScreen(
                                 }
                             }
                         }
-                        HorizontalPager(state = newsPagerState) {
+                        HorizontalPager(state = newsPagerState, modifier = Modifier.fillMaxSize()) {
                             val currentRoomList = roomListSortByFloor[it + 1] ?: emptyList()
                             LazyVerticalGridCustom(
                                 list = currentRoomList,
                                 columnSize = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 3,
                                 ifEqualWeight = true
                             ) { index, room ->
-                                SingleRoomState(
+                                SingleRoom(
                                     label = room.roomName,
                                     state = index % 2 == 0,
                                     timeRange = "",
