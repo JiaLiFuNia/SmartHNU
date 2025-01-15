@@ -164,7 +164,7 @@ fun AirCondition(
                     }
                 }
                 item {
-                    Text(text = uiState.billData.toString())
+                    Text(text = uiState.billData.toString(), modifier = Modifier.fillMaxWidth())
                 }
             }
         }
