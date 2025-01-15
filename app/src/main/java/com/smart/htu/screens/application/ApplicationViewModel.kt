@@ -43,7 +43,7 @@ class ApplicationViewModel @Inject constructor(
             label = R.string.dorm_air_conditioner,
             icon = R.drawable.bolt_24px,
             description = "电费剩余 00 度",
-            url = "https://houqin.htu.edu.cn/one/plan/"
+            route = Destinations.AirCondition.route
         ),
         SmallCardContent(
             guestEnable = false,

@@ -13,6 +13,7 @@ import com.smart.htu.component.WebView
 import com.smart.htu.component.animation.animatedComposable
 import com.smart.htu.screens.application.Application
 import com.smart.htu.screens.application.ApplicationViewModel
+import com.smart.htu.screens.application.airCondition.AirCondition
 import com.smart.htu.screens.application.classroom.ClassroomSearchScreen
 import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
 import com.smart.htu.screens.login.LoginScreen
@@ -141,6 +142,9 @@ fun NavHostScreen(
         }
         animatedComposable(Destinations.LibrarySearch.route) {
             LibrarySearchScreen(navController = navController)
+        }
+        animatedComposable(Destinations.AirCondition.route) {
+            AirCondition(navController = navController)
         }
     }
 }

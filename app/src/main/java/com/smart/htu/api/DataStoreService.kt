@@ -19,6 +19,8 @@ interface DataStoreService {
     suspend fun saveCookies(cookies: List<Cookie>)
     suspend fun changeRentBookList(list: List<RentBookEntity>)
     suspend fun saveStudentId(id: String)
+    suspend fun changeBuildingId(id: String)
+    suspend fun changeRoomId(room: String)
 
     fun observeDynamicTheme(): Flow<Boolean>
     fun observeDarkTheme(): Flow<Int>
@@ -30,5 +32,7 @@ interface DataStoreService {
     fun observeCookies(): Flow<List<Cookie>>
     fun observeRentBookList(): Flow<List<RentBookEntity>>
     fun observeStudentId(): Flow<String>
+    fun observeBuildingId(): Flow<String>
+    fun observeRoomId(): Flow<String>
 
 }

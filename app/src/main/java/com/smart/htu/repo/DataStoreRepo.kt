@@ -44,6 +44,8 @@ class DataStoreRepo @Inject constructor(
         val RENT_BOOK_LIST = stringPreferencesKey("RENT_BOOK_LIST")
         val BLUR_EFFECT = booleanPreferencesKey("BLUR_EFFECT")
         val STUDENT_ID = stringPreferencesKey("STUDENT_ID")
+        val BUILDING_ID = stringPreferencesKey("BUILDING_ID")
+        val ROOM_ID = stringPreferencesKey("ROOM_ID")
 
         const val DEFAULT_VALUE_COOKIES = "[]"
         const val DEFAULT_DYNAMIC_COLOR = true
@@ -67,17 +69,10 @@ class DataStoreRepo @Inject constructor(
             ),
             SmallCardContent(
                 guestEnable = false,
-                icon = R.drawable.today_24px,
-                description = "没有课程",
-                label = R.string.today_course,
-                route = null
-            ),
-            SmallCardContent(
-                guestEnable = false,
                 label = R.string.dorm_air_conditioner,
                 icon = R.drawable.bolt_24px,
                 description = "电费剩余 00 度",
-                url = "https://houqin.htu.edu.cn/one/plan/"
+                route = Destinations.AirCondition.route
             )
         )
     }
@@ -120,6 +115,14 @@ class DataStoreRepo @Inject constructor(
 
     override suspend fun saveStudentId(id: String) {
         context.dataStore.edit { it[STUDENT_ID] = id }
+    }
+
+    override suspend fun changeBuildingId(id: String) {
+        context.dataStore.edit { it[BUILDING_ID] = id }
+    }
+
+    override suspend fun changeRoomId(room: String) {
+        context.dataStore.edit { it[ROOM_ID] = room }
     }
 
     override fun observeDynamicTheme(): Flow<Boolean> {
@@ -185,5 +188,13 @@ class DataStoreRepo @Inject constructor(
 
     override fun observeStudentId(): Flow<String> {
         return context.dataStore.data.map { it[STUDENT_ID] ?: "" }
+    }
+
+    override fun observeBuildingId(): Flow<String> {
+        return context.dataStore.data.map { it[BUILDING_ID] ?: "" }
+    }
+
+    override fun observeRoomId(): Flow<String> {
+        return context.dataStore.data.map { it[ROOM_ID] ?: "" }
     }
 }

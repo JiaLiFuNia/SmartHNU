@@ -1,6 +1,7 @@
 package com.smart.htu.di
 
 import android.util.Log
+import com.smart.htu.api.network.AirConditionService
 import com.smart.htu.api.network.AuthLoginService
 import com.smart.htu.api.network.EHallService
 import com.smart.htu.api.network.JWCService
@@ -41,6 +42,7 @@ object NetworkModule {
         const val E_HALL_BASE_URL = "https://ehall2.htu.edu.cn/"
         const val QQ_BASE_URL = "https://q1.qlogo.cn/"
         const val LIBRARY_BASE_URL = "http://libmsg.htu.cn/"
+        const val AIR_CONDITION_BASE_URL = "https://application.xiaofubao.com/"
     }
 
     @Provides
@@ -113,6 +115,16 @@ object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(JWCService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAirConditionService(): AirConditionService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(ApiConstants.AIR_CONDITION_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(AirConditionService::class.java)
     }
 }
 

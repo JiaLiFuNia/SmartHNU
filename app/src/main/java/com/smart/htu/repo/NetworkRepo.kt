@@ -1,9 +1,12 @@
 package com.smart.htu.repo
 
 import android.util.Log
+import com.smart.htu.api.module.Area
+import com.smart.htu.api.module.BillDetail
 import com.smart.htu.api.module.LoginJWCEntity
 import com.smart.htu.api.module.LoginPost
 import com.smart.htu.api.module.PersonalMessage
+import com.smart.htu.api.network.AirConditionService
 import com.smart.htu.api.network.AuthLoginService
 import com.smart.htu.api.network.EHallService
 import com.smart.htu.api.network.JWCService
@@ -27,9 +30,51 @@ class NetworkRepo @Inject constructor(
     private val eHallService: EHallService,
     private val libraryService: LibraryService,
     private val jwcService: JWCService,
+    private val airConditionService: AirConditionService,
     private val dataStoreRepo: DataStoreRepo,
     private val networkCookieJar: NetworkCookieJar
 ) {
+
+    suspend fun getAirConditionAreaService(shiroJID: String, ymID: String): Result<Area> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val config = airConditionService.getQueryArea(shiroJID, ymID)
+                if (config.statusCode == 0) Result.success(config)
+                else Result.failure(Exception(config.message))
+            } catch (e: Exception) {
+                Log.e("TAG666", "${e.message}")
+                Result.failure(Exception("获取失败"))
+            }
+        }
+    }
+
+    suspend fun getAirConditionBillService(
+        shiroJID: String,
+        ymID: String,
+        areaId: String,
+        buildingCode: String,
+        floorCode: String,
+        roomCode: String
+    ): Result<BillDetail> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val billRes = airConditionService.getElectricityBillDetails(
+                    shiroJID = shiroJID,
+                    ymId = ymID,
+                    areaId = areaId,
+                    buildingCode = buildingCode,
+                    floorCode = floorCode,
+                    roomCode = roomCode
+                )
+                Log.i("TAG666 air", billRes.data.toString())
+                if (billRes.statusCode == 0) Result.success(billRes)
+                else Result.failure(Exception(billRes.message))
+            } catch (e: Exception) {
+                Log.e("TAG666", "${e.message}")
+                Result.failure(Exception("请求失败"))
+            }
+        }
+    }
 
     // 图书搜索
     suspend fun librarySearch(keyword: String): List<LibraryBookListEntity> {
