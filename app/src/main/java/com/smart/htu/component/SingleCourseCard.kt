@@ -32,12 +32,12 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: SingleCou
         onClick = onClick,
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
-        ),
+        )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(5.dp),
+                .padding(horizontal = 15.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Card(

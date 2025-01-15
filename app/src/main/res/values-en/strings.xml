@@ -83,4 +83,7 @@
     <string name="class_name">Class</string>
     <string name="political_outlook">Political Outlook</string>
     <string name="birthday">Birthday</string>
+    <string name="shower_water">洗浴</string>
+    <string name="login_later">暂不登录</string>
+    <string name="guest">游客访问</string>
 </resources>

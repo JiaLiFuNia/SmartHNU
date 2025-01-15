@@ -1,11 +1,12 @@
 package com.smart.htu.screens.login
 
-import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Card
@@ -28,6 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -35,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,7 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -59,43 +61,6 @@ import com.smart.htu.R
 import com.smart.htu.component.LogTipDialog
 import com.smart.htu.component.SettingItemCard
 import com.smart.htu.component.WebView
-import com.smart.htu.screens.person.PersonScreen
-
-@SuppressLint("SetJavaScriptEnabled", "ObsoleteSdkInt")
-@Composable
-fun LoginNavHostScreen(
-    navController: NavController,
-    viewModel: LoginViewModel
-) {
-    val uiState = viewModel.uiState.collectAsState().value
-    if (uiState.isLogSuccess)
-        PersonScreen(
-            navController = navController,
-            viewModel = viewModel
-        )
-    else
-        LoginScreen(
-            navController = navController,
-            viewModel = viewModel
-        )
-    /*when (loginWay) {
-        0 -> LoginScreen(
-            navController = navController,
-            viewModel = viewModel,
-            changLoginWay = {
-                loginWay = 1
-            }
-        )
-
-        1 -> LoginWebView(
-            navController = navController,
-            viewModel = viewModel,
-            changLoginWay = {
-                loginWay = 0
-            }
-        )
-    }*/
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,51 +69,61 @@ fun LoginScreen(
     viewModel: LoginViewModel
 ) {
     val uiState = viewModel.uiState.collectAsState().value
+    val focusManager = LocalFocusManager.current
 
     var displayPassword by rememberSaveable { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-
     displayPassword = isPressed
 
-    // val passwordFocusRequester = remember { FocusRequester() }
-    val focusManager = LocalFocusManager.current
+    LaunchedEffect(uiState.isLogSuccess) {
+        if (uiState.isLogSuccess) {
+            navController.popBackStack()
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.login)) },
-                actions = {
-                    /*IconButton(onClick = { changLoginWay() }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.swap_horiz_24px),
-                            contentDescription = "null"
-                        )
-                    }*/
+                title = {
+                    Text(
+                        text = "统一身份认证登录",
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             )
         }
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
-                .padding(innerPadding)
-                .padding(horizontal = 15.dp)
+                .padding(innerPadding),
+            contentPadding = PaddingValues(15.dp)
         ) {
             item {
                 Spacer(modifier = Modifier.height(30.dp))
+                Image(
+                    painter = painterResource(id = R.drawable.school_logo),
+                    contentDescription = "logo",
+                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary),
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
+                // Color(90,158,157) 师大绿
+            }
+            item {
+                Spacer(modifier = Modifier.height(10.dp))
                 Column(
                     modifier = Modifier.padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(text = "HNU 统一身份认证系统", style = MaterialTheme.typography.titleLarge)
+                    // Text(text = "HNU 统一身份认证系统", style = MaterialTheme.typography.titleLarge)
                     Spacer(modifier = Modifier.height(20.dp))
                     OutlinedTextField(
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Outlined.Person,
                                 contentDescription = "account",
-                                tint = if (uiState.loginState == -1 || uiState.loginState == 2 || uiState.studentID.length > 10)
+                                tint = if (uiState.loginState == -1 || uiState.studentID.length > 10)
                                     MaterialTheme.colorScheme.error
                                 else MaterialTheme.colorScheme.primary
                             )
@@ -159,7 +134,7 @@ fun LoginScreen(
                         },
                         label = { Text(text = "学号") },
                         modifier = Modifier.fillMaxWidth(),
-                        isError = uiState.loginState == -1 || uiState.loginState == 2 || uiState.studentID.length > 10,
+                        isError = uiState.loginState == -1 || uiState.studentID.length > 10,
                         readOnly = uiState.isLoading,
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Number,
@@ -170,7 +145,7 @@ fun LoginScreen(
                                 focusManager.moveFocus(FocusDirection.Down)
                             }
                         ),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(10.dp)
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     OutlinedTextField(
@@ -178,7 +153,7 @@ fun LoginScreen(
                             Icon(
                                 painter = painterResource(id = R.drawable.key_24px),
                                 contentDescription = "key",
-                                tint = if (uiState.loginState == -1 || uiState.loginState == 2)
+                                tint = if (uiState.loginState == -1)
                                     MaterialTheme.colorScheme.error
                                 else MaterialTheme.colorScheme.primary
                             )
@@ -199,7 +174,7 @@ fun LoginScreen(
                                 )
                             }
                         },
-                        isError = uiState.loginState == -1 || uiState.loginState == 2,
+                        isError = uiState.loginState == -1,
                         readOnly = uiState.isLoading,
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Password,
@@ -213,7 +188,17 @@ fun LoginScreen(
                         maxLines = 1,
                         shape = RoundedCornerShape(10.dp)
                     )
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
+                    ListItem(
+                        leadingContent = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.warning_24px),
+                                contentDescription = null
+                            )
+                        },
+                        headlineContent = { Text(text = uiState.logTipMessage) }
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
                     SettingItemCard(
                         modifier = Modifier
                     ) {
@@ -231,9 +216,18 @@ fun LoginScreen(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (uiState.isLoading) {
-                                    CircularProgressIndicator(modifier = Modifier.size(30.dp))
-                                } else {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    if (uiState.isLoading) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier
+                                                .padding(end = 5.dp)
+                                                .size(20.dp),
+                                            strokeWidth = 3.5.dp
+                                        )
+                                    }
                                     Text(
                                         text = stringResource(id = R.string.login),
                                         textAlign = TextAlign.Center,
@@ -251,7 +245,6 @@ fun LoginScreen(
                             Text(text = "忘记密码?")
                         }
                     }
-
                 }
             }
             item {
@@ -292,7 +285,7 @@ fun LoginWebView(
         ExtendedFloatingActionButton(
             text = { Text(text = "刷新登录") },
             icon = { Icon(imageVector = Icons.Default.Refresh, contentDescription = "") },
-            onClick = { viewModel.setLogSuccess(true) },
+            onClick = { },
         )
         /*TextButton(onClick = { viewModel.changeLogSuccess(true) }) {
             Text(text = stringResource(id = R.string.login))

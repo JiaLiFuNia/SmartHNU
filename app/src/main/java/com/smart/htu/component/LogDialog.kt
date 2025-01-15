@@ -69,3 +69,39 @@ fun LogoutDialog(
             }
         )
 }
+
+
+@Composable
+fun LoginDialog(
+    showDialog: Boolean,
+    onDismissRequests: () -> Unit,
+    onConfirmClick: () -> Unit
+) {
+    if (showDialog)
+        AlertDialog(
+            icon = {
+                Icon(imageVector = Icons.Outlined.Info, contentDescription = "ins")
+            },
+            title = {
+                Text(text = stringResource(id = R.string.tip))
+            },
+            text = {
+                Text(text = "暂未登录，立即登录体验更多功能！")
+            },
+            onDismissRequest = {},
+            dismissButton = {
+                TextButton(onClick = { onDismissRequests() }) {
+                    Text(text = stringResource(R.string.guest))
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onConfirmClick()
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.login_now))
+                }
+            }
+        )
+}

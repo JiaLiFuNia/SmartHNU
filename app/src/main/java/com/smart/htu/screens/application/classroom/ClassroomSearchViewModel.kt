@@ -1,19 +1,29 @@
 package com.smart.htu.screens.application.classroom
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.smart.htu.R
+import com.smart.htu.repo.DataStoreRepo
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class ClassroomUiState(
-    val buildingsList: List<ClassroomNameEntity>
+    val buildingsList: List<ClassroomNameEntity>,
+    var blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
 
 @HiltViewModel
-class ClassroomSearchViewModel @Inject constructor() : ViewModel() {
+class ClassroomSearchViewModel @Inject constructor(
+    private val dataStoreRepo: DataStoreRepo
+) : ViewModel() {
 
     private val buildingsList = listOf(
         ClassroomNameEntity("104", "启智楼"),
@@ -46,4 +56,18 @@ class ClassroomSearchViewModel @Inject constructor() : ViewModel() {
     )
     val uiState: StateFlow<ClassroomUiState> = _uiState.asStateFlow()
 
+    private val _blurStateFlow = dataStoreRepo.observerBlurState()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            DEFAULT_BLUR_EFFECT
+        )
+
+    init {
+        viewModelScope.launch {
+            _blurStateFlow.collect { value ->
+                _uiState.update { it.copy(blurEffect = value) }
+            }
+        }
+    }
 }

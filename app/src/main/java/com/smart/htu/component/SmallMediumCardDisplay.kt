@@ -3,6 +3,7 @@ package com.smart.htu.component
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -26,12 +27,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.smart.htu.R
 import com.smart.htu.screens.application.entity.SmallCardContent
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SmallMediumCardDisplay(
+    enabled: Boolean,
     content: SmallCardContent,
     modifier: Modifier,
     onLongClick: () -> Unit,
@@ -42,9 +46,6 @@ fun SmallMediumCardDisplay(
         mutableStateOf(false)
     }
     Card(
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 1.dp
-        ),
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
             .combinedClickable(
@@ -54,7 +55,8 @@ fun SmallMediumCardDisplay(
                 }
             ),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = if (enabled) MaterialTheme.colorScheme.surfaceVariant
+            else MaterialTheme.colorScheme.surfaceVariant.copy(0.5f)
         )
     ) {
         ListItem(
@@ -71,7 +73,9 @@ fun SmallMediumCardDisplay(
                         text = content.description,
                         style = MaterialTheme.typography.labelMedium,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = if (enabled) MaterialTheme.colorScheme.onBackground
+                        else MaterialTheme.colorScheme.onBackground.copy(0.38f)
                     )
             },
             headlineContent = {
@@ -83,6 +87,8 @@ fun SmallMediumCardDisplay(
                         .basicMarquee(
                             repeatDelayMillis = 2_000,
                         ),
+                    color = if (enabled) MaterialTheme.colorScheme.onBackground
+                    else MaterialTheme.colorScheme.onBackground.copy(0.38f)
                 )
             },
             colors = ListItemDefaults.colors(

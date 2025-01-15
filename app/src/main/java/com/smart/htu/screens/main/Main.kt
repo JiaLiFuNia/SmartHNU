@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +19,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -29,6 +32,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -41,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -55,17 +60,19 @@ import com.smart.htu.component.LargeCardDisplay
 import com.smart.htu.component.MediumCardDisplay
 import com.smart.htu.component.SingleCourseCard
 import com.smart.htu.component.SmallCardDisplay
-import com.smart.htu.screens.application.ApplicationUiState
 import com.smart.htu.screens.application.ApplicationViewModel
+import com.smart.htu.screens.application.entity.SmallCardContent
+import com.smart.htu.screens.login.LoginUiState
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateWithAuthCheck
 import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.person.loginStateString
 import com.smart.htu.ui.icon.WeatherIcon
 import com.smart.htu.ui.icon.weatherIcon._303
-import com.smart.htu.utils.openCalendar
+import com.smart.htu.utils.startCalendar
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
-import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.delay
@@ -76,21 +83,21 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.ceil
 
-@SuppressLint("RestrictedApi")
+@SuppressLint("RestrictedApi", "UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun Main(
-    navController: NavController,
     mainViewModel: MainViewModel,
-    loginViewModel: LoginViewModel,
     applicationViewModel: ApplicationViewModel,
+    loginViewModel: LoginViewModel,
+    navController: NavController,
     navigateToApplication: () -> Unit
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val loginUiState by loginViewModel.uiState.collectAsState()
-    val appUiState by applicationViewModel.uiState.collectAsState()
 
     val hazeState = remember { HazeState() }
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val state = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
@@ -106,29 +113,24 @@ fun Main(
 
     Scaffold(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(Color.Transparent),
-                modifier = Modifier.hazeChild(
-                    state = hazeState,
-                    style = HazeMaterials.ultraThin()
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer,
                 ),
+                modifier = Modifier.hazeEffect(
+                    state = hazeState,
+                    style = HazeMaterials.regular()
+                ) {
+                    blurRadius = 30.dp
+                    blurEnabled = uiState.blurEffect
+                },
                 title = {
-                    Text(text = "欢迎！${loginUiState.username}")
-                    /*DynamicIsland(
-                        text = if (!loginUiState.isLogSuccess)
-                            stringResource(id = R.string.login_now)
-                        else
-                            if (isRefreshing)
-                                stringResource(id = R.string.loading)
-                            else
-                                loginUiState.username,
-                        onClick = {
-                            navController.navigate(Destinations.Login.route)
-                        },
-                        clickAble = !isRefreshing
-                    )*/
+                    Text(text = "欢迎！${uiState.username}")
                 },
                 actions = {
                     IconButton(
@@ -136,69 +138,66 @@ fun Main(
                             navController.navigateWithAuthCheck(
                                 route = Destinations.Message.route,
                                 label = R.string.message_center,
-                                logState = loginUiState.isLogSuccess
+                                logState = uiState.isLogSuccess
                             )
                         }
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.notifications_24px),
-                            contentDescription = null
-                        )
+                        BadgedBox(
+                            badge = { Badge { Text(text = "2") } }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.notifications_24px),
+                                contentDescription = null
+                            )
+                        }
                     }
                     IconButton(
                         onClick = {
                             navController.navigate(Destinations.Setting.route)
                         }
                     ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Settings,
-                            contentDescription = "setting"
-                        )
-                    }
-                },
-                navigationIcon = {
-                    /*IconButton(
-                        onClick = {
-                            navController.navigate(Destinations.Setting.route)
-                        },
-                        modifier = Modifier.padding(start = 10.dp)
-                    ) {
-                        if (loginUiState.isLogSuccess)
-                            Image(
-                                painter = painterResource(id = R.drawable.avator_1),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
-                            )
-                        else
+                        BadgedBox(
+                            badge = { Badge() }
+                        ) {
                             Icon(
-                                imageVector = Icons.Outlined.AccountCircle,
-                                contentDescription = "account",
-                                modifier = Modifier.size(40.dp),
-                                tint = MaterialTheme.colorScheme.primary
+                                imageVector = Icons.Outlined.Settings,
+                                contentDescription = "setting"
                             )
-                    }*/
+                        }
+                    }
                 }
             )
         }
-    ) { innerPadding ->
+    ) {
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = { onRefresh() },
             state = state,
+            indicator = {
+                Indicator(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = it.calculateTopPadding()),
+                    isRefreshing = isRefreshing,
+                    state = state
+                )
+            },
             modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+                .fillMaxSize(),
         ) {
             LazyColumn(
+                contentPadding = PaddingValues(
+                    top = it.calculateTopPadding() + 15.dp,
+                    start = 15.dp,
+                    end = 15.dp,
+                    bottom = 15.dp
+                ),
                 modifier = Modifier
-                    .haze(state = hazeState)
-                    .fillMaxSize()
-                    .padding(horizontal = 15.dp),
+                    .hazeSource(state = hazeState)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 item {
-                    Spacer(modifier = Modifier.height(10.dp))
                     Row(
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -208,21 +207,18 @@ fun Main(
                     }
                 }
                 item {
-                    Spacer(modifier = Modifier.height(20.dp))
                     TodayCourseCard(uiState = uiState)
                 }
                 item {
-                    Spacer(modifier = Modifier.height(20.dp))
                     CommonAppsCard(
-                        uiState = appUiState,
+                        appList = uiState.appListIsCommonList,
                         navController = navController,
                         navigateToApplication = navigateToApplication,
                         applicationViewModel = applicationViewModel,
-                        logState = loginUiState.isLogSuccess
+                        uiState = loginUiState
                     )
                 }
                 item {
-                    Spacer(modifier = Modifier.height(20.dp))
                     LargeCardDisplay(
                         modifier = Modifier.height(200.dp),
                         title = stringResource(id = R.string.course_grade),
@@ -230,9 +226,6 @@ fun Main(
                         content = {},
                         navigateTo = {}
                     )
-                }
-                item {
-                    Spacer(modifier = Modifier.height(20.dp))
                 }
             }
         }
@@ -272,7 +265,7 @@ fun CalendarCard(context: Context, modifier: Modifier) {
             }
         },
         navigateTo = {
-            openCalendar(context)
+            startCalendar()
         }
     )
 }
@@ -326,7 +319,7 @@ fun TodayCourseCard(uiState: AppUiState) {
         leadingIconPainting = R.drawable.today_24px,
         content = {
             Column(
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+                modifier = Modifier
             ) {
                 uiState.toDayCourseList.forEachIndexed { index, it ->
                     SingleCourseCard(
@@ -345,16 +338,13 @@ fun TodayCourseCard(uiState: AppUiState) {
 
 @Composable
 fun CommonAppsCard(
-    uiState: ApplicationUiState,
+    appList: List<SmallCardContent>,
     navController: NavController,
     navigateToApplication: () -> Unit,
     applicationViewModel: ApplicationViewModel,
-    logState: Boolean
+    uiState: LoginUiState
 ) {
-    val appList = uiState.appListIsCommonList
-    val lazyVerticalGridHeight by remember {
-        mutableIntStateOf(((ceil(appList.size / 5.0)) * 90).toInt())
-    }
+    val lazyVerticalGridHeight by remember { mutableIntStateOf(((ceil(appList.size / 5.0)) * 70).toInt() + 16) }
     LargeCardDisplay(
         modifier = Modifier,
         title = stringResource(id = R.string.common_applications),
@@ -375,25 +365,28 @@ fun CommonAppsCard(
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(5),
                     modifier = Modifier
-                        .height(lazyVerticalGridHeight.dp)
-                        .padding(5.dp)
+                        .height(lazyVerticalGridHeight.dp),
+                    contentPadding = PaddingValues(8.dp),
+                    userScrollEnabled = false
                 ) {
                     items(appList.size) { index ->
                         Box(
-                            modifier = Modifier
-                                .padding(vertical = 5.dp),
+                            modifier = Modifier,
                             contentAlignment = Alignment.Center
                         ) {
                             SmallCardDisplay(
+                                enabled = (uiState.isGuest && appList[index].guestEnable) || uiState.isLogSuccess,
                                 content = appList[index],
                                 onLongClick = {
                                     applicationViewModel.changeCommonAppListState(index, false)
                                 },
                                 onCLick = {
                                     navController.navigateWithAuthCheck(
+                                        isGuest = uiState.isGuest && appList[index].guestEnable,
+                                        appUrl = appList[index].appUrl,
                                         route = appList[index].route,
                                         url = appList[index].url,
-                                        logState = logState,
+                                        logState = uiState.isLogSuccess,
                                         label = appList[index].label
                                     )
                                 }

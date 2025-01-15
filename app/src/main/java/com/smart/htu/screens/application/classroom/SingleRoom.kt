@@ -16,7 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SingleRoomState(
+fun SingleRoom(
     label: String,
     state: Boolean,
     timeRange: String,
@@ -52,7 +52,7 @@ fun SingleRoomState(
 @Preview
 @Composable
 fun SingleRoomStatePreview() {
-    SingleRoomState(
+    SingleRoom(
         label = "新五五四888",
         state = true,
         timeRange = "8:00-10:00",

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.repo.DataStoreRepo
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.NetworkRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +19,7 @@ import javax.inject.Inject
 data class LibrarySearchUiState(
     val isSearching: Boolean = false,
     val isLoading: Boolean = false,
+    val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val searchResult: List<LibraryBookListEntity> = emptyList(),
     val singleBookDetail: List<LibraryBookDetail> = emptyList(),
     val rentList: List<RentBookEntity> = emptyList()
@@ -38,23 +40,34 @@ class LibrarySearchViewModel @Inject constructor(
         emptyList(),
     )
 
+    private val _blurStateFlow = dataStoreRepo.observerBlurState()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            DEFAULT_BLUR_EFFECT
+        )
+
     init {
         viewModelScope.launch {
             _rentBookList.collect { value ->
                 _uiState.update { it.copy(rentList = value) }
             }
         }
+        viewModelScope.launch {
+            _blurStateFlow.collect { value ->
+                _uiState.update { it.copy(blurEffect = value) }
+            }
+        }
     }
 
-    fun changeRentBookState(book: RentBookEntity, add: Boolean = true) {
+    fun changeRentBookState(book: RentBookEntity) {
         viewModelScope.launch {
             val currentRentList = _uiState.value.rentList.toMutableList()
-            if (add)
-                currentRentList.apply {
-                    add(book)
-                }
-            else
+            if (currentRentList.contains(book))
                 currentRentList.apply { remove(book) }
+            else
+                if (uiState.value.rentList.size <= 4)
+                    currentRentList.apply { add(book) }
             dataStoreRepo.changeRentBookList(currentRentList)
             _uiState.update { it.copy(rentList = currentRentList) }
         }

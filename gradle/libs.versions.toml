@@ -7,11 +7,11 @@ composeWebviewMultiplatform = "1.9.40"
 converterGson = "2.11.0"
 converterScalarsVersion = "2.9.0"
 datastorePreferences = "1.1.1"
-haze = "1.1.1"
+haze = "1.2.0"
 hiltAndroid = "2.51.1"
 hiltNavigationCompose = "1.2.0"
 jsoup = "1.18.1"
-kotlin = "1.9.0"
+kotlin = "2.0.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -29,6 +29,7 @@ appcompat = "1.7.0"
 retrofit = "2.11.0"
 retrofit2KotlinxSerializationConverterVersion = "0.8.0"
 securityCryptoVersion = "1.0.0"
+uiTiles = "2.9.0"
 webkit = "1.12.1"
 material3 = "1.3.1"
 
@@ -74,7 +75,9 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit2-converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "converterScalarsVersion" }
+ui-tiles = { module = "com.github.alorma.compose-settings:ui-tiles", version.ref = "uiTiles" }
 xtail-lunar = { module = "cn.6tail:lunar", version.ref = "lunarVersion" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

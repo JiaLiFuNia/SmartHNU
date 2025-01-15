@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
     alias(libs.plugins.aboutlibraries)
@@ -15,8 +16,8 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 20250113
+        versionName = "3.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -80,6 +81,7 @@ dependencies {
     implementation(libs.androidx.material3.adaptive.navigation.suite)
     implementation(libs.androidx.adaptive.navigation.android)
     implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.ui.tiles)
 
     // Crypt
     implementation(libs.androidx.security.crypto)

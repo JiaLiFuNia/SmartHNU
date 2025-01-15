@@ -32,3 +32,23 @@ data class PersonalMessage(
             "${parts[0]}年${parts[1]}月${parts[2]}日"
         } ?: "未知日期"
 }
+
+data class LoginPost(
+    val username: String,
+    val password: String,
+    val code: String = "",
+    val appid: Any? = null
+)
+
+data class LoginJWCEntity(
+    val msg: String,
+    val code: Int,
+    val user: UserEntity? = null,
+)
+
+data class UserEntity(
+    val token: String,
+    @SerializedName("userxm") val username: String,
+    @SerializedName("userdwmc") val academic: String,
+    @SerializedName("userAccount") val studentId: String
+)

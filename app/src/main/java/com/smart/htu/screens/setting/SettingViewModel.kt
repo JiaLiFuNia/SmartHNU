@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.component.SelectionItem
 import com.smart.htu.repo.DataStoreRepo
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,6 +18,7 @@ import javax.inject.Inject
 data class SettingUiState(
     var dynamicColor: Boolean = true,
     var isDarkTheme: Int = 0,
+    var blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val languageList: List<SelectionItem<String>>,
     val selectedLanguageIndex: Int = 0,
 )
@@ -41,29 +43,41 @@ class SettingViewModel @Inject constructor(
 
     val uiState: StateFlow<SettingUiState> = _uiState.asStateFlow()
 
-    private val dynamicColorStateFlow = dataStoreRepo.observeDynamicTheme()
+    private val _dynamicColorStateFlow = dataStoreRepo.observeDynamicTheme()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             true
         )
 
-    private val darkThemeStateFlow = dataStoreRepo.observeDarkTheme()
+    private val _darkThemeStateFlow = dataStoreRepo.observeDarkTheme()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             0
         )
 
+    private val _blurStateFlow = dataStoreRepo.observerBlurState()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            DEFAULT_BLUR_EFFECT
+        )
+
     init {
         viewModelScope.launch {
-            dynamicColorStateFlow.collect { value ->
+            _dynamicColorStateFlow.collect { value ->
                 _uiState.update { it.copy(dynamicColor = value) }
             }
         }
         viewModelScope.launch {
-            darkThemeStateFlow.collect { value ->
+            _darkThemeStateFlow.collect { value ->
                 _uiState.update { it.copy(isDarkTheme = value) }
+            }
+        }
+        viewModelScope.launch {
+            _blurStateFlow.collect { value ->
+                _uiState.update { it.copy(blurEffect = value) }
             }
         }
     }
@@ -77,6 +91,12 @@ class SettingViewModel @Inject constructor(
     fun changDarkMode(isDarkTheme: Int) {
         viewModelScope.launch {
             dataStoreRepo.changeDarkTheme(isDarkTheme)
+        }
+    }
+
+    fun changeBlurState() {
+        viewModelScope.launch {
+            dataStoreRepo.changeBlurState(state = !_uiState.value.blurEffect)
         }
     }
 
