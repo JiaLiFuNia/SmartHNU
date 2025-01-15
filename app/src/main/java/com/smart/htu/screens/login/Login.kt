@@ -244,12 +244,6 @@ fun LoginScreen(
                         TextButton(onClick = { /*TODO*/ }) {
                             Text(text = "忘记密码?")
                         }
-                        TextButton(onClick = {
-                            viewModel.changeStudentID("2201214001")
-                            viewModel.changePassword("XUbohan20040704.")
-                        }) {
-                            Text(text = "测试")
-                        }
                     }
                 }
             }
