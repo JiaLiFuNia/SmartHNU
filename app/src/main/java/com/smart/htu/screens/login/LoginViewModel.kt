@@ -137,6 +137,7 @@ class LoginViewModel @Inject constructor(
                 logState.onSuccess {
                     changLoginState(1)
                     getStudentInfo()
+                    dataStoreRepo.saveStudentId(_uiState.value.studentID)
                 }
                 logState.onFailure { changLoginState(-1) }
             } catch (e: Exception) {
@@ -200,7 +201,6 @@ class LoginViewModel @Inject constructor(
     fun changeStudentID(studentID: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(studentID = studentID) }
-            dataStoreRepo.saveStudentId(studentID)
         }
     }
 

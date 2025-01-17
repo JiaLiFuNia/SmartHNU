@@ -28,10 +28,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -46,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -61,6 +63,10 @@ import com.smart.htu.R
 import com.smart.htu.component.LogTipDialog
 import com.smart.htu.component.SettingItemCard
 import com.smart.htu.component.WebView
+import com.smart.htu.utils.Constants.Companion.HENAN_NORMAL_UNIVERSITY
+import com.smart.htu.utils.Constants.Companion.RETRIEVE_PASSWORD
+import com.smart.htu.utils.startLaunchAPK
+import com.smart.htu.utils.startWebUrl
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,6 +77,7 @@ fun LoginScreen(
     val uiState = viewModel.uiState.collectAsState().value
     val focusManager = LocalFocusManager.current
 
+    val snackBarHostState = remember { SnackbarHostState() }
     var displayPassword by rememberSaveable { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -82,6 +89,12 @@ fun LoginScreen(
         }
     }
 
+    LaunchedEffect(key1 = uiState.isLoading, key2 = uiState.logTipMessage) {
+        if (!uiState.isLoading && uiState.logTipMessage != "") {
+            snackBarHostState.showSnackbar(uiState.logTipMessage, actionLabel = "重试")
+            //sendToast(context = context, text = )
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -90,9 +103,17 @@ fun LoginScreen(
                         text = "统一身份认证登录",
                         color = MaterialTheme.colorScheme.primary
                     )
+                },
+                actions = {
+                    TextButton(onClick = { startLaunchAPK("com.autewifi.sd.enroll") }) {
+                        Text(text = "i师大")
+                    }
                 }
             )
-        }
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarHostState)
+        },
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -101,18 +122,25 @@ fun LoginScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(30.dp))
-                Image(
-                    painter = painterResource(id = R.drawable.school_logo),
-                    contentDescription = "logo",
-                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary),
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
+                Card(
+                    onClick = {
+                        startWebUrl(HENAN_NORMAL_UNIVERSITY)
+                    },
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.school_logo),
+                        contentDescription = "logo",
+                        colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary),
+                        modifier = Modifier.padding(horizontal = 15.dp, vertical = 20.dp)
+                    )
+                }
                 // Color(90,158,157) 师大绿
             }
             item {
-                Spacer(modifier = Modifier.height(10.dp))
                 Column(
-                    modifier = Modifier.padding(20.dp),
+                    modifier = Modifier.padding(horizontal = 20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -189,15 +217,6 @@ fun LoginScreen(
                         shape = RoundedCornerShape(10.dp)
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    ListItem(
-                        leadingContent = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.warning_24px),
-                                contentDescription = null
-                            )
-                        },
-                        headlineContent = { Text(text = uiState.logTipMessage) }
-                    )
                     Spacer(modifier = Modifier.height(10.dp))
                     SettingItemCard(
                         modifier = Modifier
@@ -241,7 +260,7 @@ fun LoginScreen(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        TextButton(onClick = { /*TODO*/ }) {
+                        TextButton(onClick = { startWebUrl(RETRIEVE_PASSWORD) }) {
                             Text(text = "忘记密码?")
                         }
                     }
@@ -249,7 +268,7 @@ fun LoginScreen(
             }
             item {
                 Text(
-                    text = "Tip：本界面登录方式使用河南师范大学智慧校园统一认证系统(与 i 师大 App 相同)。你的账号和密码会被加密储存在本地，不会上传到除学校服务器之外的其他地方。",
+                    text = "Tip：师韵的登录方式采用了河南师范大学智慧校园统一认证系统(与 i 师大 App 相同)。你的账号和密码会被加密储存在本地。",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     textAlign = TextAlign.Start,

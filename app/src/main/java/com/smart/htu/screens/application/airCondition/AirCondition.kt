@@ -307,7 +307,7 @@ fun SetCookieBottomSheet(
                             label = { Text(text = "shiroJID") },
                             placeholder = { },
                             maxLines = 1,
-                            value = uiState.loginCookie?.shiroJID ?: "",
+                            value = uiState.remoteLoginCookie?.shiroJID ?: "",
                             onValueChange = { viewModel.changeShiroJid(it) },
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -315,7 +315,7 @@ fun SetCookieBottomSheet(
                         OutlinedTextField(
                             label = { Text(text = "ymID") },
                             placeholder = { },
-                            value = uiState.loginCookie?.ymId ?: "",
+                            value = uiState.remoteLoginCookie?.ymId ?: "",
                             onValueChange = { viewModel.changeYmld(it) },
                             modifier = Modifier.fillMaxWidth()
                         )

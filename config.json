@@ -1,0 +1,22 @@
+{
+  "version": "3.0.3",
+  "versionCode": "20250113",
+  "airConditionCookie": {
+    "shiroJID": "",
+    "ymID": ""
+  },
+  "notice": [
+    {
+      "id": "1",
+      "time": "",
+      "content": "",
+      "action": ""
+    },
+    {
+      "id": "2",
+      "time": "",
+      "content": "",
+      "action": ""
+    }
+  ]
+}

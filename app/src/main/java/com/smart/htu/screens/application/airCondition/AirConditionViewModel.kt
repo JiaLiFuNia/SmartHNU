@@ -21,10 +21,8 @@ import javax.inject.Inject
 
 data class AirConditionUiState(
     var blurEffect: Boolean = true,
-    val loginCookie: LoginCookie? = LoginCookie(
-        shiroJID = "220dbb04-dfc7-47f1-b69a-f2a489c5374c",
-        ymId = "2209553875734609932"
-    ),
+    val remoteLoginCookie: LoginCookie? = LoginCookie(shiroJID = "", ymId = ""),
+    val userLoginCookie: LoginCookie? = LoginCookie("", ""),
     val customConfig: AreaData? = null,
     val buildingCode: String = "",
     val roomCode: String = "",
@@ -82,8 +80,8 @@ class AirConditionViewModel @Inject constructor(
     }
 
     fun getAirConditionConfig(
-        shiroJID: String = ("shiroJID=" + _uiState.value.loginCookie?.shiroJID),
-        ymID: String = _uiState.value.loginCookie?.ymId ?: ""
+        shiroJID: String = ("shiroJID=" + _uiState.value.remoteLoginCookie?.shiroJID),
+        ymID: String = _uiState.value.remoteLoginCookie?.ymId ?: ""
     ) {
         viewModelScope.launch {
             val res = networkRepo.getAirConditionAreaService(shiroJID, ymID)
@@ -98,8 +96,8 @@ class AirConditionViewModel @Inject constructor(
         val roomCode = buildingCode + _uiState.value.roomCode
         viewModelScope.launch {
             val billData = networkRepo.getAirConditionBillService(
-                shiroJID = "shiroJID=" + _uiState.value.loginCookie?.shiroJID,
-                ymID = _uiState.value.loginCookie?.ymId ?: "",
+                shiroJID = "shiroJID=" + _uiState.value.remoteLoginCookie?.shiroJID,
+                ymID = _uiState.value.remoteLoginCookie?.ymId ?: "",
                 areaId = _uiState.value.customConfig?.id ?: "",
                 buildingCode = buildingCode,
                 floorCode = floorCode,
@@ -114,9 +112,9 @@ class AirConditionViewModel @Inject constructor(
     fun changeShiroJid(text: String) {
         _uiState.update {
             it.copy(
-                loginCookie = LoginCookie(
+                userLoginCookie = LoginCookie(
                     shiroJID = text,
-                    ymId = _uiState.value.loginCookie?.ymId ?: ""
+                    ymId = _uiState.value.userLoginCookie?.ymId ?: ""
                 )
             )
         }
@@ -125,8 +123,8 @@ class AirConditionViewModel @Inject constructor(
     fun changeYmld(text: String) {
         _uiState.update {
             it.copy(
-                loginCookie = LoginCookie(
-                    shiroJID = _uiState.value.loginCookie?.shiroJID ?: "",
+                userLoginCookie = LoginCookie(
+                    shiroJID = _uiState.value.userLoginCookie?.shiroJID ?: "",
                     ymId = text
                 )
             )

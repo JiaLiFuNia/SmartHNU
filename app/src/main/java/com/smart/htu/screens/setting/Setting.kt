@@ -328,7 +328,7 @@ fun SettingScreen(
                         )
                         SettingsMenuLink(
                             title = { Text(text = "版本信息") },
-                            subtitle = { Text(text = "当前为最新版本 ${APPVersion.getVersionName()} | 第 ${APPVersion.getVersionCode()} 次更新") },
+                            subtitle = { Text(text = "当前版本 ${APPVersion.getVersionName()}(${APPVersion.getVersionCode()})") },
                             icon = {
                                 Icon(
                                     imageVector = Icons.Outlined.Info,

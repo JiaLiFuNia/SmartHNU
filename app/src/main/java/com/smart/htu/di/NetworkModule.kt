@@ -43,6 +43,7 @@ object NetworkModule {
         const val QQ_BASE_URL = "https://q1.qlogo.cn/"
         const val LIBRARY_BASE_URL = "http://libmsg.htu.cn/"
         const val AIR_CONDITION_BASE_URL = "https://application.xiaofubao.com/"
+        const val GITEE_BASE_URL = "https://gitee.com/"
     }
 
     @Provides

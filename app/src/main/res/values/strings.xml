@@ -36,7 +36,7 @@
     <string name="about_app">关于师韵</string>
     <string name="about_app_description">一款第三方教务与新闻阅览 App</string>
     <string name="check_update">更新检查</string>
-    <string name="check_update_description">检查 GitHub 上的最新版本</string>
+    <string name="check_update_description">检查最新版本</string>
     <string name="current_version">当前版本</string>
     <string name="other">其他</string>
     <string name="privacy">隐私政策</string>
