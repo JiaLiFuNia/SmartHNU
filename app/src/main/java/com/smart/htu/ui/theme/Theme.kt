@@ -128,7 +128,6 @@ fun SmartHNUTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.navigationBarColor = colorScheme.surfaceContainer.toArgb()
             window.isNavigationBarContrastEnforced = false
             WindowCompat.setDecorFitsSystemWindows(window, false)
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme

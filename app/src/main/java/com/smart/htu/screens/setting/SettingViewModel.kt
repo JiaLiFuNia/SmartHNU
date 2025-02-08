@@ -16,11 +16,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class SettingUiState(
-    var dynamicColor: Boolean = true,
-    var isDarkTheme: Int = 0,
-    var blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
+    val dynamicColor: Boolean = true,
+    val isDarkTheme: Int = 0,
+    val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val languageList: List<SelectionItem<String>>,
     val selectedLanguageIndex: Int = 0,
+    val updateState: Boolean = true
 )
 
 @HiltViewModel

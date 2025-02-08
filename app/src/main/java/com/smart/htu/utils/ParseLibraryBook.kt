@@ -6,7 +6,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
 
-fun parseLibrarySearchResult(html: String): MutableList<LibraryBookListEntity> {
+fun parseLibrarySearchResult(html: String): Pair<String, MutableList<LibraryBookListEntity>> {
     val document = Jsoup.parse(html)
     val books = mutableListOf<LibraryBookListEntity>()
     val bookElements = document.select("a.weui_media_box")
@@ -19,7 +19,8 @@ fun parseLibrarySearchResult(html: String): MutableList<LibraryBookListEntity> {
         val id = element.select("a.weui_media_box").attr("href")
         books.add(LibraryBookListEntity(title, description, imageUrl, availability, id))
     }
-    return books
+    val count = document.select("div.center").text().split("/").last()
+    return count to books
 }
 
 fun parseLibraryBookDetail(html: String): MutableList<LibraryBookDetail> {

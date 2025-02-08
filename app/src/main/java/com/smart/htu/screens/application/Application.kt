@@ -3,9 +3,11 @@ package com.smart.htu.screens.application
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -18,7 +20,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,8 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.smart.htu.component.SmallMediumCardDisplay
+import com.smart.htu.component.SuggestChip
+import com.smart.htu.component.SuggestChipType
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateWithAuthCheck
+import com.smart.htu.screens.navigation.Destinations
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -76,10 +83,10 @@ fun Application(
     ) {
         LazyVerticalGrid(
             contentPadding = PaddingValues(
-                top = it.calculateTopPadding() + 15.dp,
-                start = 15.dp,
-                end = 15.dp,
-                bottom = 15.dp
+                top = it.calculateTopPadding() + 16.dp,
+                start = 16.dp,
+                end = 16.dp,
+                bottom = 16.dp
             ),
             columns = GridCells.Fixed(if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 2),
             verticalArrangement = Arrangement.spacedBy(10.dp),
