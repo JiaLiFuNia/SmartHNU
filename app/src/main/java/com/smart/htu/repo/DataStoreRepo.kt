@@ -12,10 +12,13 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.smart.htu.R
 import com.smart.htu.api.DataStoreService
+import com.smart.htu.api.module.LoginCookie
 import com.smart.htu.api.module.PersonalMessage
 import com.smart.htu.screens.application.entity.SmallCardContent
 import com.smart.htu.screens.application.librarySearch.RentBookEntity
 import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.utils.Constants.Companion.HOT_WATER_WASHER_ALIPAY_URL
+import com.smart.htu.utils.Constants.Companion.SHOWER_ALIPAY_URL
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -37,6 +40,8 @@ class DataStoreRepo @Inject constructor(
         val EDITABLE_PERSONAL_MESSAGE = stringPreferencesKey("EDITABLE_PERSONAL_MESSAGE")
         val USERNAME = stringPreferencesKey("USERNAME")
         val LOGIN_STATE = intPreferencesKey("LOGIN_STATE")
+        val LOGIN_JWC_STATE = intPreferencesKey("LOGIN_JWC_STATE")
+        val TOKEN = stringPreferencesKey("TOKEN")
         val DARK_THEME = intPreferencesKey("DARK_THEME")
         val DYNAMIC_COLOR = booleanPreferencesKey("DYNAMIC_COLOR")
         val COMMON_APP_LIST = stringPreferencesKey("COMMON_APP_LIST")
@@ -46,21 +51,45 @@ class DataStoreRepo @Inject constructor(
         val STUDENT_ID = stringPreferencesKey("STUDENT_ID")
         val BUILDING_ID = stringPreferencesKey("BUILDING_ID")
         val ROOM_ID = stringPreferencesKey("ROOM_ID")
+        val NOTICE_READ_ID_LIST = stringPreferencesKey("NOTICE_READ_ID_LIST")
+        val AIR_CONDITION_COOKIE_TYPE = intPreferencesKey("AIR_CONDITION_COOKIE_TYPE")
+        val AIR_CONDITION_USER_COOKIE = stringPreferencesKey("AIR_CONDITION_USER_COOKIE")
+        val BOOK_SEARCH_HISTORY_LIAT = stringPreferencesKey("BOOK_SEARCH_HISTORY_LIAT")
 
         const val DEFAULT_VALUE_COOKIES = "[]"
+        const val DEFAULT_MESSAGE_READ_ID = "[]"
         const val DEFAULT_DYNAMIC_COLOR = true
         const val DEFAULT_BLUR_EFFECT = true
         const val DEFAULT_LOGIN_STATE = 0
         const val DEFAULT_DARK_THEME = 0
         const val DEFAULT_QQ_NUMBER = ""
-        const val DEFAULT_USERNAME = "HNUer"
+        const val DEFAULT_PASSWORD = ""
+        const val DEFAULT_USERNAME = "未登录"
+        const val DEFAULT_STUDENT_ID = ""
+        const val DEFAULT_BUILDING_ID = ""
+        const val DEFAULT_ROOM_ID = ""
+        const val DEFAULT_TOKEN = ""
+        const val DEFAULT_BOOK_SEARCH_HISTORY_LIST = "[]"
+        const val DEFAULT_AIR_CONDITION_USER_COOKIE = ""
+        const val DEFAULT_AIR_CONDITION_COOKIE_TYPE = 0
         val DEFAULT_MESSAGE = PersonalMessage(
             username = DEFAULT_USERNAME,
             academic = "-",
             studentId = "-",
             phoneNumber = "-"
         )
-        val INIT_COMMON_APP_LIST = listOf(
+        val ALL_APP_LIST = listOf(
+            SmallCardContent(
+                guestEnable = false,
+                icon = R.drawable.today_24px,
+                label = R.string.today_course,
+            ),
+            SmallCardContent(
+                guestEnable = false,
+                label = R.string.dorm_air_conditioner,
+                icon = R.drawable.bolt_24px,
+                route = Destinations.AirCondition.route
+            ),
             SmallCardContent(
                 guestEnable = false,
                 label = R.string.classroom_search,
@@ -68,12 +97,54 @@ class DataStoreRepo @Inject constructor(
                 route = Destinations.ClassroomSearch.route
             ),
             SmallCardContent(
+                guestEnable = true,
+                label = R.string.book_search,
+                icon = R.drawable.book_4_24px,
+                route = Destinations.LibrarySearch.route
+            ),
+            SmallCardContent(
                 guestEnable = false,
-                label = R.string.dorm_air_conditioner,
-                icon = R.drawable.bolt_24px,
-                description = "电费剩余 00 度",
-                route = Destinations.AirCondition.route
+                icon = R.drawable.finance_24px,
+                label = R.string.course_grade,
+                route = null
+            ),
+            SmallCardContent(
+                guestEnable = true,
+                icon = R.drawable.near_me_24px,
+                label = R.string.live_service,
+                route = null
+            ),
+            SmallCardContent(
+                guestEnable = true,
+                icon = R.drawable.bathtub_24px,
+                description = "支付宝-卡博士",
+                label = R.string.shower_water,
+                appUrl = SHOWER_ALIPAY_URL
+            ),
+            SmallCardContent(
+                guestEnable = true,
+                icon = R.drawable.water_voc_24px,
+                description = "支付宝-胖乖生活",
+                label = R.string.water_washer,
+                appUrl = HOT_WATER_WASHER_ALIPAY_URL
+            ),
+            SmallCardContent(
+                guestEnable = true,
+                icon = R.drawable.format_paint_24px,
+                label = R.string.second_class,
+                route = null
+            ),
+            SmallCardContent(
+                guestEnable = true,
+                icon = R.drawable.book_4_24px,
+                label = R.string.textbook_select,
+                route = null
             )
+        )
+        val INIT_COMMON_APP_LIST = listOf(
+            ALL_APP_LIST[1],
+            ALL_APP_LIST[2],
+            ALL_APP_LIST[3]
         )
     }
 
@@ -124,6 +195,31 @@ class DataStoreRepo @Inject constructor(
     override suspend fun changeRoomId(room: String) {
         context.dataStore.edit { it[ROOM_ID] = room }
     }
+
+    override suspend fun saveAirConditionCookieType(type: Int) {
+        context.dataStore.edit { it[AIR_CONDITION_COOKIE_TYPE] = type }
+    }
+
+    override suspend fun saveAirConditionUserCookie(cookie: LoginCookie) {
+        context.dataStore.edit { it[AIR_CONDITION_USER_COOKIE] = Json.encodeToString(cookie) }
+    }
+
+    override suspend fun changeBookSearchHistoryList(list: List<String>) {
+        context.dataStore.edit { it[BOOK_SEARCH_HISTORY_LIAT] = Json.encodeToString(list) }
+    }
+
+    override suspend fun changeLoginJWCState(state: Int) {
+        context.dataStore.edit { it[LOGIN_JWC_STATE] = state }
+    }
+
+    override suspend fun setJWCToken(token: String) {
+        context.dataStore.edit { it[TOKEN] = token }
+    }
+
+    override suspend fun saveNoticeReadId(id: List<String>) {
+        context.dataStore.edit { it[NOTICE_READ_ID_LIST] = Json.encodeToString(id) }
+    }
+
 
     override fun observeDynamicTheme(): Flow<Boolean> {
         return context.dataStore.data
@@ -196,5 +292,46 @@ class DataStoreRepo @Inject constructor(
 
     override fun observeRoomId(): Flow<String> {
         return context.dataStore.data.map { it[ROOM_ID] ?: "" }
+    }
+
+    override fun observeAirConditionCookieType(): Flow<Int> {
+        return context.dataStore.data.map {
+            it[AIR_CONDITION_COOKIE_TYPE] ?: DEFAULT_AIR_CONDITION_COOKIE_TYPE
+        }
+    }
+
+    override fun observeAirConditionUserCookie(): Flow<LoginCookie> {
+        return context.dataStore.data.map {
+            val json = it[AIR_CONDITION_USER_COOKIE] ?: DEFAULT_AIR_CONDITION_USER_COOKIE
+            if (json == "") {
+                LoginCookie("", "")
+            } else {
+                Json.decodeFromString(json)
+            }
+        }
+    }
+
+    override fun observeBookSearchHistoryList(): Flow<List<String>> {
+        return context.dataStore.data.map {
+            Json.decodeFromString<List<String>>(
+                it[BOOK_SEARCH_HISTORY_LIAT] ?: DEFAULT_BOOK_SEARCH_HISTORY_LIST
+            )
+        }
+    }
+
+    override fun observeLoginJWCState(): Flow<Int> {
+        return context.dataStore.data.map { it[LOGIN_JWC_STATE] ?: DEFAULT_LOGIN_STATE }
+    }
+
+    override fun observeJWCToken(): Flow<String> {
+        return context.dataStore.data.map { it[TOKEN] ?: DEFAULT_TOKEN }
+    }
+
+    override fun observeNoticeReadIdList(): Flow<List<String>> {
+        return context.dataStore.data.map {
+            Json.decodeFromString<List<String>>(
+                it[NOTICE_READ_ID_LIST] ?: DEFAULT_MESSAGE_READ_ID
+            )
+        }
     }
 }

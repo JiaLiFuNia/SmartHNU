@@ -24,7 +24,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.carousel.CarouselItemInfo
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
@@ -110,10 +109,10 @@ fun NewsScreen(
                         .fillMaxWidth(),
                     preferredItemWidth = 320.dp,
                     itemSpacing = 5.dp
-                ) { url ->
+                ) { index ->
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data(imageUrls[url])
+                            .data(imageUrls[index])
                             .crossfade(true)
                             .addHeader("User-Agent", "Mozilla/5.0")
                             .error(R.drawable.image_placeholder)

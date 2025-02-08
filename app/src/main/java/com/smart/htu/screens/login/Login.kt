@@ -63,6 +63,8 @@ import com.smart.htu.R
 import com.smart.htu.component.LogTipDialog
 import com.smart.htu.component.SettingItemCard
 import com.smart.htu.component.WebView
+import com.smart.htu.screens.navigateToWebView
+import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.HENAN_NORMAL_UNIVERSITY
 import com.smart.htu.utils.Constants.Companion.RETRIEVE_PASSWORD
 import com.smart.htu.utils.startLaunchAPK
@@ -91,8 +93,7 @@ fun LoginScreen(
 
     LaunchedEffect(key1 = uiState.isLoading, key2 = uiState.logTipMessage) {
         if (!uiState.isLoading && uiState.logTipMessage != "") {
-            snackBarHostState.showSnackbar(uiState.logTipMessage, actionLabel = "重试")
-            //sendToast(context = context, text = )
+            snackBarHostState.showSnackbar(uiState.logTipMessage)
         }
     }
     Scaffold(
@@ -118,13 +119,16 @@ fun LoginScreen(
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding),
-            contentPadding = PaddingValues(15.dp)
+            contentPadding = PaddingValues(16.dp)
         ) {
             item {
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(32.dp))
                 Card(
                     onClick = {
-                        startWebUrl(HENAN_NORMAL_UNIVERSITY)
+                        navController.navigateToWebView(
+                            url = HENAN_NORMAL_UNIVERSITY,
+                            label = "河南师范大学"
+                        )
                     },
                     modifier = Modifier.padding(horizontal = 20.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.Transparent)
@@ -133,7 +137,7 @@ fun LoginScreen(
                         painter = painterResource(id = R.drawable.school_logo),
                         contentDescription = "logo",
                         colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary),
-                        modifier = Modifier.padding(horizontal = 15.dp, vertical = 20.dp)
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp)
                     )
                 }
                 // Color(90,158,157) 师大绿
@@ -144,7 +148,6 @@ fun LoginScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    // Text(text = "HNU 统一身份认证系统", style = MaterialTheme.typography.titleLarge)
                     Spacer(modifier = Modifier.height(20.dp))
                     OutlinedTextField(
                         leadingIcon = {
@@ -223,7 +226,10 @@ fun LoginScreen(
                     ) {
                         Card(
                             onClick = {
-                                viewModel.login()
+                                if (uiState.studentID == "admin")
+                                    navController.navigate(Destinations.AccountManage.route)
+                                else
+                                    viewModel.login()
                             },
                             enabled = !uiState.isLoading,
                             modifier = Modifier.height(50.dp),
@@ -242,13 +248,15 @@ fun LoginScreen(
                                     if (uiState.isLoading) {
                                         CircularProgressIndicator(
                                             modifier = Modifier
-                                                .padding(end = 5.dp)
+                                                .padding(end = 8.dp)
                                                 .size(20.dp),
                                             strokeWidth = 3.5.dp
                                         )
                                     }
                                     Text(
-                                        text = stringResource(id = R.string.login),
+                                        text = if (uiState.isLoading) "正在登录中..." else stringResource(
+                                            id = R.string.login
+                                        ),
                                         textAlign = TextAlign.Center,
                                         color = MaterialTheme.colorScheme.primary
                                     )
@@ -257,24 +265,28 @@ fun LoginScreen(
                         }
                     }
                     Row(
-                        horizontalArrangement = Arrangement.Center,
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         TextButton(onClick = { startWebUrl(RETRIEVE_PASSWORD) }) {
                             Text(text = "忘记密码?")
+                        }
+                        TextButton(onClick = { navController.popBackStack() }) {
+                            Text(text = "暂不登录")
                         }
                     }
                 }
             }
             item {
                 Text(
-                    text = "Tip：师韵的登录方式采用了河南师范大学智慧校园统一认证系统(与 i 师大 App 相同)。你的账号和密码会被加密储存在本地。",
+                    text = "Tip：师韵的登录方式采用了河南师范大学智慧校园统一认证系统。你的账号和密码会被加密储存在本地。默认密码为：Myhtu+身份证号后七位的前六位。",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     textAlign = TextAlign.Start,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp)
+                        .padding(top = 20.dp)
                 )
             }
         }
@@ -298,7 +310,7 @@ fun LoginWebView(
     WebView(
         navController = navController,
         url = url,
-        initTitle = R.string.login,
+        initTitle = stringResource(id = R.string.login),
         headers = headers
     ) {
         ExtendedFloatingActionButton(

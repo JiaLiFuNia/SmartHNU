@@ -1,5 +1,10 @@
 package com.smart.htu.api.module
 
+import kotlinx.serialization.Serializable
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+@Serializable
 data class LoginCookie(
     val shiroJID: String,
     val ymId: String
@@ -32,5 +37,39 @@ data class BillData(
 )
 
 data class SurplusList(
+    val mdtype: String,
     val roomStatus: String
 )
+
+data class BillRecords(
+    val statusCode: Int,
+    val success: Boolean,
+    val message: String,
+    val rows: List<BillRecordsData>,
+    val total: Int
+)
+
+data class BillRecordsData(
+    val datetime: String,
+    val used: String
+)
+
+data class BuyRecords(
+    val statusCode: Int,
+    val success: Boolean,
+    val message: String,
+    val rows: List<BuyRecordsData>
+)
+
+data class BuyRecordsData(
+    private val datetime: String,
+    val money: String,
+) {
+    val dateTime: String
+        get() {
+            val inputFormatter = DateTimeFormatter.ofPattern("yyyy-M-d H:mm:ss")
+            val outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+            val parsedDateTime = LocalDateTime.parse(datetime, inputFormatter)
+            return parsedDateTime.format(outputFormatter)
+        }
+}

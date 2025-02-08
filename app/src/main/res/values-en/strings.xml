@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SmartHNU_dev</string>
-    <string name="version">3.0.1</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
     <string name="month_day">MM/dd</string>
@@ -86,4 +85,9 @@
     <string name="shower_water">洗浴</string>
     <string name="login_later">暂不登录</string>
     <string name="guest">游客访问</string>
+    <string name="edit_message">编辑信息</string>
+    <string name="second_class">第二课堂</string>
+    <string name="textbook_select">教材选订</string>
+    <string name="account_manage">账号管理</string>
+    <string name="water_washer">热水-洗衣</string>
 </resources>

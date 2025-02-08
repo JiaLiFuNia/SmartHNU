@@ -4,6 +4,7 @@ import android.util.Log
 import com.smart.htu.api.network.AirConditionService
 import com.smart.htu.api.network.AuthLoginService
 import com.smart.htu.api.network.EHallService
+import com.smart.htu.api.network.GiteeService
 import com.smart.htu.api.network.JWCService
 import com.smart.htu.api.network.LibraryService
 import com.smart.htu.repo.DataStoreRepo
@@ -126,6 +127,16 @@ object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(AirConditionService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGiteeConfig(): GiteeService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(ApiConstants.GITEE_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(GiteeService::class.java)
     }
 }
 

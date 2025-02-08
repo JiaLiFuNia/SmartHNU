@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,24 +15,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -46,7 +39,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -64,20 +56,18 @@ import com.smart.htu.component.LargeCardDisplay
 import com.smart.htu.component.LogoutDialog
 import com.smart.htu.component.PreferenceItem
 import com.smart.htu.component.PreferencesHintCard
+import com.smart.htu.component.ScaffoldWithHazeLazyColumn
 import com.smart.htu.component.SettingItemCard
 import com.smart.htu.screens.login.LoginViewModel
+import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.startWebUrl
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
-import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonScreen(
     navController: NavController,
@@ -86,399 +76,240 @@ fun PersonScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     val state = rememberPullToRefreshState()
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
         isRefreshing = true
-        coroutineScope.launch {
+        scope.launch {
             viewModel.getStudentInfo()
-            delay(1000)
+            delay(1500)
             isRefreshing = false
         }
     }
 
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showEditMessageDialog by remember { mutableStateOf(false) }
-    val hazeState = remember { HazeState() }
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBar(
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
-                ),
-                title = { Text(text = stringResource(id = R.string.my)) },
-                actions = {
-                    IconButton(onClick = { onRefresh() }) {
-                        Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "refresh")
-                    }
-                },
-                modifier = Modifier.hazeEffect(
-                    state = hazeState,
-                    style = HazeMaterials.regular()
-                ) {
-                    blurRadius = 30.dp
-                    blurEnabled = uiState.blurEffect
+    ScaffoldWithHazeLazyColumn(
+        scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
+        blurEnabledState = uiState.blurEffect,
+        title = {
+            Text(text = stringResource(id = R.string.my))
+        },
+        actions = {
+            IconButton(onClick = { navController.navigate(Destinations.AccountManage.route) }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.key_24px),
+                    contentDescription = "key"
+                )
+            }
+        },
+        navigationIcon = {},
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
+        refreshState = state,
+    ) {
+        item {
+            PreferencesHintCard(
+                title = "河南师范大学",
+                description = "省属重点大学、省特色骨干大学建设高校",
+                icon = R.drawable.hnu,
+                onClick = {
+                    navController.navigateToWebView("https://www.htu.edu.cn/", "河南师范大学")
                 }
             )
         }
-    ) {
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = { onRefresh() },
-            state = state,
-            indicator = {
-                Indicator(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = it.calculateTopPadding()),
-                    isRefreshing = isRefreshing,
-                    state = state
-                )
-            },
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            LazyColumn(
-                contentPadding = PaddingValues(
-                    top = it.calculateTopPadding() + 15.dp,
-                    start = 15.dp,
-                    end = 15.dp,
-                    bottom = 15.dp
-                ),
-                modifier = Modifier
-                    .hazeSource(state = hazeState)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+        item {
+            LargeCardDisplay(
+                modifier = Modifier,
+                title = "我的信息",
+                leadingIconPainting = R.drawable.outline_account_box_24
             ) {
-                item {
-                    PreferencesHintCard(
-                        title = "河南师范大学",
-                        description = "省属重点大学、省特色骨干大学建设高校",
-                        icon = R.drawable.hnu,
-                        onClick = {
-                            startWebUrl("https://www.htu.edu.cn/")
-                        }
-                    )
-                }
-                item {
-                    LargeCardDisplay(
-                        modifier = Modifier,
-                        title = "我的信息",
-                        leadingIconPainting = R.drawable.outline_account_box_24
-                    ) {
-                        PreferenceItem(
-                            title = stringResource(id = R.string.avatar),
-                            trailingIcon = {
-                                if (uiState.qqNumber == "")
-                                    Image(
-                                        painter = painterResource(id = R.drawable.avator_1),
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .padding(horizontal = 5.dp)
-                                            .size(40.dp)
-                                            .clip(RoundedCornerShape(10.dp))
-                                    )
-                                else
-                                    AsyncImage(
-                                        model = ImageRequest.Builder(LocalContext.current)
-                                            .data("https://q1.qlogo.cn/g?b=qq&nk=${uiState.qqNumber}&s=100")
-                                            .crossfade(true)
-                                            .addHeader("User-Agent", "Mozilla/5.0")
-                                            .error(R.drawable.avator_1)
-                                            .build(),
-                                        contentDescription = "picture",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .padding(horizontal = 5.dp)
-                                            .size(40.dp)
-                                            .clip(RoundedCornerShape(10.dp)),
-                                        placeholder = painterResource(id = R.drawable.book_failure)
-                                )
-                            },
-                            onClick = {
-                                showEditMessageDialog = true
-                            }
-                        )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.username),
-                            trailingIcon = {
-                                Text(
-                                    text = uiState.uneditableMessage.username ?: "",
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    modifier = Modifier.padding(horizontal = 5.dp)
-                                )
-                            }
-                        )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.birthday),
-                            trailingIcon = {
-                                Text(
-                                    text = uiState.uneditableMessage.birthday,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    modifier = Modifier.padding(horizontal = 5.dp)
-                                )
-                            }
-                        )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.student_id),
-                            trailingIcon = {
-                                Text(
-                                    text = uiState.uneditableMessage.studentId ?: "",
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    modifier = Modifier.padding(horizontal = 5.dp)
-                                )
-                            }
-                        )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.class_name),
-                            trailingIcon = {
-                                Text(
-                                    text = uiState.uneditableMessage.className ?: "",
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    modifier = Modifier.padding(horizontal = 5.dp)
-                                )
-                            }
-                        )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.academic),
-                            trailingIcon = {
-                                Text(
-                                    text = uiState.uneditableMessage.academic ?: "",
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    modifier = Modifier.padding(horizontal = 5.dp)
-                                )
-                            }
-                        )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.political_outlook),
-                            trailingIcon = {
-                                Text(
-                                    text = uiState.uneditableMessage.politicalProfile ?: "",
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    modifier = Modifier.padding(horizontal = 5.dp)
-                                )
-                            }
-                        )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.phone),
-                            trailingIcon = {
-                                Text(
-                                    text = uiState.uneditableMessage.phoneNumber.toString(),
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    modifier = Modifier.padding(horizontal = 5.dp)
-                                )
-                            }
-                        )
-                        PreferenceItem(
-                            title = stringResource(id = R.string.email),
-                            trailingIcon = {
-                                Text(
-                                    text = uiState.uneditableMessage.emailNumber,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    modifier = Modifier.padding(horizontal = 5.dp)
-                                )
-                            },
-                            onClick = {
-                                startWebUrl("mailto:${uiState.uneditableMessage.emailNumber}")
-                            }
-                        )
-                    }
-                }
-                item {
-                    LargeCardDisplay(
-                        modifier = Modifier,
-                        title = "账号管理",
-                        leadingIconPainting = R.drawable.admin_panel_settings_24px
-                    ) {
-                        PreferenceItem(
-                            title = "统一身份认证系统",
-                            trailingIcon = {
-                                Text(
-                                    text = stringResource(id = loginStateString(uiState.loginState)),
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    modifier = Modifier.padding(horizontal = 5.dp)
-                                )
-                            },
-                            onClick = {
-                                // navController.navigate(Destinations.Login.route)
-                            }
-                        )
-                        PreferenceItem(
-                            title = "河南师大智慧教务",
-                            trailingIcon = {
-                                Text(
-                                    text = stringResource(id = loginStateString(2)),
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    modifier = Modifier.padding(horizontal = 5.dp)
-                                )
-                            },
-                            onClick = {
-                                // navController.navigate(Destinations.Login.route)
-                            }
-                        )
-                        PreferenceItem(
-                            title = "第二课堂管理系统",
-                            trailingIcon = {
-                                Text(
-                                    text = stringResource(id = loginStateString(0)),
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                    modifier = Modifier.padding(horizontal = 5.dp)
-                                )
-                            },
-                            onClick = {
-                                // navController.navigate(Destinations.Login.route)
-                            }
-                        )
-                    }
-                }
-                item {
-                    SettingItemCard(
-                        modifier = Modifier
-                    ) {
-                        Card(
-                            onClick = {
-                                showLogoutDialog = true
-                            },
-                            modifier = Modifier.height(50.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer
-                            )
-                        ) {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = stringResource(id = R.string.log_out),
-                                    textAlign = TextAlign.Center,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        }
-                    }
-                }
-                /*item {
-                    Spacer(modifier = Modifier.height(60.dp))
-                    Column(
-                        modifier = Modifier,
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Box(Modifier.fillMaxSize()) {
-                            Column {
-                                Spacer(modifier = Modifier.height(50.dp))
-                                Card(
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Card(
-                                        modifier = Modifier
-                                            .padding(top = 70.dp)
-                                            .fillMaxWidth()
-                                    ) {
-                                        Column {
-                                            PersonalSingleMessage(
-                                                "个人信息",
-                                                Modifier.padding(horizontal = 16.dp),
-                                                R.drawable.ic_outline_person
-                                            )
-                                            HorizontalDivider(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                                            )
-                                            Column(
-                                                modifier = Modifier
-                                                    .padding(horizontal = 30.dp)
-                                                    .fillMaxWidth()
-                                            ) {
-                                                PersonalMessage(
-                                                    label = "用户名",
-                                                    content = if (uiState.editableMessage.customUsername == "") "-"
-                                                    else uiState.editableMessage.customUsername
-                                                )
-                                                Spacer(modifier = Modifier.height(10.dp))
-                                                PersonalMessage(
-                                                    "姓名",
-                                                    uiState.uneditableMessage.username
-                                                )
-                                                Spacer(modifier = Modifier.height(10.dp))
-                                                PersonalMessage(
-                                                    "学号",
-                                                    uiState.uneditableMessage.studentId
-                                                )
-                                                Spacer(modifier = Modifier.height(10.dp))
-                                                PersonalMessage(
-                                                    "学院",
-                                                    uiState.uneditableMessage.academic
-                                                )
-                                                Spacer(modifier = Modifier.height(10.dp))
-                                                PersonalMessage(
-                                                    "邮箱",
-                                                    uiState.uneditableMessage.emailNumber
-                                                )
-                                            }
-                                            Spacer(modifier = Modifier.height(20.dp))
-                                            PersonalSingleMessage(
-                                                "登录状态",
-                                                Modifier.padding(horizontal = 16.dp),
-                                                R.drawable.admin_panel_settings_24px
-                                            )
-                                            HorizontalDivider(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                                            )
-                                            Column(
-                                                modifier = Modifier
-                                                    .padding(horizontal = 30.dp)
-                                                    .fillMaxWidth()
-                                            ) {
-                                                PersonalStateMessage("统一认证登录", 1)
-                                                Spacer(modifier = Modifier.height(10.dp))
-                                                PersonalStateMessage("河南师大智慧教务", 2)
-                                                Spacer(modifier = Modifier.height(10.dp))
-                                                PersonalStateMessage("第二课堂登录系统", 0)
-                                            }
-                                            Spacer(modifier = Modifier.height(20.dp))
-                                        }
-
-                                    }
-                                }
-                                Row(
-                                    modifier = Modifier
-                                        .padding(top = 15.dp)
-                                        .fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Row {
-                                        TextButton(onClick = { /*TODO*/ }) {
-                                            Text(text = "信息有误？")
-                                        }
-                                        TextButton(onClick = { /*TODO*/ }) {
-                                            Text(text = "修改密码")
-                                        }
-                                    }
-                                    TextButton(onClick = logoutClick) {
-                                        Text(text = "退出登录")
-                                    }
-                                }
-                            }
+                PreferenceItem(
+                    title = stringResource(id = R.string.avatar),
+                    trailingIcon = {
+                        if (uiState.qqNumber == "")
                             Image(
                                 painter = painterResource(id = R.drawable.avator_1),
                                 contentDescription = null,
                                 modifier = Modifier
-                                    .clip(CircleShape)
-                                    .size(100.dp)
-                                    .align(Alignment.TopCenter),
+                                    .padding(horizontal = 5.dp)
+                                    .size(40.dp)
+                                    .clip(RoundedCornerShape(10.dp))
                             )
-                        }
-
+                        else
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data("https://q1.qlogo.cn/g?b=qq&nk=${uiState.qqNumber}&s=100")
+                                    .crossfade(true)
+                                    .addHeader("User-Agent", "Mozilla/5.0")
+                                    .error(R.drawable.avator_1)
+                                    .build(),
+                                contentDescription = "picture",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .padding(horizontal = 5.dp)
+                                    .size(40.dp)
+                                    .clip(RoundedCornerShape(10.dp)),
+                                placeholder = painterResource(id = R.drawable.book_failure)
+                                )
+                    },
+                    onClick = {
+                        showEditMessageDialog = true
                     }
-                }*/
+                )
+                PreferenceItem(
+                    title = stringResource(id = R.string.username),
+                    trailingIcon = {
+                        Text(
+                            text = uiState.uneditableMessage.username ?: "",
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(horizontal = 5.dp)
+                        )
+                    }
+                )
+                PreferenceItem(
+                    title = stringResource(id = R.string.birthday),
+                    trailingIcon = {
+                        Text(
+                            text = uiState.uneditableMessage.birthday,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(horizontal = 5.dp)
+                        )
+                    }
+                )
+                PreferenceItem(
+                    title = stringResource(id = R.string.student_id),
+                    trailingIcon = {
+                        Text(
+                            text = uiState.uneditableMessage.studentId ?: "",
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(horizontal = 5.dp)
+                        )
+                    }
+                )
+                PreferenceItem(
+                    title = stringResource(id = R.string.class_name),
+                    trailingIcon = {
+                        Text(
+                            text = uiState.uneditableMessage.className ?: "",
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(horizontal = 5.dp)
+                        )
+                    }
+                )
+                PreferenceItem(
+                    title = stringResource(id = R.string.academic),
+                    trailingIcon = {
+                        Text(
+                            text = uiState.uneditableMessage.academic ?: "",
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(horizontal = 5.dp)
+                        )
+                    }
+                )
+                PreferenceItem(
+                    title = stringResource(id = R.string.political_outlook),
+                    trailingIcon = {
+                        Text(
+                            text = uiState.uneditableMessage.politicalProfile ?: "",
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(horizontal = 5.dp)
+                        )
+                    }
+                )
+                PreferenceItem(
+                    title = stringResource(id = R.string.phone),
+                    trailingIcon = {
+                        Text(
+                            text = uiState.uneditableMessage.phoneNumber.toString(),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(horizontal = 5.dp)
+                        )
+                    }
+                )
+                PreferenceItem(
+                    title = stringResource(id = R.string.email),
+                    trailingIcon = {
+                        Text(
+                            text = uiState.uneditableMessage.emailNumber,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(horizontal = 5.dp)
+                        )
+                    },
+                    onClick = {
+                        startWebUrl("mailto:${uiState.uneditableMessage.emailNumber}")
+                    }
+                )
+            }
+        }
+        item {
+            LargeCardDisplay(
+                modifier = Modifier,
+                title = "账号管理",
+                leadingIconPainting = R.drawable.admin_panel_settings_24px
+            ) {
+                PreferenceItem(
+                    title = "统一身份认证系统",
+                    trailingIcon = {
+                        Text(
+                            text = stringResource(id = loginStateString(uiState.loginState)),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(horizontal = 5.dp)
+                        )
+                    },
+                    onClick = {
+                    }
+                )
+                PreferenceItem(
+                    title = "河南师大智慧教务",
+                    trailingIcon = {
+                        Text(
+                            text = stringResource(id = loginStateString(uiState.loginJWCState)),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(horizontal = 5.dp)
+                        )
+                    },
+                    onClick = {
+                    }
+                )
+                PreferenceItem(
+                    title = "第二课堂管理系统",
+                    trailingIcon = {
+                        Text(
+                            text = stringResource(id = loginStateString(0)),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(horizontal = 5.dp)
+                        )
+                    },
+                    onClick = {
+                    }
+                )
+            }
+        }
+        item {
+            SettingItemCard(
+                modifier = Modifier
+            ) {
+                Card(
+                    onClick = {
+                        showLogoutDialog = true
+                    },
+                    modifier = Modifier.height(50.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.log_out),
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
             }
         }
     }

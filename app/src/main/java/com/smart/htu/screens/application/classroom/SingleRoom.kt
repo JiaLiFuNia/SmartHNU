@@ -4,6 +4,7 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -19,7 +20,6 @@ import androidx.compose.ui.unit.dp
 fun SingleRoom(
     label: String,
     state: Boolean,
-    timeRange: String,
     onClick: () -> Unit,
     modifier: Modifier
 ) {
@@ -34,7 +34,9 @@ fun SingleRoom(
         }
     ) {
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -55,7 +57,6 @@ fun SingleRoomStatePreview() {
     SingleRoom(
         label = "新五五四888",
         state = true,
-        timeRange = "8:00-10:00",
         onClick = {},
         modifier = Modifier
     )

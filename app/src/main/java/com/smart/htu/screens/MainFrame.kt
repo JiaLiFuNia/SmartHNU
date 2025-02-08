@@ -60,12 +60,16 @@ fun MainFrame(
     val savableStateHolder = rememberSaveableStateHolder()
     var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
     val loginUiState = loginViewModel.uiState.collectAsState().value
+    val mainUiState = mainViewModel.uiState.collectAsState().value
+    val settingUiState = settingViewModel.uiState.collectAsState().value
     val navigationItem = listOf(
         BottomNavigationItem(
             title = R.string.main,
             selectedIcon = R.drawable.baseline_home_24,
             unselectedIcon = R.drawable.outline_home_24,
-            badge = 3
+            badge = (mainUiState.config?.notice?.filter {
+                !mainUiState.hadReadIdList.contains(it.id)
+            }?.size ?: 0) + if (settingUiState.updateState) 1 else 0
         ),
         BottomNavigationItem(
             title = R.string.application,
@@ -77,7 +81,7 @@ fun MainFrame(
             title = R.string.news,
             selectedIcon = R.drawable.ic_filled_article,
             unselectedIcon = R.drawable.ic_outline_article,
-            badge = 1
+            badge = 0
         ),
         BottomNavigationItem(
             enabled = loginUiState.isLogSuccess,

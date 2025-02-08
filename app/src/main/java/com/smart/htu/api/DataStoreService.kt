@@ -1,5 +1,6 @@
 package com.smart.htu.api
 
+import com.smart.htu.api.module.LoginCookie
 import com.smart.htu.screens.application.entity.SmallCardContent
 import com.smart.htu.screens.application.librarySearch.LibraryBookListEntity
 import com.smart.htu.screens.application.librarySearch.RentBookEntity
@@ -21,6 +22,12 @@ interface DataStoreService {
     suspend fun saveStudentId(id: String)
     suspend fun changeBuildingId(id: String)
     suspend fun changeRoomId(room: String)
+    suspend fun saveAirConditionCookieType(type: Int)
+    suspend fun saveAirConditionUserCookie(cookie: LoginCookie)
+    suspend fun changeBookSearchHistoryList(list: List<String>)
+    suspend fun setJWCToken(token: String)
+    suspend fun changeLoginJWCState(state: Int)
+    suspend fun saveNoticeReadId(id: List<String>)
 
     fun observeDynamicTheme(): Flow<Boolean>
     fun observeDarkTheme(): Flow<Int>
@@ -34,5 +41,11 @@ interface DataStoreService {
     fun observeStudentId(): Flow<String>
     fun observeBuildingId(): Flow<String>
     fun observeRoomId(): Flow<String>
+    fun observeAirConditionCookieType(): Flow<Int>
+    fun observeAirConditionUserCookie(): Flow<LoginCookie>
+    fun observeBookSearchHistoryList(): Flow<List<String>>
+    fun observeJWCToken(): Flow<String>
+    fun observeLoginJWCState(): Flow<Int>
+    fun observeNoticeReadIdList(): Flow<List<String>>
 
 }

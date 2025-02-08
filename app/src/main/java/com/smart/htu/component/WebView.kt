@@ -61,7 +61,7 @@ fun WebView(
     navController: NavController,
     url: String,
     headers: Map<String, String> = emptyMap(),
-    initTitle: Int,
+    initTitle: String,
     content: (@Composable () -> Unit)? = null,
 ) {
     val state = rememberWebViewState(url = url, additionalHttpHeaders = headers)
@@ -127,7 +127,7 @@ fun WebView(
             TopAppBar(
                 title = {
                     Text(
-                        text = stringResource(id = initTitle),
+                        text = initTitle,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,

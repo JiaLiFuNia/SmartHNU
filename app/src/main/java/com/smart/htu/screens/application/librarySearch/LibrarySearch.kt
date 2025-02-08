@@ -6,6 +6,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,40 +22,52 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,7 +84,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -87,24 +99,29 @@ import com.smart.htu.utils.sendToast
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class,
+    ExperimentalMaterial3ExpressiveApi::class
+)
 @Composable
 fun LibrarySearchScreen(
     navController: NavController,
     viewModel: LibrarySearchViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState().value
-    val context = LocalContext.current
 
     val hazeState = remember { HazeState() }
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
     var expand by rememberSaveable { mutableStateOf(false) }
-    val keyword = rememberSaveable { mutableStateOf("概率论") }
+    var isSearching by rememberSaveable { mutableStateOf(false) }
+    val snackBarHostState = remember { SnackbarHostState() }
+    val searchTextFieldState = rememberTextFieldState()
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val bottomSheetState = rememberModalBottomSheetState()
@@ -121,9 +138,9 @@ fun LibrarySearchScreen(
     }
 
     BackHandler {
-        if (expand) {
+        if (expand || isSearching) {
             expand = false
-            keyword.value = ""
+            isSearching = false
         } else {
             navController.popBackStack()
         }
@@ -135,8 +152,8 @@ fun LibrarySearchScreen(
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+                    containerColor = if (uiState.blurEffect) Color.Transparent else colorScheme.surface,
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else colorScheme.surfaceContainer
                 ),
                 title = {
                     Text(text = "图书查询")
@@ -161,8 +178,10 @@ fun LibrarySearchScreen(
                 },
             )
         },
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarHostState)
+        },
         floatingActionButton = {
-            if (expand)
                 AnimatedVisibility(
                     modifier = Modifier,
                     visible = lazyListState.firstVisibleItemIndex != 0,
@@ -210,51 +229,85 @@ fun LibrarySearchScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 item {
-                    TextField(
-                        colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        shape = RoundedCornerShape(30.dp),
-                        value = keyword.value,
-                        onValueChange = { keyword.value = it },
-                        maxLines = 1,
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text(text = "搜索书名、作者、ISBN...") },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Search,
-                                contentDescription = "search"
+                    DockedSearchBar(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .fillMaxWidth(),
+                        inputField = {
+                            SearchBarDefaults.InputField(
+                                state = searchTextFieldState,
+                                onSearch = {
+                                    expand = false
+                                    isSearching = true
+                                    viewModel.librarySearch(it, 1)
+                                    viewModel.addSearchHistory(it)
+                                },
+                                expanded = expand,
+                                onExpandedChange = { expand = it },
+                                placeholder = { Text(text = "搜索书名、作者、ISBN...") },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.Search,
+                                        contentDescription = null
+                                    )
+                                },
+                                trailingIcon = {
+                                    if (expand)
+                                        TextButton(onClick = { expand = false }) {
+                                            Text(text = "收起")
+                                        }
+                                    if (isSearching)
+                                        TextButton(onClick = { isSearching = false }) {
+                                            Text(text = "取消")
+                                        }
+                                }
                             )
                         },
-                        trailingIcon = {
-                            if (expand)
-                                TextButton(
-                                    onClick = {
-                                        expand = false
-                                        keyword.value = ""
-                                    }
-                                ) {
-                                    Text(text = "取消")
-                                }
-                        },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(
-                            onSearch = {
-                                expand = true
-                                viewModel.librarySearch(keyword.value)
+                        expanded = expand,
+                        onExpandedChange = { expand = it },
+                    ) {
+                        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                            uiState.searchHistoryList.forEachIndexed { index, resultText ->
+                                ListItem(
+                                    headlineContent = { Text(resultText) },
+                                    leadingContent = {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.outline_history_24),
+                                            contentDescription = null
+                                        )
+                                    },
+                                    trailingContent = {
+                                        IconButton(onClick = { viewModel.deleteSearchHistory(index) }) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.Clear,
+                                                contentDescription = "delete"
+                                            )
+                                        }
+                                    },
+                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                    modifier = Modifier
+                                        .clickable {
+                                            searchTextFieldState.setTextAndPlaceCursorAtEnd(
+                                                resultText
+                                            )
+                                            viewModel.librarySearch(resultText, page = 1)
+                                            isSearching = true
+                                            expand = false
+                                        }
+                                        .fillMaxWidth()
+                                )
                             }
-                        )
-                    )
+                        }
+                    }
                 }
-                if (expand) {
+                if (isSearching) {
                     if (uiState.isSearching) {
                         item {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                CircularProgressIndicator(strokeWidth = 5.dp)
+                                CircularWavyProgressIndicator()
                             }
                         }
                     } else {
@@ -276,12 +329,31 @@ fun LibrarySearchScreen(
                                             uiState.rentList.any { item.id == it.id } -> "已取消"
                                             else -> "已添加到待借清单"
                                         }
-                                        sendToast(
-                                            context = context,
-                                            text = message
-                                        )
+                                        scope.launch {
+                                            val result = snackBarHostState.showSnackbar(
+                                                message = message,
+                                                actionLabel = "撤回",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                            when (result) {
+                                                SnackbarResult.ActionPerformed -> viewModel.changeRentBookState(
+                                                    RentBookEntity(
+                                                        item.title,
+                                                        item.publisher,
+                                                        item.id
+                                                    )
+                                                )
+
+                                                SnackbarResult.Dismissed -> {}
+                                            }
+                                        }
                                     }
                                 )
+                            }
+                            item {
+                                LaunchedEffect(Unit) {
+                                    viewModel.loadNextPage(searchTextFieldState.text.toString())
+                                }
                             }
                         } else {
                             item {
@@ -381,83 +453,73 @@ fun RentBooksList(
         Column(
             modifier = Modifier
         ) {
-            uiState.rentList.forEachIndexed { index, it ->
-                Card(
-                    colors = CardDefaults.cardColors(Color.Transparent),
-                    onClick = {
-                        onClick()
-                        viewModel.libraryBookDetail(it.id)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(
-                            horizontal = 12.dp,
-                            vertical = if (index == 0) 10.dp else 5.dp
-                        )
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.outline_book_24),
-                            contentDescription = "book",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                        )
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(horizontal = 10.dp)
-                        ) {
-                            Text(
-                                text = it.bookName,
-                                fontSize = 18.sp,
-                                maxLines = 1,
-                                modifier = Modifier.basicMarquee(
-                                    repeatDelayMillis = 2_000,
-                                )
-                            )
-                            Text(
-                                text = it.publisher,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                        FilledTonalIconButton(onClick = { viewModel.changeRentBookState(it) }) {
-                            Icon(
-                                imageVector = Icons.Outlined.CheckCircle,
-                                contentDescription = null
-                            )
-                        }
-                    }
-                }
-            }
-            if (uiState.rentList.size != 5)
-                Card(
-                    colors = CardDefaults.cardColors(Color.Transparent),
-                    onClick = {
-                        onBlankCardClick()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+            if (uiState.rentList.isNotEmpty()) {
+                uiState.rentList.forEachIndexed { index, it ->
+                    Card(
+                        colors = CardDefaults.cardColors(Color.Transparent),
+                        onClick = {
+                            onClick()
+                            viewModel.libraryBookDetail(it.id)
+                        },
                         modifier = Modifier
-                            .padding(horizontal = 15.dp, vertical = 5.dp)
-                            .fillMaxSize()
+                            .fillMaxWidth()
                     ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Add,
-                            contentDescription = "add",
-                            modifier = Modifier.padding(end = 10.dp)
-                        )
-                        Text(text = "添加书籍", fontSize = 18.sp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(
+                                horizontal = 12.dp,
+                                vertical = if (index == 0 || index == uiState.rentList.size - 1) 10.dp else 5.dp
+                            )
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.outline_book_24),
+                                contentDescription = "book",
+                                tint = colorScheme.primary,
+                                modifier = Modifier
+                            )
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(horizontal = 10.dp)
+                            ) {
+                                Text(
+                                    text = it.bookName,
+                                    fontSize = 18.sp,
+                                    maxLines = 1,
+                                    modifier = Modifier.basicMarquee(
+                                        repeatDelayMillis = 2_000,
+                                    )
+                                )
+                                Text(
+                                    text = it.publisher,
+                                    color = colorScheme.onSurface.copy(alpha = 0.6f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                            FilledTonalIconButton(onClick = { viewModel.changeRentBookState(it) }) {
+                                Icon(
+                                    imageVector = Icons.Outlined.CheckCircle,
+                                    contentDescription = null
+                                )
+                            }
+                        }
                     }
                 }
-
+            } else
+                Card(
+                    colors = CardDefaults.cardColors(Color.Transparent),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp)
+                ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "搜索以添加待借书籍",
+                            color = colorScheme.onBackground.copy(0.38f)
+                        )
+                    }
+                }
         }
     }
 }
@@ -528,7 +590,7 @@ fun LibrarySingleBook(
                     imageVector = if (state) Icons.Filled.Favorite
                     else Icons.Outlined.FavoriteBorder,
                     contentDescription = "like",
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = colorScheme.primary
                 )
             }
         }
@@ -649,7 +711,7 @@ fun SingleMessage(label: String, content: String) {
         )
         Text(
             text = content,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = colorScheme.onSurface,
             fontSize = 16.sp,
             modifier = Modifier.weight(0.8f)
         )

@@ -20,9 +20,11 @@ import com.smart.htu.screens.login.LoginScreen
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.message.MessageScreen
+import com.smart.htu.screens.message.MessageViewModel
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsScreen
 import com.smart.htu.screens.news.NewsViewModel
+import com.smart.htu.screens.person.AccountManage
 import com.smart.htu.screens.person.PersonScreen
 import com.smart.htu.screens.setting.AppSettingScreen
 import com.smart.htu.screens.setting.AppreciateScreen
@@ -40,7 +42,8 @@ fun NavHostScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
     loginViewModel: LoginViewModel = hiltViewModel(),
     applicationViewModel: ApplicationViewModel = hiltViewModel(),
-    newsViewModel: NewsViewModel = hiltViewModel()
+    newsViewModel: NewsViewModel = hiltViewModel(),
+    messageViewModel: MessageViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
     NavHost(
@@ -84,7 +87,8 @@ fun NavHostScreen(
         }
         animatedComposable(Destinations.Message.route) {
             MessageScreen(
-                navController = navController
+                navController = navController,
+                viewModel = messageViewModel
             )
         }
         animatedComposable(Destinations.Setting.route) {
@@ -127,14 +131,14 @@ fun NavHostScreen(
                     type = NavType.StringType
                 },
                 navArgument(name = "title") {
-                    type = NavType.IntType
+                    type = NavType.StringType
                 }
             )
         ) { webview ->
             WebView(
                 navController = navController,
                 url = Uri.decode(webview.arguments?.getString("url") ?: ""),
-                initTitle = webview.arguments?.getInt("title") ?: 0
+                initTitle = webview.arguments?.getString("title") ?: ""
             )
         }
         animatedComposable(Destinations.Appreciate.route) {
@@ -145,6 +149,9 @@ fun NavHostScreen(
         }
         animatedComposable(Destinations.AirCondition.route) {
             AirCondition(navController = navController)
+        }
+        animatedComposable(Destinations.AccountManage.route) {
+            AccountManage(navController = navController, viewModel = loginViewModel)
         }
     }
 }
@@ -172,4 +179,11 @@ fun NavController.navigateWithAuthCheck(
         this.currentBackStackEntry?.savedStateHandle?.set("original_label", label)
         this.navigate(loginRoute)
     }
+}
+
+fun NavController.navigateToWebView(
+    url: String,
+    label: String
+) {
+    this.navigate("${Destinations.WebView.route}/${Uri.encode(url)}/${label}")
 }

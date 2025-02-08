@@ -1,6 +1,7 @@
 package com.smart.htu.screens.application.classroom
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,14 +17,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.outlined.Done
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
@@ -34,6 +35,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
@@ -60,21 +62,25 @@ import androidx.navigation.NavController
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.smart.htu.R
 import com.smart.htu.component.PreferenceSubtitle
+import com.smart.htu.utils.Constants.Companion.BUILDING_LIST
+import com.smart.htu.utils.Constants.Companion.COURSE_PERIOD
 import com.smart.htu.utils.checkTimeInterval
+import com.smart.htu.utils.getCurrentDates
+import com.smart.htu.utils.timeStamp2DateStr
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 @SuppressLint("UnrememberedMutableState")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalHazeMaterialsApi::class,
+    ExperimentalMaterial3ExpressiveApi::class
+)
 @Composable
 fun ClassroomSearchScreen(
     navController: NavController,
@@ -82,14 +88,18 @@ fun ClassroomSearchScreen(
 ) {
     val uiState = viewModel.uiState.collectAsState().value
     val hazeState = remember { HazeState() }
-    var selectedDate by rememberSaveable { mutableStateOf(getCurrentDates()) }
-    var selectedRoomIndex by rememberSaveable { mutableIntStateOf(0) }
-    var selectedTimeIndex by rememberSaveable { mutableIntStateOf(checkTimeInterval()) }
 
-    var showDatePicker by rememberSaveable { mutableStateOf(false) }
-    val currentDate = LocalDate.now()
+    val (selectedRoomName, onSelectedRoomName) = rememberSaveable { mutableStateOf(BUILDING_LIST[0].buildingName) }
+    val (selectedTimeIndex, onSelectedTimeIndex) = rememberSaveable {
+        mutableIntStateOf(
+            checkTimeInterval()
+        )
+    }
+
+    val (selectedDate, onSelectedDate) = remember { mutableStateOf(getCurrentDates()) }
+    val (showDatePicker, onShowDatePicker) = remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
-        yearRange = currentDate.year..currentDate.year + 1,
+        yearRange = LocalDate.now().year - 1..LocalDate.now().year + 1,
     )
     val confirmEnabled = derivedStateOf { datePickerState.selectedDateMillis != null }
 
@@ -99,7 +109,7 @@ fun ClassroomSearchScreen(
     val onRefresh: () -> Unit = {
         isRefreshing = true
         coroutineScope.launch {
-            delay(2000)
+            viewModel.getClassroomOccupation(selectedDate)
             isRefreshing = false
         }
     }
@@ -111,10 +121,10 @@ fun ClassroomSearchScreen(
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.mediumTopAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else colorScheme.surface,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else colorScheme.surfaceContainer
-                ),
+                colors = topAppBarColors(
+        containerColor = if (uiState.blurEffect) Color.Transparent else colorScheme.surface,
+        scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else colorScheme.surfaceContainer
+        ),
                 title = {
                     Text(
                         text = stringResource(id = R.string.classroom_search)
@@ -130,7 +140,8 @@ fun ClassroomSearchScreen(
                 actions = {
                     IconButton(
                         onClick = {
-                            showDatePicker = true
+                            onShowDatePicker(true)
+                            Log.i("TAG666", "ClassroomSearchScreen: $showDatePicker")
                         }
                     ) {
                         Icon(Icons.Default.DateRange, contentDescription = "date")
@@ -180,10 +191,10 @@ fun ClassroomSearchScreen(
                     LazyVerticalGridCustom(
                         list = uiState.buildingsList,
                         columnSize = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 3
-                    ) { currentIndex, building ->
+                    ) { _, building ->
                         FilterChip(
-                            selected = currentIndex == selectedRoomIndex,
-                            onClick = { selectedRoomIndex = currentIndex },
+                            selected = building.buildingName == selectedRoomName,
+                            onClick = { onSelectedRoomName(building.buildingName) },
                             label = { Text(text = building.buildingName) },
                             modifier = Modifier.padding(horizontal = 4.dp)
                         )
@@ -192,12 +203,12 @@ fun ClassroomSearchScreen(
                 item {
                     PreferenceSubtitle(text = stringResource(id = R.string.time))
                     LazyVerticalGridCustom(
-                        list = viewModel.haveCourseTime,
+                        list = COURSE_PERIOD.keys.toList(),
                         columnSize = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 5 else 3
                     ) { currentIndex, timeLabel ->
                         FilterChip(
                             selected = currentIndex == selectedTimeIndex,
-                            onClick = { selectedTimeIndex = currentIndex },
+                            onClick = { onSelectedTimeIndex(currentIndex) },
                             label = { Text(text = stringResource(id = timeLabel)) },
                             modifier = Modifier.padding(horizontal = 4.dp)
                         )
@@ -205,79 +216,107 @@ fun ClassroomSearchScreen(
                 }
                 item {
                     PreferenceSubtitle(text = stringResource(id = R.string.occupy))
-                    Column(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        val roomListSortByFloor = viewModel.roomList.groupBy { it.floorNumber }
-                        val newsPagerState = rememberPagerState(
-                            pageCount = { roomListSortByFloor.keys.size }
-                        )
-                        val selectFloorIndex =
-                            remember { derivedStateOf { newsPagerState.currentPage } }
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 5.dp)
-                                .padding(bottom = 10.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
+                    if (uiState.isLoading && uiState.isTokenValid) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
                         ) {
-                            TabRow(
-                                selectedTabIndex = newsPagerState.currentPage,
-                                indicator = { tabPositions ->
-                                    TabRowDefaults.PrimaryIndicator(
-                                        modifier = Modifier
-                                            .tabIndicatorOffset(tabPositions[newsPagerState.currentPage]),
-                                        width = tabPositions[newsPagerState.currentPage].width / 1.5f,
-                                        shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
-                                    )
-                                },
+                            CircularWavyProgressIndicator()
+                        }
+                    } else {
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            val singleBuildingRoomOccupation =
+                                uiState.buildingsOccupation[selectedRoomName]
+                            val allRoomListGroupByFloor =
+                                singleBuildingRoomOccupation?.allRoomList?.groupBy {
+                                    it.floorNumber
+                                }?.values?.toList() ?: emptyList()
+                            val busyRoomListFilterByPeriod =
+                                singleBuildingRoomOccupation?.busyRoomList?.filter {
+                                    COURSE_PERIOD.values.toList()[selectedTimeIndex] in it.busyPeriodCode
+                                }
+                            val floorPagerState = rememberPagerState(
+                                pageCount = { allRoomListGroupByFloor.size }
+                            )
+                            val selectFloorIndex =
+                                remember { derivedStateOf { floorPagerState.currentPage } }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 5.dp)
+                                    .padding(bottom = 10.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                roomListSortByFloor.keys.forEachIndexed { index, floorNumber ->
-                                    Tab(
-                                        text = {
-                                            Text(
-                                                text = stringResource(
-                                                    id = when (floorNumber) {
-                                                        1 -> R.string.first_floor
-                                                        2 -> R.string.second_floor
-                                                        3 -> R.string.third_floor
-                                                        4 -> R.string.fourth_floor
-                                                        5 -> R.string.fifth_floor
-                                                        else -> R.string.other
-                                                    }
-                                                ),
-                                            )
-                                        },
-                                        selected = selectFloorIndex.value == index,
-                                        onClick = {
-                                            coroutineScope.launch {
-                                                newsPagerState.animateScrollToPage(index)
-                                            }
-                                        },
-                                        selectedContentColor = colorScheme.primary,
-                                        unselectedContentColor = colorScheme.onSurface,
+                                TabRow(
+                                    selectedTabIndex = floorPagerState.currentPage,
+                                    indicator = { tabPositions ->
+                                        TabRowDefaults.PrimaryIndicator(
+                                            modifier = Modifier
+                                                .tabIndicatorOffset(tabPositions[floorPagerState.currentPage]),
+                                            width = tabPositions[floorPagerState.currentPage].width / 1.5f,
+                                            shape = RoundedCornerShape(
+                                                topStart = 3.dp,
+                                                topEnd = 3.dp
+                                            ),
+                                        )
+                                    },
+                                    divider = {}
+                                ) {
+                                    allRoomListGroupByFloor.forEachIndexed { index, floor ->
+                                        Tab(
+                                            text = {
+                                                Text(
+                                                    text = stringResource(
+                                                        id = when (floor.first().floorNumber) {
+                                                            1 -> R.string.first_floor
+                                                            2 -> R.string.second_floor
+                                                            3 -> R.string.third_floor
+                                                            4 -> R.string.fourth_floor
+                                                            5 -> R.string.fifth_floor
+                                                            else -> R.string.other
+                                                        }
+                                                    )
+                                                )
+                                            },
+                                            selected = selectFloorIndex.value == index,
+                                            onClick = {
+                                                coroutineScope.launch {
+                                                    floorPagerState.animateScrollToPage(index)
+                                                }
+                                            },
+                                            selectedContentColor = colorScheme.primary,
+                                            unselectedContentColor = colorScheme.onSurface,
+                                        )
+                                    }
+                                }
+                            }
+                            HorizontalPager(
+                                verticalAlignment = Alignment.Top,
+                                state = floorPagerState,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                val currentRoomList = allRoomListGroupByFloor[it]
+                                LazyVerticalGridCustom(
+                                    list = currentRoomList,
+                                    columnSize = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 3,
+                                    ifEqualWeight = true
+                                ) { _, room ->
+                                    SingleRoom(
+                                        label = room.roomName,
+                                        state = !busyRoomListFilterByPeriod?.map { it.roomName }
+                                            ?.contains(room.roomName)!!,
+                                        onClick = {},
+                                        modifier = Modifier
                                     )
                                 }
                             }
                         }
-                        HorizontalPager(state = newsPagerState, modifier = Modifier.fillMaxSize()) {
-                            val currentRoomList = roomListSortByFloor[it + 1] ?: emptyList()
-                            LazyVerticalGridCustom(
-                                list = currentRoomList,
-                                columnSize = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 3,
-                                ifEqualWeight = true
-                            ) { index, room ->
-                                SingleRoom(
-                                    label = room.roomName,
-                                    state = index % 2 == 0,
-                                    timeRange = "",
-                                    onClick = {},
-                                    modifier = Modifier
-                                )
-                            }
-                        }
                     }
+
                 }
             }
         }
@@ -286,14 +325,20 @@ fun ClassroomSearchScreen(
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = {
-                showDatePicker = false
+                onShowDatePicker(false)
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        selectedDate =
+                        onSelectedDate(
                             timeStamp2DateStr(datePickerState.selectedDateMillis ?: 0)
-                        showDatePicker = false
+                        )
+                        onShowDatePicker(false)
+                        viewModel.getClassroomOccupation(
+                            timeStamp2DateStr(
+                                datePickerState.selectedDateMillis ?: 0
+                            )
+                        )
                     },
                     enabled = confirmEnabled.value
                 ) {
@@ -303,7 +348,7 @@ fun ClassroomSearchScreen(
             dismissButton = {
                 TextButton(
                     onClick = {
-                        showDatePicker = false
+                        onShowDatePicker(false)
                     }
                 ) {
                     Text(stringResource(id = R.string.cancel))
@@ -313,24 +358,6 @@ fun ClassroomSearchScreen(
             DatePicker(state = datePickerState)
         }
     }
-}
-
-fun timeStamp2DateStr(timeStamp: Long): String {
-    if (timeStamp == 0L) {
-        return getCurrentDates()
-    }
-    val instant = Instant.ofEpochMilli(timeStamp)
-    val formatter = DateTimeFormatter.ofPattern("MM月dd日")
-        .withZone(ZoneId.systemDefault())
-    val formattedDateTime = formatter.format(instant)
-    return formattedDateTime
-}
-
-fun getCurrentDates(): String {
-    val currentDate = LocalDate.now()
-    val formatter = DateTimeFormatter.ofPattern("MM月dd日")
-    val formattedDate = currentDate.format(formatter)
-    return formattedDate
 }
 
 @Composable

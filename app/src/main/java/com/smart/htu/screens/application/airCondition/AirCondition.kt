@@ -2,6 +2,8 @@ package com.smart.htu.screens.application.airCondition
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -10,33 +12,48 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetState
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -50,19 +67,25 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.smart.htu.R
 import com.smart.htu.component.PreferenceSubtitle
+import com.smart.htu.component.SuggestChip
+import com.smart.htu.component.SuggestChipType
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalHazeMaterialsApi::class,
+    ExperimentalMaterial3ExpressiveApi::class
+)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AirCondition(
@@ -73,8 +96,8 @@ fun AirCondition(
     val hazeState = remember { HazeState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
-    val bottomState = rememberModalBottomSheetState()
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
+    val (selectTabIndex, onSelectTabIndex) = remember { mutableIntStateOf(0) }
 
     val state = rememberPullToRefreshState()
     var isRefreshing by remember { mutableStateOf(false) }
@@ -82,23 +105,20 @@ fun AirCondition(
         isRefreshing = true
         scope.launch {
             viewModel.getBillDetailService()
-            delay(1000)
+            viewModel.getBillRecords()
+            viewModel.getBuyRecords()
             isRefreshing = false
         }
     }
-    LaunchedEffect(Unit) {
-        onRefresh()
-    }
-
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.mediumTopAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
-                ),
+                colors = topAppBarColors(
+        containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
+        scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+        ),
                 title = { Text(text = "寝室电费") },
                 navigationIcon = {
                     IconButton(
@@ -113,7 +133,6 @@ fun AirCondition(
                     IconButton(
                         onClick = {
                             scope.launch {
-                                bottomState.expand()
                                 openBottomSheet = true
                             }
                         }
@@ -149,32 +168,165 @@ fun AirCondition(
         ) {
             LazyColumn(
                 contentPadding = PaddingValues(
-                    top = it.calculateTopPadding() + 15.dp,
+                    top = it.calculateTopPadding() + 8.dp,
                     start = 15.dp,
                     end = 15.dp,
                     bottom = 15.dp
                 ),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
                     .hazeSource(state = hazeState)
                     .fillMaxSize()
             ) {
                 item {
-                    TextButton(onClick = { viewModel.getBillDetailService() }) {
-                        Text(text = "测试")
+                    SuggestChip(
+                        onClick = {
+                            openBottomSheet = true
+                        },
+                        onActionClick = {
+                        },
+                        text = "请先设置你的宿舍楼和房间号",
+                        type = SuggestChipType.ERROR,
+                        visibility = remember {
+                            derivedStateOf { uiState.roomCode == "" || uiState.buildingCode == "" }
+                        }
+                    )
+                }
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                    ) {
+                        ListItem(
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                            leadingContent = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.bolt_24px),
+                                    contentDescription = "bolt"
+                                )
+                            },
+                            headlineContent = {
+                                Text(
+                                    text = (uiState.billData?.data?.displayRoomName
+                                        ?: "").replace("河南师范大学", "")
+                                )
+                            },
+                            supportingContent = {
+                                Text(
+                                    text = uiState.billData?.data?.surplusList?.first()?.roomStatus
+                                        ?: "正常用电"
+                                )
+                            },
+                            trailingContent = {
+                                Text(
+                                    text = "${uiState.billData?.data?.soc ?: 0.0} 度",
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        )
                     }
                 }
                 item {
-                    Text(text = uiState.billData.toString(), modifier = Modifier.fillMaxWidth())
+                    TabRow(
+                        selectedTabIndex = selectTabIndex,
+                        indicator = { tabPositions ->
+                            TabRowDefaults.PrimaryIndicator(
+                                modifier = Modifier
+                                    .tabIndicatorOffset(tabPositions[selectTabIndex]),
+                                width = tabPositions[selectTabIndex].width / 2f,
+                                shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
+                            )
+                        },
+                        divider = {}
+                    ) {
+                        Tab(selected = selectTabIndex == 0, onClick = { onSelectTabIndex(0) }) {
+                            Text(
+                                text = "近 ${uiState.billRecords?.total ?: 0} 天用电情况",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                        Tab(selected = selectTabIndex == 1, onClick = { onSelectTabIndex(1) }) {
+                            Text(
+                                text = "缴费情况",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(12.dp)
+                            )
+                        }
+                    }
+                }
+                if (uiState.isLoadingBillRecords) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(top = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularWavyProgressIndicator(modifier = Modifier.size(36.dp))
+                        }
+                    }
+                } else {
+                    when (selectTabIndex) {
+                        0 -> items(uiState.billRecords?.rows ?: emptyList()) {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {}
+                            ) {
+                                ListItem(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                    headlineContent = { Text(text = it.datetime) },
+                                    trailingContent = {
+                                        Text(
+                                            text = "${it.used} 度",
+                                            style = MaterialTheme.typography.labelLarge
+                                        )
+                                    }
+                                )
+                            }
+                        }
+
+                        1 -> items(uiState.buyRecords?.rows ?: emptyList()) {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {}
+                            ) {
+                                ListItem(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                    headlineContent = { Text(text = it.dateTime) },
+                                    trailingContent = {
+                                        Text(
+                                            text = "${it.money} 元",
+                                            style = MaterialTheme.typography.labelLarge
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
     }
     if (openBottomSheet)
         SetCookieBottomSheet(
-            bottomState = bottomState,
             uiState = uiState,
             viewModel = viewModel,
-            onDismissRequest = { openBottomSheet = false }
+            onDismissRequest = { openBottomSheet = false },
+            onConfirm = {
+                scope.launch {
+                    openBottomSheet = false
+                    viewModel.saveUserCookie()
+                    onRefresh()
+                }
+            }
         )
 }
 
@@ -183,35 +335,57 @@ fun AirCondition(
 fun SetCookieBottomSheet(
     uiState: AirConditionUiState,
     viewModel: AirConditionViewModel,
-    bottomState: SheetState,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit
 ) {
+    var buildingId by remember { mutableStateOf(uiState.buildingCode) }
+    var roomId by remember { mutableStateOf(uiState.roomCode) }
+    LaunchedEffect(uiState.setCookieType) {
+        viewModel.getAirConditionConfig()
+    }
     ModalBottomSheet(
-        sheetState = bottomState,
         onDismissRequest = {
             onDismissRequest()
         }
     ) {
-        Text(
-            text = "设置信息",
-            style = MaterialTheme.typography.titleLarge,
+        Row(
             modifier = Modifier
-                .padding(15.dp)
-                .fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { onDismissRequest() }) {
+                Icon(
+                    imageVector = Icons.Outlined.Close,
+                    contentDescription = "close"
+                )
+            }
+            Text(
+                text = "设置",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
+            IconButton(
+                onClick = {
+                    viewModel.saveBuildingAndRoomId(buildingId, roomId)
+                    onConfirm()
+                }
+            ) {
+                Icon(imageVector = Icons.Outlined.Done, contentDescription = "save")
+            }
+        }
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(15.dp)
         ) {
             item {
                 PreferenceSubtitle(text = "宿舍楼和房间")
-                var buildingId by remember { mutableStateOf(uiState.buildingCode) }
-                var roomId by remember { mutableStateOf(uiState.roomCode) }
                 val buildingIdPattern = Regex("^[西|东]\\d{2}$")
                 val roomIdPattern = Regex("^\\d{4}$")
-                var buildingIdError by remember { mutableStateOf(false) }
-                var roomIdError by remember { mutableStateOf(false) }
+                val (buildingIdError, onBuildingError) = remember { mutableStateOf(false) }
+                val (roomIdError, onRoomError) = remember { mutableStateOf(false) }
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -223,26 +397,28 @@ fun SetCookieBottomSheet(
                         value = buildingId,
                         onValueChange = {
                             buildingId = it
-                            buildingIdError = !buildingIdPattern.matches(it)
+                            onBuildingError(!buildingIdPattern.matches(it))
                         },
                         trailingIcon = {
-                            if (buildingIdError) Icon(
-                                painter = painterResource(id = R.drawable.warning_24px),
-                                contentDescription = "warning",
-                                tint = MaterialTheme.colorScheme.error
-                            )
+                            if (buildingIdError)
+                                Icon(
+                                    painter = painterResource(id = R.drawable.warning_24px),
+                                    contentDescription = "warning",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
                         },
                         isError = buildingIdError,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     OutlinedTextField(
                         label = { Text(text = "房间") },
-                        placeholder = { Text(text = "如：0123") },
+                        placeholder = { Text(text = "如：0213(2层 13房间)") },
                         value = roomId,
                         onValueChange = {
                             roomId = it
-                            roomIdError = !roomIdPattern.matches(it) || roomId.length != 4
+                            onRoomError(!roomIdPattern.matches(it) || roomId.length != 4)
                         },
                         trailingIcon = {
                             if (roomIdError) Icon(
@@ -252,22 +428,14 @@ fun SetCookieBottomSheet(
                             )
                         },
                         isError = roomIdError,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
                     )
-                    TextButton(
-                        onClick = {
-                            viewModel.saveBuildingAndRoomId(buildingId, roomId)
-                            viewModel.getBillDetailService()
-                        },
-                        enabled = !buildingIdError && !roomIdError
-                    ) {
-                        Text(text = "确定")
-                    }
                 }
             }
             item {
-                PreferenceSubtitle(text = "设置Cookie")
-                val radioOptions = listOf("开发者Cookie", "自定义Cookie")
+                PreferenceSubtitle(text = "设置 Cookie")
+                val radioOptions = listOf("开发者 Cookie", "自定义 Cookie")
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -300,27 +468,68 @@ fun SetCookieBottomSheet(
                 }
                 AnimatedVisibility(visible = uiState.setCookieType == 1) {
                     Column(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         OutlinedTextField(
                             label = { Text(text = "shiroJID") },
-                            placeholder = { },
                             maxLines = 1,
-                            value = uiState.remoteLoginCookie?.shiroJID ?: "",
-                            onValueChange = { viewModel.changeShiroJid(it) },
-                            modifier = Modifier.fillMaxWidth()
+                            value = uiState.userLoginCookie?.shiroJID ?: "",
+                            onValueChange = { viewModel.changeUserShiroJid(it) },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp)
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         OutlinedTextField(
                             label = { Text(text = "ymID") },
-                            placeholder = { },
-                            value = uiState.remoteLoginCookie?.ymId ?: "",
-                            onValueChange = { viewModel.changeYmld(it) },
-                            modifier = Modifier.fillMaxWidth()
+                            value = uiState.userLoginCookie?.ymId ?: "",
+                            onValueChange = { viewModel.changeUserYmld(it) },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp)
                         )
-                        TextButton(onClick = { viewModel.getAirConditionConfig() }) {
-                            Text(text = "测试")
+                    }
+                }
+            }
+            item {
+                PreferenceSubtitle(text = "显示形式")
+                val dataShowOptions = mapOf(
+                    "显示数据和图表" to DataShowType.CHART_LIST,
+                    "仅显示数据" to DataShowType.LIST,
+                    "仅显示图表" to DataShowType.CHART
+                )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Column(Modifier.selectableGroup()) {
+                        dataShowOptions.keys.forEachIndexed { _, text ->
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp)
+                                    .selectable(
+                                        selected = (dataShowOptions[text] == uiState.dataShowType),
+                                        onClick = {
+                                            viewModel.changeDataShowType(
+                                                dataShowOptions[text] ?: DataShowType.LIST
+                                            )
+                                        },
+                                        role = Role.RadioButton
+                                    )
+                                    .padding(horizontal = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = (dataShowOptions[text] == uiState.dataShowType),
+                                    onClick = null
+                                )
+                                Text(
+                                    text = text,
+                                    modifier = Modifier.padding(start = 16.dp)
+                                )
+                            }
                         }
                     }
                 }

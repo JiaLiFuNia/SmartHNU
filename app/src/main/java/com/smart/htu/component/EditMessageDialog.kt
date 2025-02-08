@@ -13,7 +13,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,11 +21,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.smart.htu.R
-import com.smart.htu.screens.login.LoginViewModel
 
 @Composable
 fun EditMessageDialog(
@@ -38,7 +37,7 @@ fun EditMessageDialog(
     if (showDialog) {
         AlertDialog(
             title = {
-                Text(text = "编辑信息")
+                Text(text = stringResource(R.string.edit_message))
             },
             icon = {
                 Icon(imageVector = Icons.Outlined.Edit, contentDescription = "edit")
@@ -52,7 +51,7 @@ fun EditMessageDialog(
                     },
                     enabled = (customQQ.isNotEmpty() && customQQ.length <= 11)
                 ) {
-                    Text(text = "确定")
+                    Text(text = "保存")
                 }
             },
             dismissButton = {
@@ -88,12 +87,12 @@ fun EditMessageDialog(
                         singleLine = true,
                         isError = customQQ.length > 11,
                         supportingText = {
-                            if (customQQ.length > 11) Text(text = "QQ号码不合法")
+                            if (customQQ.length > 11) Text(text = "QQ 号码不合法")
                         },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     )
                     Text(
-                        text = "Tip：现在你可以通过设置任意 QQ 号码以更改你的头像。",
+                        text = "Tip：现在你可以通过设置 QQ 号码以更改你的头像。",
                         textAlign = TextAlign.Start,
                         modifier = Modifier.fillMaxWidth(),
                         color = Color.Gray

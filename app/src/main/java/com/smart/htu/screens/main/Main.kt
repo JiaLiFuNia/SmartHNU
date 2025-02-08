@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -36,8 +37,8 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -60,13 +61,14 @@ import com.smart.htu.component.LargeCardDisplay
 import com.smart.htu.component.MediumCardDisplay
 import com.smart.htu.component.SingleCourseCard
 import com.smart.htu.component.SmallCardDisplay
+import com.smart.htu.component.SuggestChip
+import com.smart.htu.component.SuggestChipType
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.entity.SmallCardContent
 import com.smart.htu.screens.login.LoginUiState
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateWithAuthCheck
 import com.smart.htu.screens.navigation.Destinations
-import com.smart.htu.screens.person.loginStateString
 import com.smart.htu.ui.icon.WeatherIcon
 import com.smart.htu.ui.icon.weatherIcon._303
 import com.smart.htu.utils.startCalendar
@@ -106,9 +108,14 @@ fun Main(
     val onRefresh: () -> Unit = {
         isRefreshing = true
         coroutineScope.launch {
-            delay(2000)
+            mainViewModel.getGiteeConfigService()
+            delay(1500)
             isRefreshing = false
         }
+    }
+
+    val visibility = remember {
+        derivedStateOf { mutableStateOf(!loginUiState.isLogSuccess) }
     }
 
     Scaffold(
@@ -135,15 +142,23 @@ fun Main(
                 actions = {
                     IconButton(
                         onClick = {
-                            navController.navigateWithAuthCheck(
-                                route = Destinations.Message.route,
-                                label = R.string.message_center,
-                                logState = uiState.isLogSuccess
+                            navController.navigate(
+                                route = Destinations.Message.route
                             )
                         }
                     ) {
                         BadgedBox(
-                            badge = { Badge { Text(text = "2") } }
+                            badge = {
+                                val messageCount = uiState.config?.notice?.filter {
+                                    !uiState.hadReadIdList.contains(it.id)
+                                }?.size ?: 0
+                                if (messageCount != 0)
+                                    Badge {
+                                        Text(
+                                            text = messageCount.toString()
+                                        )
+                                    }
+                            }
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.notifications_24px),
@@ -187,16 +202,27 @@ fun Main(
         ) {
             LazyColumn(
                 contentPadding = PaddingValues(
-                    top = it.calculateTopPadding() + 15.dp,
-                    start = 15.dp,
-                    end = 15.dp,
-                    bottom = 15.dp
+                    top = it.calculateTopPadding() + 16.dp,
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 16.dp
                 ),
                 modifier = Modifier
                     .hazeSource(state = hazeState)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
+                if (visibility.value.value)
+                    item {
+                        SuggestChip(
+                            onClick = { navController.navigate(Destinations.Login.route) },
+                            onActionClick = { navController.navigate(Destinations.Login.route) },
+                            text = "暂未登录，登录后即可体验全部功能",
+                            type = SuggestChipType.ERROR,
+                            visibility = visibility.value,
+                            icon = Icons.AutoMirrored.Filled.ArrowForward
+                        )
+                    }
                 item {
                     Row(
                         horizontalArrangement = Arrangement.Center
@@ -344,7 +370,7 @@ fun CommonAppsCard(
     applicationViewModel: ApplicationViewModel,
     uiState: LoginUiState
 ) {
-    val lazyVerticalGridHeight by remember { mutableIntStateOf(((ceil(appList.size / 5.0)) * 70).toInt() + 16) }
+    val lazyVerticalGridHeight by remember { derivedStateOf { ((ceil(appList.size / 5.0)) * 70).toInt() + 16 } }
     LargeCardDisplay(
         modifier = Modifier,
         title = stringResource(id = R.string.common_applications),

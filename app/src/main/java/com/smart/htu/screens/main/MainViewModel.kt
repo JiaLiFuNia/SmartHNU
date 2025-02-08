@@ -2,21 +2,24 @@ package com.smart.htu.screens.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.smart.htu.api.module.GiteeEntity
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
 import com.smart.htu.repo.DataStoreRepo.Companion.INIT_COMMON_APP_LIST
+import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.screens.application.entity.SmallCardContent
-import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.entity.SingleCourseEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class AppUiState(
@@ -24,12 +27,15 @@ data class AppUiState(
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val username: String = DEFAULT_USERNAME,
     val isLogSuccess: Boolean = false,
+    val config: GiteeEntity? = null,
+    val hadReadIdList: List<String> = emptyList(),
     val appListIsCommonList: List<SmallCardContent> = INIT_COMMON_APP_LIST
 )
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val dataStoreRepo: DataStoreRepo
+    private val dataStoreRepo: DataStoreRepo,
+    private val networkRepo: NetworkRepo
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AppUiState())
@@ -58,14 +64,25 @@ class MainViewModel @Inject constructor(
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            DEFAULT_BLUR_EFFECT
+            runBlocking {
+                dataStoreRepo.observerBlurState().first()
+            }
         )
 
-    private val _username = dataStoreRepo.observeUsername()
+    private val _usernameStateFlow = dataStoreRepo.observeUsername()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            DEFAULT_USERNAME
+            runBlocking {
+                dataStoreRepo.observeUsername().first()
+            }
+        )
+
+    private val _hadReadIdListStateFlow = dataStoreRepo.observeNoticeReadIdList()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking { dataStoreRepo.observeNoticeReadIdList().first() }
         )
 
     private val _loginState = dataStoreRepo.observeLoginState().stateIn(
@@ -92,7 +109,7 @@ class MainViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            _username.collect { value ->
+            _usernameStateFlow.collect { value ->
                 _uiState.update { it.copy(username = value) }
             }
         }
@@ -108,6 +125,19 @@ class MainViewModel @Inject constructor(
                 _uiState.update { it.copy(appListIsCommonList = value) }
             }
         }
+        viewModelScope.launch {
+            _hadReadIdListStateFlow.collect { value ->
+                _uiState.update { it.copy(hadReadIdList = value) }
+            }
+        }
+        viewModelScope.launch {
+            getGiteeConfigService()
+        }
+    }
+
+    suspend fun getGiteeConfigService() {
+        val res = networkRepo.getGiteeConfig()
+        res.onSuccess { _uiState.update { it.copy(config = res.getOrNull()) } }
     }
 
 }

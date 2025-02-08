@@ -19,7 +19,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.SmartHNU">
+            android:theme="@style/Theme.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -38,5 +38,7 @@
         <intent>
             <action android:name="android.intent.action.SEND" />
         </intent>
+
+        <package android:name="com.autewifi.sd.enroll" />
     </queries>
 </manifest>

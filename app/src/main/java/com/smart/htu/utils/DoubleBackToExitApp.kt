@@ -22,7 +22,7 @@ fun DoubleBackToExitApp(
             onExit()
         } else {
             shouldExit = true
-            sendToast(context = context, text = "再按一次退出应用")
+            sendToast(context = context, text = "再一次操作退出应用")
 
             coroutineScope.launch {
                 kotlinx.coroutines.delay(2000)

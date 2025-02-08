@@ -16,8 +16,8 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 33
-        versionCode = 20250113
-        versionName = "3.0.3"
+        versionCode = 202502081
+        versionName = "3.0.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -65,6 +65,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.material.material.icons.core)
+    // implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
@@ -75,8 +77,11 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    implementation(libs.androidx.core.splashscreen)
+
+    // dataStore
     implementation(libs.androidx.datastore.preferences)
-    implementation(libs.compose.webview.multiplatform)
 
     implementation(libs.androidx.material3.adaptive.navigation.suite)
     implementation(libs.androidx.adaptive.navigation.android)
@@ -103,6 +108,7 @@ dependencies {
 
     // webview
     implementation(libs.androidx.webkit)
+    implementation(libs.compose.webview.multiplatform)
 
     // json
     implementation(libs.kotlinx.serialization.json)

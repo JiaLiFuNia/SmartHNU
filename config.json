@@ -2,21 +2,38 @@
   "version": "3.0.3",
   "versionCode": "20250113",
   "airConditionCookie": {
-    "shiroJID": "",
-    "ymID": ""
+    "shiroJID": "295444bf-c1cf-458b-b041-b6cc36f07461",
+    "ymId": "2209553875734609932"
   },
+  "term": "202502",
   "notice": [
     {
-      "id": "1",
-      "time": "",
-      "content": "",
-      "action": ""
+      "id": "2025012001",
+      "time": "2025-1-20 15:37",
+      "title": "软件通知",
+      "content": "这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知。",
+      "type": null
     },
     {
-      "id": "2",
-      "time": "",
-      "content": "",
-      "action": ""
+      "id": "2025012002",
+      "time": "2025-1-21 17:05",
+      "title": "软件通知",
+      "content": "https://xhand.site",
+      "type": "url"
+    },
+    {
+      "id": "2025012301",
+      "time": "2025-1-23 12:14",
+      "title": "软件通知",
+      "content": "师韵——集教务与新闻于一体的校园助手。",
+      "type": null
+    },
+    {
+      "id": "2025012302",
+      "time": "2025-1-23 12:15",
+      "title": "软件通知",
+      "content": "https://www.htu.edu.cn/",
+      "type": "url"
     }
   ]
 }

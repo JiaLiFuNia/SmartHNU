@@ -22,6 +22,7 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -65,10 +66,10 @@ fun SettingScreen(
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.mediumTopAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
-                ),
+                colors = topAppBarColors(
+        containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
+        scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+        ),
                 title = { Text(text = stringResource(id = R.string.setting)) },
                 navigationIcon = {
                     IconButton(
@@ -110,7 +111,7 @@ fun SettingScreen(
                             },
                             icon = {
                                 Image(
-                                    painter = painterResource(id = R.drawable.avator_1),
+                                    painter = painterResource(id = R.drawable.developer_icon),
                                     contentDescription = null,
                                     modifier = Modifier
                                         .size(40.dp)
