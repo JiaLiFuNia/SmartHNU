@@ -1,6 +1,8 @@
 package com.smart.htu.repo
 
+import android.content.Context
 import android.util.Log
+import com.smart.htu.R
 import com.smart.htu.api.module.Area
 import com.smart.htu.api.module.BillDetail
 import com.smart.htu.api.module.BillRecords
@@ -22,9 +24,10 @@ import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_MESSAGE
 import com.smart.htu.screens.application.librarySearch.LibraryBookDetail
 import com.smart.htu.screens.application.librarySearch.LibraryBookListEntity
 import com.smart.htu.utils.AESUtils
-import com.smart.htu.utils.RSAEncryptionHelper
+import com.smart.htu.utils.RSAUtil
 import com.smart.htu.utils.parseLibraryBookDetail
 import com.smart.htu.utils.parseLibrarySearchResult
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
@@ -32,6 +35,7 @@ import java.io.IOException
 import javax.inject.Inject
 
 class NetworkRepo @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val authServerService: AuthLoginService,
     private val eHallService: EHallService,
     private val libraryService: LibraryService,
@@ -52,24 +56,6 @@ class NetworkRepo @Inject constructor(
                 Log.e("TAG666", "${e.message}")
                 Result.failure(Exception("获取失败"))
             }
-        }
-    }
-
-    // 教室查询
-    suspend fun getClassroomOccupationService(
-        building: BuildingEntity,
-        token: String
-    ): Result<ClassroomOccupationEntity> {
-        try {
-            val res = jwcService.classroomOccupation(building, token)
-            return when (res.code) {
-                200 -> Result.success(res)
-                401 -> Result.failure(Exception("401"))
-                else -> Result.failure(Exception("获取失败"))
-            }
-        } catch (e: Exception) {
-            Log.e("TAG666", "${e.message}")
-            return Result.failure(Exception("获取失败"))
         }
     }
 
@@ -286,9 +272,9 @@ class NetworkRepo @Inject constructor(
         password: String
     ): Result<LoginJWCEntity> {
         try {
-            val publicKey = RSAEncryptionHelper.getPublicKeyFromString()
-            val passwordEncrypt = RSAEncryptionHelper.encryptText(password, publicKey)
-            val logState = jwcService.login(LoginPost(username, passwordEncrypt))
+            val publicKey = RSAUtil.getPublicKeyFromRaw(context, R.raw.public_key)
+            val passwordEncrypt = publicKey?.let { RSAUtil.encryptText(password, it) }
+            val logState = jwcService.login(LoginPost(username, passwordEncrypt ?: ""))
             return if (logState.code == 200) {
                 Result.success(logState)
             } else {

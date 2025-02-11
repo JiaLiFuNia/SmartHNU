@@ -55,7 +55,8 @@ fun AccountManage(
     }
 
     ScaffoldWithHazeLazyColumn(
-        scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
+        scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
+        isMediumTopAppBar = true,
         blurEnabledState = uiState.blurEffect,
         title = { Text(text = stringResource(R.string.account_manage)) },
         actions = { },

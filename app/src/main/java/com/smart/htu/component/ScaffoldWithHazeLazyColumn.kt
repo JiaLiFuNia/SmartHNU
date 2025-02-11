@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -21,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
@@ -36,6 +38,8 @@ fun ScaffoldWithHazeLazyColumn(
     title: @Composable () -> Unit,
     actions: @Composable () -> Unit,
     navigationIcon: @Composable () -> Unit,
+    itemSpacePadding: Dp = 20.dp,
+    isMediumTopAppBar: Boolean = false,
     isRefreshing: Boolean,
     refreshState: PullToRefreshState,
     onRefresh: () -> Unit,
@@ -45,23 +49,42 @@ fun ScaffoldWithHazeLazyColumn(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (blurEnabledState) Color.Transparent else MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = if (blurEnabledState) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
-                ),
-                title = { title() },
-                actions = { actions() },
-                navigationIcon = { navigationIcon() },
-                modifier = Modifier.hazeEffect(
-                    state = hazeState,
-                    style = HazeMaterials.regular()
-                ) {
-                    blurRadius = 30.dp
-                    blurEnabled = blurEnabledState
-                }
-            )
+            if (isMediumTopAppBar)
+                MediumTopAppBar(
+                    scrollBehavior = scrollBehavior,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = if (blurEnabledState) Color.Transparent else MaterialTheme.colorScheme.surface,
+                        scrolledContainerColor = if (blurEnabledState) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+                    ),
+                    title = { title() },
+                    actions = { actions() },
+                    navigationIcon = { navigationIcon() },
+                    modifier = Modifier.hazeEffect(
+                        state = hazeState,
+                        style = HazeMaterials.regular()
+                    ) {
+                        blurRadius = 30.dp
+                        blurEnabled = blurEnabledState
+                    }
+                )
+            else
+                TopAppBar(
+                    scrollBehavior = scrollBehavior,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = if (blurEnabledState) Color.Transparent else MaterialTheme.colorScheme.surface,
+                        scrolledContainerColor = if (blurEnabledState) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+                    ),
+                    title = { title() },
+                    actions = { actions() },
+                    navigationIcon = { navigationIcon() },
+                    modifier = Modifier.hazeEffect(
+                        state = hazeState,
+                        style = HazeMaterials.regular()
+                    ) {
+                        blurRadius = 30.dp
+                        blurEnabled = blurEnabledState
+                    }
+                )
         }
     ) {
         PullToRefreshBox(
@@ -90,7 +113,7 @@ fun ScaffoldWithHazeLazyColumn(
                 modifier = Modifier
                     .hazeSource(state = hazeState)
                     .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(itemSpacePadding)
             ) {
                 content()
             }

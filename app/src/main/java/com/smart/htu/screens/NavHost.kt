@@ -26,6 +26,7 @@ import com.smart.htu.screens.news.NewsScreen
 import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.person.AccountManage
 import com.smart.htu.screens.person.PersonScreen
+import com.smart.htu.screens.setting.About
 import com.smart.htu.screens.setting.AppSettingScreen
 import com.smart.htu.screens.setting.AppreciateScreen
 import com.smart.htu.screens.setting.DynamicColorSettingScreen
@@ -142,7 +143,7 @@ fun NavHostScreen(
             )
         }
         animatedComposable(Destinations.Appreciate.route) {
-            AppreciateScreen(navController = navController)
+            AppreciateScreen(navController = navController, viewModel = settingViewModel)
         }
         animatedComposable(Destinations.LibrarySearch.route) {
             LibrarySearchScreen(navController = navController)
@@ -152,6 +153,9 @@ fun NavHostScreen(
         }
         animatedComposable(Destinations.AccountManage.route) {
             AccountManage(navController = navController, viewModel = loginViewModel)
+        }
+        animatedComposable(Destinations.About.route) {
+            About(navController = navController, viewModel = settingViewModel)
         }
     }
 }
@@ -172,7 +176,7 @@ fun NavController.navigateWithAuthCheck(
         if (url != null)
             this.navigate("${Destinations.WebView.route}/${Uri.encode(url)}/${label}")
         if (appUrl != null)
-            startAppUrl(SHOWER_ALIPAY_URL)
+            startAppUrl(appUrl)
     } else {
         this.currentBackStackEntry?.savedStateHandle?.set("original_route", route)
         this.currentBackStackEntry?.savedStateHandle?.set("original_url", url)

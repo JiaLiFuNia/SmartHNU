@@ -20,8 +20,6 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,7 +32,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -57,7 +54,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,9 +67,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.smart.htu.R
+import com.smart.htu.component.BasicBottomSheet
 import com.smart.htu.component.PreferenceSubtitle
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
+import com.smart.htu.component.chart.ColumnChart
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -96,7 +94,7 @@ fun AirCondition(
     val hazeState = remember { HazeState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
-    var openBottomSheet by rememberSaveable { mutableStateOf(false) }
+    val (openBottomSheet, onOpenBottomSheet) = remember { mutableStateOf(false) }
     val (selectTabIndex, onSelectTabIndex) = remember { mutableIntStateOf(0) }
 
     val state = rememberPullToRefreshState()
@@ -119,7 +117,7 @@ fun AirCondition(
         containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
         scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
         ),
-                title = { Text(text = "寝室电费") },
+                title = { Text(text = "寝室空调电费") },
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() }) {
@@ -133,7 +131,7 @@ fun AirCondition(
                     IconButton(
                         onClick = {
                             scope.launch {
-                                openBottomSheet = true
+                                onOpenBottomSheet(true)
                             }
                         }
                     ) {
@@ -181,7 +179,7 @@ fun AirCondition(
                 item {
                     SuggestChip(
                         onClick = {
-                            openBottomSheet = true
+                            onOpenBottomSheet(true)
                         },
                         onActionClick = {
                         },
@@ -273,41 +271,77 @@ fun AirCondition(
                     }
                 } else {
                     when (selectTabIndex) {
-                        0 -> items(uiState.billRecords?.rows ?: emptyList()) {
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = {}
-                            ) {
-                                ListItem(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                    headlineContent = { Text(text = it.datetime) },
-                                    trailingContent = {
-                                        Text(
-                                            text = "${it.used} 度",
-                                            style = MaterialTheme.typography.labelLarge
+                        0 -> {
+                            item {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(8.dp)
+                                    ) {
+                                        ColumnChart(
+                                            yData = uiState.billRecords?.rows?.map {
+                                                it.used.toDouble()
+                                            } ?: listOf(0.0)
                                         )
                                     }
-                                )
+                                }
+                            }
+                            items(uiState.billRecords?.rows ?: emptyList()) {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    ListItem(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                        headlineContent = { Text(text = it.datetime) },
+                                        trailingContent = {
+                                            Text(
+                                                text = "${it.used} 度",
+                                                style = MaterialTheme.typography.labelLarge
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         }
 
-                        1 -> items(uiState.buyRecords?.rows ?: emptyList()) {
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = {}
-                            ) {
-                                ListItem(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                    headlineContent = { Text(text = it.dateTime) },
-                                    trailingContent = {
-                                        Text(
-                                            text = "${it.money} 元",
-                                            style = MaterialTheme.typography.labelLarge
+                        1 -> {
+                            item {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(8.dp)
+                                    ) {
+                                        ColumnChart(
+                                            yData = uiState.buyRecords?.rows?.map {
+                                                it.money.toDouble()
+                                            } ?: listOf(0.0)
                                         )
                                     }
-                                )
+                                }
+                            }
+                            items(uiState.buyRecords?.rows ?: emptyList()) {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    ListItem(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                        headlineContent = { Text(text = it.dateTime) },
+                                        trailingContent = {
+                                            Text(
+                                                text = "${it.money} 元",
+                                                style = MaterialTheme.typography.labelLarge
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -315,70 +349,47 @@ fun AirCondition(
             }
         }
     }
-    if (openBottomSheet)
-        SetCookieBottomSheet(
-            uiState = uiState,
-            viewModel = viewModel,
-            onDismissRequest = { openBottomSheet = false },
-            onConfirm = {
-                scope.launch {
-                    openBottomSheet = false
-                    viewModel.saveUserCookie()
-                    onRefresh()
-                }
+    SetCookieBottomSheet(
+        isBottomSheetShow = openBottomSheet,
+        uiState = uiState,
+        viewModel = viewModel,
+        onDismissRequest = { onOpenBottomSheet(false) },
+        onConfirmClick = {
+            scope.launch {
+                onOpenBottomSheet(false)
+                viewModel.saveUserCookie()
+                onRefresh()
             }
-        )
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetCookieBottomSheet(
+    isBottomSheetShow: Boolean,
     uiState: AirConditionUiState,
     viewModel: AirConditionViewModel,
     onDismissRequest: () -> Unit,
-    onConfirm: () -> Unit
+    onConfirmClick: () -> Unit
 ) {
     var buildingId by remember { mutableStateOf(uiState.buildingCode) }
     var roomId by remember { mutableStateOf(uiState.roomCode) }
     LaunchedEffect(uiState.setCookieType) {
         viewModel.getAirConditionConfig()
     }
-    ModalBottomSheet(
-        onDismissRequest = {
-            onDismissRequest()
+    BasicBottomSheet(
+        title = "设置",
+        isBottomSheetShow = isBottomSheetShow,
+        onDismissRequest = onDismissRequest,
+        onConfirmClick = {
+            viewModel.saveBuildingAndRoomId(buildingId, roomId)
+            onConfirmClick()
         }
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = { onDismissRequest() }) {
-                Icon(
-                    imageVector = Icons.Outlined.Close,
-                    contentDescription = "close"
-                )
-            }
-            Text(
-                text = "设置",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center
-            )
-            IconButton(
-                onClick = {
-                    viewModel.saveBuildingAndRoomId(buildingId, roomId)
-                    onConfirm()
-                }
-            ) {
-                Icon(imageVector = Icons.Outlined.Done, contentDescription = "save")
-            }
-        }
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(15.dp)
+            contentPadding = PaddingValues(16.dp)
         ) {
             item {
                 PreferenceSubtitle(text = "宿舍楼和房间")

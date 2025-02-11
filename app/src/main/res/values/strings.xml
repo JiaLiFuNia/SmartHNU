@@ -75,8 +75,8 @@
     <string name="confirm_logout">确定要退出登录吗？</string>
     <string name="no_message">暂无消息</string>
     <string name="message_center">消息中心</string>
-    <string name="book_search">图书查询</string>
-    <string name="live_service">生活服务</string>
+    <string name="book_search">图书</string>
+    <string name="live_service">校园生活</string>
     <string name="participate">参与贡献</string>
     <string name="class_name">班级</string>
     <string name="political_outlook">政治面貌</string>
@@ -88,5 +88,5 @@
     <string name="second_class">第二课堂</string>
     <string name="textbook_select">教材选订</string>
     <string name="account_manage">账号管理</string>
-    <string name="water_washer">热水-洗衣</string>
+    <string name="water_washer">热水·洗衣</string>
 </resources>

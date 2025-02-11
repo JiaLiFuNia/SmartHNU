@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,7 +38,6 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,10 +48,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SheetState
@@ -93,6 +91,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.smart.htu.R
+import com.smart.htu.component.BasicBottomSheet
 import com.smart.htu.component.LargeCardDisplay
 import com.smart.htu.utils.copyContent
 import com.smart.htu.utils.sendToast
@@ -117,14 +116,14 @@ fun LibrarySearchScreen(
     val uiState = viewModel.uiState.collectAsState().value
 
     val hazeState = remember { HazeState() }
-    var showBottomSheet by rememberSaveable { mutableStateOf(false) }
+    val (showBottomSheet, onShowBottomSheet) = rememberSaveable { mutableStateOf(false) }
     var expand by rememberSaveable { mutableStateOf(false) }
     var isSearching by rememberSaveable { mutableStateOf(false) }
     val snackBarHostState = remember { SnackbarHostState() }
     val searchTextFieldState = rememberTextFieldState()
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val bottomSheetState = rememberModalBottomSheetState()
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val state = rememberPullToRefreshState()
@@ -317,7 +316,7 @@ fun LibrarySearchScreen(
                                     state = uiState.rentList.any { item.id == it.id },
                                     content = item,
                                     onClick = {
-                                        showBottomSheet = true
+                                        onShowBottomSheet(true)
                                         viewModel.libraryBookDetail(item.id)
                                     },
                                     onFavorite = {
@@ -375,7 +374,7 @@ fun LibrarySearchScreen(
                             uiState = uiState,
                             viewModel = viewModel,
                             onClick = {
-                                showBottomSheet = true
+                                onShowBottomSheet(true)
                             },
                             onBlankCardClick = {
                                 expand = true
@@ -385,52 +384,53 @@ fun LibrarySearchScreen(
                 }
             }
         }
-        if (showBottomSheet)
-            BookRentDetailBottomSheet(
-                onDismissRequest = { showBottomSheet = false },
-                uiState = uiState,
-                sheetState = bottomSheetState
-            )
+        BookRentDetailBottomSheet(
+            isBottomSheetShow = showBottomSheet,
+            onDismissRequest = { onShowBottomSheet(false) },
+            uiState = uiState,
+            sheetState = bottomSheetState
+        )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalMaterial3ExpressiveApi::class
+)
 @Composable
 fun BookRentDetailBottomSheet(
+    isBottomSheetShow: Boolean,
     sheetState: SheetState,
     onDismissRequest: () -> Unit,
     uiState: LibrarySearchUiState,
 ) {
-    ModalBottomSheet(
+    BasicBottomSheet(
         sheetState = sheetState,
-        onDismissRequest = { onDismissRequest() }
+        isBottomSheetShow = isBottomSheetShow,
+        title = "详情",
+        onDismissRequest = onDismissRequest
     ) {
-        Text(
-            text = "详情", style = MaterialTheme.typography.titleLarge, modifier = Modifier
-                .padding(15.dp)
-                .fillMaxWidth(), textAlign = TextAlign.Center
-        )
         LazyColumn(
-            modifier = Modifier.padding(horizontal = 15.dp)
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (uiState.isLoading) {
                 item {
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .height(200.dp),
+                            .fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(strokeWidth = 5.dp)
+                        CircularWavyProgressIndicator()
                     }
                 }
             } else {
-                itemsIndexed(uiState.singleBookDetail) { index, item ->
-                    when (index) {
-                        0 -> LibrarySingleBookDetailNoImage(content = item)
-                        else -> LibrarySingleBookDetail(content = item)
-                    }
-                    Spacer(modifier = Modifier.height(10.dp))
+                stickyHeader {
+                    LibrarySingleBookDetailNoImage(content = uiState.singleBookDetail.first())
+                }
+                itemsIndexed(uiState.singleBookDetail.takeLast(uiState.singleBookDetail.size - 1)) { _, item ->
+                    LibrarySingleBookDetail(content = item)
                 }
             }
         }
@@ -600,7 +600,10 @@ fun LibrarySingleBook(
 @Composable
 fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
     val context = LocalContext.current
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(4.dp),
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

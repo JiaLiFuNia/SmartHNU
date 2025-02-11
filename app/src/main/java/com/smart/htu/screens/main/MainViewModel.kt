@@ -6,10 +6,10 @@ import com.smart.htu.api.module.GiteeEntity
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
-import com.smart.htu.repo.DataStoreRepo.Companion.INIT_COMMON_APP_LIST
 import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.screens.application.entity.SmallCardContent
 import com.smart.htu.screens.main.entity.SingleCourseEntity
+import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

@@ -17,8 +17,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -48,7 +50,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -64,7 +65,6 @@ import com.smart.htu.component.SmallCardDisplay
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.screens.application.ApplicationViewModel
-import com.smart.htu.screens.application.entity.SmallCardContent
 import com.smart.htu.screens.login.LoginUiState
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateWithAuthCheck
@@ -161,7 +161,7 @@ fun Main(
                             }
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.notifications_24px),
+                                imageVector = Icons.Outlined.Email,
                                 contentDescription = null
                             )
                         }
@@ -237,11 +237,11 @@ fun Main(
                 }
                 item {
                     CommonAppsCard(
-                        appList = uiState.appListIsCommonList,
+                        uiState = uiState,
                         navController = navController,
                         navigateToApplication = navigateToApplication,
                         applicationViewModel = applicationViewModel,
-                        uiState = loginUiState
+                        loginUiState = loginUiState
                     )
                 }
                 item {
@@ -364,19 +364,19 @@ fun TodayCourseCard(uiState: AppUiState) {
 
 @Composable
 fun CommonAppsCard(
-    appList: List<SmallCardContent>,
+    uiState: AppUiState,
     navController: NavController,
     navigateToApplication: () -> Unit,
     applicationViewModel: ApplicationViewModel,
-    uiState: LoginUiState
+    loginUiState: LoginUiState
 ) {
-    val lazyVerticalGridHeight by remember { derivedStateOf { ((ceil(appList.size / 5.0)) * 70).toInt() + 16 } }
+    val lazyVerticalGridHeight by remember { derivedStateOf { ((ceil(uiState.appListIsCommonList.size / 5.0)) * 70).toInt() + 16 } }
     LargeCardDisplay(
         modifier = Modifier,
         title = stringResource(id = R.string.common_applications),
         leadingIconPainting = R.drawable.app_registration_24px,
         content = {
-            if (appList.isEmpty())
+            if (uiState.appListIsCommonList.isEmpty())
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -395,25 +395,25 @@ fun CommonAppsCard(
                     contentPadding = PaddingValues(8.dp),
                     userScrollEnabled = false
                 ) {
-                    items(appList.size) { index ->
+                    itemsIndexed(uiState.appListIsCommonList) { index, app ->
                         Box(
                             modifier = Modifier,
                             contentAlignment = Alignment.Center
                         ) {
                             SmallCardDisplay(
-                                enabled = (uiState.isGuest && appList[index].guestEnable) || uiState.isLogSuccess,
-                                content = appList[index],
+                                enabled = (loginUiState.isGuest && app.guestEnable) || loginUiState.isLogSuccess,
+                                content = app,
                                 onLongClick = {
                                     applicationViewModel.changeCommonAppListState(index, false)
                                 },
                                 onCLick = {
                                     navController.navigateWithAuthCheck(
-                                        isGuest = uiState.isGuest && appList[index].guestEnable,
-                                        appUrl = appList[index].appUrl,
-                                        route = appList[index].route,
-                                        url = appList[index].url,
-                                        logState = uiState.isLogSuccess,
-                                        label = appList[index].label
+                                        isGuest = loginUiState.isGuest && app.guestEnable,
+                                        appUrl = app.appUrl,
+                                        route = app.route,
+                                        url = app.url,
+                                        logState = loginUiState.isLogSuccess,
+                                        label = app.label
                                     )
                                 }
                             )

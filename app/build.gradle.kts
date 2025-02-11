@@ -16,8 +16,8 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 33
-        versionCode = 202502081
-        versionName = "3.0.8"
+        versionCode = 202502113
+        versionName = "3.0.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -78,15 +78,16 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    implementation(libs.androidx.core.splashscreen)
-
-    // dataStore
-    implementation(libs.androidx.datastore.preferences)
-
     implementation(libs.androidx.material3.adaptive.navigation.suite)
     implementation(libs.androidx.adaptive.navigation.android)
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.ui.tiles)
+
+    // Splash
+    implementation(libs.androidx.core.splashscreen)
+
+    // dataStore
+    implementation(libs.androidx.datastore.preferences)
 
     // Crypt
     implementation(libs.androidx.security.crypto)
@@ -102,6 +103,9 @@ dependencies {
 
     // 阴历
     implementation(libs.xtail.lunar)
+
+    // Konfetti
+    implementation(libs.dionsegijn.konfetti.compose)
 
     // haze
     implementation(libs.haze)
@@ -125,7 +129,10 @@ dependencies {
     // Coroutine 支持
     implementation(libs.kotlinx.coroutines.android)
 
-    // About
+    // About Screen
     implementation(libs.aboutlibraries.core)
     implementation(libs.aboutlibraries.compose.m3)
+
+    // vico
+    implementation(libs.vico.compose.m3)
 }

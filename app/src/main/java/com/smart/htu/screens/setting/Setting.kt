@@ -67,9 +67,9 @@ fun SettingScreen(
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = topAppBarColors(
-        containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
-        scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
-        ),
+                    containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+                ),
                 title = { Text(text = stringResource(id = R.string.setting)) },
                 navigationIcon = {
                     IconButton(
@@ -312,7 +312,9 @@ fun SettingScreen(
                                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 )
                             },
-                            onClick = { },
+                            onClick = {
+                                navController.navigate(Destinations.About.route)
+                            },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                         )
                         SettingsMenuLink(
@@ -346,6 +348,13 @@ fun SettingScreen(
                                 Icon(
                                     painter = painterResource(id = R.drawable.outline_auto_awesome_24),
                                     contentDescription = null
+                                )
+                            },
+                            action = {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 )
                             },
                             onClick = { navController.navigate(Destinations.Appreciate.route) },

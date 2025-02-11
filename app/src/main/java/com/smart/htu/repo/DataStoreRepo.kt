@@ -18,6 +18,7 @@ import com.smart.htu.screens.application.entity.SmallCardContent
 import com.smart.htu.screens.application.librarySearch.RentBookEntity
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.HOT_WATER_WASHER_ALIPAY_URL
+import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import com.smart.htu.utils.Constants.Companion.SHOWER_ALIPAY_URL
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -42,6 +43,7 @@ class DataStoreRepo @Inject constructor(
         val LOGIN_STATE = intPreferencesKey("LOGIN_STATE")
         val LOGIN_JWC_STATE = intPreferencesKey("LOGIN_JWC_STATE")
         val TOKEN = stringPreferencesKey("TOKEN")
+        val IS_TOKEN_VALID = booleanPreferencesKey("IS_TOKEN_VALID")
         val DARK_THEME = intPreferencesKey("DARK_THEME")
         val DYNAMIC_COLOR = booleanPreferencesKey("DYNAMIC_COLOR")
         val COMMON_APP_LIST = stringPreferencesKey("COMMON_APP_LIST")
@@ -54,12 +56,13 @@ class DataStoreRepo @Inject constructor(
         val NOTICE_READ_ID_LIST = stringPreferencesKey("NOTICE_READ_ID_LIST")
         val AIR_CONDITION_COOKIE_TYPE = intPreferencesKey("AIR_CONDITION_COOKIE_TYPE")
         val AIR_CONDITION_USER_COOKIE = stringPreferencesKey("AIR_CONDITION_USER_COOKIE")
-        val BOOK_SEARCH_HISTORY_LIAT = stringPreferencesKey("BOOK_SEARCH_HISTORY_LIAT")
+        val BOOK_SEARCH_HISTORY_LIST = stringPreferencesKey("BOOK_SEARCH_HISTORY_LIST")
 
         const val DEFAULT_VALUE_COOKIES = "[]"
         const val DEFAULT_MESSAGE_READ_ID = "[]"
         const val DEFAULT_DYNAMIC_COLOR = true
         const val DEFAULT_BLUR_EFFECT = true
+        const val DEFAULT_IS_TOKEN_VALID = true
         const val DEFAULT_LOGIN_STATE = 0
         const val DEFAULT_DARK_THEME = 0
         const val DEFAULT_QQ_NUMBER = ""
@@ -77,74 +80,6 @@ class DataStoreRepo @Inject constructor(
             academic = "-",
             studentId = "-",
             phoneNumber = "-"
-        )
-        val ALL_APP_LIST = listOf(
-            SmallCardContent(
-                guestEnable = false,
-                icon = R.drawable.today_24px,
-                label = R.string.today_course,
-            ),
-            SmallCardContent(
-                guestEnable = false,
-                label = R.string.dorm_air_conditioner,
-                icon = R.drawable.bolt_24px,
-                route = Destinations.AirCondition.route
-            ),
-            SmallCardContent(
-                guestEnable = false,
-                label = R.string.classroom_search,
-                icon = R.drawable.apartment_24px,
-                route = Destinations.ClassroomSearch.route
-            ),
-            SmallCardContent(
-                guestEnable = true,
-                label = R.string.book_search,
-                icon = R.drawable.book_4_24px,
-                route = Destinations.LibrarySearch.route
-            ),
-            SmallCardContent(
-                guestEnable = false,
-                icon = R.drawable.finance_24px,
-                label = R.string.course_grade,
-                route = null
-            ),
-            SmallCardContent(
-                guestEnable = true,
-                icon = R.drawable.near_me_24px,
-                label = R.string.live_service,
-                route = null
-            ),
-            SmallCardContent(
-                guestEnable = true,
-                icon = R.drawable.bathtub_24px,
-                description = "支付宝-卡博士",
-                label = R.string.shower_water,
-                appUrl = SHOWER_ALIPAY_URL
-            ),
-            SmallCardContent(
-                guestEnable = true,
-                icon = R.drawable.water_voc_24px,
-                description = "支付宝-胖乖生活",
-                label = R.string.water_washer,
-                appUrl = HOT_WATER_WASHER_ALIPAY_URL
-            ),
-            SmallCardContent(
-                guestEnable = true,
-                icon = R.drawable.format_paint_24px,
-                label = R.string.second_class,
-                route = null
-            ),
-            SmallCardContent(
-                guestEnable = true,
-                icon = R.drawable.book_4_24px,
-                label = R.string.textbook_select,
-                route = null
-            )
-        )
-        val INIT_COMMON_APP_LIST = listOf(
-            ALL_APP_LIST[1],
-            ALL_APP_LIST[2],
-            ALL_APP_LIST[3]
         )
     }
 
@@ -205,7 +140,7 @@ class DataStoreRepo @Inject constructor(
     }
 
     override suspend fun changeBookSearchHistoryList(list: List<String>) {
-        context.dataStore.edit { it[BOOK_SEARCH_HISTORY_LIAT] = Json.encodeToString(list) }
+        context.dataStore.edit { it[BOOK_SEARCH_HISTORY_LIST] = Json.encodeToString(list) }
     }
 
     override suspend fun changeLoginJWCState(state: Int) {
@@ -220,15 +155,17 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[NOTICE_READ_ID_LIST] = Json.encodeToString(id) }
     }
 
+    override suspend fun setTokenValid(valid: Boolean) {
+        context.dataStore.edit { it[IS_TOKEN_VALID] = valid }
+    }
+
 
     override fun observeDynamicTheme(): Flow<Boolean> {
-        return context.dataStore.data
-            .map { it[DYNAMIC_COLOR] ?: DEFAULT_DYNAMIC_COLOR }
+        return context.dataStore.data.map { it[DYNAMIC_COLOR] ?: DEFAULT_DYNAMIC_COLOR }
     }
 
     override fun observeDarkTheme(): Flow<Int> {
-        return context.dataStore.data
-            .map { it[DARK_THEME] ?: DEFAULT_DARK_THEME }
+        return context.dataStore.data.map { it[DARK_THEME] ?: DEFAULT_DARK_THEME }
     }
 
     override fun observeSmallCard(): Flow<List<SmallCardContent>> {
@@ -314,7 +251,7 @@ class DataStoreRepo @Inject constructor(
     override fun observeBookSearchHistoryList(): Flow<List<String>> {
         return context.dataStore.data.map {
             Json.decodeFromString<List<String>>(
-                it[BOOK_SEARCH_HISTORY_LIAT] ?: DEFAULT_BOOK_SEARCH_HISTORY_LIST
+                it[BOOK_SEARCH_HISTORY_LIST] ?: DEFAULT_BOOK_SEARCH_HISTORY_LIST
             )
         }
     }
@@ -333,5 +270,9 @@ class DataStoreRepo @Inject constructor(
                 it[NOTICE_READ_ID_LIST] ?: DEFAULT_MESSAGE_READ_ID
             )
         }
+    }
+
+    override fun observeTokenValid(): Flow<Boolean> {
+        return context.dataStore.data.map { it[IS_TOKEN_VALID] ?: DEFAULT_IS_TOKEN_VALID }
     }
 }

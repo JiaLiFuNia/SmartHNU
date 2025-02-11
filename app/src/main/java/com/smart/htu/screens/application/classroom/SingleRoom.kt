@@ -42,6 +42,8 @@ fun SingleRoom(
             Text(
                 text = label,
                 maxLines = 1,
+                color = if (state) MaterialTheme.colorScheme.onBackground
+                else MaterialTheme.colorScheme.onBackground.copy(0.38f),
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.basicMarquee(
                     repeatDelayMillis = 2_000,

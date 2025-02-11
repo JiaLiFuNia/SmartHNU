@@ -7,7 +7,9 @@ import com.smart.htu.api.module.BuildingEntity
 import com.smart.htu.api.module.ClassroomOccupationEntity
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_IS_TOKEN_VALID
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN
+import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.utils.Constants.Companion.BUILDING_LIST
 import com.smart.htu.utils.getCurrentDates
@@ -28,12 +30,13 @@ data class ClassroomUiState(
     val buildingsOccupation: Map<String, ClassroomOccupationEntity> = emptyMap(),
     val isLoading: Boolean = true,
     val token: String = DEFAULT_TOKEN,
-    val isTokenValid: Boolean = true,
+    val isTokenValid: Boolean = DEFAULT_IS_TOKEN_VALID,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
 
 @HiltViewModel
 class ClassroomSearchViewModel @Inject constructor(
+    private val jwcNetworkRepo: JWCNetworkRepo,
     private val networkRepo: NetworkRepo,
     private val dataStoreRepo: DataStoreRepo
 ) : ViewModel() {
@@ -45,7 +48,7 @@ class ClassroomSearchViewModel @Inject constructor(
     )
     val uiState: StateFlow<ClassroomUiState> = _uiState.asStateFlow()
 
-    private val _blurStateFlow = dataStoreRepo.observerBlurState()
+    private val blurStateFlow = dataStoreRepo.observerBlurState()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -53,7 +56,7 @@ class ClassroomSearchViewModel @Inject constructor(
                 dataStoreRepo.observerBlurState().first()
             }
         )
-    private val _tokenStateFlow = dataStoreRepo.observeJWCToken()
+    private val tokenStateFlow = dataStoreRepo.observeJWCToken()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -62,15 +65,29 @@ class ClassroomSearchViewModel @Inject constructor(
             }
         )
 
+    private val tokenValidStateFlow = dataStoreRepo.observeTokenValid()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeTokenValid().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
-            _blurStateFlow.collect { value ->
+            blurStateFlow.collect { value ->
                 _uiState.update { it.copy(blurEffect = value) }
             }
         }
         viewModelScope.launch {
-            _tokenStateFlow.collect { value ->
+            tokenStateFlow.collect { value ->
                 _uiState.update { it.copy(token = value) }
+            }
+        }
+        viewModelScope.launch {
+            tokenValidStateFlow.collect { value ->
+                _uiState.update { it.copy(isTokenValid = value) }
             }
         }
         getClassroomOccupation(getCurrentDates())
@@ -80,7 +97,7 @@ class ClassroomSearchViewModel @Inject constructor(
         try {
             changeLoadingState(true)
             _uiState.value.buildingsList.forEach { it ->
-                val res = networkRepo.getClassroomOccupationService(
+                val res = jwcNetworkRepo.getClassroomOccupationService(
                     building = BuildingEntity(
                         it.buildingCode,
                         it.buildingName,
@@ -93,21 +110,26 @@ class ClassroomSearchViewModel @Inject constructor(
                     _uiState.update { uiState ->
                         uiState.copy(buildingsOccupation = uiState.buildingsOccupation + (it.buildingName to it))
                     }
-                    changeLoadingState(false)
                 }
                 res.onFailure { failure ->
                     if (failure.message == "401")
-                        _uiState.update { uiState ->
-                            uiState.copy(isTokenValid = false)
-                        }
+                        setTokenValid(false)
                 }
             }
+            changeLoadingState(false)
         } catch (e: Exception) {
             Log.i("TAG666", "getClassroomOccupation: $e")
         }
     }
 
-    fun changeLoadingState(state: Boolean) {
+    fun setTokenValid(valid: Boolean) {
+        viewModelScope.launch {
+            dataStoreRepo.setTokenValid(valid)
+            _uiState.update { it.copy(isTokenValid = valid) }
+        }
+    }
+
+    private fun changeLoadingState(state: Boolean) {
         _uiState.update { it.copy(isLoading = state) }
     }
 }

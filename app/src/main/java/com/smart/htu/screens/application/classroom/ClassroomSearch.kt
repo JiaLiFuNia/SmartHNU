@@ -216,7 +216,8 @@ fun ClassroomSearchScreen(
                 }
                 item {
                     PreferenceSubtitle(text = stringResource(id = R.string.occupy))
-                    if (uiState.isLoading && uiState.isTokenValid) {
+                    Log.i("TAG666", "${uiState.isLoading} ${uiState.isTokenValid}")
+                    if (uiState.isLoading || !uiState.isTokenValid) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -235,7 +236,7 @@ fun ClassroomSearchScreen(
                                 }?.values?.toList() ?: emptyList()
                             val busyRoomListFilterByPeriod =
                                 singleBuildingRoomOccupation?.busyRoomList?.filter {
-                                    COURSE_PERIOD.values.toList()[selectedTimeIndex] in it.busyPeriodCode
+                                    COURSE_PERIOD.values.toList()[selectedTimeIndex] in it.busyPeriodCode || it.busyPeriodCode in COURSE_PERIOD.values.toList()[selectedTimeIndex]
                                 }
                             val floorPagerState = rememberPagerState(
                                 pageCount = { allRoomListGroupByFloor.size }

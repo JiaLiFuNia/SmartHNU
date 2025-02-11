@@ -10,6 +10,7 @@ sealed class Destinations(
     data object Application : Destinations("application")
     data object Message : Destinations("message")
     data object Setting : Destinations("setting")
+    data object About : Destinations("about")
     data object DynamicColorSetting : Destinations("dynamic")
     data object MainSetting : Destinations("main_setting")
     data object NewsSetting : Destinations("news_setting")

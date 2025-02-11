@@ -1,41 +1,49 @@
 package com.smart.htu.utils
 
+import android.content.Context
 import android.util.Base64
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.nio.charset.StandardCharsets
 import java.security.KeyFactory
 import java.security.PublicKey
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.Cipher
 
-object RSAEncryptionHelper {
+object RSAUtil {
 
     private const val RSA_ALGORITHM = "RSA"
     private const val CIPHER_TYPE_FOR_RSA = "RSA/ECB/PKCS1Padding"
 
-    private val keyFactory = KeyFactory.getInstance(RSA_ALGORITHM)
-    private val cipher = Cipher.getInstance(CIPHER_TYPE_FOR_RSA)
+    fun getPublicKeyFromRaw(context: Context, resId: Int): PublicKey? {
+        return try {
+            val inputStream = context.resources.openRawResource(resId)
+            val reader = BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8))
+            val keyPEM = reader.readText()
+                .replace("-----BEGIN PUBLIC KEY-----", "")
+                .replace("-----END PUBLIC KEY-----", "")
+                .replace("\\s".toRegex(), "")
 
-    fun getPublicKeyFromString(): PublicKey {
-        val publicKeyString =
-            "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKoR8mX0rGKLqzcWmOzbfj64K8ZIgOdHnzkXSOVOZbFu/TJhZ7rFAN+eaGkl3C4buccQd/EjEsj9ir7ijT7h96MCAwEAAQ=="
-        val keySpec =
-            X509EncodedKeySpec(Base64.decode(publicKeyString.toByteArray(), Base64.DEFAULT))
-        return keyFactory.generatePublic(keySpec)
-    }
-
-    fun getScPublicKeyFromString(): PublicKey {
-        val publicKeyString =
-            "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCIDV8I1zpoazcFmv3VNtG/E9/QC14gDhBoW9Yq6o9UNLaOZC41yoGa7hjHqjuPOcmPJ61Wmv7i5UbB5BceGRl2i0pSyOzeAeYpoY5cNRStfQlXFlwV1Ig1P081rxBcCgkWZvhodsWp9yRdKOTTHUCj0FpgD94/2QhvqkxOaW9vAwIDAQAB"
-        val keySpec =
-            X509EncodedKeySpec(Base64.decode(publicKeyString.toByteArray(), Base64.DEFAULT))
-        return keyFactory.generatePublic(keySpec)
-    }
-
-    fun encryptText(plainText: String, publicKey: PublicKey): String {
-        try {
-            cipher.init(Cipher.ENCRYPT_MODE, publicKey)
-            return Base64.encodeToString(cipher.doFinal(plainText.toByteArray()), Base64.DEFAULT)
+            val keyBytes = Base64.decode(keyPEM, Base64.DEFAULT)
+            val keySpec = X509EncodedKeySpec(keyBytes)
+            val keyFactory = KeyFactory.getInstance(RSA_ALGORITHM)
+            keyFactory.generatePublic(keySpec)
         } catch (e: Exception) {
-            return "error"
+            e.printStackTrace()
+            null
         }
     }
+
+    fun encryptText(plainText: String, publicKey: PublicKey): String? {
+        return try {
+            val cipher = Cipher.getInstance(CIPHER_TYPE_FOR_RSA)
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey)
+            val encryptedBytes = cipher.doFinal(plainText.toByteArray(StandardCharsets.UTF_8))
+            Base64.encodeToString(encryptedBytes, Base64.DEFAULT)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
 }

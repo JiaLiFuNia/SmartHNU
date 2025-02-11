@@ -216,6 +216,7 @@ fun LoginScreen(
                                 viewModel.login()
                             }
                         ),
+                        singleLine = true,
                         maxLines = 1,
                         shape = RoundedCornerShape(10.dp)
                     )

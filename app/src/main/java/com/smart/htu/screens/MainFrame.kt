@@ -58,7 +58,7 @@ fun MainFrame(
 ) {
     val context = LocalContext.current
     val savableStateHolder = rememberSaveableStateHolder()
-    var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
+    val (selectedItemIndex, onSelectedItemIndex) = rememberSaveable { mutableIntStateOf(0) }
     val loginUiState = loginViewModel.uiState.collectAsState().value
     val mainUiState = mainViewModel.uiState.collectAsState().value
     val settingUiState = settingViewModel.uiState.collectAsState().value
@@ -102,7 +102,7 @@ fun MainFrame(
                     item(
                         icon = {
                             Icon(
-                                painterResource(
+                                painter = painterResource(
                                     id = if (index == selectedItemIndex) {
                                         bottomNavigationItem.selectedIcon
                                     } else
@@ -116,7 +116,7 @@ fun MainFrame(
                         },
                         selected = selectedItemIndex == index,
                         onClick = {
-                            selectedItemIndex = index
+                            onSelectedItemIndex(index)
                         },
                         badge = {
                             if (bottomNavigationItem.badge > 0) {
@@ -157,7 +157,7 @@ fun MainFrame(
                                     navController = navController,
                                     mainViewModel = mainViewModel,
                                     navigateToApplication = {
-                                        selectedItemIndex = 1
+                                        onSelectedItemIndex(1)
                                     },
                                     loginViewModel = loginViewModel,
                                     applicationViewModel = applicationViewModel
