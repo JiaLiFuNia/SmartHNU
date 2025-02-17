@@ -2,7 +2,7 @@
 
 <img src="./img/SmartHNU.svg" width="160" height="160" style="display: block; margin: 0 auto; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); border-radius: 20%;" alt="icon" />
 
-# 师韵 SmartHNU
+# 师韵 SmartHNU（待补充...）
 
 ### 一款 [河star](https://www.htu.edu.cn) 校园生活助手
 ![Gitea Stars](https://img.shields.io/github/stars/JiaLiFuNia/SmartHNU?style=flat)
@@ -36,3 +36,6 @@
 图书：[河南师范大学图书馆](http://libmsg.htu.cn/m/opac/search.action)
 
 第二课堂：[河南师范大学第二课堂管理系统](http://dekt.htu.edu.cn)
+
+## 开发
+待补充...
