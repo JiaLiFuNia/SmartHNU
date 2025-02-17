@@ -6,9 +6,7 @@ import com.smart.htu.R
 import com.smart.htu.api.module.Area
 import com.smart.htu.api.module.BillDetail
 import com.smart.htu.api.module.BillRecords
-import com.smart.htu.api.module.BuildingEntity
 import com.smart.htu.api.module.BuyRecords
-import com.smart.htu.api.module.ClassroomOccupationEntity
 import com.smart.htu.api.module.GiteeEntity
 import com.smart.htu.api.module.LoginJWCEntity
 import com.smart.htu.api.module.LoginPost
@@ -21,6 +19,7 @@ import com.smart.htu.api.network.JWCService
 import com.smart.htu.api.network.LibraryService
 import com.smart.htu.di.NetworkCookieJar
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_MESSAGE
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN
 import com.smart.htu.screens.application.librarySearch.LibraryBookDetail
 import com.smart.htu.screens.application.librarySearch.LibraryBookListEntity
 import com.smart.htu.utils.AESUtils
@@ -28,34 +27,34 @@ import com.smart.htu.utils.RSAUtil
 import com.smart.htu.utils.parseLibraryBookDetail
 import com.smart.htu.utils.parseLibrarySearchResult
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import java.io.IOException
 import javax.inject.Inject
 
 class NetworkRepo @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val authServerService: AuthLoginService,
     private val eHallService: EHallService,
     private val libraryService: LibraryService,
-    private val jwcService: JWCService,
     private val airConditionService: AirConditionService,
     private val giteeService: GiteeService,
-    private val dataStoreRepo: DataStoreRepo,
     private val networkCookieJar: NetworkCookieJar
 ) {
 
     // 获取gitee配置
     suspend fun getGiteeConfig(): Result<GiteeEntity> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val config = giteeService.getGiteeConfig()
-                Result.success(config)
-            } catch (e: Exception) {
-                Log.e("TAG666", "${e.message}")
-                Result.failure(Exception("获取失败"))
-            }
+        try {
+            val config = giteeService.getGiteeConfig()
+            return Result.success(config)
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(Exception("获取失败"))
         }
     }
 
@@ -251,7 +250,7 @@ class NetworkRepo @Inject constructor(
             return when (response.code()) {
                 401 -> Result.failure(Exception("状态码：${response.code()} $errorTip"))
                 200 -> {
-                    if (errorTip != "") {
+                    if (errorTip.isNotEmpty()) {
                         Result.failure(Exception("状态码：${response.code()} $errorTip"))
                     } else {
                         Result.success("登录成功" + response.code())
@@ -263,44 +262,6 @@ class NetworkRepo @Inject constructor(
         } catch (e: Exception) {
             Log.e("TAG666 log", "${e.message}")
             return Result.failure(e)
-        }
-    }
-
-    // 智慧教务登录
-    suspend fun jwcLogin(
-        username: String,
-        password: String
-    ): Result<LoginJWCEntity> {
-        try {
-            val publicKey = RSAUtil.getPublicKeyFromRaw(context, R.raw.public_key)
-            val passwordEncrypt = publicKey?.let { RSAUtil.encryptText(password, it) }
-            val logState = jwcService.login(LoginPost(username, passwordEncrypt ?: ""))
-            return if (logState.code == 200) {
-                Result.success(logState)
-            } else {
-                Result.failure(Exception("登录失败"))
-            }
-        } catch (e: Exception) {
-            Log.e("TAG666", "${e.message}")
-            return Result.failure(e)
-        }
-    }
-
-    suspend fun checkJWCTokenService(
-        token: String
-    ): Result<Boolean> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val res = jwcService.checkToken(token)
-                if (res.code == 200) {
-                    Result.success(true)
-                } else {
-                    Result.failure(Exception("false"))
-                }
-            } catch (e: Exception) {
-                Log.e("TAG666", "${e.message}")
-                Result.failure(e)
-            }
         }
     }
 

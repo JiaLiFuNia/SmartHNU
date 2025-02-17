@@ -48,6 +48,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
@@ -90,11 +91,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.smart.htu.MainActivity
 import com.smart.htu.R
 import com.smart.htu.component.BasicBottomSheet
-import com.smart.htu.component.LargeCardDisplay
+import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.utils.copyContent
-import com.smart.htu.utils.sendToast
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -147,6 +148,9 @@ fun LibrarySearchScreen(
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = {
+            SnackbarHost(hostState = MainActivity.snackBarHostState)
+        },
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -176,9 +180,6 @@ fun LibrarySearchScreen(
                     blurEnabled = uiState.blurEffect
                 },
             )
-        },
-        snackbarHost = {
-            SnackbarHost(hostState = snackBarHostState)
         },
         floatingActionButton = {
                 AnimatedVisibility(
@@ -329,7 +330,8 @@ fun LibrarySearchScreen(
                                             else -> "已添加到待借清单"
                                         }
                                         scope.launch {
-                                            val result = snackBarHostState.showSnackbar(
+                                            val result =
+                                                MainActivity.snackBarHostState.showSnackbar(
                                                 message = message,
                                                 actionLabel = "撤回",
                                                 duration = SnackbarDuration.Short
@@ -600,6 +602,7 @@ fun LibrarySingleBook(
 @Composable
 fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(4.dp),
@@ -607,22 +610,23 @@ fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = content.bookName,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     maxLines = 2,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier.fillMaxWidth(),
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(5.dp))
                 SingleMessage("编著", content.publisher)
                 SingleMessage("出版社", content.publishPlace)
                 SingleMessage("出版年份", content.publishYear)
@@ -631,7 +635,9 @@ fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
             IconButton(
                 onClick = {
                     copyContent("${content.bookName} ${content.publisher} ${content.isbn}")
-                    sendToast(context, "已复制")
+                    scope.launch {
+                        MainActivity.snackBarHostState.showSnackbar("已复制到剪切板")
+                    }
                 }
             ) {
                 Icon(
@@ -707,16 +713,14 @@ fun SingleMessage(label: String, content: String) {
     ) {
         Text(
             text = label,
-            modifier = Modifier
-                .weight(0.3f),
-            fontSize = 16.sp,
-            textAlign = TextAlign.Start,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.3f),
+            style = MaterialTheme.typography.bodyLarge
         )
         Text(
             text = content,
-            color = colorScheme.onSurface,
-            fontSize = 16.sp,
-            modifier = Modifier.weight(0.8f)
+            modifier = Modifier.weight(0.8f),
+            style = MaterialTheme.typography.bodyLarge
         )
     }
 }

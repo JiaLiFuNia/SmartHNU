@@ -94,7 +94,6 @@ fun NewsScreen(
             )
         ) {
             val imageUrls = listOf(
-                "https://www.htu.edu.cn/_upload/article/images/72/9f/ee04079d4c65a3013621ee8c98da/803e8864-0ffa-4749-8033-edcd5ac306ca.jpg",
                 "https://www.htu.edu.cn/_upload/article/images/43/cc/d9a635c24f64ba4c40187ffcbdf6/80556644-902c-4848-a367-b74e04cf543e.jpg",
                 "https://www.htu.edu.cn/_upload/article/images/5d/57/2db7f5a74258b3af27efc326fde9/11ee8433-c76f-4a26-bec6-04515aa63c9b.jpg",
                 "https://www.htu.edu.cn/_upload/article/images/eb/a1/2df709514a0a98c646df10b11c9c/bc1f3c83-ab9d-4625-9350-331ca25ef49d.jpg",
@@ -122,7 +121,7 @@ fun NewsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(16 / 9f)
-                            .clip(RoundedCornerShape(15.dp)),
+                            .maskClip(MaterialTheme.shapes.extraLarge),
                         placeholder = painterResource(id = R.drawable.image_placeholder)
                     )
                 }

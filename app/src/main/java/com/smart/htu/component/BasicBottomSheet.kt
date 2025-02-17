@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun BasicBottomSheet(
     isBottomSheetShow: Boolean,
-    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false),
     title: String,
     onDismissRequest: () -> Unit,
     onConfirmClick: (() -> Unit)? = null,

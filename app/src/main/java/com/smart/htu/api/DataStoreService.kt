@@ -2,7 +2,6 @@ package com.smart.htu.api
 
 import com.smart.htu.api.module.LoginCookie
 import com.smart.htu.screens.application.entity.SmallCardContent
-import com.smart.htu.screens.application.librarySearch.LibraryBookListEntity
 import com.smart.htu.screens.application.librarySearch.RentBookEntity
 import kotlinx.coroutines.flow.Flow
 import okhttp3.Cookie
@@ -29,6 +28,7 @@ interface DataStoreService {
     suspend fun changeLoginJWCState(state: Int)
     suspend fun saveNoticeReadId(id: List<String>)
     suspend fun setTokenValid(valid: Boolean)
+    suspend fun setOverallTermCode(term: String)
 
     fun observeDynamicTheme(): Flow<Boolean>
     fun observeDarkTheme(): Flow<Int>
@@ -49,5 +49,6 @@ interface DataStoreService {
     fun observeLoginJWCState(): Flow<Int>
     fun observeNoticeReadIdList(): Flow<List<String>>
     fun observeTokenValid(): Flow<Boolean>
+    fun observeOverallTermCode(): Flow<String>
 
 }

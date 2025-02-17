@@ -15,7 +15,13 @@ import com.smart.htu.screens.application.Application
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.airCondition.AirCondition
 import com.smart.htu.screens.application.classroom.ClassroomSearchScreen
+import com.smart.htu.screens.application.entity.RouteType
+import com.smart.htu.screens.application.grade.Grade
 import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
+import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluation
+import com.smart.htu.screens.application.textbook.Textbook
+import com.smart.htu.screens.application.textbook.TextbookSelect
+import com.smart.htu.screens.application.textbook.TextbookViewModel
 import com.smart.htu.screens.login.LoginScreen
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.MainViewModel
@@ -28,24 +34,22 @@ import com.smart.htu.screens.person.AccountManage
 import com.smart.htu.screens.person.PersonScreen
 import com.smart.htu.screens.setting.About
 import com.smart.htu.screens.setting.AppSettingScreen
-import com.smart.htu.screens.setting.AppreciateScreen
 import com.smart.htu.screens.setting.DynamicColorSettingScreen
+import com.smart.htu.screens.setting.Licence
 import com.smart.htu.screens.setting.MainSettingScreen
 import com.smart.htu.screens.setting.NewsSettingScreen
 import com.smart.htu.screens.setting.SettingScreen
 import com.smart.htu.screens.setting.SettingViewModel
-import com.smart.htu.utils.Constants.Companion.SHOWER_ALIPAY_URL
 import com.smart.htu.utils.startAppUrl
 
 @Composable
-fun NavHostScreen(
-    settingViewModel: SettingViewModel = hiltViewModel(),
-    mainViewModel: MainViewModel = hiltViewModel(),
-    loginViewModel: LoginViewModel = hiltViewModel(),
-    applicationViewModel: ApplicationViewModel = hiltViewModel(),
-    newsViewModel: NewsViewModel = hiltViewModel(),
-    messageViewModel: MessageViewModel = hiltViewModel()
-) {
+fun NavHostScreen() {
+    val settingViewModel: SettingViewModel = hiltViewModel()
+    val mainViewModel: MainViewModel = hiltViewModel()
+    val loginViewModel: LoginViewModel = hiltViewModel()
+    val applicationViewModel: ApplicationViewModel = hiltViewModel()
+    val newsViewModel: NewsViewModel = hiltViewModel()
+    val messageViewModel: MessageViewModel = hiltViewModel()
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -143,7 +147,7 @@ fun NavHostScreen(
             )
         }
         animatedComposable(Destinations.Appreciate.route) {
-            AppreciateScreen(navController = navController, viewModel = settingViewModel)
+            Licence(navController = navController, viewModel = settingViewModel)
         }
         animatedComposable(Destinations.LibrarySearch.route) {
             LibrarySearchScreen(navController = navController)
@@ -157,29 +161,64 @@ fun NavHostScreen(
         animatedComposable(Destinations.About.route) {
             About(navController = navController, viewModel = settingViewModel)
         }
+        animatedComposable(Destinations.Grade.route) {
+            Grade(navController = navController)
+        }
+        animatedComposable(Destinations.TeacherEvaluation.route) {
+            TeacherEvaluation(navController = navController)
+        }
+        animatedComposable(Destinations.Textbook.route) {
+            Textbook(navController = navController)
+        }
+        animatedComposable(
+            route = "${Destinations.TextbookSelect.route}/{courseTaskCode}/{termCode}",
+            arguments = listOf(
+                navArgument(name = "courseTaskCode") {
+                    type = NavType.StringType
+                },
+                navArgument(name = "termCode") {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            TextbookSelect(
+                navController = navController,
+                courseTaskCode = it.arguments?.getString("courseTaskCode") ?: "",
+                termCode = it.arguments?.getString("termCode") ?: ""
+            )
+        }
     }
 }
 
 fun NavController.navigateWithAuthCheck(
     isGuest: Boolean = false,
     route: String? = null,
-    url: String? = null,
-    appUrl: String? = null,
+    routeType: RouteType? = null,
     label: Int,
     logState: Boolean,
     loginRoute: String = Destinations.Login.route
 ) {
-    Log.i("TAG nav", "$route $url $logState")
+    Log.i("TAG nav", "$route $routeType $logState")
     if (logState || isGuest) {
-        if (route != null)
-            this.navigate(route)
-        if (url != null)
-            this.navigate("${Destinations.WebView.route}/${Uri.encode(url)}/${label}")
-        if (appUrl != null)
-            startAppUrl(appUrl)
+        when (routeType) {
+            RouteType.URL -> {
+                this.navigate("${Destinations.WebView.route}/${Uri.encode(route)}/${label}")
+            }
+
+            RouteType.SCREEN -> {
+                this.navigate(route!!)
+            }
+
+            RouteType.APP -> {
+                startAppUrl(route!!)
+            }
+
+            else -> {
+            }
+        }
     } else {
         this.currentBackStackEntry?.savedStateHandle?.set("original_route", route)
-        this.currentBackStackEntry?.savedStateHandle?.set("original_url", url)
+        this.currentBackStackEntry?.savedStateHandle?.set("original_url", route)
         this.currentBackStackEntry?.savedStateHandle?.set("original_label", label)
         this.navigate(loginRoute)
     }

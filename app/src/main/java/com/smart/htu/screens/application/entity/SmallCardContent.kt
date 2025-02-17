@@ -9,7 +9,19 @@ data class SmallCardContent(
     val label: Int,
     val description: String? = null,
     @DrawableRes val icon: Int,
-    val route: String? = null,
-    val url: String? = null,
-    val appUrl: String? = null
+    val routeType: RouteType?,
+    val route: String?,
+    val category: SmallCardCategory
 )
+
+enum class SmallCardCategory(val category: String) {
+    CAMPUS("校园"),
+    ACADEMIC_AFFAIRS("教务"),
+    OTHERS("其他")
+}
+
+enum class RouteType {
+    URL,
+    SCREEN,
+    APP
+}

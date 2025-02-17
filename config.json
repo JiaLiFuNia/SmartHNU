@@ -12,13 +12,15 @@
       "time": "2025-1-20 15:37",
       "title": "软件通知",
       "content": "这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知。",
+      "action": null,
       "type": "COMMON"
     },
     {
       "id": "2025012002",
       "time": "2025-1-21 17:05",
       "title": "软件通知",
-      "content": "https://xhand.site",
+      "content": "博客已更新，欢迎访问。",
+      "action": "https://xhand.site",
       "type": "URL"
     },
     {
@@ -26,13 +28,15 @@
       "time": "2025-1-23 12:14",
       "title": "软件通知",
       "content": "师韵——集教务与新闻于一体的校园助手。",
+      "action": null,
       "type": "COMMON"
     },
     {
       "id": "2025012302",
       "time": "2025-1-23 12:15",
       "title": "软件通知",
-      "content": "https://www.htu.edu.cn/",
+      "action": "https://www.htu.edu.cn/",
+      "content": "河南师范大学",
       "type": "URL"
     }
   ]

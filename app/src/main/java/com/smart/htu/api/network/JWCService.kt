@@ -2,29 +2,52 @@ package com.smart.htu.api.network
 
 import com.smart.htu.api.module.BuildingEntity
 import com.smart.htu.api.module.ClassroomOccupationEntity
+import com.smart.htu.api.module.CourseGrade
 import com.smart.htu.api.module.LoginJWCEntity
 import com.smart.htu.api.module.LoginPost
+import com.smart.htu.api.module.OverallTerm
+import com.smart.htu.api.module.SelectEntity
+import com.smart.htu.api.module.TEEntity
+import com.smart.htu.api.module.TermIndex
+import com.smart.htu.api.module.TextbookEntity
+import com.smart.htu.api.module.TextbookSelectPost
+import com.smart.htu.api.module.TodayCoursePost
+import com.smart.htu.api.module.TodayCourseResponse
+import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.Header
 import retrofit2.http.POST
 
 interface JWCService {
 
     @POST("dev-api/appapi/applogin")
-    suspend fun login(
-        @Body body: LoginPost
-    ): LoginJWCEntity
+    suspend fun login(@Body body: LoginPost): LoginJWCEntity
 
     @GET("dev-api/appapi/getIstoken")
-    suspend fun checkToken(
-        @Header("Token") token: String
-    ): LoginJWCEntity
+    suspend fun checkToken(): LoginJWCEntity
+
+    @POST("dev-api/appapi/Studentxszc/index")
+    suspend fun getTermIndex(@Body body: OverallTerm): TermIndex
 
     @POST("dev-api/appapi/appkxjs/classroom")
-    suspend fun classroomOccupation(
-        @Body body: BuildingEntity,
-        @Header("Token") token: String
-    ): ClassroomOccupationEntity
+    suspend fun classroomOccupation(@Body body: BuildingEntity): ClassroomOccupationEntity
+
+    @POST("dev-api/appapi/Studentcj/data")
+    fun grade(@Body body: OverallTerm): Call<CourseGrade>
+
+    @POST("dev-api/appapi/Studentpjwj/teacher")
+    fun teacherEvaluation(@Body body: OverallTerm): Call<TEEntity>
+
+    @POST("dev-api/appapi/Studentxsxdjc/xdjcdatas")
+    fun getTextbook(@Body body: OverallTerm): Call<TextbookEntity>
+
+    @POST("dev-api/appapi/Studentxsxdjc/kxjcdatas")
+    fun getSelectableTextbook(@Body body: TextbookSelectPost): Call<SelectEntity>
+
+    @POST("dev-api/appapi/Studentxsxdjc/yxjcdatas")
+    fun getSelectedTextbook(@Body body: TextbookSelectPost): Call<SelectEntity>
+
+    @POST("dev-api/appapi/appqxkb/datagrkb")
+    fun getTodayCourse(@Body body: TodayCoursePost = TodayCoursePost()): Call<TodayCourseResponse>
 
 }

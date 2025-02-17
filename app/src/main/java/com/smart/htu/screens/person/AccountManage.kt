@@ -27,10 +27,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.smart.htu.R
-import com.smart.htu.component.LargeCardDisplay
 import com.smart.htu.component.ScaffoldWithHazeLazyColumn
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
+import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.screens.login.LoginViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -42,6 +42,10 @@ fun AccountManage(
     viewModel: LoginViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    val (editable, onEditable) = remember {
+        mutableStateOf(true)
+    }
 
     val state = rememberPullToRefreshState()
     val scope = rememberCoroutineScope()
@@ -73,7 +77,7 @@ fun AccountManage(
             val visibility = remember { mutableStateOf(true) }
             SuggestChip(
                 onClick = { /*TODO*/ },
-                onActionClick = { /*TODO*/ },
+                onActionClick = { onEditable(false) },
                 text = "请不要将此页面信息泄露给他人",
                 type = SuggestChipType.ERROR,
                 icon = Icons.Outlined.Info,
@@ -101,7 +105,7 @@ fun AccountManage(
                                     text = it.name
                                 )
                             },
-                            readOnly = true,
+                            readOnly = editable,
                             onValueChange = {},
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -123,8 +127,8 @@ fun AccountManage(
                             text = "token"
                         )
                     },
-                    readOnly = true,
-                    onValueChange = {},
+                    readOnly = editable,
+                    onValueChange = { viewModel.setJWCLogToken(it) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(12.dp)

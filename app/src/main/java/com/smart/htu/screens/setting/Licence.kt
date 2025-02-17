@@ -20,7 +20,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
-import com.smart.htu.screens.navigateToWebView
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -29,7 +28,7 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
-fun AppreciateScreen(
+fun Licence(
     navController: NavController,
     viewModel: SettingViewModel
 ) {

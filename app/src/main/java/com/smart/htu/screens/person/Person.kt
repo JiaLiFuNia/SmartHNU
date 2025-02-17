@@ -8,13 +8,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -24,6 +21,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -43,7 +42,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,17 +50,15 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.smart.htu.R
 import com.smart.htu.component.EditMessageDialog
-import com.smart.htu.component.LargeCardDisplay
+import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.component.LogoutDialog
-import com.smart.htu.component.PreferenceItem
-import com.smart.htu.component.PreferencesHintCard
+import com.smart.htu.component.PreferencesCard
 import com.smart.htu.component.ScaffoldWithHazeLazyColumn
 import com.smart.htu.component.SettingItemCard
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.startWebUrl
-import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -109,10 +105,10 @@ fun PersonScreen(
         refreshState = state,
     ) {
         item {
-            PreferencesHintCard(
-                title = "河南师范大学",
-                description = "省属重点大学、省特色骨干大学建设高校",
-                icon = R.drawable.hnu,
+            PreferencesCard(
+                headlineText = "河南师范大学",
+                supportingText = "省属重点大学、省特色骨干大学建设高校",
+                leadingIcon = R.drawable.hnu,
                 onClick = {
                     navController.navigateToWebView("https://www.htu.edu.cn/", "河南师范大学")
                 }
@@ -124,15 +120,14 @@ fun PersonScreen(
                 title = "我的信息",
                 leadingIconPainting = R.drawable.outline_account_box_24
             ) {
-                PreferenceItem(
-                    title = stringResource(id = R.string.avatar),
-                    trailingIcon = {
+                PersonalMessage(
+                    label = stringResource(id = R.string.avatar),
+                    content = {
                         if (uiState.qqNumber == "")
                             Image(
                                 painter = painterResource(id = R.drawable.avator_1),
                                 contentDescription = null,
                                 modifier = Modifier
-                                    .padding(horizontal = 5.dp)
                                     .size(40.dp)
                                     .clip(RoundedCornerShape(10.dp))
                             )
@@ -147,95 +142,46 @@ fun PersonScreen(
                                 contentDescription = "picture",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
-                                    .padding(horizontal = 5.dp)
                                     .size(40.dp)
                                     .clip(RoundedCornerShape(10.dp)),
                                 placeholder = painterResource(id = R.drawable.book_failure)
-                                )
+                            )
                     },
                     onClick = {
                         showEditMessageDialog = true
                     }
                 )
-                PreferenceItem(
-                    title = stringResource(id = R.string.username),
-                    trailingIcon = {
-                        Text(
-                            text = uiState.uneditableMessage.username ?: "",
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            modifier = Modifier.padding(horizontal = 5.dp)
-                        )
-                    }
+                PersonalMessage(
+                    label = stringResource(id = R.string.username),
+                    trailingText = uiState.uneditableMessage.username ?: ""
                 )
-                PreferenceItem(
-                    title = stringResource(id = R.string.birthday),
-                    trailingIcon = {
-                        Text(
-                            text = uiState.uneditableMessage.birthday,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            modifier = Modifier.padding(horizontal = 5.dp)
-                        )
-                    }
+                PersonalMessage(
+                    label = stringResource(id = R.string.birthday),
+                    trailingText = uiState.uneditableMessage.birthday
                 )
-                PreferenceItem(
-                    title = stringResource(id = R.string.student_id),
-                    trailingIcon = {
-                        Text(
-                            text = uiState.uneditableMessage.studentId ?: "",
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            modifier = Modifier.padding(horizontal = 5.dp)
-                        )
-                    }
+                PersonalMessage(
+                    label = stringResource(id = R.string.student_id),
+                    trailingText = uiState.uneditableMessage.studentId ?: ""
                 )
-                PreferenceItem(
-                    title = stringResource(id = R.string.class_name),
-                    trailingIcon = {
-                        Text(
-                            text = uiState.uneditableMessage.className ?: "",
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            modifier = Modifier.padding(horizontal = 5.dp)
-                        )
-                    }
+                PersonalMessage(
+                    label = stringResource(id = R.string.class_name),
+                    trailingText = uiState.uneditableMessage.className ?: ""
                 )
-                PreferenceItem(
-                    title = stringResource(id = R.string.academic),
-                    trailingIcon = {
-                        Text(
-                            text = uiState.uneditableMessage.academic ?: "",
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            modifier = Modifier.padding(horizontal = 5.dp)
-                        )
-                    }
+                PersonalMessage(
+                    label = stringResource(id = R.string.academic),
+                    trailingText = uiState.uneditableMessage.academic ?: ""
                 )
-                PreferenceItem(
-                    title = stringResource(id = R.string.political_outlook),
-                    trailingIcon = {
-                        Text(
-                            text = uiState.uneditableMessage.politicalProfile ?: "",
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            modifier = Modifier.padding(horizontal = 5.dp)
-                        )
-                    }
+                PersonalMessage(
+                    label = stringResource(id = R.string.political_outlook),
+                    trailingText = uiState.uneditableMessage.politicalProfile ?: "",
                 )
-                PreferenceItem(
-                    title = stringResource(id = R.string.phone),
-                    trailingIcon = {
-                        Text(
-                            text = uiState.uneditableMessage.phoneNumber.toString(),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            modifier = Modifier.padding(horizontal = 5.dp)
-                        )
-                    }
+                PersonalMessage(
+                    label = stringResource(id = R.string.phone),
+                    trailingText = uiState.uneditableMessage.phoneNumber ?: ""
                 )
-                PreferenceItem(
-                    title = stringResource(id = R.string.email),
-                    trailingIcon = {
-                        Text(
-                            text = uiState.uneditableMessage.emailNumber,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            modifier = Modifier.padding(horizontal = 5.dp)
-                        )
-                    },
+                PersonalMessage(
+                    label = stringResource(id = R.string.email),
+                    trailingText = uiState.uneditableMessage.emailNumber,
                     onClick = {
                         startWebUrl("mailto:${uiState.uneditableMessage.emailNumber}")
                     }
@@ -248,39 +194,23 @@ fun PersonScreen(
                 title = "账号管理",
                 leadingIconPainting = R.drawable.admin_panel_settings_24px
             ) {
-                PreferenceItem(
-                    title = "统一身份认证系统",
-                    trailingIcon = {
-                        Text(
-                            text = stringResource(id = loginStateString(uiState.loginState)),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            modifier = Modifier.padding(horizontal = 5.dp)
-                        )
-                    },
+                PersonalMessage(
+                    label = "统一身份认证系统",
+                    trailingText = stringResource(id = loginStateString(uiState.loginState)),
                     onClick = {
+                        if (uiState.loginState != 1) navController.navigate(Destinations.Login.route)
                     }
                 )
-                PreferenceItem(
-                    title = "河南师大智慧教务",
-                    trailingIcon = {
-                        Text(
-                            text = stringResource(id = loginStateString(uiState.loginJWCState)),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            modifier = Modifier.padding(horizontal = 5.dp)
-                        )
-                    },
+                PersonalMessage(
+                    label = "河南师大智慧教务",
+                    trailingText = stringResource(id = loginStateString(uiState.loginJWCState)),
                     onClick = {
+                        if (uiState.loginJWCState != 1) navController.navigate(Destinations.Login.route)
                     }
                 )
-                PreferenceItem(
-                    title = "第二课堂管理系统",
-                    trailingIcon = {
-                        Text(
-                            text = stringResource(id = loginStateString(0)),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            modifier = Modifier.padding(horizontal = 5.dp)
-                        )
-                    },
+                PersonalMessage(
+                    label = "第二课堂管理系统",
+                    trailingText = stringResource(id = loginStateString(0)),
                     onClick = {
                     }
                 )
@@ -344,49 +274,38 @@ fun loginStateString(state: Int): Int {
 
 
 @Composable
-fun PersonalMessage(label: String, content: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = label,
-            color = Color.Gray,
-            modifier = Modifier
-                .weight(0.65f)
-                .fillMaxWidth(),
-            textAlign = TextAlign.Center,
-        )
-        Text(
-            text = content,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(0.55f)
-        )
-    }
-}
-
-@Composable
-fun PersonalSingleMessage(title: String, modifier: Modifier, icon: Int?) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .fillMaxWidth()
-    ) {
-        if (icon != null) {
-            Icon(
-                painter = painterResource(id = icon),
-                contentDescription = "icon",
-                tint = MaterialTheme.colorScheme.primary
+fun PersonalMessage(
+    label: String,
+    content: (@Composable () -> Unit)? = null,
+    trailingText: String? = null,
+    onClick: (() -> Unit)? = null
+) {
+    ListItem(
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        headlineContent = {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1
             )
-            Spacer(modifier = Modifier.width(5.dp))
+        },
+        trailingContent = {
+            if (content != null) {
+                content()
+            } else if (trailingText != null) {
+                Text(
+                    text = trailingText,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                )
+            }
+        },
+        modifier = Modifier.clickable {
+            if (onClick != null) {
+                onClick()
+            }
         }
-        Text(
-            text = title,
-            fontWeight = FontWeight.W700,
-            color = MaterialTheme.colorScheme.primary
-        )
-    }
+    )
 }
 
 @Composable

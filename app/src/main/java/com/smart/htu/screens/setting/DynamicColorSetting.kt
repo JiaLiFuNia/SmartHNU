@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.smart.htu.R
 import com.smart.htu.component.BlockButton
-import com.smart.htu.component.PreferenceSwitch
 import com.smart.htu.component.SettingItemCard
 import com.smart.htu.component.svgVector.DrawableVectors
 import com.smart.htu.component.svgVector.drawablevectors.girlAndTree
@@ -126,15 +125,15 @@ fun DynamicColorSettingScreen(
                 }
                 when (selectedIndex) {
                     0 -> SettingItemCard(modifier = Modifier) {
-                            PreferenceSwitch(
-                                iconRes = R.drawable.outline_colorize_24,
-                                title = "动态颜色",
-                                description = "将壁纸颜色应用于应用主题",
-                                isChecked = uiState.dynamicColor,
-                                onClick = {
-                                    viewModel.changeDynamicTheme(enabled = !uiState.dynamicColor)
-                                }
-                            )
+                        /*PreferenceSwitch(
+                            iconRes = R.drawable.outline_colorize_24,
+                            title = "动态颜色",
+                            description = "将壁纸颜色应用于应用主题",
+                            isChecked = uiState.dynamicColor,
+                            onClick = {
+                                viewModel.changeDynamicTheme(enabled = !uiState.dynamicColor)
+                            }
+                        )*/
                         }
 
                     1 -> SettingItemCard(modifier = Modifier.fillMaxWidth()) {

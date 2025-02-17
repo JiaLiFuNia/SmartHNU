@@ -1,8 +1,10 @@
-package com.smart.htu.component
+package com.smart.htu.component.card
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -27,6 +29,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.smart.htu.R
+import com.smart.htu.screens.application.entity.RouteType
 import com.smart.htu.screens.application.entity.SmallCardContent
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -65,17 +69,6 @@ fun SmallMediumCardDisplay(
                     else MaterialTheme.colorScheme.primary.copy(0.38f)
                 )
             },
-            supportingContent = {
-                if (content.description != null)
-                    Text(
-                        text = content.description,
-                        style = MaterialTheme.typography.labelMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        color = if (enabled) MaterialTheme.colorScheme.onBackground
-                        else MaterialTheme.colorScheme.onBackground.copy(0.38f)
-                    )
-            },
             headlineContent = {
                 Text(
                     text = stringResource(id = content.label),
@@ -88,6 +81,15 @@ fun SmallMediumCardDisplay(
                     color = if (enabled) MaterialTheme.colorScheme.onBackground
                     else MaterialTheme.colorScheme.onBackground.copy(0.38f)
                 )
+            },
+            trailingContent = {
+                if (content.routeType == RouteType.APP) {
+                    Image(
+                        modifier = Modifier.size(20.dp),
+                        painter = painterResource(id = R.drawable.alipay_circle),
+                        contentDescription = "add"
+                    )
+                }
             },
             colors = ListItemDefaults.colors(
                 containerColor = Color.Transparent

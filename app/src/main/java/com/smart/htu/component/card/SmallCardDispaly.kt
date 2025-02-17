@@ -1,4 +1,4 @@
-package com.smart.htu.component
+package com.smart.htu.component.card
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
@@ -19,7 +19,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,10 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.smart.htu.screens.application.entity.SmallCardContent
-import com.smart.htu.screens.navigateWithAuthCheck
-import com.smart.htu.screens.navigation.Destinations
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

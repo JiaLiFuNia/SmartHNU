@@ -5,14 +5,18 @@ import androidx.lifecycle.viewModelScope
 import com.smart.htu.component.SelectionItem
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
+import com.smart.htu.screens.main.MainViewModel
+import com.smart.htu.utils.Term.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class SettingUiState(
@@ -21,7 +25,8 @@ data class SettingUiState(
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val languageList: List<SelectionItem<String>>,
     val selectedLanguageIndex: Int = 0,
-    val updateState: Boolean = true
+    val updateState: Boolean = true,
+    val termCode: String
 )
 
 @HiltViewModel
@@ -29,14 +34,15 @@ class SettingViewModel @Inject constructor(
     private val dataStoreRepo: DataStoreRepo
 ) : ViewModel() {
 
-    private var _languageMap = mapOf(
+    private val languageMap = mapOf(
         "中文(简体)" to "zh",
         "English" to "en"
     )
 
     private val _uiState = MutableStateFlow(
         SettingUiState(
-            languageList = _languageMap.map {
+            termCode = getCurrentTerm(),
+            languageList = languageMap.map {
                 SelectionItem(it.key, it.value)
             }
         )
@@ -44,41 +50,59 @@ class SettingViewModel @Inject constructor(
 
     val uiState: StateFlow<SettingUiState> = _uiState.asStateFlow()
 
-    private val _dynamicColorStateFlow = dataStoreRepo.observeDynamicTheme()
+    private val dynamicColorStateFlow = dataStoreRepo.observeDynamicTheme()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            true
+            runBlocking {
+                dataStoreRepo.observeDynamicTheme().first()
+            }
         )
 
-    private val _darkThemeStateFlow = dataStoreRepo.observeDarkTheme()
+    private val darkThemeStateFlow = dataStoreRepo.observeDarkTheme()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            0
+            runBlocking {
+                dataStoreRepo.observeDarkTheme().first()
+            }
         )
 
-    private val _blurStateFlow = dataStoreRepo.observerBlurState()
+    private val blurStateFlow = dataStoreRepo.observerBlurState()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            DEFAULT_BLUR_EFFECT
+            runBlocking {
+                dataStoreRepo.observerBlurState().first()
+            }
+        )
+
+    private val termCodeStateFlow = dataStoreRepo.observeOverallTermCode()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            getCurrentTerm()
         )
 
     init {
         viewModelScope.launch {
-            _dynamicColorStateFlow.collect { value ->
+            dynamicColorStateFlow.collect { value ->
                 _uiState.update { it.copy(dynamicColor = value) }
             }
         }
         viewModelScope.launch {
-            _darkThemeStateFlow.collect { value ->
+            darkThemeStateFlow.collect { value ->
                 _uiState.update { it.copy(isDarkTheme = value) }
             }
         }
         viewModelScope.launch {
-            _blurStateFlow.collect { value ->
+            blurStateFlow.collect { value ->
                 _uiState.update { it.copy(blurEffect = value) }
+            }
+        }
+        viewModelScope.launch {
+            termCodeStateFlow.collect { value ->
+                _uiState.update { it.copy(termCode = value) }
             }
         }
     }
@@ -95,9 +119,9 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    fun changeBlurState() {
+    fun changeBlurState(state: Boolean) {
         viewModelScope.launch {
-            dataStoreRepo.changeBlurState(state = !_uiState.value.blurEffect)
+            dataStoreRepo.changeBlurState(state = state)
         }
     }
 

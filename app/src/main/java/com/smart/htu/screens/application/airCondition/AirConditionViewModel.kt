@@ -3,6 +3,7 @@ package com.smart.htu.screens.application.airCondition
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.smart.htu.MainActivity
 import com.smart.htu.api.module.AreaData
 import com.smart.htu.api.module.BillDetail
 import com.smart.htu.api.module.BillRecords
@@ -31,17 +32,13 @@ data class AirConditionUiState(
     val buildingCode: String = "",
     val roomCode: String = "",
     val setCookieType: Int = 0,
-    val dataShowType: DataShowType = DataShowType.LIST,
     val billData: BillDetail? = null,
     val config: GiteeEntity? = null,
     val billRecords: BillRecords? = null,
     val buyRecords: BuyRecords? = null,
-    val isLoadingBillRecords: Boolean = true
+    val isLoadingBillRecords: Boolean = true,
+    val isCookieValid: Boolean = true
 )
-
-enum class DataShowType {
-    CHART, LIST, CHART_LIST
-}
 
 @HiltViewModel
 class AirConditionViewModel @Inject constructor(
@@ -124,9 +121,11 @@ class AirConditionViewModel @Inject constructor(
         viewModelScope.launch {
             getGiteeConfigService()
             getAirConditionConfig()
-            getBillDetailService()
-            getBillRecords()
-            getBuyRecords()
+            if (_uiState.value.buildingCode.isNotEmpty() && _uiState.value.roomCode.isNotEmpty()) {
+                getBillDetailService()
+                getBillRecords()
+                getBuyRecords()
+            }
             changeLoadingState(false)
         }
     }
@@ -148,6 +147,12 @@ class AirConditionViewModel @Inject constructor(
         }
         val res = networkRepo.getAirConditionAreaService("shiroJID=$shiroJID", ymId)
         res.onSuccess { _uiState.update { it.copy(customConfig = res.getOrNull()?.rows?.first()) } }
+        res.onFailure {
+            MainActivity.snackBarHostState.showSnackbar(
+                it.message ?: ""
+            )
+            changeCookieValidState(false)
+        }
         Log.i("TAG666 air", res.getOrNull().toString())
     }
 
@@ -273,11 +278,11 @@ class AirConditionViewModel @Inject constructor(
         }
     }
 
-    fun changeDataShowType(type: DataShowType) {
-        _uiState.update { it.copy(dataShowType = type) }
-    }
-
     private fun changeLoadingState(state: Boolean) {
         _uiState.update { it.copy(isLoadingBillRecords = state) }
+    }
+
+    private fun changeCookieValidState(state: Boolean) {
+        _uiState.update { it.copy(isCookieValid = state) }
     }
 }

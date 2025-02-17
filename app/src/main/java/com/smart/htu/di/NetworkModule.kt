@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
@@ -111,9 +112,23 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideJWCService(): JWCService {
+    fun provideJWCService(
+        okHttpClient: OkHttpClient,
+        dataStoreRepo: DataStoreRepo
+    ): JWCService {
+        val clientWithInterceptor = okHttpClient.newBuilder()
+            .addInterceptor { chain ->
+                val token = runBlocking { dataStoreRepo.observeJWCToken().first() }
+                val newRequest = chain.request().newBuilder()
+                    .addHeader("Token", token)
+                    .build()
+                chain.proceed(newRequest)
+            }
+            .build()
+
         val retrofit = Retrofit.Builder()
             .baseUrl(ApiConstants.JWC_BASE_URL)
+            .client(clientWithInterceptor)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(JWCService::class.java)

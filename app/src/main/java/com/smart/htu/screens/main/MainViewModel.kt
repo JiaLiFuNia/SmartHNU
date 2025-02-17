@@ -1,14 +1,18 @@
 package com.smart.htu.screens.main
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.smart.htu.api.module.Course
 import com.smart.htu.api.module.GiteeEntity
+import com.smart.htu.api.module.OverallTerm
+import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
+import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.screens.application.entity.SmallCardContent
-import com.smart.htu.screens.main.entity.SingleCourseEntity
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +27,7 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class AppUiState(
-    val toDayCourseList: List<SingleCourseEntity> = emptyList(),
+    val toDayCourseList: ResultWithStatus<List<Course>> = ResultWithStatus(),
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val username: String = DEFAULT_USERNAME,
     val isLogSuccess: Boolean = false,
@@ -35,32 +39,14 @@ data class AppUiState(
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val dataStoreRepo: DataStoreRepo,
-    private val networkRepo: NetworkRepo
+    private val networkRepo: NetworkRepo,
+    private val jwcNetworkRepo: JWCNetworkRepo
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AppUiState())
     val uiState: StateFlow<AppUiState> = _uiState.asStateFlow()
 
-    private val toDayCourseList = listOf(
-        SingleCourseEntity(
-            "习近平新时代中国特色社会主义思想",
-            "",
-            "宋晓可",
-            "启智楼304",
-            "14:30-16:10",
-            "考试"
-        ),
-        SingleCourseEntity(
-            "习近平新时代中国特色社会主义思想",
-            "",
-            "宋晓可",
-            "启智楼304",
-            "14:30-16:10",
-            "考试"
-        )
-    )
-
-    private val _blurStateFlow = dataStoreRepo.observerBlurState()
+    private val blurStateFlow = dataStoreRepo.observerBlurState()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -69,7 +55,7 @@ class MainViewModel @Inject constructor(
             }
         )
 
-    private val _usernameStateFlow = dataStoreRepo.observeUsername()
+    private val usernameStateFlow = dataStoreRepo.observeUsername()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -78,20 +64,20 @@ class MainViewModel @Inject constructor(
             }
         )
 
-    private val _hadReadIdListStateFlow = dataStoreRepo.observeNoticeReadIdList()
+    private val hadReadIdListStateFlow = dataStoreRepo.observeNoticeReadIdList()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking { dataStoreRepo.observeNoticeReadIdList().first() }
         )
 
-    private val _loginState = dataStoreRepo.observeLoginState().stateIn(
+    private val loginState = dataStoreRepo.observeLoginState().stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
         0
     )
 
-    private val _appListIsCommonListStateFlow = dataStoreRepo.observeSmallCard().stateIn(
+    private val appListIsCommonListStateFlow = dataStoreRepo.observeSmallCard().stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
         INIT_COMMON_APP_LIST
@@ -99,45 +85,70 @@ class MainViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _blurStateFlow.collect { value ->
+            blurStateFlow.collect { value ->
                 _uiState.update { it.copy(blurEffect = value) }
             }
         }
         viewModelScope.launch {
-            _uiState.update {
-                it.copy(toDayCourseList = toDayCourseList)
-            }
-        }
-        viewModelScope.launch {
-            _usernameStateFlow.collect { value ->
+            usernameStateFlow.collect { value ->
                 _uiState.update { it.copy(username = value) }
             }
         }
         viewModelScope.launch {
-            _loginState.collect { value ->
+            loginState.collect { value ->
                 _uiState.update {
                     it.copy(isLogSuccess = value == 1)
                 }
             }
         }
         viewModelScope.launch {
-            _appListIsCommonListStateFlow.collect { value ->
+            appListIsCommonListStateFlow.collect { value ->
                 _uiState.update { it.copy(appListIsCommonList = value) }
             }
         }
         viewModelScope.launch {
-            _hadReadIdListStateFlow.collect { value ->
+            hadReadIdListStateFlow.collect { value ->
                 _uiState.update { it.copy(hadReadIdList = value) }
             }
         }
         viewModelScope.launch {
             getGiteeConfigService()
+            getTermIndex()
+            getTodayCourse()
+        }
+    }
+
+    suspend fun getTodayCourse() {
+        try {
+            val res = jwcNetworkRepo.getTodayCourseService()
+            Log.i("TAG666", "getTodayCourse: $res")
+            _uiState.update { uiState ->
+                uiState.copy(toDayCourseList = ResultWithStatus(res?.courseList?.sortedBy { it.sortNumber }))
+            }
+        } catch (e: Exception) {
+            Log.i("TAG666", "getTodayCourse: $e")
+        }
+    }
+
+    private suspend fun getTermIndex() {
+        val res = jwcNetworkRepo.getTermIndexService(OverallTerm())
+        res.onSuccess {
+            setOverallTerm(term = it.termCode)
         }
     }
 
     suspend fun getGiteeConfigService() {
-        val res = networkRepo.getGiteeConfig()
-        res.onSuccess { _uiState.update { it.copy(config = res.getOrNull()) } }
+        val giteeConfig = networkRepo.getGiteeConfig()
+        giteeConfig.onSuccess { res ->
+            _uiState.update { it.copy(config = res) }
+            dataStoreRepo.setOverallTermCode(res.termCode)
+        }
+    }
+
+    private suspend fun setOverallTerm(term: String) {
+        viewModelScope.launch {
+            dataStoreRepo.setOverallTermCode(term)
+        }
     }
 
 }

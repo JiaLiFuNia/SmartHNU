@@ -67,13 +67,13 @@ class ApplicationViewModel @Inject constructor(
         }
     }
 
-    fun changeCommonAppListState(index: Int, add: Boolean = true) {
+    fun changeCommonAppListState(app: SmallCardContent, add: Boolean = true) {
         viewModelScope.launch {
             val currentListState = _uiState.value.appListIsCommonList.toMutableList()
             if (add)
-                currentListState.apply { add(_uiState.value.appList[index]) }
+                currentListState.apply { add(app) }
             else
-                currentListState.apply { removeAt(index) }
+                currentListState.apply { remove(app) }
             dataStoreRepo.saveSmallCard(currentListState)
             _uiState.update { it.copy(appListIsCommonList = currentListState) }
         }

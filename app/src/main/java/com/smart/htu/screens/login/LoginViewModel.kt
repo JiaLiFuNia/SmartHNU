@@ -3,6 +3,7 @@ package com.smart.htu.screens.login
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.smart.htu.MainActivity
 import com.smart.htu.api.module.PersonalMessage
 import com.smart.htu.di.NetworkCookieJar
 import com.smart.htu.repo.DataStoreRepo
@@ -17,6 +18,7 @@ import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_ROOM_ID
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_STUDENT_ID
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
+import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.PasswordManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,11 +40,11 @@ data class LoginUiState(
     val loginJWCState: Int = DEFAULT_LOGIN_STATE,
     val isGuest: Boolean = false,
     val isLoading: Boolean = false,
-    val logTipMessage: String = "",
     val qqNumber: String = DEFAULT_QQ_NUMBER,
     val username: String = DEFAULT_USERNAME,
     val studentID: String = DEFAULT_STUDENT_ID,
     val password: String = DEFAULT_PASSWORD,
+    val jwcPassword: String = DEFAULT_PASSWORD,
     val uneditableMessage: PersonalMessage = DEFAULT_MESSAGE,
     val cookies: List<Cookie> = emptyList(),
     val token: String = DEFAULT_TOKEN,
@@ -52,6 +54,7 @@ data class LoginUiState(
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
+    private val jwcNetworkRepo: JWCNetworkRepo,
     private val networkRepo: NetworkRepo,
     private val dataStoreRepo: DataStoreRepo,
     private val networkCookieJar: NetworkCookieJar,
@@ -144,6 +147,7 @@ class LoginViewModel @Inject constructor(
 
     init {
         _uiState.update { it.copy(password = passwordManager.getPassword() ?: "") }
+        _uiState.update { it.copy(jwcPassword = passwordManager.getPassword("jwc_password") ?: "") }
         viewModelScope.launch {
             blurStateFlow.collect { value ->
                 _uiState.update { it.copy(blurEffect = value) }
@@ -201,8 +205,8 @@ class LoginViewModel @Inject constructor(
     fun login() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            authLogin() // 统一认证登录
-            jwcLogin() // 智慧教务
+            if (_uiState.value.loginState != 1) authLogin() // 统一认证登录
+            if (_uiState.value.loginJWCState != 1) jwcLogin() // 智慧教务
             _uiState.update { it.copy(isLoading = false) }
         }
     }
@@ -222,7 +226,7 @@ class LoginViewModel @Inject constructor(
             }
             logState.onFailure {
                 changLoginState(-1)
-                changeLogTipMessage(it.message ?: "登录失败")
+                MainActivity.snackBarHostState.showSnackbar(it.message ?: "统一认证登录失败")
             }
         } catch (e: Exception) {
             Log.i("TAG666 viewModel", "Failed to login")
@@ -231,16 +235,19 @@ class LoginViewModel @Inject constructor(
 
     private suspend fun jwcLogin() {
         try {
-            val logState = networkRepo.jwcLogin(
+            val logState = jwcNetworkRepo.jwcLogin(
                 username = _uiState.value.studentID,
-                password = _uiState.value.password
+                password = _uiState.value.jwcPassword
             )
             logState.onSuccess {
                 changeLoginJWCState(1)
                 setTokenValid(true)
                 setJWCLogToken(it.user?.token ?: DEFAULT_TOKEN)
             }
-            logState.onFailure { changeLoginJWCState(-1) }
+            logState.onFailure {
+                changeLoginJWCState(-1)
+                MainActivity.snackBarHostState.showSnackbar(it.message ?: "智慧教务登录失败")
+            }
         } catch (e: Exception) {
             Log.i("TAG666 viewModel", "Failed to login")
         }
@@ -248,14 +255,17 @@ class LoginViewModel @Inject constructor(
 
     private suspend fun checkJWCToken() {
         try {
-            val res = networkRepo.checkJWCTokenService(_uiState.value.token)
-            res.onSuccess { changeLoginJWCState(1) }
+            val res = jwcNetworkRepo.checkJWCTokenService()
+            res.onSuccess {
+                setTokenValid(true)
+                changeLoginJWCState(1)
+            }
             res.onFailure {
                 setTokenValid(false)
-                jwcLogin()
+                changeLoginJWCState(-1)
             }
         } catch (e: Exception) {
-            changeLoginJWCState(-1)
+            changeLoginJWCState(1)
         }
     }
 
@@ -293,7 +303,7 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private fun setJWCLogToken(token: String) {
+    fun setJWCLogToken(token: String) {
         viewModelScope.launch {
             dataStoreRepo.setJWCToken(token = token)
             _uiState.update { it.copy(token = token) }
@@ -312,7 +322,13 @@ class LoginViewModel @Inject constructor(
     }
 
     fun changePassword(password: String) {
+        _uiState.update { it.copy(loginState = 0) }
         _uiState.update { it.copy(password = password) }
+    }
+
+    fun changeJWCPassword(password: String) {
+        _uiState.update { it.copy(loginJWCState = 0) }
+        _uiState.update { it.copy(jwcPassword = password) }
     }
 
     private fun changeUsername(username: String) {
@@ -329,10 +345,6 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private fun changeLogTipMessage(message: String) {
-        _uiState.update { it.copy(logTipMessage = message) }
-    }
-
     private fun clearCookies() {
         viewModelScope.launch {
             networkCookieJar.clearCookies()
@@ -342,9 +354,12 @@ class LoginViewModel @Inject constructor(
     fun logout() = viewModelScope.launch {
         clearCookies()
         changLoginState(DEFAULT_LOGIN_STATE)
+        changeLoginJWCState(DEFAULT_LOGIN_STATE)
         changeUsername(DEFAULT_USERNAME)
         changePassword(DEFAULT_PASSWORD)
+        changeJWCPassword(DEFAULT_PASSWORD)
         editQQNumber(DEFAULT_QQ_NUMBER)
+        setJWCLogToken(DEFAULT_TOKEN)
         dataStoreRepo.saveCookies(emptyList())
         dataStoreRepo.changeRoomId(DEFAULT_BUILDING_ID)
         dataStoreRepo.changeBuildingId(DEFAULT_ROOM_ID)

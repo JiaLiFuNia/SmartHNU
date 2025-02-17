@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
@@ -35,6 +34,7 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
@@ -46,7 +46,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -66,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.BasicBottomSheet
 import com.smart.htu.component.PreferenceSubtitle
@@ -102,6 +102,7 @@ fun AirCondition(
     val onRefresh: () -> Unit = {
         isRefreshing = true
         scope.launch {
+            viewModel.getAirConditionConfig()
             viewModel.getBillDetailService()
             viewModel.getBillRecords()
             viewModel.getBuyRecords()
@@ -146,6 +147,9 @@ fun AirCondition(
                     blurEnabled = uiState.blurEffect
                 }
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarHostState)
         }
     ) {
         PullToRefreshBox(
@@ -183,10 +187,10 @@ fun AirCondition(
                         },
                         onActionClick = {
                         },
-                        text = "请先设置你的宿舍楼和房间号",
+                        text = "请设置你的宿舍楼和房间号和配置 Cookie",
                         type = SuggestChipType.ERROR,
                         visibility = remember {
-                            derivedStateOf { uiState.roomCode == "" || uiState.buildingCode == "" }
+                            derivedStateOf { uiState.roomCode == "" || uiState.buildingCode == "" || !uiState.isCookieValid }
                         }
                     )
                 }
@@ -206,7 +210,10 @@ fun AirCondition(
                             headlineContent = {
                                 Text(
                                     text = (uiState.billData?.data?.displayRoomName
-                                        ?: "").replace("河南师范大学", "")
+                                        ?: if (uiState.isLoadingBillRecords) "加载中..." else "加载失败").replace(
+                                        "河南师范大学",
+                                        ""
+                                    )
                                 )
                             },
                             supportingContent = {
@@ -266,7 +273,7 @@ fun AirCondition(
                                 .padding(top = 12.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularWavyProgressIndicator(modifier = Modifier.size(36.dp))
+                            CircularWavyProgressIndicator(modifier = Modifier)
                         }
                     }
                 } else {
@@ -282,6 +289,9 @@ fun AirCondition(
                                             .padding(8.dp)
                                     ) {
                                         ColumnChart(
+                                            xData = uiState.billRecords?.rows?.map {
+                                                it.dateTimeDouble
+                                            } ?: listOf("0.0"),
                                             yData = uiState.billRecords?.rows?.map {
                                                 it.used.toDouble()
                                             } ?: listOf(0.0)
@@ -319,6 +329,9 @@ fun AirCondition(
                                             .padding(8.dp)
                                     ) {
                                         ColumnChart(
+                                            xData = uiState.buyRecords?.rows?.map {
+                                                it.dateTimeDouble
+                                            } ?: listOf("0.0"),
                                             yData = uiState.buyRecords?.rows?.map {
                                                 it.money.toDouble()
                                             } ?: listOf(0.0)
@@ -375,9 +388,6 @@ fun SetCookieBottomSheet(
 ) {
     var buildingId by remember { mutableStateOf(uiState.buildingCode) }
     var roomId by remember { mutableStateOf(uiState.roomCode) }
-    LaunchedEffect(uiState.setCookieType) {
-        viewModel.getAirConditionConfig()
-    }
     BasicBottomSheet(
         title = "设置",
         isBottomSheetShow = isBottomSheetShow,
@@ -389,7 +399,7 @@ fun SetCookieBottomSheet(
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp)
+            contentPadding = PaddingValues(12.dp)
         ) {
             item {
                 PreferenceSubtitle(text = "宿舍楼和房间")
@@ -398,7 +408,9 @@ fun SetCookieBottomSheet(
                 val (buildingIdError, onBuildingError) = remember { mutableStateOf(false) }
                 val (roomIdError, onRoomError) = remember { mutableStateOf(false) }
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     OutlinedTextField(
@@ -422,7 +434,6 @@ fun SetCookieBottomSheet(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp)
                     )
-                    Spacer(modifier = Modifier.height(10.dp))
                     OutlinedTextField(
                         label = { Text(text = "房间") },
                         placeholder = { Text(text = "如：0213(2层 13房间)") },
@@ -446,12 +457,15 @@ fun SetCookieBottomSheet(
             }
             item {
                 PreferenceSubtitle(text = "设置 Cookie")
-                val radioOptions = listOf("开发者 Cookie", "自定义 Cookie")
+                val radioOptions = listOf("云端 Cookie", "自定义 Cookie")
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(Modifier.selectableGroup()) {
+                    Column(
+                        modifier = Modifier.selectableGroup(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         radioOptions.forEachIndexed { index, text ->
                             Row(
                                 Modifier
@@ -462,7 +476,7 @@ fun SetCookieBottomSheet(
                                         onClick = { viewModel.changeCookieType(index) },
                                         role = Role.RadioButton
                                     )
-                                    .padding(horizontal = 10.dp),
+                                    .padding(horizontal = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 RadioButton(
@@ -474,36 +488,36 @@ fun SetCookieBottomSheet(
                                     modifier = Modifier.padding(start = 16.dp)
                                 )
                             }
+                            AnimatedVisibility(visible = uiState.setCookieType == 1 && index == 1) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 12.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    OutlinedTextField(
+                                        label = { Text(text = "shiroJID") },
+                                        maxLines = 1,
+                                        value = uiState.userLoginCookie?.shiroJID ?: "",
+                                        onValueChange = { viewModel.changeUserShiroJid(it) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(10.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    OutlinedTextField(
+                                        label = { Text(text = "ymID") },
+                                        value = uiState.userLoginCookie?.ymId ?: "",
+                                        onValueChange = { viewModel.changeUserYmld(it) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(10.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
-                AnimatedVisibility(visible = uiState.setCookieType == 1) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 10.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        OutlinedTextField(
-                            label = { Text(text = "shiroJID") },
-                            maxLines = 1,
-                            value = uiState.userLoginCookie?.shiroJID ?: "",
-                            onValueChange = { viewModel.changeUserShiroJid(it) },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(10.dp)
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        OutlinedTextField(
-                            label = { Text(text = "ymID") },
-                            value = uiState.userLoginCookie?.ymId ?: "",
-                            onValueChange = { viewModel.changeUserYmld(it) },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(10.dp)
-                        )
-                    }
-                }
             }
-            item {
+            /*item {
                 PreferenceSubtitle(text = "显示形式")
                 val dataShowOptions = mapOf(
                     "显示数据和图表" to DataShowType.CHART_LIST,
@@ -514,37 +528,50 @@ fun SetCookieBottomSheet(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(Modifier.selectableGroup()) {
+                    Column(
+                        modifier = Modifier.selectableGroup(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         dataShowOptions.keys.forEachIndexed { _, text ->
-                            Row(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(50.dp)
-                                    .selectable(
-                                        selected = (dataShowOptions[text] == uiState.dataShowType),
-                                        onClick = {
-                                            viewModel.changeDataShowType(
-                                                dataShowOptions[text] ?: DataShowType.LIST
-                                            )
-                                        },
-                                        role = Role.RadioButton
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                onClick = {
+                                    viewModel.changeDataShowType(
+                                        dataShowOptions[text] ?: DataShowType.LIST
                                     )
-                                    .padding(horizontal = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                }
                             ) {
-                                RadioButton(
-                                    selected = (dataShowOptions[text] == uiState.dataShowType),
-                                    onClick = null
-                                )
-                                Text(
-                                    text = text,
-                                    modifier = Modifier.padding(start = 16.dp)
-                                )
+                                Row(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .height(50.dp)
+                                        .selectable(
+                                            selected = (dataShowOptions[text] == uiState.dataShowType),
+                                            onClick = {
+                                                viewModel.changeDataShowType(
+                                                    dataShowOptions[text] ?: DataShowType.LIST
+                                                )
+                                            },
+                                            role = Role.RadioButton
+                                        )
+                                        .padding(horizontal = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    RadioButton(
+                                        selected = (dataShowOptions[text] == uiState.dataShowType),
+                                        onClick = null
+                                    )
+                                    Text(
+                                        text = text,
+                                        modifier = Modifier.padding(start = 16.dp)
+                                    )
+                                }
                             }
                         }
                     }
                 }
-            }
+            }*/
         }
     }
 }

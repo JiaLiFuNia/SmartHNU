@@ -2,6 +2,8 @@ package com.smart.htu.utils
 
 import com.smart.htu.R
 import com.smart.htu.api.module.BuildingEntity
+import com.smart.htu.screens.application.entity.RouteType
+import com.smart.htu.screens.application.entity.SmallCardCategory
 import com.smart.htu.screens.application.entity.SmallCardContent
 import com.smart.htu.screens.navigation.Destinations
 
@@ -36,62 +38,91 @@ class Constants {
                 guestEnable = false,
                 icon = R.drawable.today_24px,
                 label = R.string.today_course,
+                routeType = null,
+                route = "",
+                category = SmallCardCategory.ACADEMIC_AFFAIRS
             ),
             SmallCardContent(
                 guestEnable = false,
                 label = R.string.dorm_air_conditioner,
                 icon = R.drawable.bolt_24px,
-                route = Destinations.AirCondition.route
+                routeType = RouteType.SCREEN,
+                route = Destinations.AirCondition.route,
+                category = SmallCardCategory.CAMPUS
             ),
             SmallCardContent(
                 guestEnable = false,
                 label = R.string.classroom_search,
                 icon = R.drawable.apartment_24px,
-                route = Destinations.ClassroomSearch.route
+                routeType = RouteType.SCREEN,
+                route = Destinations.ClassroomSearch.route,
+                category = SmallCardCategory.ACADEMIC_AFFAIRS
             ),
             SmallCardContent(
                 guestEnable = true,
                 label = R.string.book_search,
                 icon = R.drawable.book_4_24px,
-                route = Destinations.LibrarySearch.route
+                routeType = RouteType.SCREEN,
+                route = Destinations.LibrarySearch.route,
+                category = SmallCardCategory.CAMPUS
             ),
             SmallCardContent(
                 guestEnable = false,
                 icon = R.drawable.finance_24px,
                 label = R.string.course_grade,
-                route = null
+                routeType = RouteType.SCREEN,
+                route = Destinations.Grade.route,
+                category = SmallCardCategory.ACADEMIC_AFFAIRS
             ),
             SmallCardContent(
                 guestEnable = true,
                 icon = R.drawable.near_me_24px,
                 label = R.string.live_service,
-                route = null
+                routeType = null,
+                route = "",
+                category = SmallCardCategory.CAMPUS
             ),
             SmallCardContent(
                 guestEnable = true,
                 icon = R.drawable.bathtub_24px,
                 description = "支付宝-卡博士",
                 label = R.string.shower_water,
-                appUrl = SHOWER_ALIPAY_URL
+                routeType = RouteType.APP,
+                route = SHOWER_ALIPAY_URL,
+                category = SmallCardCategory.CAMPUS
             ),
             SmallCardContent(
                 guestEnable = true,
                 icon = R.drawable.water_voc_24px,
                 description = "支付宝-胖乖生活",
                 label = R.string.water_washer,
-                appUrl = HOT_WATER_WASHER_ALIPAY_URL
+                routeType = RouteType.APP,
+                route = HOT_WATER_WASHER_ALIPAY_URL,
+                category = SmallCardCategory.CAMPUS
             ),
             SmallCardContent(
-                guestEnable = true,
+                guestEnable = false,
                 icon = R.drawable.format_paint_24px,
                 label = R.string.second_class,
-                route = null
+                routeType = null,
+                route = "",
+                category = SmallCardCategory.OTHERS
             ),
             SmallCardContent(
-                guestEnable = true,
+                guestEnable = false,
                 icon = R.drawable.book_4_24px,
                 label = R.string.textbook_select,
-                route = null
+                routeType = RouteType.SCREEN,
+                route = "textbook",
+                category = SmallCardCategory.ACADEMIC_AFFAIRS
+            ),
+            SmallCardContent(
+                guestEnable = false,
+                icon = R.drawable.person_check_24px,
+                label = R.string.teacher_evaluation,
+                routeType = RouteType.SCREEN,
+                route = Destinations.TeacherEvaluation.route,
+                category = SmallCardCategory.ACADEMIC_AFFAIRS
             )
         )
         val INIT_COMMON_APP_LIST = listOf(

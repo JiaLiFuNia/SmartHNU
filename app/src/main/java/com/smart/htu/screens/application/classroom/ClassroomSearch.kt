@@ -42,6 +42,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -62,7 +63,6 @@ import androidx.navigation.NavController
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.smart.htu.R
 import com.smart.htu.component.PreferenceSubtitle
-import com.smart.htu.utils.Constants.Companion.BUILDING_LIST
 import com.smart.htu.utils.Constants.Companion.COURSE_PERIOD
 import com.smart.htu.utils.checkTimeInterval
 import com.smart.htu.utils.getCurrentDates
@@ -89,11 +89,9 @@ fun ClassroomSearchScreen(
     val uiState = viewModel.uiState.collectAsState().value
     val hazeState = remember { HazeState() }
 
-    val (selectedRoomName, onSelectedRoomName) = rememberSaveable { mutableStateOf(BUILDING_LIST[0].buildingName) }
+    val (selectedRoomIndex, onSelectedRoomIndex) = rememberSaveable { mutableIntStateOf(0) }
     val (selectedTimeIndex, onSelectedTimeIndex) = rememberSaveable {
-        mutableIntStateOf(
-            checkTimeInterval()
-        )
+        mutableIntStateOf(checkTimeInterval())
     }
 
     val (selectedDate, onSelectedDate) = remember { mutableStateOf(getCurrentDates()) }
@@ -109,9 +107,13 @@ fun ClassroomSearchScreen(
     val onRefresh: () -> Unit = {
         isRefreshing = true
         coroutineScope.launch {
-            viewModel.getClassroomOccupation(selectedDate)
+            viewModel.getClassroomOccupation(selectedDate, selectedRoomIndex)
             isRefreshing = false
         }
+    }
+
+    LaunchedEffect(selectedRoomIndex, selectedDate) {
+        viewModel.getClassroomOccupation(selectedDate, selectedRoomIndex)
     }
 
     val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
@@ -191,10 +193,10 @@ fun ClassroomSearchScreen(
                     LazyVerticalGridCustom(
                         list = uiState.buildingsList,
                         columnSize = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 3
-                    ) { _, building ->
+                    ) { index, building ->
                         FilterChip(
-                            selected = building.buildingName == selectedRoomName,
-                            onClick = { onSelectedRoomName(building.buildingName) },
+                            selected = index == selectedRoomIndex,
+                            onClick = { onSelectedRoomIndex(index) },
                             label = { Text(text = building.buildingName) },
                             modifier = Modifier.padding(horizontal = 4.dp)
                         )
@@ -217,7 +219,7 @@ fun ClassroomSearchScreen(
                 item {
                     PreferenceSubtitle(text = stringResource(id = R.string.occupy))
                     Log.i("TAG666", "${uiState.isLoading} ${uiState.isTokenValid}")
-                    if (uiState.isLoading || !uiState.isTokenValid) {
+                    if (uiState.isLoading || !uiState.isTokenValid || uiState.buildingsOccupation[selectedRoomIndex] == null) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -229,7 +231,7 @@ fun ClassroomSearchScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             val singleBuildingRoomOccupation =
-                                uiState.buildingsOccupation[selectedRoomName]
+                                uiState.buildingsOccupation[selectedRoomIndex]
                             val allRoomListGroupByFloor =
                                 singleBuildingRoomOccupation?.allRoomList?.groupBy {
                                     it.floorNumber
@@ -335,11 +337,6 @@ fun ClassroomSearchScreen(
                             timeStamp2DateStr(datePickerState.selectedDateMillis ?: 0)
                         )
                         onShowDatePicker(false)
-                        viewModel.getClassroomOccupation(
-                            timeStamp2DateStr(
-                                datePickerState.selectedDateMillis ?: 0
-                            )
-                        )
                     },
                     enabled = confirmEnabled.value
                 ) {

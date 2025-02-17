@@ -22,12 +22,12 @@
     <string name="news">新闻</string>
     <string name="setting">设置</string>
     <string name="person_description">我的信息、账号管理、退出登录</string>
-    <string name="display_color">显示与颜色</string>
+    <string name="display_color">显示</string>
     <string name="theme_color">主题颜色</string>
     <string name="theme_color_description">使用动态或师大主题色</string>
     <string name="dark_theme">深色主题</string>
     <string name="language">界面语言</string>
-    <string name="screen_style">界面与样式</string>
+    <string name="screen_style">样式</string>
     <string name="main_screen">主页页面</string>
     <string name="application_screen">应用页面</string>
     <string name="news_screen">新闻页面</string>
@@ -89,4 +89,5 @@
     <string name="textbook_select">教材选订</string>
     <string name="account_manage">账号管理</string>
     <string name="water_washer">热水·洗衣</string>
+    <string name="teacher_evaluation">教学评价</string>
 </resources>

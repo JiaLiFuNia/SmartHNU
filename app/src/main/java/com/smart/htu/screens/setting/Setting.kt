@@ -1,22 +1,16 @@
 package com.smart.htu.screens.setting
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
@@ -28,22 +22,23 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.alorma.compose.settings.ui.SettingsMenuLink
-import com.alorma.compose.settings.ui.SettingsSwitch
 import com.smart.htu.R
+import com.smart.htu.component.CommonListItem
 import com.smart.htu.component.DropdownListItem
 import com.smart.htu.component.SelectionItem
 import com.smart.htu.component.SettingItemCard
+import com.smart.htu.component.SwitchListItem
 import com.smart.htu.screens.main.entity.DarkMode
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.APPVersion
+import com.smart.htu.utils.Term
+import com.smart.htu.utils.TermType
 import com.smart.htu.utils.startWebUrl
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
@@ -92,74 +87,51 @@ fun SettingScreen(
                 .hazeSource(state = hazeState)
                 .fillMaxSize(),
             contentPadding = PaddingValues(
-                start = 15.dp,
-                end = 15.dp,
+                start = 16.dp,
+                end = 16.dp,
                 top = it.calculateTopPadding(),
-                bottom = it.calculateBottomPadding() + 15.dp
+                bottom = it.calculateBottomPadding() + 16.dp
             )
         ) {
             item {
                 SettingItemCard(
-                    label = "开发与贡献",
+                    label = "开发",
                     modifier = Modifier
                 ) {
                     Column {
-                        SettingsMenuLink(
-                            title = { Text(text = stringResource(id = R.string.developer_name)) },
-                            subtitle = {
-                                Text(text = stringResource(id = R.string.developer_description))
-                            },
-                            icon = {
-                                Image(
-                                    painter = painterResource(id = R.drawable.developer_icon),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(CircleShape)
-                                )
-                            },
-                            action = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                                )
-                            },
+                        CommonListItem(
+                            headlineText = stringResource(id = R.string.developer_name),
+                            supportingText = stringResource(id = R.string.developer_description),
+                            leadingIcon = R.drawable.developer_icon,
                             onClick = {
                                 startWebUrl("https://github.com/JiaLiFuNia")
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                            }
                         )
-                        SettingsMenuLink(
-                            title = { Text(text = stringResource(id = R.string.participate)) },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.outline_auto_awesome_24),
-                                    contentDescription = null
-                                )
-                            },
-                            action = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                                )
-                            },
-                            onClick = {},
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        CommonListItem(
+                            headlineText = stringResource(id = R.string.participate),
+                            leadingIcon = painterResource(id = R.drawable.github),
+                            onClick = {
+
+                            }
                         )
                     }
                 }
-                /*PreferencesHintCard(
-                    title = if (loginUiState.isLogSuccess)
-                        loginUiState.username
-                        else stringResource(id = R.string.login_now),
-                    description = stringResource(id = R.string.person_description),
-                    icon = if (loginUiState.isLogSuccess) painterResource(id = R.drawable.avator_1) else R.drawable.outline_account_circle_24,
-                    onClick = {
-                        navController.navigate(Destinations.Login.route)
-                    }
-                )*/
+            }
+            item {
+                SettingItemCard(
+                    label = "教务",
+                    modifier = Modifier
+                ) {
+                    val termString = Term.termConverter(uiState.termCode).split("-")
+                    CommonListItem(
+                        headlineText = "学期",
+                        supportingText =
+                        "当前学期 ${termString[0]}-${termString[1]} 学年第 ${termString[2]} 学期",
+                        leadingIcon = painterResource(id = R.drawable.overview_24px),
+                        onClick = {
+                        }
+                    )
+                }
             }
             item {
                 SettingItemCard(
@@ -167,46 +139,33 @@ fun SettingScreen(
                     modifier = Modifier
                 ) {
                     Column {
-                        SettingsSwitch(
-                            icon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.outline_color_lens_24),
-                                    contentDescription = null
-                                )
-                            },
-                            title = { Text(text = stringResource(id = R.string.theme_color)) },
-                            subtitle = { Text(text = stringResource(id = R.string.theme_color_description)) },
-                            state = uiState.dynamicColor,
-                            onCheckedChange = {
-                                viewModel.changeDynamicTheme(enabled = !uiState.dynamicColor)
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        SwitchListItem(
+                            value = uiState.dynamicColor,
+                            headlineText = stringResource(id = R.string.theme_color),
+                            supportingText = stringResource(id = R.string.theme_color_description),
+                            leadingIcon = painterResource(id = R.drawable.outline_color_lens_24),
+                            onValueChanged = { value ->
+                                viewModel.changeDynamicTheme(value)
+                            }
                         )
-                        SettingsSwitch(
-                            icon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.blur_on_24px),
-                                    contentDescription = null
-                                )
-                            },
-                            title = { Text(text = "实时模糊") },
-                            subtitle = { Text(text = "开启后部分页面将具有模糊效果，具体效果因机型、系统而异") },
-                            state = uiState.blurEffect,
-                            onCheckedChange = {
-                                viewModel.changeBlurState()
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        SwitchListItem(
+                            value = uiState.blurEffect,
+                            headlineText = "实时模糊",
+                            supportingText = "开启后部分页面将具有模糊效果，具体效果因机型、系统而异",
+                            leadingIcon = painterResource(id = R.drawable.blur_on_24px),
+                            onValueChanged = { value ->
+                                viewModel.changeBlurState(value)
+                            }
                         )
                         DropdownListItem(
-                            leadingImageVector = R.drawable.outline_nightlight_24,
-                            headlineText = stringResource(id = R.string.dark_theme),
                             value = DarkMode.entries[uiState.isDarkTheme],
+                            headlineText = stringResource(id = R.string.dark_theme),
+                            leadingIcon = painterResource(id = R.drawable.outline_nightlight_24),
                             selections = DarkMode.entries
-                                .map { SelectionItem(it.toStringResourceId(), it) },
+                                .map { item -> SelectionItem(item.toStringResourceId(), item) },
                             onValueChanged = { index, _ ->
                                 viewModel.changDarkMode(index)
-                            },
-                            trailingImageVector = R.drawable.outline_unfold_more_24
+                            }
                         )
                         /*DropdownListItem(
                             leadingImageVector = R.drawable.outline_language_24,
@@ -227,65 +186,26 @@ fun SettingScreen(
                     modifier = Modifier
                 ) {
                     Column {
-                        SettingsMenuLink(
-                            title = { Text(text = stringResource(id = R.string.main_screen)) },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.outline_home_24),
-                                    contentDescription = null
-                                )
-                            },
-                            action = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                                )
-                            },
+                        CommonListItem(
+                            headlineText = stringResource(id = R.string.main_screen),
+                            leadingIcon = painterResource(id = R.drawable.outline_home_24),
                             onClick = {
                                 navController.navigate(Destinations.MainSetting.route)
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                            }
                         )
-                        SettingsMenuLink(
-                            title = { Text(text = stringResource(id = R.string.application_screen)) },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.widgets_24px_outline),
-                                    contentDescription = null
-                                )
-                            },
-                            action = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                                )
-                            },
+                        CommonListItem(
+                            headlineText = stringResource(id = R.string.application_screen),
+                            leadingIcon = painterResource(id = R.drawable.widgets_24px_outline),
                             onClick = {
                                 navController.navigate(Destinations.AppSetting.route)
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                            }
                         )
-                        SettingsMenuLink(
-                            title = { Text(text = stringResource(id = R.string.news_screen)) },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_outline_article),
-                                    contentDescription = null
-                                )
-                            },
-                            action = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                                )
-                            },
+                        CommonListItem(
+                            headlineText = stringResource(id = R.string.news_screen),
+                            leadingIcon = painterResource(id = R.drawable.ic_outline_article),
                             onClick = {
                                 navController.navigate(Destinations.NewsSetting.route)
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                            }
                         )
                     }
                 }
@@ -296,69 +216,28 @@ fun SettingScreen(
                     modifier = Modifier
                 ) {
                     Column {
-                        SettingsMenuLink(
-                            title = { Text(text = stringResource(id = R.string.about_app)) },
-                            subtitle = { Text(text = stringResource(id = R.string.about_app_description)) },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_outline_article),
-                                    contentDescription = null
-                                )
-                            },
-                            action = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                                )
-                            },
+                        CommonListItem(
+                            headlineText = stringResource(id = R.string.about_app),
+                            supportingText = stringResource(id = R.string.about_app_description),
+                            leadingIcon = painterResource(id = R.drawable.ic_outline_article),
                             onClick = {
                                 navController.navigate(Destinations.About.route)
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                            }
                         )
-                        SettingsMenuLink(
-                            title = { Text(text = stringResource(id = R.string.check_update)) },
-                            subtitle = { Text(text = stringResource(id = R.string.check_update_description)) },
-                            icon = {
-                                Icon(
-                                    imageVector = Icons.Outlined.Refresh,
-                                    contentDescription = null
-                                )
-                            },
-                            onClick = { },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        CommonListItem(
+                            headlineText = stringResource(id = R.string.check_update),
+                            supportingText = "当前版本 ${APPVersion.getVersionName()}(${APPVersion.getVersionCode()})",
+                            leadingIcon = Icons.Outlined.Refresh,
+                            onClick = {
+                            }
                         )
-                        SettingsMenuLink(
-                            title = { Text(text = "版本信息") },
-                            subtitle = { Text(text = "当前版本 ${APPVersion.getVersionName()}(${APPVersion.getVersionCode()})") },
-                            icon = {
-                                Icon(
-                                    imageVector = Icons.Outlined.Info,
-                                    contentDescription = null
-                                )
-                            },
-                            onClick = { },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                        )
-                        SettingsMenuLink(
-                            title = { Text(text = stringResource(id = R.string.appreciate)) },
-                            subtitle = { Text(text = stringResource(id = R.string.appreciate_description)) },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.outline_auto_awesome_24),
-                                    contentDescription = null
-                                )
-                            },
-                            action = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                                )
-                            },
-                            onClick = { navController.navigate(Destinations.Appreciate.route) },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        CommonListItem(
+                            headlineText = stringResource(id = R.string.appreciate),
+                            supportingText = stringResource(id = R.string.appreciate_description),
+                            leadingIcon = painterResource(id = R.drawable.outline_auto_awesome_24),
+                            onClick = {
+                                navController.navigate(Destinations.Appreciate.route)
+                            }
                         )
                     }
                 }

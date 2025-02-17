@@ -25,3 +25,11 @@ fun getCurrentDates(): String {
     val formattedDate = currentDate.format(formatter)
     return formattedDate
 }
+
+fun convertDateToDouble(dateString: String, pattern: String): String {
+    val formatter = DateTimeFormatter.ofPattern(pattern)
+    val date = LocalDate.parse(dateString, formatter)
+    val month = date.monthValue
+    val day = date.dayOfMonth
+    return "$month.$day"
+}

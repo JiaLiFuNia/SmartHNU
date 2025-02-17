@@ -20,6 +20,7 @@ import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.HOT_WATER_WASHER_ALIPAY_URL
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import com.smart.htu.utils.Constants.Companion.SHOWER_ALIPAY_URL
+import com.smart.htu.utils.Term
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -53,6 +54,7 @@ class DataStoreRepo @Inject constructor(
         val STUDENT_ID = stringPreferencesKey("STUDENT_ID")
         val BUILDING_ID = stringPreferencesKey("BUILDING_ID")
         val ROOM_ID = stringPreferencesKey("ROOM_ID")
+        val TERM = stringPreferencesKey("TERM")
         val NOTICE_READ_ID_LIST = stringPreferencesKey("NOTICE_READ_ID_LIST")
         val AIR_CONDITION_COOKIE_TYPE = intPreferencesKey("AIR_CONDITION_COOKIE_TYPE")
         val AIR_CONDITION_USER_COOKIE = stringPreferencesKey("AIR_CONDITION_USER_COOKIE")
@@ -157,6 +159,10 @@ class DataStoreRepo @Inject constructor(
 
     override suspend fun setTokenValid(valid: Boolean) {
         context.dataStore.edit { it[IS_TOKEN_VALID] = valid }
+    }
+
+    override suspend fun setOverallTermCode(term: String) {
+        context.dataStore.edit { it[TERM] = term }
     }
 
 
@@ -274,5 +280,9 @@ class DataStoreRepo @Inject constructor(
 
     override fun observeTokenValid(): Flow<Boolean> {
         return context.dataStore.data.map { it[IS_TOKEN_VALID] ?: DEFAULT_IS_TOKEN_VALID }
+    }
+
+    override fun observeOverallTermCode(): Flow<String> {
+        return context.dataStore.data.map { it[TERM] ?: Term.getCurrentTerm() }
     }
 }

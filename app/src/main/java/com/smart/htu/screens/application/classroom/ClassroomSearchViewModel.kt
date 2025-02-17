@@ -27,7 +27,7 @@ import javax.inject.Inject
 
 data class ClassroomUiState(
     val buildingsList: List<BuildingEntity>,
-    val buildingsOccupation: Map<String, ClassroomOccupationEntity> = emptyMap(),
+    val buildingsOccupation: Map<Int, ClassroomOccupationEntity> = emptyMap(),
     val isLoading: Boolean = true,
     val token: String = DEFAULT_TOKEN,
     val isTokenValid: Boolean = DEFAULT_IS_TOKEN_VALID,
@@ -90,31 +90,32 @@ class ClassroomSearchViewModel @Inject constructor(
                 _uiState.update { it.copy(isTokenValid = value) }
             }
         }
-        getClassroomOccupation(getCurrentDates())
+        viewModelScope.launch {
+            getClassroomOccupation(getCurrentDates())
+        }
     }
 
-    fun getClassroomOccupation(date: String) = viewModelScope.launch {
+    suspend fun getClassroomOccupation(date: String, index: Int = 0) {
         try {
             changeLoadingState(true)
-            _uiState.value.buildingsList.forEach { it ->
-                val res = jwcNetworkRepo.getClassroomOccupationService(
-                    building = BuildingEntity(
-                        it.buildingCode,
-                        it.buildingName,
-                        date
-                    ),
-                    token = _uiState.value.token
+            val building = BUILDING_LIST[index]
+            val res = jwcNetworkRepo.getClassroomOccupationService(
+                BuildingEntity(
+                    building.buildingCode,
+                    building.buildingName,
+                    date
                 )
-                Log.i("TAG666", "getClassroomOccupation: $res")
-                res.onSuccess {
-                    _uiState.update { uiState ->
-                        uiState.copy(buildingsOccupation = uiState.buildingsOccupation + (it.buildingName to it))
-                    }
+            )
+            Log.i("TAG666", "getClassroomOccupation: $res")
+            res.onSuccess {
+                _uiState.update { uiState ->
+                    uiState.copy(buildingsOccupation = uiState.buildingsOccupation + (index to it))
                 }
-                res.onFailure { failure ->
-                    if (failure.message == "401")
-                        setTokenValid(false)
-                }
+                setTokenValid(true)
+            }
+            res.onFailure { failure ->
+                if (failure.message == "401")
+                    setTokenValid(false)
             }
             changeLoadingState(false)
         } catch (e: Exception) {
@@ -122,14 +123,14 @@ class ClassroomSearchViewModel @Inject constructor(
         }
     }
 
-    fun setTokenValid(valid: Boolean) {
+    private fun setTokenValid(valid: Boolean) {
         viewModelScope.launch {
             dataStoreRepo.setTokenValid(valid)
             _uiState.update { it.copy(isTokenValid = valid) }
         }
     }
 
-    private fun changeLoadingState(state: Boolean) {
+    fun changeLoadingState(state: Boolean) {
         _uiState.update { it.copy(isLoading = state) }
     }
 }

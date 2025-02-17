@@ -1,7 +1,6 @@
 package com.smart.htu.screens.main
 
 import android.annotation.SuppressLint
-import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.Email
@@ -30,8 +29,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -49,7 +48,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -57,13 +55,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.nlf.calendar.Lunar
+import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
-import com.smart.htu.component.LargeCardDisplay
-import com.smart.htu.component.MediumCardDisplay
+import com.smart.htu.api.module.Course
+import com.smart.htu.api.module.ResultWithStatus
+import com.smart.htu.api.module.Status
+import com.smart.htu.component.CircularProgressIndicator
+import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.SingleCourseCard
-import com.smart.htu.component.SmallCardDisplay
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
+import com.smart.htu.component.card.LargeCardDisplay
+import com.smart.htu.component.card.MediumCardDisplay
+import com.smart.htu.component.card.SmallCardDisplay
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.login.LoginUiState
 import com.smart.htu.screens.login.LoginViewModel
@@ -103,13 +107,14 @@ fun Main(
 
     val state = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
     var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
         isRefreshing = true
         coroutineScope.launch {
+            delay(500)
             mainViewModel.getGiteeConfigService()
-            delay(1500)
+            if (loginUiState.loginJWCState == 1)
+                mainViewModel.getTodayCourse()
             isRefreshing = false
         }
     }
@@ -122,6 +127,9 @@ fun Main(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarHostState)
+        },
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -227,13 +235,13 @@ fun Main(
                     Row(
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        CalendarCard(context = context, modifier = Modifier.weight(0.5f))
+                        CalendarCard(modifier = Modifier.weight(0.5f))
                         Spacer(modifier = Modifier.width(20.dp))
                         WeatherCard(modifier = Modifier.weight(0.5f))
                     }
                 }
                 item {
-                    TodayCourseCard(uiState = uiState)
+                    TodayCourseCard(uiState.toDayCourseList)
                 }
                 item {
                     CommonAppsCard(
@@ -260,14 +268,13 @@ fun Main(
 
 
 @Composable
-fun CalendarCard(context: Context, modifier: Modifier) {
+fun CalendarCard(modifier: Modifier) {
     val today = LocalDate.now() // 阳历
     val dayOfWeek = today.dayOfWeek
     val dayOfWeekName = dayOfWeek.getDisplayName(TextStyle.FULL, Locale.CHINA)
     val chineseToday = Lunar.fromDate(Date()) // 农历
     MediumCardDisplay(
-        onClick = {
-        },
+        onClick = { },
         modifier = modifier,
         title = "${today.year}/${today.month.value}",
         leadingContent = {
@@ -338,24 +345,45 @@ fun WeatherCard(modifier: Modifier) {
 }
 
 @Composable
-fun TodayCourseCard(uiState: AppUiState) {
+fun TodayCourseCard(todayCourseResult: ResultWithStatus<List<Course>>) {
     LargeCardDisplay(
         modifier = Modifier,
         title = stringResource(id = R.string.today_course),
         leadingIconPainting = R.drawable.today_24px,
         content = {
-            Column(
-                modifier = Modifier
-            ) {
-                uiState.toDayCourseList.forEachIndexed { index, it ->
-                    SingleCourseCard(
-                        modifier = Modifier.fillMaxSize(),
-                        onClick = {},
-                        message = it
-                    )
-                    if (index % 2 == 0 && uiState.toDayCourseList.size >= 2) {
-                        HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
+            when (todayCourseResult.status) {
+                Status.SUCCESS -> {
+                    Column(
+                        modifier = Modifier
+                    ) {
+                        if (todayCourseResult.data.isNullOrEmpty()) {
+                            EmptyContent(
+                                modifier = Modifier
+                                    .height(80.dp)
+                                    .fillMaxWidth(),
+                                text = "今日无课程"
+                            )
+                        } else {
+                            todayCourseResult.data.forEachIndexed { index, it ->
+                                SingleCourseCard(
+                                    modifier = Modifier.fillMaxSize(),
+                                    onClick = {},
+                                    message = it
+                                )
+                                if (index < todayCourseResult.data.size - 1) {
+                                    HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
+                                }
+                            }
+                        }
                     }
+                }
+
+                else -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .height(80.dp)
+                            .fillMaxWidth()
+                    )
                 }
             }
         }
@@ -377,16 +405,12 @@ fun CommonAppsCard(
         leadingIconPainting = R.drawable.app_registration_24px,
         content = {
             if (uiState.appListIsCommonList.isEmpty())
-                Box(
+                EmptyContent(
+                    text = "前往应用页面添加常用应用",
                     modifier = Modifier
+                        .height(80.dp)
                         .fillMaxWidth()
-                        .height(100.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    TextButton(onClick = { }) {
-                        Text(text = "点击添加常用应用")
-                    }
-                }
+                )
             else
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(5),
@@ -395,7 +419,7 @@ fun CommonAppsCard(
                     contentPadding = PaddingValues(8.dp),
                     userScrollEnabled = false
                 ) {
-                    itemsIndexed(uiState.appListIsCommonList) { index, app ->
+                    items(uiState.appListIsCommonList) { app ->
                         Box(
                             modifier = Modifier,
                             contentAlignment = Alignment.Center
@@ -404,14 +428,13 @@ fun CommonAppsCard(
                                 enabled = (loginUiState.isGuest && app.guestEnable) || loginUiState.isLogSuccess,
                                 content = app,
                                 onLongClick = {
-                                    applicationViewModel.changeCommonAppListState(index, false)
+                                    applicationViewModel.changeCommonAppListState(app, false)
                                 },
                                 onCLick = {
                                     navController.navigateWithAuthCheck(
                                         isGuest = loginUiState.isGuest && app.guestEnable,
-                                        appUrl = app.appUrl,
+                                        routeType = app.routeType,
                                         route = app.route,
-                                        url = app.url,
                                         logState = loginUiState.isLogSuccess,
                                         label = app.label
                                     )

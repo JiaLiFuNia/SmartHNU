@@ -32,29 +32,3 @@ fun SettingItemCard(
         }
     }
 }
-
-@Preview
-@Composable
-fun SettingItemCardPreview() {
-    SettingItemCard(
-        label = "显示",
-        modifier = Modifier
-    ) {
-        Column {
-            PreferenceSwitch(
-                title = "动态颜色",
-                description = "将壁纸颜色应用于主题",
-                isChecked = true,
-                onClick = {
-                }
-            )
-            PreferenceSwitch(
-                title = "深色主题",
-                description = "自动切换夜间模式",
-                isChecked = true,
-                onClick = {
-                }
-            )
-        }
-    }
-}

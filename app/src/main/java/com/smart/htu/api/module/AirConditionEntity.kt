@@ -1,5 +1,6 @@
 package com.smart.htu.api.module
 
+import com.smart.htu.utils.convertDateToDouble
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -52,7 +53,12 @@ data class BillRecords(
 data class BillRecordsData(
     val datetime: String,
     val used: String
-)
+) {
+    val dateTimeDouble: String
+        get() {
+            return convertDateToDouble(datetime, "yyyy-MM-dd")
+        }
+}
 
 data class BuyRecords(
     val statusCode: Int,
@@ -71,5 +77,10 @@ data class BuyRecordsData(
             val outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
             val parsedDateTime = LocalDateTime.parse(datetime, inputFormatter)
             return parsedDateTime.format(outputFormatter)
+        }
+
+    val dateTimeDouble: String
+        get() {
+            return convertDateToDouble(dateTime, "yyyy-MM-dd HH:mm")
         }
 }
