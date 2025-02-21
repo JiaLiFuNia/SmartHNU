@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
@@ -120,7 +121,6 @@ fun LibrarySearchScreen(
     val (showBottomSheet, onShowBottomSheet) = rememberSaveable { mutableStateOf(false) }
     var expand by rememberSaveable { mutableStateOf(false) }
     var isSearching by rememberSaveable { mutableStateOf(false) }
-    val snackBarHostState = remember { SnackbarHostState() }
     val searchTextFieldState = rememberTextFieldState()
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -252,12 +252,14 @@ fun LibrarySearchScreen(
                                     )
                                 },
                                 trailingIcon = {
-                                    if (expand)
-                                        TextButton(onClick = { expand = false }) {
-                                            Text(text = "收起")
-                                        }
-                                    if (isSearching)
-                                        TextButton(onClick = { isSearching = false }) {
+                                    if (isSearching || expand)
+                                        TextButton(
+                                            onClick = {
+                                                isSearching = false
+                                                expand = false
+                                                searchTextFieldState.clearText()
+                                            }
+                                        ) {
                                             Text(text = "取消")
                                         }
                                 }
@@ -333,7 +335,7 @@ fun LibrarySearchScreen(
                                             val result =
                                                 MainActivity.snackBarHostState.showSnackbar(
                                                 message = message,
-                                                actionLabel = "撤回",
+                                                    actionLabel = "取消",
                                                 duration = SnackbarDuration.Short
                                             )
                                             when (result) {
@@ -377,9 +379,6 @@ fun LibrarySearchScreen(
                             viewModel = viewModel,
                             onClick = {
                                 onShowBottomSheet(true)
-                            },
-                            onBlankCardClick = {
-                                expand = true
                             }
                         )
                     }
@@ -444,7 +443,6 @@ fun BookRentDetailBottomSheet(
 fun RentBooksList(
     uiState: LibrarySearchUiState,
     viewModel: LibrarySearchViewModel,
-    onBlankCardClick: () -> Unit = {},
     onClick: () -> Unit = {}
 ) {
     LargeCardDisplay(
@@ -601,7 +599,6 @@ fun LibrarySingleBook(
 
 @Composable
 fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     Card(
         modifier = Modifier.fillMaxWidth(),

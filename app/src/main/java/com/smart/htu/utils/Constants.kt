@@ -35,12 +35,13 @@ class Constants {
 
         val ALL_APP_LIST = listOf(
             SmallCardContent(
-                guestEnable = false,
-                icon = R.drawable.today_24px,
-                label = R.string.today_course,
-                routeType = null,
-                route = "",
-                category = SmallCardCategory.ACADEMIC_AFFAIRS
+                guestEnable = true,
+                icon = R.drawable.hnu,
+                trailingIcon = R.drawable.i_hnu_logo,
+                label = R.string.i_hnu,
+                routeType = RouteType.APP,
+                route = "com.autewifi.sd.enroll",
+                category = SmallCardCategory.CAMPUS
             ),
             SmallCardContent(
                 guestEnable = false,
@@ -64,7 +65,7 @@ class Constants {
                 icon = R.drawable.book_4_24px,
                 routeType = RouteType.SCREEN,
                 route = Destinations.LibrarySearch.route,
-                category = SmallCardCategory.CAMPUS
+                category = SmallCardCategory.OTHERS
             ),
             SmallCardContent(
                 guestEnable = false,
@@ -85,18 +86,20 @@ class Constants {
             SmallCardContent(
                 guestEnable = true,
                 icon = R.drawable.bathtub_24px,
+                trailingIcon = R.drawable.alipay_circle,
                 description = "支付宝-卡博士",
                 label = R.string.shower_water,
-                routeType = RouteType.APP,
+                routeType = RouteType.ALIPAY,
                 route = SHOWER_ALIPAY_URL,
                 category = SmallCardCategory.CAMPUS
             ),
             SmallCardContent(
                 guestEnable = true,
                 icon = R.drawable.water_voc_24px,
+                trailingIcon = R.drawable.alipay_circle,
                 description = "支付宝-胖乖生活",
                 label = R.string.water_washer,
-                routeType = RouteType.APP,
+                routeType = RouteType.ALIPAY,
                 route = HOT_WATER_WASHER_ALIPAY_URL,
                 category = SmallCardCategory.CAMPUS
             ),

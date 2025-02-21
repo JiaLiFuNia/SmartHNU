@@ -9,6 +9,7 @@ data class SmallCardContent(
     val label: Int,
     val description: String? = null,
     @DrawableRes val icon: Int,
+    @DrawableRes val trailingIcon: Int? = null,
     val routeType: RouteType?,
     val route: String?,
     val category: SmallCardCategory
@@ -23,5 +24,6 @@ enum class SmallCardCategory(val category: String) {
 enum class RouteType {
     URL,
     SCREEN,
+    ALIPAY,
     APP
 }

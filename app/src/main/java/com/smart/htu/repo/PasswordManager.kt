@@ -20,4 +20,8 @@ class PasswordManager @Inject constructor(
         return sharedPreferences.getString(key, DEFAULT_PASSWORD)
     }
 
+    companion object {
+        const val PASSWORD = "password"
+        const val JWC_PASSWORD = "jwc_password"
+    }
 }

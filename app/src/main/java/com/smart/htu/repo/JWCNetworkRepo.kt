@@ -205,6 +205,7 @@ class JWCNetworkRepo @Inject constructor(
             val publicKey = RSAUtil.getPublicKeyFromRaw(context, R.raw.public_key)
             val passwordEncrypt = publicKey?.let { RSAUtil.encryptText(password, it) }
             val logState = jwcService.login(LoginPost(username, passwordEncrypt ?: ""))
+            Log.i("TAG666 jwclogin", logState.toString())
             return when (logState.code) {
                 200 -> {
                     dataStoreRepo.setTokenValid(true)
@@ -244,6 +245,7 @@ class JWCNetworkRepo @Inject constructor(
 
     private suspend fun reLogin(): Boolean {
         val res = jwcLogin(studentIdStateFlow.value, password)
+        Log.i("TAG666 relogin", res.toString())
         res.onSuccess {
             dataStoreRepo.setJWCToken(it.user?.token ?: DEFAULT_TOKEN)
         }

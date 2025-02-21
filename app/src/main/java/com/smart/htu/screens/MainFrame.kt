@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
@@ -30,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.window.core.layout.WindowWidthSizeClass
+import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.LoginDialog
 import com.smart.htu.component.animation.SlideTransition

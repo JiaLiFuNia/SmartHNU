@@ -21,7 +21,6 @@ import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluation
 import com.smart.htu.screens.application.textbook.Textbook
 import com.smart.htu.screens.application.textbook.TextbookSelect
-import com.smart.htu.screens.application.textbook.TextbookViewModel
 import com.smart.htu.screens.login.LoginScreen
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.MainViewModel
@@ -41,6 +40,7 @@ import com.smart.htu.screens.setting.NewsSettingScreen
 import com.smart.htu.screens.setting.SettingScreen
 import com.smart.htu.screens.setting.SettingViewModel
 import com.smart.htu.utils.startAppUrl
+import com.smart.htu.utils.startLaunchAPK
 
 @Composable
 fun NavHostScreen() {
@@ -209,8 +209,12 @@ fun NavController.navigateWithAuthCheck(
                 this.navigate(route!!)
             }
 
-            RouteType.APP -> {
+            RouteType.ALIPAY -> {
                 startAppUrl(route!!)
+            }
+
+            RouteType.APP -> {
+                startLaunchAPK(route!!, context.getString(label))
             }
 
             else -> {

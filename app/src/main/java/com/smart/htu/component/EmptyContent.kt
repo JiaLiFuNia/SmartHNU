@@ -32,7 +32,7 @@ fun EmptyContent(
 ) {
     Box(
         modifier = modifier,
-        contentAlignment = Alignment.TopCenter
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
