@@ -41,7 +41,9 @@ jobs:
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
 
       - name: Rename APK
-        run: mv ${{ steps.build.outputs.signedReleaseFile }} "SmartHNU_${{ env.TAG_NAME }}.apk"
+        run: mv "SmartHNU_${{ env.TAG_NAME }}.apk" "SmartHNU_${{ env.TAG_NAME }}_renamed.apk"
+        env:
+          TAG_NAME: ${{ env.TAG_NAME }}
 
       - name: Create Release and Upload APK
         uses: ncipollo/release-action@v1
