@@ -101,7 +101,9 @@ fun NewsScreen(
                 onExpandedChange = { expanded = it },
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-            ) { }
+            ) {
+
+            }
             LazyColumn(
                 modifier = Modifier
                     .hazeSource(state = hazeState)
