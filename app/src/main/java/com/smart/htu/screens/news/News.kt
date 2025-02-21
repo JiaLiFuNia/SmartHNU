@@ -66,7 +66,7 @@ fun NewsScreen(
     navController: NavHostController,
     viewModel: NewsViewModel
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    // val uiState by viewModel.uiState.collectAsState()
     val hazeState = remember { HazeState() }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
