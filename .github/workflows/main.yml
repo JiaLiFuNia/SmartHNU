@@ -40,8 +40,11 @@ jobs:
           TAG_NAME=$(echo "${GITHUB_REF}" | sed 's/refs\/tags\///')
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
 
+      - name: List APK files
+        run: ls -l app/build/outputs/apk/release
+
       - name: Rename APK
-        run: mv "SmartHNU_${{ env.TAG_NAME }}.apk" "SmartHNU_${{ env.TAG_NAME }}_renamed.apk"
+        run: mv "app/build/outputs/apk/release/SmartHNU_${{ env.TAG_NAME }}.apk" "app/build/outputs/apk/release/SmartHNU_${{ env.TAG_NAME }}.apk"
         env:
           TAG_NAME: ${{ env.TAG_NAME }}
 
