@@ -34,31 +34,21 @@ jobs:
         env:
           BUILD_TOOLS_VERSION: "34.0.0"
 
-      - name: Create directory for APK
-        run: mkdir -p $(dirname SmartHNU_${{ github.ref }}.apk)
+      - name: Get tag name
+        id: get_tag
+        run: |
+          TAG_NAME=$(echo "${GITHUB_REF}" | sed 's/refs\/tags\///')
+          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
 
       - name: Rename APK
-        run: mv ${{steps.sign_app.outputs.signedReleaseFile}} SmartHNU_${{ github.ref }}.apk
+        run: mv ${{ steps.build.outputs.signedReleaseFile }} "SmartHNU_${{ env.TAG_NAME }}.apk"
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Create Release and Upload APK
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: ${{ contains(github.ref, 'beta') }}
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: SmartHNU_${{ github.ref }}.apk
-          asset_name: SmartHNU_${{ github.ref }}.apk
-          asset_content_type: application/vnd.android.package-archive
+          artifacts: "SmartHNU_${{ env.TAG_NAME }}.apk"
+          token: ${{ github.token }}
+          generateReleaseNotes: true
 
       - name: Post to Telegram ci channel
         env:
@@ -72,8 +62,7 @@ jobs:
               ```
         run: |
             if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
-              export RELEASE=$(find ./composeApp/build/outputs/apk/release -name "*.apk")
-              export DEBUG=$(find ./composeApp/build/outputs/apk/debug -name "*.apk")
+              RELEASE=$(find ./app/build/outputs/apk/release -name "*.apk")
               ESCAPED=`python3 -c 'import json,os,urllib.parse; print(urllib.parse.quote(json.dumps(os.environ["COMMIT_MESSAGE"])))'`
               curl -v "https://api.telegram.org/bot${BOT_TOKEN}/sendMediaGroup?chat_id=${CHANNEL_ID}&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Frelease%22%7D%2C%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Fdebug%22%2C%22parse_mode%22%3A%22MarkdownV2%22%2C%22caption%22%3A${ESCAPED}%7D%5D" -F release="@$RELEASE" -F debug="@$DEBUG"
             fi
