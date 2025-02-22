@@ -122,6 +122,7 @@ fun NewsScreen(
                     "https://www.htu.edu.cn/_upload/article/images/a9/10/f8a1d0b549db957ef09d4f27ec8f/996a31c2-1bff-44a0-b742-2b70c8a7acc2.jpg",
                     "https://www.htu.edu.cn/_upload/article/images/6e/4f/48060b494228a7b51256b07d8adb/53df809b-9c3a-4e84-8497-81b5a72b2e7a.jpg"
                 )
+
                 item {
                     HorizontalMultiBrowseCarousel(
                         state = rememberCarouselState { imageUrls.count() },
