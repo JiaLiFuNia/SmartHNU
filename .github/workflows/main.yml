@@ -40,15 +40,12 @@ jobs:
           TAG_NAME=$(echo "${GITHUB_REF}" | sed 's/refs\/tags\///')
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
 
-      - name: Rename APK
-        run: mv "app/build/outputs/apk/release/app-release.apk" "app/build/outputs/apk/release/SmartHNU_${{ env.TAG_NAME }}.apk"
+      - run: mv ${{steps.sign_app.outputs.signedReleaseFile}} SmartHNU_${{ env.TAG_NAME }}.apk
         env:
           TAG_NAME: ${{ env.TAG_NAME }}
-
-      - name: Create Release and Upload APK
-        uses: ncipollo/release-action@v1
+      - uses: ncipollo/release-action@v1
         with:
-          artifacts: "SmartHNU_${{ env.TAG_NAME }}.apk"
+          artifacts: "*.apk"
           token: ${{ github.token }}
           generateReleaseNotes: true
 
