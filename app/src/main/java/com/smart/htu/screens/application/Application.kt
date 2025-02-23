@@ -3,9 +3,7 @@ package com.smart.htu.screens.application
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -14,6 +12,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.smart.htu.component.PreferenceSubtitle
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
@@ -63,6 +64,7 @@ fun Application(
     }
     val hazeState = remember { HazeState() }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -95,7 +97,7 @@ fun Application(
                 end = 16.dp,
                 bottom = 16.dp
             ),
-            columns = GridCells.Adaptive(128.dp),
+            columns = GridCells.Fixed(if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 2),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .hazeSource(state = hazeState),
@@ -108,6 +110,16 @@ fun Application(
                     type = SuggestChipType.ERROR,
                     visibility = visibility.value,
                     icon = Icons.AutoMirrored.Filled.ArrowForward
+                )
+            }
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                SuggestChip(
+                    onClick = {  },
+                    onActionClick = {  },
+                    text = "哈哈哈哈哈哈哈哈",
+                    type = SuggestChipType.INFO,
+                    visibility = mutableStateOf(true),
+                    icon = Icons.Outlined.Info
                 )
             }
             SmallCardCategory.entries.forEach { item ->

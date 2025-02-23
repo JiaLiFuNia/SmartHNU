@@ -41,6 +41,9 @@ import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.InfoBadge
 import com.smart.htu.component.ScaffoldWithHazeLazyColumn
+import com.smart.htu.component.svgVector.DrawableVectors
+import com.smart.htu.component.svgVector.drawablevectors.emptyData
+import com.smart.htu.component.svgVector.drawablevectors.emptyList
 import com.smart.htu.screens.application.grade.SelectTermBottomSheet
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Term.termConverter
@@ -101,7 +104,10 @@ fun Textbook(
             false -> {
                 if (uiState.courseList.data?.courseTextbookList?.isEmpty() == true) {
                     item {
-                        EmptyContent(text = "学期 ${termConverter(uiState.termCode)}\n暂无数据")
+                        EmptyContent(
+                            text = "学期 ${termConverter(uiState.termCode)}\n暂无数据",
+                            image = DrawableVectors.emptyData()
+                        )
                     }
                 } else {
                     items(uiState.courseList.data?.courseTextbookList ?: emptyList()) {

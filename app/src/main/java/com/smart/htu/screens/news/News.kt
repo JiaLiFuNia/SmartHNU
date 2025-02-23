@@ -74,7 +74,6 @@ fun NewsScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-
         ) {
             val textFieldState = rememberTextFieldState()
             var expanded by rememberSaveable { mutableStateOf(false) }
@@ -86,7 +85,7 @@ fun NewsScreen(
                         onSearch = { expanded = false },
                         expanded = expanded,
                         onExpandedChange = { expanded = it },
-                        placeholder = { Text("Hinted search text") },
+                        placeholder = { Text("搜索新闻、公告和通知...") },
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                         trailingIcon = { Icon(Icons.Default.MoreVert, contentDescription = null) },
                         colors = inputFieldColors(unfocusedContainerColor = Color.Transparent),
@@ -111,7 +110,7 @@ fun NewsScreen(
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
-                    top = 80.dp,
+                    top = 112.dp,
                     bottom = 16.dp
                 )
             ) {
@@ -148,6 +147,7 @@ fun NewsScreen(
                         )
                     }
                 }
+
                 item {
                     val colors = MaterialTheme.colorScheme
                     ColorItem("Primary", colors.primary)

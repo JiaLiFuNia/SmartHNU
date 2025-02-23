@@ -95,7 +95,7 @@ fun LargeCardDisplay(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             ) {
-                content()
+                    content()
             }
         }
     }

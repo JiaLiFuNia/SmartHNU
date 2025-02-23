@@ -44,6 +44,8 @@ import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.InfoBadge
 import com.smart.htu.component.ScaffoldWithHazeLazyColumn
+import com.smart.htu.component.svgVector.DrawableVectors
+import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.screens.application.grade.SelectTermBottomSheet
 import com.smart.htu.utils.Term.termConverter
 import kotlinx.coroutines.launch
@@ -102,16 +104,10 @@ fun TeacherEvaluation(
 
             false -> {
                 item {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "学期 ${termConverter(uiState.termCode)}\n评价时间 ${uiState.evaluationInfo.data?.msg}",
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
+                    EmptyContent(
+                        text = "学期 ${termConverter(uiState.termCode)}\n评价时间 ${uiState.evaluationInfo.data?.msg}",
+                        image = DrawableVectors.emptyData()
+                    )
                 }
                 items(uiState.evaluationInfo.data?.evaluationInfoList ?: emptyList()) {
                     SingleTeacher(it)

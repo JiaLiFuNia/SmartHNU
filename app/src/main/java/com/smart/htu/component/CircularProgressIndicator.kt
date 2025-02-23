@@ -1,6 +1,7 @@
 package com.smart.htu.component
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.material3.CircularWavyProgressIndicator
@@ -18,7 +19,7 @@ fun LazyItemScope.CircularProgressIndicator() {
         modifier = Modifier.fillParentMaxSize(),
         contentAlignment = Alignment.TopCenter
     ) {
-        CircularWavyProgressIndicator(modifier = Modifier)
+        CircularWavyProgressIndicator(modifier = Modifier.padding(top = 88.dp))
     }
 }
 

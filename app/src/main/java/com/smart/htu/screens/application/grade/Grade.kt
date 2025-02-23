@@ -1,20 +1,14 @@
 package com.smart.htu.screens.application.grade
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -34,12 +28,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -50,6 +42,8 @@ import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.InfoBadge
 import com.smart.htu.component.ScaffoldWithHazeLazyColumn
+import com.smart.htu.component.svgVector.DrawableVectors
+import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.utils.Term.termConverter
 import kotlinx.coroutines.launch
 
@@ -109,7 +103,10 @@ fun Grade(
             false -> {
                 if (uiState.courseGrade.data?.isEmpty() != false) {
                     item {
-                        EmptyContent("学期 ${termConverter(uiState.termCode)}\n暂无数据")
+                        EmptyContent(
+                            text = "学期 ${termConverter(uiState.termCode)}\n暂无数据",
+                            image = DrawableVectors.emptyData()
+                        )
                     }
                 } else {
                     itemsIndexed(uiState.courseGrade.data) { _, course ->

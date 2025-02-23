@@ -21,7 +21,6 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,12 +55,15 @@ import com.smart.htu.R
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.Status
 import com.smart.htu.api.module.Textbook
+import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.ScaffoldWithHazeLazyColumn
+import com.smart.htu.component.svgVector.DrawableVectors
+import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.utils.copyContent
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextbookSelect(
     viewModel: TextbookViewModel = hiltViewModel(),
@@ -167,7 +169,10 @@ fun LazyItemScope.SelectTextbook(
         } else {
             if (textbook.status == Status.SUCCESS) {
                 if (textbook.data?.isEmpty() == true) {
-                    EmptyContent("没有教材")
+                    EmptyContent(
+                        text = "没有教材",
+                        image = DrawableVectors.emptyData()
+                    )
                 } else {
                     Column(
                         modifier = Modifier

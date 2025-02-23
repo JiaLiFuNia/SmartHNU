@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -191,6 +192,7 @@ fun ClassroomSearchScreen(
                 }
                 item {
                     LazyVerticalGridCustom(
+                        modifier = Modifier.fillMaxSize(),
                         list = uiState.buildingsList,
                         columnSize = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 3
                     ) { index, building ->
@@ -205,6 +207,7 @@ fun ClassroomSearchScreen(
                 item {
                     PreferenceSubtitle(text = stringResource(id = R.string.time))
                     LazyVerticalGridCustom(
+                        modifier = Modifier.fillMaxSize(),
                         list = COURSE_PERIOD.keys.toList(),
                         columnSize = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 5 else 3
                     ) { currentIndex, timeLabel ->
@@ -304,6 +307,7 @@ fun ClassroomSearchScreen(
                             ) {
                                 val currentRoomList = allRoomListGroupByFloor[it]
                                 LazyVerticalGridCustom(
+                                    modifier = Modifier.fillParentMaxSize(),
                                     list = currentRoomList,
                                     columnSize = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 3,
                                     ifEqualWeight = true
@@ -359,7 +363,8 @@ fun ClassroomSearchScreen(
 }
 
 @Composable
-fun <T> LazyVerticalGridCustom(
+fun <T> LazyItemScope.LazyVerticalGridCustom(
+    modifier: Modifier,
     list: List<T>,
     columnSize: Int,
     ifEqualWeight: Boolean = false,
@@ -367,7 +372,7 @@ fun <T> LazyVerticalGridCustom(
 ) {
     val courseTimeList = list.chunked(columnSize)
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         courseTimeList.forEachIndexed { rowIndex, singleRowButtons ->

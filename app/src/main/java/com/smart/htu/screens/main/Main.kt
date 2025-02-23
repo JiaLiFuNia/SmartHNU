@@ -68,6 +68,8 @@ import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.component.card.MediumCardDisplay
 import com.smart.htu.component.card.SmallCardDisplay
+import com.smart.htu.component.svgVector.DrawableVectors
+import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.login.LoginUiState
 import com.smart.htu.screens.login.LoginViewModel
@@ -254,10 +256,23 @@ fun Main(
                 }
                 item {
                     LargeCardDisplay(
-                        modifier = Modifier.height(200.dp),
+                        modifier = Modifier,
                         title = stringResource(id = R.string.course_grade),
                         leadingIconPainting = R.drawable.finance_24px,
-                        content = {},
+                        content = {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(20.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                EmptyContent(
+                                    text = "开发中...",
+                                    modifier = Modifier.fillMaxSize(),
+                                    image = DrawableVectors.emptyData()
+                                )
+                            }
+                        },
                         navigateTo = {}
                     )
                 }
@@ -359,7 +374,7 @@ fun TodayCourseCard(todayCourseResult: ResultWithStatus<List<Course>>) {
                         if (todayCourseResult.data.isNullOrEmpty()) {
                             EmptyContent(
                                 modifier = Modifier
-                                    .height(80.dp)
+                                    .height(86.dp)
                                     .fillMaxWidth(),
                                 text = "今日无课程"
                             )
@@ -381,7 +396,7 @@ fun TodayCourseCard(todayCourseResult: ResultWithStatus<List<Course>>) {
                 else -> {
                     CircularProgressIndicator(
                         modifier = Modifier
-                            .height(80.dp)
+                            .height(86.dp)
                             .fillMaxWidth()
                     )
                 }
