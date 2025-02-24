@@ -112,7 +112,6 @@ fun TeacherEvaluation(
             }
         }
     }
-
     SelectTermBottomSheet(
         termSelectedCode = uiState.termCode,
         termList = uiState.termIndex,
