@@ -67,7 +67,7 @@ jobs:
         run: |
           if [ ! -z "${BOT_TOKEN}" ]; then
             if [ ! -z "${CHANNEL_ID}" ]; then
-              export RELEASE=$(find ./app/build/outputs/apk/release -name "SmartHNU_${{ env.TAG_NAME }}.apk")
+              export RELEASE="./SmartHNU_${{ env.TAG_NAME }}.apk"
               echo "Debug: RELEASE path is $RELEASE"
 
               if [ -f "$RELEASE" ]; then
