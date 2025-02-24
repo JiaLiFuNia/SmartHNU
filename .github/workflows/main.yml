@@ -50,6 +50,7 @@ jobs:
           token: ${{ github.token }}
           generateReleaseNotes: true
 
+
       - name: Post to Telegram ci channel
         env:
             CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
