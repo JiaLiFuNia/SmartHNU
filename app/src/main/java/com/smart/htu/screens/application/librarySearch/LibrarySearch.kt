@@ -451,7 +451,7 @@ fun RentBooksList(
         leadingIconPainting = R.drawable.book_4_24px
     ) {
         Column(
-            modifier = Modifier.heightIn(min = 120.dp)
+            modifier = Modifier
         ) {
             if (uiState.rentList.isNotEmpty()) {
                 uiState.rentList.forEachIndexed { index, it ->
