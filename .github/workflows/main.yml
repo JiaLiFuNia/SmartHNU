@@ -43,6 +43,10 @@ jobs:
       - run: mv ${{steps.sign_app.outputs.signedReleaseFile}} SmartHNU_${{ env.TAG_NAME }}.apk
         env:
           TAG_NAME: ${{ env.TAG_NAME }}
+
+      - name: List files in the release directory for debugging
+        run: ls ./app/build/outputs/apk/release/
+
       - uses: ncipollo/release-action@v1
         if: "! contains(github.ref, 'beta')"
         with:
@@ -50,23 +54,22 @@ jobs:
           token: ${{ github.token }}
           generateReleaseNotes: true
 
-
       - name: Post to Telegram ci channel
         env:
-            CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
-            BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-            COMMIT_MESSAGE: |+
-              New CI from SmartHNU
-              
-              ```
-              ${{ github.event.head_commit.message }}
-              ```
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          COMMIT_MESSAGE: |
+            New CI from SmartHNU
+            
+            ```
+            ${{ github.event.head_commit.message }}
+            ```
         run: |
           if [ ! -z "${BOT_TOKEN}" ]; then
             if [ ! -z "${CHANNEL_ID}" ]; then
-              export RELEASE=$(find ./app/build/outputs/apk/release -name "*.apk")
+              export RELEASE=$(find ./app/build/outputs/apk/release -name "SmartHNU_${{ env.TAG_NAME }}.apk")
               echo "Debug: RELEASE path is $RELEASE"
-        
+
               if [ -f "$RELEASE" ]; then
                 ESCAPED=$(python3 -c 'import json,os,urllib.parse; print(urllib.parse.quote(json.dumps(os.environ["COMMIT_MESSAGE"])))')
                 curl -v "https://api.telegram.org/bot${BOT_TOKEN}/sendMediaGroup?chat_id=${CHANNEL_ID}&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Frelease%22%7D%2C%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Fdebug%22%2C%22parse_mode%22%3A%22MarkdownV2%22%2C%22caption%22%3A${ESCAPED}%7D%5D" -F release="@$RELEASE"
