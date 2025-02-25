@@ -43,7 +43,6 @@ import com.smart.htu.component.InfoBadge
 import com.smart.htu.component.ScaffoldWithHazeLazyColumn
 import com.smart.htu.component.svgVector.DrawableVectors
 import com.smart.htu.component.svgVector.drawablevectors.emptyData
-import com.smart.htu.component.svgVector.drawablevectors.emptyList
 import com.smart.htu.screens.application.grade.SelectTermBottomSheet
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Term.termConverter
@@ -140,7 +139,7 @@ fun SingleCourseTextbook(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        onClick = { /*TODO*/ }
+        onClick = { navController.navigate("${Destinations.TextbookSelect.route}/${course.courseTaskCode}/${termCode}") }
     ) {
         ListItem(
             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -172,12 +171,10 @@ fun SingleCourseTextbook(
                         )
                     )
                 else
-                    IconButton(onClick = { navController.navigate("${Destinations.TextbookSelect.route}/${course.courseTaskCode}/${termCode}") }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                            contentDescription = "back"
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
+                        contentDescription = "back"
+                    )
             }
         )
     }
