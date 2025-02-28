@@ -303,6 +303,7 @@ fun LoginScreen(
             }
             Spacer(modifier = Modifier.height(4.dp))
             SettingItemCard(
+                themeMode = 1,
                 modifier = Modifier
                     .padding(horizontal = 36.dp)
             ) {

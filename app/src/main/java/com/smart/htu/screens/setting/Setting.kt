@@ -1,10 +1,15 @@
 package com.smart.htu.screens.setting
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Refresh
@@ -21,7 +26,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
@@ -30,26 +37,29 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.smart.htu.R
 import com.smart.htu.component.CommonListItem
-import com.smart.htu.component.DropdownListItem
-import com.smart.htu.component.SelectionItem
 import com.smart.htu.component.SettingItemCard
-import com.smart.htu.component.SwitchListItem
 import com.smart.htu.screens.main.entity.DarkMode
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.APPVersion
 import com.smart.htu.utils.Term
-import com.smart.htu.utils.TermType
 import com.smart.htu.utils.startWebUrl
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
+import top.yukonga.miuix.kmp.basic.SwitchDefaults
+import top.yukonga.miuix.kmp.extra.DropDownMode
+import top.yukonga.miuix.kmp.extra.SuperArrow
+import top.yukonga.miuix.kmp.extra.SuperDropdown
+import top.yukonga.miuix.kmp.extra.SuperSwitch
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun SettingScreen(
+    themeMode: Int,
     navController: NavController,
     viewModel: SettingViewModel
 ) {
@@ -57,13 +67,20 @@ fun SettingScreen(
     val hazeState = remember { HazeState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
+        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+                    containerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
+                        0 -> MiuixTheme.colorScheme.background
+                        else -> MaterialTheme.colorScheme.surface
+                    },
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
+                        0 -> MiuixTheme.colorScheme.background
+                        else -> MaterialTheme.colorScheme.surfaceContainer
+                    }
                 ),
                 title = { Text(text = stringResource(id = R.string.setting)) },
                 navigationIcon = {
@@ -96,22 +113,35 @@ fun SettingScreen(
             item {
                 SettingItemCard(
                     label = "开发",
+                    themeMode = themeMode,
                     modifier = Modifier
                 ) {
                     Column {
-                        CommonListItem(
-                            headlineText = stringResource(id = R.string.developer_name),
-                            supportingText = stringResource(id = R.string.developer_description),
-                            leadingIcon = R.drawable.developer_icon,
+                        SuperArrow(
+                            leftAction = {
+                                Box(
+                                    contentAlignment = Alignment.TopStart,
+                                    modifier = Modifier.padding(end = 16.dp)
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.developer_icon),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .size(32.dp)
+                                            .clip(CircleShape)
+                                    )
+                                }
+                            },
+                            title = stringResource(id = R.string.developer_name),
+                            summary = stringResource(id = R.string.developer_description),
                             onClick = {
                                 startWebUrl("https://github.com/JiaLiFuNia")
                             }
                         )
-                        CommonListItem(
-                            headlineText = stringResource(id = R.string.participate),
-                            leadingIcon = painterResource(id = R.drawable.github),
+                        SuperArrow(
+                            title = stringResource(id = R.string.participate),
                             onClick = {
-
+                                startWebUrl("https://github.com/JiaLiFuNia")
                             }
                         )
                     }
@@ -120,14 +150,13 @@ fun SettingScreen(
             item {
                 SettingItemCard(
                     label = "教务",
-                    modifier = Modifier
+                    modifier = Modifier,
+                    themeMode = themeMode
                 ) {
                     val termString = Term.termConverter(uiState.termCode).split("-")
-                    CommonListItem(
-                        headlineText = "学期",
-                        supportingText =
-                        "当前学期 ${termString[0]}-${termString[1]} 学年第 ${termString[2]} 学期",
-                        leadingIcon = painterResource(id = R.drawable.overview_24px),
+                    SuperArrow(
+                        title = "学期",
+                        summary = "当前学期 ${termString[0]}-${termString[1]} 学年第 ${termString[2]} 学期",
                         onClick = {
                         }
                     )
@@ -136,34 +165,41 @@ fun SettingScreen(
             item {
                 SettingItemCard(
                     label = stringResource(id = R.string.display_color),
-                    modifier = Modifier
+                    modifier = Modifier,
+                    themeMode = themeMode
                 ) {
                     Column {
-                        SwitchListItem(
-                            value = uiState.dynamicColor,
-                            headlineText = stringResource(id = R.string.theme_color),
-                            supportingText = stringResource(id = R.string.theme_color_description),
-                            leadingIcon = painterResource(id = R.drawable.outline_color_lens_24),
-                            onValueChanged = { value ->
-                                viewModel.changeDynamicTheme(value)
-                            }
+                        val themeModes = mapOf(
+                            0 to "简洁色彩",
+                            1 to "动态色彩",
+                            2 to "师大青"
                         )
-                        SwitchListItem(
-                            value = uiState.blurEffect,
-                            headlineText = "实时模糊",
-                            supportingText = "开启后部分页面将具有模糊效果，具体效果因机型、系统而异",
-                            leadingIcon = painterResource(id = R.drawable.blur_on_24px),
-                            onValueChanged = { value ->
+                        SuperDropdown(
+                            title = stringResource(id = R.string.theme_color),
+                            summary = stringResource(id = R.string.theme_color_description),
+                            items = themeModes.values.toList(),
+                            selectedIndex = uiState.themeMode,
+                            mode = DropDownMode.AlwaysOnRight,
+                            onSelectedIndexChange = { mode -> viewModel.changeDynamicTheme(mode) },
+                        )
+                        SuperSwitch(
+                            title = "实时模糊",
+                            checked = uiState.blurEffect,
+                            summary = "开启后部分页面将具有模糊效果，具体效果因机型、系统而异",
+                            onCheckedChange = { value ->
                                 viewModel.changeBlurState(value)
-                            }
+                            },
+                            enabled = uiState.themeMode != 0,
+                            switchColors = SwitchDefaults.switchColors(checkedTrackColor = MaterialTheme.colorScheme.primary)
                         )
-                        DropdownListItem(
-                            value = DarkMode.entries[uiState.isDarkTheme],
-                            headlineText = stringResource(id = R.string.dark_theme),
-                            leadingIcon = painterResource(id = R.drawable.outline_nightlight_24),
-                            selections = DarkMode.entries
-                                .map { item -> SelectionItem(item.toStringResourceId(), item) },
-                            onValueChanged = { index, _ ->
+                        SuperDropdown(
+                            title = stringResource(id = R.string.dark_theme),
+                            summary = "切换应用色彩模式",
+                            items = DarkMode.entries
+                                .map { item -> item.toStringResourceId() },
+                            selectedIndex = uiState.isDarkTheme,
+                            mode = DropDownMode.AlwaysOnRight,
+                            onSelectedIndexChange = { index ->
                                 viewModel.changDarkMode(index)
                             }
                         )
@@ -183,26 +219,24 @@ fun SettingScreen(
             item {
                 SettingItemCard(
                     label = stringResource(id = R.string.screen_style),
-                    modifier = Modifier
+                    modifier = Modifier,
+                    themeMode = themeMode
                 ) {
                     Column {
-                        CommonListItem(
-                            headlineText = stringResource(id = R.string.main_screen),
-                            leadingIcon = painterResource(id = R.drawable.outline_home_24),
+                        SuperArrow(
+                            title = stringResource(id = R.string.main_screen),
                             onClick = {
                                 navController.navigate(Destinations.MainSetting.route)
                             }
                         )
-                        CommonListItem(
-                            headlineText = stringResource(id = R.string.application_screen),
-                            leadingIcon = painterResource(id = R.drawable.widgets_24px_outline),
+                        SuperArrow(
+                            title = stringResource(id = R.string.application_screen),
                             onClick = {
                                 navController.navigate(Destinations.AppSetting.route)
                             }
                         )
-                        CommonListItem(
-                            headlineText = stringResource(id = R.string.news_screen),
-                            leadingIcon = painterResource(id = R.drawable.ic_outline_article),
+                        SuperArrow(
+                            title = stringResource(id = R.string.news_screen),
                             onClick = {
                                 navController.navigate(Destinations.NewsSetting.route)
                             }
@@ -213,28 +247,26 @@ fun SettingScreen(
             item {
                 SettingItemCard(
                     label = stringResource(id = R.string.about),
-                    modifier = Modifier
+                    modifier = Modifier,
+                    themeMode = themeMode
                 ) {
                     Column {
-                        CommonListItem(
-                            headlineText = stringResource(id = R.string.about_app),
-                            supportingText = stringResource(id = R.string.about_app_description),
-                            leadingIcon = painterResource(id = R.drawable.ic_outline_article),
+                        SuperArrow(
+                            title = stringResource(id = R.string.about_app),
+                            summary = stringResource(id = R.string.about_app_description),
                             onClick = {
                                 navController.navigate(Destinations.About.route)
                             }
                         )
-                        CommonListItem(
-                            headlineText = stringResource(id = R.string.check_update),
-                            supportingText = "当前版本 ${APPVersion.getVersionName()}(${APPVersion.getVersionCode()})",
-                            leadingIcon = Icons.Outlined.Refresh,
+                        SuperArrow(
+                            title =  stringResource(id = R.string.check_update),
+                            summary = "当前版本 ${APPVersion.getVersionName()}(${APPVersion.getVersionCode()})",
                             onClick = {
                             }
                         )
-                        CommonListItem(
-                            headlineText = stringResource(id = R.string.appreciate),
-                            supportingText = stringResource(id = R.string.appreciate_description),
-                            leadingIcon = painterResource(id = R.drawable.outline_auto_awesome_24),
+                        SuperArrow(
+                            title = stringResource(id = R.string.appreciate),
+                            summary = stringResource(id = R.string.appreciate_description),
                             onClick = {
                                 navController.navigate(Destinations.Appreciate.route)
                             }

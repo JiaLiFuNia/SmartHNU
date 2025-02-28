@@ -83,6 +83,12 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.ui.tiles)
 
+    // Preference
+    implementation(libs.preference.library)
+
+    // miuix
+    implementation(libs.miuix.android)
+
     // Splash
     implementation(libs.androidx.core.splashscreen)
 

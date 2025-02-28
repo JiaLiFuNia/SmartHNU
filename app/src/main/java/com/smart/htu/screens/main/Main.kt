@@ -1,24 +1,24 @@
 package com.smart.htu.screens.main
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
@@ -27,9 +27,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -48,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -55,7 +57,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.nlf.calendar.Lunar
-import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.api.module.Course
 import com.smart.htu.api.module.ResultWithStatus
@@ -85,6 +86,7 @@ import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Date
@@ -99,7 +101,8 @@ fun Main(
     applicationViewModel: ApplicationViewModel,
     loginViewModel: LoginViewModel,
     navController: NavController,
-    navigateToApplication: () -> Unit
+    navigateToApplication: () -> Unit,
+    themeMode: Int
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val loginUiState by loginViewModel.uiState.collectAsState()
@@ -126,18 +129,22 @@ fun Main(
     }
 
     Scaffold(
+        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background,
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
-        snackbarHost = {
-            SnackbarHost(hostState = snackBarHostState)
-        },
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer,
+                    containerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
+                        0 -> MiuixTheme.colorScheme.background
+                        else -> MaterialTheme.colorScheme.surface
+                    },
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
+                        0 -> MiuixTheme.colorScheme.background
+                        else -> MaterialTheme.colorScheme.surfaceContainer
+                    },
                 ),
                 modifier = Modifier.hazeEffect(
                     state = hazeState,
@@ -233,7 +240,7 @@ fun Main(
                             icon = Icons.AutoMirrored.Filled.ArrowForward
                         )
                     }
-                item {
+                /*item {
                     Row(
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -241,9 +248,12 @@ fun Main(
                         Spacer(modifier = Modifier.width(20.dp))
                         WeatherCard(modifier = Modifier.weight(0.5f))
                     }
+                }*/
+                item {
+                    FocusCard(themeMode)
                 }
                 item {
-                    TodayCourseCard(uiState.toDayCourseList)
+                    TodayCourseCard(uiState.toDayCourseList, themeMode)
                 }
                 item {
                     CommonAppsCard(
@@ -251,14 +261,15 @@ fun Main(
                         navController = navController,
                         navigateToApplication = navigateToApplication,
                         applicationViewModel = applicationViewModel,
-                        loginUiState = loginUiState
+                        loginUiState = loginUiState,
+                        themeMode = themeMode
                     )
                 }
                 item {
                     LargeCardDisplay(
                         modifier = Modifier,
-                        title = stringResource(id = R.string.course_grade),
-                        leadingIconPainting = R.drawable.finance_24px,
+                        title = "通知公告",
+                        leadingIconPainting = R.drawable.ic_outline_article,
                         content = {
                             Box(
                                 modifier = Modifier
@@ -273,7 +284,9 @@ fun Main(
                                 )
                             }
                         },
-                        navigateTo = {}
+                        navigateTo = {},
+                        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface
+                        else MaterialTheme.colorScheme.surfaceVariant
                     )
                 }
             }
@@ -318,6 +331,108 @@ fun CalendarCard(modifier: Modifier) {
     )
 }
 
+
+@Composable
+fun FocusCard(themeMode: Int) {
+    LargeCardDisplay(
+        modifier = Modifier,
+        title = "聚焦",
+        leadingIconPainting = R.drawable.contract_edit_24px,
+        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface
+        else MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Column {
+            Row {
+                ListItem(
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    leadingContent = {
+                        Icon(imageVector = Icons.Outlined.DateRange, contentDescription = "date")
+                    },
+                    headlineContent = {
+                        Text(
+                            text = "星期五",
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    },
+                    supportingContent = {
+                        Text(text = "2月28日", style = MaterialTheme.typography.titleMedium)
+                    },
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .clickable {
+                            startCalendar()
+                        }
+                )
+                ListItem(
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    leadingContent = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.format_paint_24px),
+                            contentDescription = "two"
+                        )
+                    },
+                    headlineContent = {
+                        Text(
+                            text = "第二课堂",
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    },
+                    supportingContent = {
+                        Text(text = "625 学时", style = MaterialTheme.typography.titleMedium)
+                    },
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .clickable {}
+                )
+            }
+            Row {
+                ListItem(
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    leadingContent = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.format_paint_24px),
+                            contentDescription = "two"
+                        )
+                    },
+                    headlineContent = {
+                        Text(
+                            text = "学期绩点",
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    },
+                    supportingContent = {
+                        Text(text = "5.4", style = MaterialTheme.typography.titleMedium)
+                    },
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .clickable {}
+                )
+                ListItem(
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    leadingContent = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.bolt_24px),
+                            contentDescription = "two"
+                        )
+                    },
+                    headlineContent = {
+                        Text(
+                            text = "寝室电费",
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    },
+                    supportingContent = {
+                        Text(text = "52.99 度", style = MaterialTheme.typography.titleMedium)
+                    },
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .clickable {}
+                )
+            }
+        }
+    }
+}
+
 @Composable
 fun WeatherCard(modifier: Modifier) {
     MediumCardDisplay(
@@ -360,8 +475,10 @@ fun WeatherCard(modifier: Modifier) {
 }
 
 @Composable
-fun TodayCourseCard(todayCourseResult: ResultWithStatus<List<Course>>) {
+fun TodayCourseCard(todayCourseResult: ResultWithStatus<List<Course>>, themeMode: Int) {
     LargeCardDisplay(
+        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface
+        else MaterialTheme.colorScheme.surfaceVariant,
         modifier = Modifier,
         title = stringResource(id = R.string.today_course),
         leadingIconPainting = R.drawable.today_24px,
@@ -411,10 +528,13 @@ fun CommonAppsCard(
     navController: NavController,
     navigateToApplication: () -> Unit,
     applicationViewModel: ApplicationViewModel,
-    loginUiState: LoginUiState
+    loginUiState: LoginUiState,
+    themeMode: Int
 ) {
     val lazyVerticalGridHeight by remember { derivedStateOf { ((ceil(uiState.appListIsCommonList.size / 5.0)) * 70).toInt() + 16 } }
     LargeCardDisplay(
+        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface
+        else MaterialTheme.colorScheme.surfaceVariant,
         modifier = Modifier,
         title = stringResource(id = R.string.common_applications),
         leadingIconPainting = R.drawable.app_registration_24px,

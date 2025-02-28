@@ -10,21 +10,16 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.smart.htu.R
 import com.smart.htu.api.DataStoreService
 import com.smart.htu.api.module.LoginCookie
 import com.smart.htu.api.module.PersonalMessage
 import com.smart.htu.screens.application.entity.SmallCardContent
 import com.smart.htu.screens.application.librarySearch.RentBookEntity
-import com.smart.htu.screens.navigation.Destinations
-import com.smart.htu.utils.Constants.Companion.HOT_WATER_WASHER_ALIPAY_URL
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
-import com.smart.htu.utils.Constants.Companion.SHOWER_ALIPAY_URL
 import com.smart.htu.utils.Term
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.Cookie
 import javax.inject.Inject
@@ -46,7 +41,7 @@ class DataStoreRepo @Inject constructor(
         val TOKEN = stringPreferencesKey("TOKEN")
         val IS_TOKEN_VALID = booleanPreferencesKey("IS_TOKEN_VALID")
         val DARK_THEME = intPreferencesKey("DARK_THEME")
-        val DYNAMIC_COLOR = booleanPreferencesKey("DYNAMIC_COLOR")
+        val THEME_MODE = intPreferencesKey("THEME_MODE")
         val COMMON_APP_LIST = stringPreferencesKey("COMMON_APP_LIST")
         val SSO_TICKET = stringPreferencesKey("SSO_TICKET")
         val RENT_BOOK_LIST = stringPreferencesKey("RENT_BOOK_LIST")
@@ -62,7 +57,7 @@ class DataStoreRepo @Inject constructor(
 
         const val DEFAULT_VALUE_COOKIES = "[]"
         const val DEFAULT_MESSAGE_READ_ID = "[]"
-        const val DEFAULT_DYNAMIC_COLOR = true
+        const val DEFAULT_THEME_MODE = 0
         const val DEFAULT_BLUR_EFFECT = true
         const val DEFAULT_IS_TOKEN_VALID = true
         const val DEFAULT_LOGIN_STATE = 0
@@ -85,8 +80,8 @@ class DataStoreRepo @Inject constructor(
         )
     }
 
-    override suspend fun changeDynamicTheme(enabled: Boolean) {
-        context.dataStore.edit { it[DYNAMIC_COLOR] = enabled }
+    override suspend fun changeThemeMode(mode: Int) {
+        context.dataStore.edit { it[THEME_MODE] = mode }
     }
 
     override suspend fun changeDarkTheme(isDarkTheme: Int) {
@@ -166,8 +161,8 @@ class DataStoreRepo @Inject constructor(
     }
 
 
-    override fun observeDynamicTheme(): Flow<Boolean> {
-        return context.dataStore.data.map { it[DYNAMIC_COLOR] ?: DEFAULT_DYNAMIC_COLOR }
+    override fun observeThemeMode(): Flow<Int> {
+        return context.dataStore.data.map { it[THEME_MODE] ?: DEFAULT_THEME_MODE }
     }
 
     override fun observeDarkTheme(): Flow<Int> {

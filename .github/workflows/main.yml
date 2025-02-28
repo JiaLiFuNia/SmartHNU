@@ -53,6 +53,9 @@ jobs:
           artifacts: "*.apk"
           token: ${{ github.token }}
           generateReleaseNotes: true
+          body: |
+            
+            ${{ github.event.head_commit.message }}
 
       - name: Post to Telegram ci channel
         env:

@@ -1,20 +1,18 @@
 package com.smart.htu.screens
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Badge
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,8 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.window.core.layout.WindowWidthSizeClass
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.LoginDialog
@@ -47,8 +45,9 @@ import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.person.PersonScreen
 import com.smart.htu.screens.setting.SettingViewModel
 import com.smart.htu.utils.DoubleBackToExitApp
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.HorizontalDivider
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MainFrame(
     navController: NavHostController,
@@ -64,6 +63,7 @@ fun MainFrame(
     val loginUiState = loginViewModel.uiState.collectAsState().value
     val mainUiState = mainViewModel.uiState.collectAsState().value
     val settingUiState = settingViewModel.uiState.collectAsState().value
+    val themeMode = settingUiState.themeMode// 0 黑白 1 动态 2 师大青
     val navigationItem = listOf(
         BottomNavigationItem(
             title = R.string.main,
@@ -94,14 +94,18 @@ fun MainFrame(
         )
     )
 
-    val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+    // val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
     Scaffold(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        NavigationSuiteScaffold(
-            navigationSuiteItems = {
+        modifier = Modifier.fillMaxSize(),
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarHostState)
+        },
+        bottomBar = {
+            NavigationBar(
+                containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surfaceContainer else NavigationBarDefaults.containerColor
+            ) {
                 navigationItem.filter { it.enabled }.forEachIndexed { index, bottomNavigationItem ->
-                    item(
+                    NavigationBarItem(
                         icon = {
                             Icon(
                                 painter = painterResource(
@@ -120,70 +124,61 @@ fun MainFrame(
                         onClick = {
                             onSelectedItemIndex(index)
                         },
-                        badge = {
-                            if (bottomNavigationItem.badge > 0) {
-                                Badge { Text(text = bottomNavigationItem.badge.toString()) }
-                            }
-                        },
                         modifier = Modifier
                     )
                 }
-            },
-            layoutType = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) {
-                NavigationSuiteType.NavigationRail
-            } else {
-                NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
-                    currentWindowAdaptiveInfo()
-                )
             }
+        }
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = it.calculateBottomPadding())
         ) {
-            Box(
+            AnimatedContent(
                 modifier = Modifier
                     .fillMaxSize(),
-            ) {
-                AnimatedContent(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    label = "page",
-                    targetState = selectedItemIndex,
-                    transitionSpec = {
-                        SlideTransition.slideLeft.enterTransition()
-                            .togetherWith(SlideTransition.slideLeft.exitTransition())
-                    },
-                ) { page ->
-                    savableStateHolder.SaveableStateProvider(
-                        key = page,
-                        content = {
-                            when (page) {
-                                0 -> Main(
-                                    navController = navController,
-                                    mainViewModel = mainViewModel,
-                                    navigateToApplication = {
-                                        onSelectedItemIndex(1)
-                                    },
-                                    loginViewModel = loginViewModel,
-                                    applicationViewModel = applicationViewModel
-                                )
+                label = "page",
+                targetState = selectedItemIndex,
+                transitionSpec = {
+                    SlideTransition.slideLeft.enterTransition()
+                        .togetherWith(SlideTransition.slideLeft.exitTransition())
+                },
+            ) { page ->
+                savableStateHolder.SaveableStateProvider(
+                    key = page,
+                    content = {
+                        when (page) {
+                            0 -> Main(
+                                navController = navController,
+                                mainViewModel = mainViewModel,
+                                navigateToApplication = {
+                                    onSelectedItemIndex(1)
+                                },
+                                loginViewModel = loginViewModel,
+                                applicationViewModel = applicationViewModel,
+                                themeMode = themeMode
+                            )
 
-                                1 -> Application(
-                                    navController = navController,
-                                    viewModel = applicationViewModel,
-                                    loginViewModel = loginViewModel
-                                )
+                            1 -> Application(
+                                themeMode = themeMode,
+                                navController = navController,
+                                viewModel = applicationViewModel,
+                                loginViewModel = loginViewModel
+                            )
 
-                                2 -> NewsScreen(
-                                    navController = navController,
-                                    viewModel = newsViewModel
-                                )
+                            2 -> NewsScreen(
+                                navController = navController,
+                                viewModel = newsViewModel
+                            )
 
-                                3 -> PersonScreen(
-                                    navController = navController,
-                                    viewModel = loginViewModel
-                                )
-                            }
+                            3 -> PersonScreen(
+                                navController = navController,
+                                viewModel = loginViewModel
+                            )
                         }
-                    )
-                }
+                    }
+                )
             }
         }
     }
@@ -210,3 +205,44 @@ fun MainFrame(
         }
     )
 }
+
+
+/*NavigationSuiteScaffold(
+    navigationSuiteItems = {
+        navigationItem.filter { it.enabled }.forEachIndexed { index, bottomNavigationItem ->
+            item(
+                icon = {
+                    Icon(
+                        painter = painterResource(
+                            id = if (index == selectedItemIndex) {
+                                bottomNavigationItem.selectedIcon
+                            } else
+                                bottomNavigationItem.unselectedIcon
+                        ),
+                        contentDescription = "icon"
+                    )
+                },
+                label = {
+                    Text(text = stringResource(id = bottomNavigationItem.title))
+                },
+                selected = selectedItemIndex == index,
+                onClick = {
+                    onSelectedItemIndex(index)
+                },
+                badge = {
+                    if (bottomNavigationItem.badge > 0) {
+                        Badge { Text(text = bottomNavigationItem.badge.toString()) }
+                    }
+                },
+                modifier = Modifier
+            )
+        }
+    },
+    layoutType = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) {
+        NavigationSuiteType.NavigationRail
+    } else {
+        NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
+            currentWindowAdaptiveInfo()
+        )
+    }
+) {}*/

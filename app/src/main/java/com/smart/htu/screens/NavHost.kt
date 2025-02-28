@@ -3,6 +3,7 @@ package com.smart.htu.screens
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -51,6 +52,7 @@ fun NavHostScreen() {
     val newsViewModel: NewsViewModel = hiltViewModel()
     val messageViewModel: MessageViewModel = hiltViewModel()
     val navController = rememberNavController()
+    val uiState = settingViewModel.uiState.collectAsState().value
     NavHost(
         navController = navController,
         startDestination = Destinations.App.route
@@ -81,6 +83,7 @@ fun NavHostScreen() {
             Application(
                 navController = navController,
                 viewModel = applicationViewModel,
+                themeMode = uiState.themeMode,
                 loginViewModel = loginViewModel
             )
         }
@@ -98,6 +101,7 @@ fun NavHostScreen() {
         }
         animatedComposable(Destinations.Setting.route) {
             SettingScreen(
+                themeMode = uiState.themeMode,
                 navController = navController,
                 viewModel = settingViewModel
             )

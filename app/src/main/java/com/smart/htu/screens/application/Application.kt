@@ -3,7 +3,9 @@ package com.smart.htu.screens.application
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -47,11 +49,14 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
+import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun Application(
+    themeMode: Int,
     navController: NavHostController,
     viewModel: ApplicationViewModel,
     loginViewModel: LoginViewModel
@@ -66,13 +71,20 @@ fun Application(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
     Scaffold(
+        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+                    containerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
+                        0 -> MiuixTheme.colorScheme.background
+                        else -> MaterialTheme.colorScheme.surface
+                    },
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
+                        0 -> MiuixTheme.colorScheme.background
+                        else -> MaterialTheme.colorScheme.surfaceContainer
+                    }
                 ),
                 modifier = Modifier.hazeEffect(
                     state = hazeState,
@@ -99,6 +111,7 @@ fun Application(
             ),
             columns = GridCells.Fixed(if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 2),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .hazeSource(state = hazeState),
         ) {
@@ -116,7 +129,7 @@ fun Application(
                 SuggestChip(
                     onClick = {  },
                     onActionClick = {  },
-                    text = "哈哈哈哈哈哈哈哈",
+                    text = "点击反馈提交你的需求",
                     type = SuggestChipType.INFO,
                     visibility = mutableStateOf(true),
                     icon = Icons.Outlined.Info
@@ -127,16 +140,14 @@ fun Application(
                     app.category == item
                 }
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    PreferenceSubtitle(
-                        text = item.category,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    SmallTitle(text = item.category, insideMargin = PaddingValues(12.dp, 4.dp))
                 }
                 items(appList) { app ->
                     SmallMediumCardDisplay(
+                        themeMode = themeMode,
                         enabled = (loginUiState.isGuest && app.guestEnable) || loginUiState.isLogSuccess,
                         content = app,
-                        modifier = Modifier.padding(bottom = 12.dp),
+                        modifier = Modifier,
                         onLongClick = {
                             viewModel.changeCommonAppListState(app)
                         },

@@ -124,7 +124,7 @@ fun DynamicColorSettingScreen(
                     }
                 }
                 when (selectedIndex) {
-                    0 -> SettingItemCard(modifier = Modifier) {
+                    0 -> SettingItemCard(modifier = Modifier, themeMode = 1) {
                         /*PreferenceSwitch(
                             iconRes = R.drawable.outline_colorize_24,
                             title = "动态颜色",
@@ -136,7 +136,7 @@ fun DynamicColorSettingScreen(
                         )*/
                         }
 
-                    1 -> SettingItemCard(modifier = Modifier.fillMaxWidth()) {
+                    1 -> SettingItemCard(modifier = Modifier.fillMaxWidth(), themeMode = 1) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()

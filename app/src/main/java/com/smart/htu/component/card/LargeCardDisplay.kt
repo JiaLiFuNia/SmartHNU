@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.smart.htu.R
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun LargeCardDisplay(
@@ -37,6 +39,7 @@ fun LargeCardDisplay(
     modifier: Modifier,
     title: String,
     @DrawableRes leadingIconPainting: Int,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceVariant,
     content: @Composable () -> Unit
 ) {
     Column(
@@ -83,7 +86,7 @@ fun LargeCardDisplay(
                 modifier = modifier.fillMaxWidth(),
                 onClick = onClick,
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White
+                    containerColor = containerColor
                 )
             ) {
                 content()
@@ -92,7 +95,7 @@ fun LargeCardDisplay(
             Card(
                 modifier = modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    containerColor = containerColor
                 )
             ) {
                     content()

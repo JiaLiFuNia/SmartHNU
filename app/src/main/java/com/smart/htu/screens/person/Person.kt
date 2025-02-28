@@ -218,6 +218,7 @@ fun PersonScreen(
         }
         item {
             SettingItemCard(
+                themeMode = 1,
                 modifier = Modifier
             ) {
                 Card(

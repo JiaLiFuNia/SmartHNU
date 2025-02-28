@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.smart.htu.component.SelectionItem
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
-import com.smart.htu.screens.main.MainViewModel
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_THEME_MODE
 import com.smart.htu.utils.Term.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +20,7 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class SettingUiState(
-    val dynamicColor: Boolean = true,
+    val themeMode: Int = DEFAULT_THEME_MODE,
     val isDarkTheme: Int = 0,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val languageList: List<SelectionItem<String>>,
@@ -50,12 +50,12 @@ class SettingViewModel @Inject constructor(
 
     val uiState: StateFlow<SettingUiState> = _uiState.asStateFlow()
 
-    private val dynamicColorStateFlow = dataStoreRepo.observeDynamicTheme()
+    private val themeModeStateFlow = dataStoreRepo.observeThemeMode()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
-                dataStoreRepo.observeDynamicTheme().first()
+                dataStoreRepo.observeThemeMode().first()
             }
         )
 
@@ -86,8 +86,8 @@ class SettingViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            dynamicColorStateFlow.collect { value ->
-                _uiState.update { it.copy(dynamicColor = value) }
+            themeModeStateFlow.collect { value ->
+                _uiState.update { it.copy(themeMode = value) }
             }
         }
         viewModelScope.launch {
@@ -107,9 +107,9 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    fun changeDynamicTheme(enabled: Boolean) {
+    fun changeDynamicTheme(mode: Int) {
         viewModelScope.launch {
-            dataStoreRepo.changeDynamicTheme(enabled)
+            dataStoreRepo.changeThemeMode(mode)
         }
     }
 

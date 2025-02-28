@@ -1,6 +1,5 @@
 package com.smart.htu.component.card
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
@@ -30,14 +29,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.smart.htu.screens.application.entity.SmallCardContent
+import top.yukonga.miuix.kmp.basic.TextButton
+import top.yukonga.miuix.kmp.extra.SuperSpinner
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SmallMediumCardDisplay(
     enabled: Boolean,
+    themeMode: Int,
     content: SmallCardContent,
     modifier: Modifier,
-    onLongClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
     onCLick: () -> Unit,
     isCommon: Boolean
 ) {
@@ -54,8 +56,8 @@ fun SmallMediumCardDisplay(
                 }
             ),
         colors = CardDefaults.cardColors(
-            containerColor = if (enabled) MaterialTheme.colorScheme.surfaceVariant
-            else MaterialTheme.colorScheme.surfaceVariant.copy(0.5f)
+            containerColor = if (enabled) if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
+            else if (themeMode == 0) MiuixTheme.colorScheme.disabledSecondaryVariant else MaterialTheme.colorScheme.surfaceVariant.copy(0.5f)
         )
     ) {
         ListItem(
@@ -109,7 +111,9 @@ fun SmallMediumCardDisplay(
                 },
                 text = { Text(text = "添加到主页") },
                 onClick = {
-                    onLongClick()
+                    if (onLongClick != null) {
+                        onLongClick()
+                    }
                     showDropDownMenu = false
                 }
             )

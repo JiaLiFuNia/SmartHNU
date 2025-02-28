@@ -9,7 +9,7 @@ import okhttp3.Cookie
 
 interface DataStoreService {
 
-    suspend fun changeDynamicTheme(enabled: Boolean)
+    suspend fun changeThemeMode(enabled: Int)
     suspend fun changeDarkTheme(isDarkTheme: Int)
     suspend fun changeBlurState(state: Boolean)
     suspend fun saveSmallCard(cardList: List<SmallCardContent>)
@@ -30,7 +30,7 @@ interface DataStoreService {
     suspend fun setTokenValid(valid: Boolean)
     suspend fun setOverallTermCode(term: String)
 
-    fun observeDynamicTheme(): Flow<Boolean>
+    fun observeThemeMode(): Flow<Int>
     fun observeDarkTheme(): Flow<Int>
     fun observerBlurState(): Flow<Boolean>
     fun observeSmallCard(): Flow<List<SmallCardContent>>
