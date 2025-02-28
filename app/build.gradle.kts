@@ -84,7 +84,7 @@ dependencies {
     implementation(libs.ui.tiles)
 
     // Preference
-    implementation(libs.preference.library)
+    // implementation(libs.preference.library)
 
     // miuix
     implementation(libs.miuix.android)
