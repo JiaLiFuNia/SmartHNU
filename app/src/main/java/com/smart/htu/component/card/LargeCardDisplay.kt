@@ -34,6 +34,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun LargeCardDisplay(
+    themeMode: Int,
     onClick: (() -> Unit)? = null,
     navigateTo: (() -> Unit)? = null,
     modifier: Modifier,
@@ -82,37 +83,19 @@ fun LargeCardDisplay(
                 }
         }
         if (onClick != null) {
-            Card(
+            top.yukonga.miuix.kmp.basic.Card(
                 modifier = modifier.fillMaxWidth(),
-                onClick = onClick,
-                colors = CardDefaults.cardColors(
-                    containerColor = containerColor
-                )
+                color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
             ) {
                 content()
             }
         } else {
-            Card(
+            top.yukonga.miuix.kmp.basic.Card(
                 modifier = modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = containerColor
-                )
+                color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
             ) {
                     content()
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun LargeCardDisplayPreview() {
-    LargeCardDisplay(
-        onClick = {},
-        modifier = Modifier.height(200.dp),
-        title = "Medium Card",
-        leadingIconPainting = R.drawable.mode_fan_24px,
-        content = {},
-        navigateTo = {}
-    )
 }

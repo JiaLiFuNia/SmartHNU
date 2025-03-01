@@ -2,13 +2,14 @@ package com.smart.htu.screens.application.teacherEvaluation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -30,6 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,10 +49,15 @@ import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.screens.application.grade.SelectTermBottomSheet
 import com.smart.htu.utils.Term.termConverter
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TeacherEvaluation(
+    themeMode: Int,
     viewModel: TEViewModel = hiltViewModel(),
     navController: NavController
 ) {
@@ -71,6 +79,7 @@ fun TeacherEvaluation(
     }
 
     ScaffoldWithHazeLazyColumn(
+        themeMode = themeMode,
         isMediumTopAppBar = true,
         scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
         blurEnabledState = uiState.blurEffect,
@@ -101,13 +110,22 @@ fun TeacherEvaluation(
 
             false -> {
                 item {
-                    EmptyContent(
-                        text = "学期 ${termConverter(uiState.termCode)}\n评价时间 ${uiState.evaluationInfo.data?.msg}",
-                        image = if (uiState.evaluationInfo.data?.evaluationInfoList?.isEmpty() == true) DrawableVectors.emptyData() else null
-                    )
+                    if (uiState.evaluationInfo.data?.evaluationInfoList?.isEmpty() == true)
+                        EmptyContent(
+                            text = "学期 ${termConverter(uiState.termCode)}\n评价时间 ${uiState.evaluationInfo.data?.msg}",
+                            image = DrawableVectors.emptyData()
+                        )
+                    else
+                        EmptyContent(
+                            text = "学期 ${termConverter(uiState.termCode)}\n评价时间 ${uiState.evaluationInfo.data?.msg}",
+                            modifier = Modifier
+                                .fillParentMaxWidth()
+                                .padding(bottom = 12.dp)
+                        )
                 }
                 items(uiState.evaluationInfo.data?.evaluationInfoList ?: emptyList()) {
-                    SingleTeacher(it)
+                    SingleTeacher(it, themeMode)
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
             }
         }
@@ -130,11 +148,17 @@ fun TeacherEvaluation(
 
 @Composable
 fun SingleTeacher(
-    teacher: EvaluationInfo
+    teacher: EvaluationInfo,
+    themeMode: Int
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = { /*TODO*/ }
+    Surface(
+        onClick = {
+        },
+        modifier = Modifier
+            .semantics { role = androidx.compose.ui.semantics.Role.Button }
+            .fillMaxWidth(),
+        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant,
     ) {
         ListItem(
             colors = ListItemDefaults.colors(containerColor = Color.Transparent),

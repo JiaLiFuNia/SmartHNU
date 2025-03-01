@@ -21,7 +21,7 @@ import javax.inject.Inject
 data class MessageUiState(
     val noticeList: List<Notice> = emptyList(),
     val messageList: List<String> = emptyList(),
-    val hadReadIdList: List<String> = emptyList(),
+    val hadReadIdList: List<Int> = emptyList(),
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
 
@@ -75,7 +75,7 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-    fun addHadReadList(id: String) {
+    fun addHadReadList(id: Int) {
         viewModelScope.launch {
             _uiState.update {
                 it.copy(hadReadIdList = it.hadReadIdList + id)

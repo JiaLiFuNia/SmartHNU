@@ -32,7 +32,7 @@ data class AppUiState(
     val username: String = DEFAULT_USERNAME,
     val isLogSuccess: Boolean = false,
     val config: GiteeEntity? = null,
-    val hadReadIdList: List<String> = emptyList(),
+    val hadReadIdList: List<Int> = emptyList(),
     val appListIsCommonList: List<SmallCardContent> = INIT_COMMON_APP_LIST
 )
 

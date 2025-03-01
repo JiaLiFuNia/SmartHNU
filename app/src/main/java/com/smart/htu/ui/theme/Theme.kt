@@ -97,10 +97,6 @@ private val darkScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDark,
 )
 
-private val defaultColorTheme = lightColorScheme(
-    surfaceContainer = Color(247, 247, 247)
-)
-
 @Composable
 fun SmartHNUTheme(
     viewModel: SettingViewModel = hiltViewModel(),

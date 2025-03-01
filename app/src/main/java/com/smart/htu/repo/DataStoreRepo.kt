@@ -148,7 +148,7 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[TOKEN] = token }
     }
 
-    override suspend fun saveNoticeReadId(id: List<String>) {
+    override suspend fun saveNoticeReadId(id: List<Int>) {
         context.dataStore.edit { it[NOTICE_READ_ID_LIST] = Json.encodeToString(id) }
     }
 
@@ -265,9 +265,9 @@ class DataStoreRepo @Inject constructor(
         return context.dataStore.data.map { it[TOKEN] ?: DEFAULT_TOKEN }
     }
 
-    override fun observeNoticeReadIdList(): Flow<List<String>> {
+    override fun observeNoticeReadIdList(): Flow<List<Int>> {
         return context.dataStore.data.map {
-            Json.decodeFromString<List<String>>(
+            Json.decodeFromString<List<Int>>(
                 it[NOTICE_READ_ID_LIST] ?: DEFAULT_MESSAGE_READ_ID
             )
         }

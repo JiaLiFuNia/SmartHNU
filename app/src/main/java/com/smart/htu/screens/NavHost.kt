@@ -89,12 +89,14 @@ fun NavHostScreen() {
         }
         animatedComposable(Destinations.Person.route) {
             PersonScreen(
+                themeMode = uiState.themeMode,
                 navController = navController,
                 viewModel = loginViewModel
             )
         }
         animatedComposable(Destinations.Message.route) {
             MessageScreen(
+                themeMode = uiState.themeMode,
                 navController = navController,
                 viewModel = messageViewModel
             )
@@ -160,19 +162,36 @@ fun NavHostScreen() {
             AirCondition(navController = navController)
         }
         animatedComposable(Destinations.AccountManage.route) {
-            AccountManage(navController = navController, viewModel = loginViewModel)
+            AccountManage(
+                navController = navController,
+                viewModel = loginViewModel,
+                themeMode = uiState.themeMode,
+            )
         }
         animatedComposable(Destinations.About.route) {
-            About(navController = navController, viewModel = settingViewModel)
+            About(
+                navController = navController,
+                viewModel = settingViewModel,
+                themeMode = uiState.themeMode,
+            )
         }
         animatedComposable(Destinations.Grade.route) {
-            Grade(navController = navController)
+            Grade(
+                navController = navController,
+                themeMode = uiState.themeMode,
+            )
         }
         animatedComposable(Destinations.TeacherEvaluation.route) {
-            TeacherEvaluation(navController = navController)
+            TeacherEvaluation(
+                navController = navController,
+                themeMode = uiState.themeMode,
+            )
         }
         animatedComposable(Destinations.Textbook.route) {
-            Textbook(navController = navController)
+            Textbook(
+                navController = navController,
+                themeMode = uiState.themeMode,
+            )
         }
         animatedComposable(
             route = "${Destinations.TextbookSelect.route}/{courseTaskCode}/{termCode}",
@@ -188,7 +207,8 @@ fun NavHostScreen() {
             TextbookSelect(
                 navController = navController,
                 courseTaskCode = it.arguments?.getString("courseTaskCode") ?: "",
-                termCode = it.arguments?.getString("termCode") ?: ""
+                termCode = it.arguments?.getString("termCode") ?: "",
+                themeMode = uiState.themeMode,
             )
         }
     }

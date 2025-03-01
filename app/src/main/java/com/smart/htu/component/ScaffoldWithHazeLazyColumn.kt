@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -31,10 +32,12 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun ScaffoldWithHazeLazyColumn(
+    themeMode: Int,
     scrollBehavior: TopAppBarScrollBehavior,
     blurEnabledState: Boolean,
     title: @Composable () -> Unit,
@@ -49,6 +52,7 @@ fun ScaffoldWithHazeLazyColumn(
 ) {
     val hazeState = remember { HazeState() }
     Scaffold(
+        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = {
             SnackbarHost(hostState = snackBarHostState)
@@ -58,8 +62,14 @@ fun ScaffoldWithHazeLazyColumn(
                 MediumTopAppBar(
                     scrollBehavior = scrollBehavior,
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = if (blurEnabledState) Color.Transparent else MaterialTheme.colorScheme.surface,
-                        scrolledContainerColor = if (blurEnabledState) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+                        containerColor = if (blurEnabledState) Color.Transparent else when (themeMode) {
+                            0 -> MiuixTheme.colorScheme.background
+                            else -> colorScheme.surface
+                        },
+                        scrolledContainerColor = if (blurEnabledState) Color.Transparent else when (themeMode) {
+                            0 -> MiuixTheme.colorScheme.background
+                            else -> colorScheme.surfaceContainer
+                        },
                     ),
                     title = { title() },
                     actions = { actions() },
@@ -76,8 +86,14 @@ fun ScaffoldWithHazeLazyColumn(
                 TopAppBar(
                     scrollBehavior = scrollBehavior,
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = if (blurEnabledState) Color.Transparent else MaterialTheme.colorScheme.surface,
-                        scrolledContainerColor = if (blurEnabledState) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+                        containerColor = if (blurEnabledState) Color.Transparent else when (themeMode) {
+                            0 -> MiuixTheme.colorScheme.background
+                            else -> colorScheme.surface
+                        },
+                        scrolledContainerColor = if (blurEnabledState) Color.Transparent else when (themeMode) {
+                            0 -> MiuixTheme.colorScheme.background
+                            else -> colorScheme.surfaceContainer
+                        },
                     ),
                     title = { title() },
                     actions = { actions() },
@@ -108,7 +124,7 @@ fun ScaffoldWithHazeLazyColumn(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            LazyColumn(
+            top.yukonga.miuix.kmp.basic.LazyColumn(
                 contentPadding = PaddingValues(
                     top = it.calculateTopPadding() + 16.dp,
                     start = 16.dp,
@@ -117,8 +133,7 @@ fun ScaffoldWithHazeLazyColumn(
                 ),
                 modifier = Modifier
                     .hazeSource(state = hazeState)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(itemSpacePadding)
+                    .fillMaxSize()
             ) {
                 content()
             }

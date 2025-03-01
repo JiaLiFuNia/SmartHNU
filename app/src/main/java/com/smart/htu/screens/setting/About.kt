@@ -38,6 +38,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun About(
+    themeMode: Int,
     navController: NavController,
     viewModel: SettingViewModel
 ) {
@@ -55,6 +56,7 @@ fun About(
     }
 
     ScaffoldWithHazeLazyColumn(
+        themeMode = themeMode,
         scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
         blurEnabledState = uiState.blurEffect,
         title = { Text(text = stringResource(R.string.about_app)) },

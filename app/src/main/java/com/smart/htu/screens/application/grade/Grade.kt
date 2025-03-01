@@ -1,14 +1,16 @@
 package com.smart.htu.screens.application.grade
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -30,6 +32,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -46,10 +51,15 @@ import com.smart.htu.component.svgVector.DrawableVectors
 import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.utils.Term.termConverter
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun Grade(
+    themeMode: Int,
     viewModel: GradeViewModel = hiltViewModel(),
     navController: NavController
 ) {
@@ -72,6 +82,7 @@ fun Grade(
     }
 
     ScaffoldWithHazeLazyColumn(
+        themeMode = themeMode,
         isMediumTopAppBar = true,
         scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
         blurEnabledState = uiState.blurEffect,
@@ -110,7 +121,8 @@ fun Grade(
                     }
                 } else {
                     itemsIndexed(uiState.courseGrade.data) { _, course ->
-                        SingleCourseGrade(course)
+                        SingleCourseGrade(themeMode, course)
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
             }
@@ -135,11 +147,18 @@ fun Grade(
 
 @Composable
 fun SingleCourseGrade(
+    themeMode: Int,
     course: GradeData
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = { /*TODO*/ }
+    Surface(
+        onClick = {
+        },
+        modifier = Modifier
+            .semantics { role = Role.Button }
+            .fillMaxWidth()
+            .animateContentSize(),
+        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant,
     ) {
         ListItem(
             colors = ListItemDefaults.colors(containerColor = Color.Transparent),

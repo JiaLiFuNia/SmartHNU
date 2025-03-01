@@ -66,6 +66,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextbookSelect(
+    themeMode: Int,
     viewModel: TextbookViewModel = hiltViewModel(),
     navController: NavController,
     courseTaskCode: String,
@@ -95,6 +96,7 @@ fun TextbookSelect(
     val tabItem = listOf("可选教材", "已选教材")
 
     ScaffoldWithHazeLazyColumn(
+        themeMode = themeMode,
         isMediumTopAppBar = true,
         scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
         blurEnabledState = uiState.blurEffect,

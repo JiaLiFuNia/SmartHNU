@@ -174,7 +174,8 @@ fun MainFrame(
 
                             3 -> PersonScreen(
                                 navController = navController,
-                                viewModel = loginViewModel
+                                viewModel = loginViewModel,
+                                themeMode = themeMode
                             )
                         }
                     }

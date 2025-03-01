@@ -1,14 +1,14 @@
 package com.smart.htu.component.card
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -22,16 +22,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.smart.htu.screens.application.entity.SmallCardContent
-import top.yukonga.miuix.kmp.basic.TextButton
-import top.yukonga.miuix.kmp.extra.SuperSpinner
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
 @Composable
 fun SmallMediumCardDisplay(
@@ -46,18 +49,24 @@ fun SmallMediumCardDisplay(
     var showDropDownMenu by remember {
         mutableStateOf(false)
     }
-    Card(
-        modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
+    Surface(
+        onClick = {
+            onCLick()
+        },
+        modifier = Modifier
             .combinedClickable(
                 onLongClick = { showDropDownMenu = true },
                 onClick = {
                     onCLick()
                 }
-            ),
-        colors = CardDefaults.cardColors(
-            containerColor = if (enabled) if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
-            else if (themeMode == 0) MiuixTheme.colorScheme.disabledSecondaryVariant else MaterialTheme.colorScheme.surfaceVariant.copy(0.5f)
+            )
+            .semantics { role = Role.Button }
+            .fillMaxWidth()
+            .animateContentSize(),
+        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        color = if (enabled) if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
+        else if (themeMode == 0) MiuixTheme.colorScheme.disabledSecondaryVariant else MaterialTheme.colorScheme.surfaceVariant.copy(
+            0.5f
         )
     ) {
         ListItem(

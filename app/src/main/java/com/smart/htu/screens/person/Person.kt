@@ -50,11 +50,11 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.smart.htu.R
 import com.smart.htu.component.EditMessageDialog
-import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.component.LogoutDialog
 import com.smart.htu.component.PreferencesCard
 import com.smart.htu.component.ScaffoldWithHazeLazyColumn
 import com.smart.htu.component.SettingItemCard
+import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
@@ -66,6 +66,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonScreen(
+    themeMode: Int,
     navController: NavController,
     viewModel: LoginViewModel
 ) {
@@ -86,6 +87,7 @@ fun PersonScreen(
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showEditMessageDialog by remember { mutableStateOf(false) }
     ScaffoldWithHazeLazyColumn(
+        themeMode = themeMode,
         scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
         blurEnabledState = uiState.blurEffect,
         title = {
@@ -116,6 +118,7 @@ fun PersonScreen(
         }
         item {
             LargeCardDisplay(
+                themeMode = 0,
                 modifier = Modifier,
                 title = "我的信息",
                 leadingIconPainting = R.drawable.outline_account_box_24
@@ -190,6 +193,7 @@ fun PersonScreen(
         }
         item {
             LargeCardDisplay(
+                themeMode = 0,
                 modifier = Modifier,
                 title = "账号管理",
                 leadingIconPainting = R.drawable.admin_panel_settings_24px

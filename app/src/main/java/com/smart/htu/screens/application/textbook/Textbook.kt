@@ -2,14 +2,15 @@ package com.smart.htu.screens.application.textbook
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +31,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -47,10 +51,15 @@ import com.smart.htu.screens.application.grade.SelectTermBottomSheet
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Term.termConverter
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Textbook(
+    themeMode: Int,
     viewModel: TextbookViewModel = hiltViewModel(),
     navController: NavController
 ) {
@@ -72,6 +81,7 @@ fun Textbook(
     }
 
     ScaffoldWithHazeLazyColumn(
+        themeMode = themeMode,
         isMediumTopAppBar = true,
         scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
         blurEnabledState = uiState.blurEffect,
@@ -110,7 +120,8 @@ fun Textbook(
                     }
                 } else {
                     items(uiState.courseList.data?.courseTextbookList ?: emptyList()) {
-                        SingleCourseTextbook(uiState.termCode, it, navController)
+                        SingleCourseTextbook(uiState.termCode, it, navController, themeMode)
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
             }
@@ -135,11 +146,18 @@ fun Textbook(
 fun SingleCourseTextbook(
     termCode: String,
     course: CourseTextbook,
-    navController: NavController
+    navController: NavController,
+    themeMode: Int
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = { navController.navigate("${Destinations.TextbookSelect.route}/${course.courseTaskCode}/${termCode}") }
+    Surface(
+        onClick = {
+            navController.navigate("${Destinations.TextbookSelect.route}/${course.courseTaskCode}/${termCode}")
+        },
+        modifier = Modifier
+            .semantics { role = Role.Button }
+            .fillMaxWidth(),
+        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant,
     ) {
         ListItem(
             colors = ListItemDefaults.colors(containerColor = Color.Transparent),

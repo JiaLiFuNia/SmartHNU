@@ -26,7 +26,7 @@ interface DataStoreService {
     suspend fun changeBookSearchHistoryList(list: List<String>)
     suspend fun setJWCToken(token: String)
     suspend fun changeLoginJWCState(state: Int)
-    suspend fun saveNoticeReadId(id: List<String>)
+    suspend fun saveNoticeReadId(id: List<Int>)
     suspend fun setTokenValid(valid: Boolean)
     suspend fun setOverallTermCode(term: String)
 
@@ -47,7 +47,7 @@ interface DataStoreService {
     fun observeBookSearchHistoryList(): Flow<List<String>>
     fun observeJWCToken(): Flow<String>
     fun observeLoginJWCState(): Flow<Int>
-    fun observeNoticeReadIdList(): Flow<List<String>>
+    fun observeNoticeReadIdList(): Flow<List<Int>>
     fun observeTokenValid(): Flow<Boolean>
     fun observeOverallTermCode(): Flow<String>
 

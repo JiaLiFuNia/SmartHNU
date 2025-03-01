@@ -446,6 +446,7 @@ fun RentBooksList(
     onClick: () -> Unit = {}
 ) {
     LargeCardDisplay(
+        themeMode = 0,
         modifier = Modifier,
         title = "待借清单(${uiState.rentList.size}/5)",
         leadingIconPainting = R.drawable.book_4_24px

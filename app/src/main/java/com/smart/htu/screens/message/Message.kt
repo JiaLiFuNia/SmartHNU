@@ -9,14 +9,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,6 +44,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -63,10 +64,15 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun MessageScreen(
+    themeMode: Int,
     navController: NavHostController,
     viewModel: MessageViewModel
 ) {
@@ -84,13 +90,20 @@ fun MessageScreen(
     }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
+        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else colorScheme.surface,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else colorScheme.surfaceContainer
+                    containerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
+                        0 -> MiuixTheme.colorScheme.background
+                        else -> colorScheme.surface
+                    },
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
+                        0 -> MiuixTheme.colorScheme.background
+                        else -> colorScheme.surfaceContainer
+                    }
                 ),
                 title = { Text(text = stringResource(id = R.string.message_center)) },
                 navigationIcon = {
@@ -128,7 +141,7 @@ fun MessageScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            LazyColumn(
+            top.yukonga.miuix.kmp.basic.LazyColumn(
                 contentPadding = PaddingValues(
                     top = it.calculateTopPadding() + 16.dp,
                     start = 16.dp,
@@ -136,11 +149,11 @@ fun MessageScreen(
                     bottom = 16.dp
                 ),
                 modifier = Modifier
-                    .hazeSource(state = hazeState),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .hazeSource(state = hazeState)
             ) {
                 item {
                     NoticeList(
+                        themeMode = themeMode,
                         modifier = Modifier.fillMaxSize(),
                         list = uiState.noticeList,
                         uiState = uiState,
@@ -155,6 +168,7 @@ fun MessageScreen(
 
 @Composable
 fun LazyItemScope.NoticeList(
+    themeMode: Int,
     modifier: Modifier,
     list: List<Notice>,
     uiState: MessageUiState,
@@ -164,10 +178,11 @@ fun LazyItemScope.NoticeList(
     if (list.isNotEmpty())
         Column(
             modifier = modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            list.forEach { notice ->
+            list.sortedByDescending { it.id }.forEach { notice ->
                 SingleMessage(
+                    themeMode = themeMode,
                     readState = notice.id in uiState.hadReadIdList,
                     hadRead = {
                         viewModel.addHadReadList(notice.id)
@@ -186,18 +201,22 @@ fun LazyItemScope.NoticeList(
 
 @Composable
 fun SingleMessage(
+    themeMode: Int,
     readState: Boolean,
     hadRead: () -> Unit,
     notice: Notice,
     navController: NavController
 ) {
-    Card(
+    Surface(
         onClick = {
             hadRead()
         },
         modifier = Modifier
+            .semantics { role = Role.Button }
             .fillMaxWidth()
-            .animateContentSize()
+            .animateContentSize(),
+        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        color = if (themeMode == 0) MiuixTheme.colorScheme.surface else colorScheme.surfaceVariant,
     ) {
         Column(
             modifier = Modifier

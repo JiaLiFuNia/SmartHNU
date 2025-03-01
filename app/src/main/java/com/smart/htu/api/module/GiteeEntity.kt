@@ -9,7 +9,7 @@ data class GiteeEntity(
 )
 
 data class Notice(
-    val id: String,
+    val id: Int,
     val time: String,
     val title: String,
     val content: String,

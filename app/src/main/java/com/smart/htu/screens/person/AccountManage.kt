@@ -38,6 +38,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountManage(
+    themeMode: Int,
     navController: NavController,
     viewModel: LoginViewModel
 ) {
@@ -59,6 +60,7 @@ fun AccountManage(
     }
 
     ScaffoldWithHazeLazyColumn(
+        themeMode = themeMode,
         scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
         isMediumTopAppBar = true,
         blurEnabledState = uiState.blurEffect,
@@ -86,6 +88,7 @@ fun AccountManage(
         }
         item {
             LargeCardDisplay(
+                themeMode = 0,
                 modifier = Modifier,
                 title = "统一认证登录",
                 leadingIconPainting = R.drawable.admin_panel_settings_24px
@@ -115,6 +118,7 @@ fun AccountManage(
         }
         item {
             LargeCardDisplay(
+                themeMode = 0,
                 modifier = Modifier,
                 title = "河南师大智慧教务",
                 leadingIconPainting = R.drawable.admin_panel_settings_24px

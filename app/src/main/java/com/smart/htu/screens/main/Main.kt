@@ -271,6 +271,7 @@ fun Main(
                 }
                 item {
                     LargeCardDisplay(
+                        themeMode = themeMode,
                         modifier = Modifier,
                         title = "通知公告",
                         leadingIconPainting = R.drawable.ic_outline_article,
@@ -339,6 +340,7 @@ fun CalendarCard(modifier: Modifier) {
 @Composable
 fun FocusCard(themeMode: Int) {
     LargeCardDisplay(
+        themeMode = themeMode,
         modifier = Modifier,
         title = "聚焦",
         leadingIconPainting = R.drawable.contract_edit_24px,
@@ -400,12 +402,12 @@ fun FocusCard(themeMode: Int) {
                     },
                     headlineContent = {
                         Text(
-                            text = "学期绩点",
+                            text = "今日气温",
                             style = MaterialTheme.typography.labelMedium
                         )
                     },
                     supportingContent = {
-                        Text(text = "5.4", style = MaterialTheme.typography.titleMedium)
+                        Text(text = "4-16 ℃", style = MaterialTheme.typography.titleMedium)
                     },
                     modifier = Modifier
                         .weight(0.5f)
@@ -481,6 +483,7 @@ fun WeatherCard(modifier: Modifier) {
 @Composable
 fun TodayCourseCard(todayCourseResult: ResultWithStatus<List<Course>>, themeMode: Int) {
     LargeCardDisplay(
+        themeMode = themeMode,
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface
         else MaterialTheme.colorScheme.surfaceVariant,
         modifier = Modifier,
@@ -537,6 +540,7 @@ fun CommonAppsCard(
 ) {
     val lazyVerticalGridHeight by remember { derivedStateOf { ((ceil(uiState.appListIsCommonList.size / 5.0)) * 70).toInt() + 16 } }
     LargeCardDisplay(
+        themeMode = themeMode,
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface
         else MaterialTheme.colorScheme.surfaceVariant,
         modifier = Modifier,
