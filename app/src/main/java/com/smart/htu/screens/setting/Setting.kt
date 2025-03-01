@@ -3,22 +3,18 @@ package com.smart.htu.screens.setting
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
@@ -36,7 +32,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.smart.htu.R
-import com.smart.htu.component.CommonListItem
 import com.smart.htu.component.SettingItemCard
 import com.smart.htu.screens.main.entity.DarkMode
 import com.smart.htu.screens.navigation.Destinations
@@ -66,7 +61,7 @@ fun SettingScreen(
     val uiState by viewModel.uiState.collectAsState()
     val hazeState = remember { HazeState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    Scaffold(
+    top.yukonga.miuix.kmp.basic.Scaffold(
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -86,7 +81,10 @@ fun SettingScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() }) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "back"
+                        )
                     }
                 },
                 modifier = Modifier.hazeEffect(
@@ -99,7 +97,7 @@ fun SettingScreen(
             )
         }
     ) {
-        LazyColumn(
+        top.yukonga.miuix.kmp.basic.LazyColumn(
             modifier = Modifier
                 .hazeSource(state = hazeState)
                 .fillMaxSize(),
@@ -116,35 +114,33 @@ fun SettingScreen(
                     themeMode = themeMode,
                     modifier = Modifier
                 ) {
-                    Column {
-                        SuperArrow(
-                            leftAction = {
-                                Box(
-                                    contentAlignment = Alignment.TopStart,
-                                    modifier = Modifier.padding(end = 16.dp)
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.developer_icon),
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .size(32.dp)
-                                            .clip(CircleShape)
-                                    )
-                                }
-                            },
-                            title = stringResource(id = R.string.developer_name),
-                            summary = stringResource(id = R.string.developer_description),
-                            onClick = {
-                                startWebUrl("https://github.com/JiaLiFuNia")
+                    SuperArrow(
+                        leftAction = {
+                            Box(
+                                contentAlignment = Alignment.TopStart,
+                                modifier = Modifier.padding(end = 16.dp)
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.developer_icon),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                )
                             }
-                        )
-                        SuperArrow(
-                            title = stringResource(id = R.string.participate),
-                            onClick = {
-                                startWebUrl("https://github.com/JiaLiFuNia")
-                            }
-                        )
-                    }
+                        },
+                        title = stringResource(id = R.string.developer_name),
+                        summary = stringResource(id = R.string.developer_description),
+                        onClick = {
+                            startWebUrl("https://github.com/JiaLiFuNia")
+                        }
+                    )
+                    SuperArrow(
+                        title = stringResource(id = R.string.participate),
+                        onClick = {
+                            startWebUrl("https://github.com/JiaLiFuNia")
+                        }
+                    )
                 }
             }
             item {
@@ -168,52 +164,52 @@ fun SettingScreen(
                     modifier = Modifier,
                     themeMode = themeMode
                 ) {
-                    Column {
-                        val themeModes = mapOf(
-                            0 to "简洁色彩",
-                            1 to "动态色彩",
-                            2 to "师大青"
-                        )
-                        SuperDropdown(
-                            title = stringResource(id = R.string.theme_color),
-                            summary = stringResource(id = R.string.theme_color_description),
-                            items = themeModes.values.toList(),
-                            selectedIndex = uiState.themeMode,
-                            mode = DropDownMode.AlwaysOnRight,
-                            onSelectedIndexChange = { mode -> viewModel.changeDynamicTheme(mode) },
-                        )
-                        SuperSwitch(
-                            title = "实时模糊",
-                            checked = uiState.blurEffect,
-                            summary = "开启后部分页面将具有模糊效果，具体效果因机型、系统而异",
-                            onCheckedChange = { value ->
-                                viewModel.changeBlurState(value)
-                            },
-                            enabled = uiState.themeMode != 0,
-                            switchColors = SwitchDefaults.switchColors(checkedTrackColor = MaterialTheme.colorScheme.primary)
-                        )
-                        SuperDropdown(
-                            title = stringResource(id = R.string.dark_theme),
-                            summary = "切换应用色彩模式",
-                            items = DarkMode.entries
-                                .map { item -> item.toStringResourceId() },
-                            selectedIndex = uiState.isDarkTheme,
-                            mode = DropDownMode.AlwaysOnRight,
-                            onSelectedIndexChange = { index ->
-                                viewModel.changDarkMode(index)
-                            }
-                        )
-                        /*DropdownListItem(
-                            leadingImageVector = R.drawable.outline_language_24,
-                            headlineText = stringResource(id = R.string.language),
-                            value = uiState.languageList[uiState.selectedLanguageIndex].value,
-                            selections = uiState.languageList,
-                            onValueChanged = { index, _ ->
-                                viewModel.changeLanguage(index, context)
-                            },
-                            trailingImageVector = R.drawable.outline_unfold_more_24
-                        )*/
-                    }
+                    val themeModes = mapOf(
+                        0 to "简洁色彩",
+                        1 to "动态色彩",
+                        2 to "师大青"
+                    )
+                    SuperDropdown(
+                        title = stringResource(id = R.string.theme_color),
+                        summary = stringResource(id = R.string.theme_color_description),
+                        items = themeModes.values.toList(),
+                        selectedIndex = uiState.themeMode,
+                        mode = DropDownMode.AlwaysOnRight,
+                        onSelectedIndexChange = { mode ->
+                            viewModel.changeDynamicTheme(mode)
+                            if (mode == 0) viewModel.changeBlurState(false)
+                        },
+                    )
+                    SuperSwitch(
+                        title = "实时模糊",
+                        checked = uiState.blurEffect,
+                        summary = "开启后部分页面将具有模糊效果，具体效果因机型、系统而异",
+                        onCheckedChange = { value ->
+                            viewModel.changeBlurState(value)
+                        },
+                        enabled = uiState.themeMode != 0,
+                        switchColors = SwitchDefaults.switchColors(checkedTrackColor = MaterialTheme.colorScheme.primary)
+                    )
+                    SuperDropdown(
+                        title = stringResource(id = R.string.dark_theme),
+                        summary = "切换应用色彩模式",
+                        items = DarkMode.entries.map { item -> item.toStringResourceId() },
+                        selectedIndex = uiState.isDarkTheme,
+                        mode = DropDownMode.AlwaysOnRight,
+                        onSelectedIndexChange = { index ->
+                            viewModel.changDarkMode(index)
+                        }
+                    )
+                    /*DropdownListItem(
+                        leadingImageVector = R.drawable.outline_language_24,
+                        headlineText = stringResource(id = R.string.language),
+                        value = uiState.languageList[uiState.selectedLanguageIndex].value,
+                        selections = uiState.languageList,
+                        onValueChanged = { index, _ ->
+                            viewModel.changeLanguage(index, context)
+                        },
+                        trailingImageVector = R.drawable.outline_unfold_more_24
+                    )*/
                 }
             }
             item {
@@ -222,26 +218,24 @@ fun SettingScreen(
                     modifier = Modifier,
                     themeMode = themeMode
                 ) {
-                    Column {
-                        SuperArrow(
-                            title = stringResource(id = R.string.main_screen),
-                            onClick = {
-                                navController.navigate(Destinations.MainSetting.route)
-                            }
-                        )
-                        SuperArrow(
-                            title = stringResource(id = R.string.application_screen),
-                            onClick = {
-                                navController.navigate(Destinations.AppSetting.route)
-                            }
-                        )
-                        SuperArrow(
-                            title = stringResource(id = R.string.news_screen),
-                            onClick = {
-                                navController.navigate(Destinations.NewsSetting.route)
-                            }
-                        )
-                    }
+                    SuperArrow(
+                        title = stringResource(id = R.string.main_screen),
+                        onClick = {
+                            navController.navigate(Destinations.MainSetting.route)
+                        }
+                    )
+                    SuperArrow(
+                        title = stringResource(id = R.string.application_screen),
+                        onClick = {
+                            navController.navigate(Destinations.AppSetting.route)
+                        }
+                    )
+                    SuperArrow(
+                        title = stringResource(id = R.string.news_screen),
+                        onClick = {
+                            navController.navigate(Destinations.NewsSetting.route)
+                        }
+                    )
                 }
             }
             item {
@@ -250,28 +244,26 @@ fun SettingScreen(
                     modifier = Modifier,
                     themeMode = themeMode
                 ) {
-                    Column {
-                        SuperArrow(
-                            title = stringResource(id = R.string.about_app),
-                            summary = stringResource(id = R.string.about_app_description),
-                            onClick = {
-                                navController.navigate(Destinations.About.route)
-                            }
-                        )
-                        SuperArrow(
-                            title =  stringResource(id = R.string.check_update),
-                            summary = "当前版本 ${APPVersion.getVersionName()}(${APPVersion.getVersionCode()})",
-                            onClick = {
-                            }
-                        )
-                        SuperArrow(
-                            title = stringResource(id = R.string.appreciate),
-                            summary = stringResource(id = R.string.appreciate_description),
-                            onClick = {
-                                navController.navigate(Destinations.Appreciate.route)
-                            }
-                        )
-                    }
+                    SuperArrow(
+                        title = stringResource(id = R.string.about_app),
+                        summary = stringResource(id = R.string.about_app_description),
+                        onClick = {
+                            navController.navigate(Destinations.About.route)
+                        }
+                    )
+                    SuperArrow(
+                        title = stringResource(id = R.string.check_update),
+                        summary = "当前版本 ${APPVersion.getVersionName()}(${APPVersion.getVersionCode()})",
+                        onClick = {
+                        }
+                    )
+                    SuperArrow(
+                        title = stringResource(id = R.string.appreciate),
+                        summary = stringResource(id = R.string.appreciate_description),
+                        onClick = {
+                            navController.navigate(Destinations.Appreciate.route)
+                        }
+                    )
                 }
             }
         }

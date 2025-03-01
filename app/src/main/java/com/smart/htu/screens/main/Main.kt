@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -217,7 +218,7 @@ fun Main(
             modifier = Modifier
                 .fillMaxSize(),
         ) {
-            LazyColumn(
+            top.yukonga.miuix.kmp.basic.LazyColumn(
                 contentPadding = PaddingValues(
                     top = it.calculateTopPadding() + 16.dp,
                     start = 16.dp,
@@ -226,8 +227,7 @@ fun Main(
                 ),
                 modifier = Modifier
                     .hazeSource(state = hazeState)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                    .fillMaxSize()
             ) {
                 if (visibility.value.value)
                     item {
@@ -239,6 +239,7 @@ fun Main(
                             visibility = visibility.value,
                             icon = Icons.AutoMirrored.Filled.ArrowForward
                         )
+                        Spacer(modifier = Modifier.height(20.dp))
                     }
                 /*item {
                     Row(
@@ -251,9 +252,11 @@ fun Main(
                 }*/
                 item {
                     FocusCard(themeMode)
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
                 item {
                     TodayCourseCard(uiState.toDayCourseList, themeMode)
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
                 item {
                     CommonAppsCard(
@@ -264,6 +267,7 @@ fun Main(
                         loginUiState = loginUiState,
                         themeMode = themeMode
                     )
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
                 item {
                     LargeCardDisplay(

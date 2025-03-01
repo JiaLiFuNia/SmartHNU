@@ -13,14 +13,13 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.smart.htu.screens.main.entity.DarkMode
 import com.smart.htu.screens.setting.SettingViewModel
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -124,6 +123,12 @@ fun SmartHNUTheme(
         else -> lightScheme
     }
 
+    val miuixSchemeColor = when (uiState.themeMode) {
+        1 -> top.yukonga.miuix.kmp.theme.lightColorScheme()
+        2 -> top.yukonga.miuix.kmp.theme.darkColorScheme()
+        else -> if (darkTheme) top.yukonga.miuix.kmp.theme.darkColorScheme() else top.yukonga.miuix.kmp.theme.lightColorScheme()
+    }
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
@@ -133,11 +138,15 @@ fun SmartHNUTheme(
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
-
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
-
+    if (uiState.themeMode == 0)
+        MiuixTheme(
+            colors = miuixSchemeColor,
+            content = content
+        )
+    else
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
 }
