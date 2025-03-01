@@ -2,7 +2,9 @@ package com.smart.htu.screens.person
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -34,6 +36,7 @@ import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.screens.login.LoginViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.TextField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,10 +88,11 @@ fun AccountManage(
                 icon = Icons.Outlined.Info,
                 visibility = visibility
             )
+            Spacer(modifier = Modifier.height(20.dp))
         }
         item {
             LargeCardDisplay(
-                themeMode = 0,
+                themeMode = themeMode,
                 modifier = Modifier,
                 title = "统一认证登录",
                 leadingIconPainting = R.drawable.admin_panel_settings_24px
@@ -115,10 +119,11 @@ fun AccountManage(
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(20.dp))
         }
         item {
             LargeCardDisplay(
-                themeMode = 0,
+                themeMode = themeMode,
                 modifier = Modifier,
                 title = "河南师大智慧教务",
                 leadingIconPainting = R.drawable.admin_panel_settings_24px
@@ -138,6 +143,7 @@ fun AccountManage(
                         .padding(12.dp)
                 )
             }
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }

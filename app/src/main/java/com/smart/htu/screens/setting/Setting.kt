@@ -165,9 +165,9 @@ fun SettingScreen(
                     themeMode = themeMode
                 ) {
                     val themeModes = mapOf(
-                        0 to "简洁色彩",
-                        1 to "动态色彩",
-                        2 to "师大青"
+                        0 to "简洁",
+                        1 to "动态",
+                        2 to "师大"
                     )
                     SuperDropdown(
                         title = stringResource(id = R.string.theme_color),

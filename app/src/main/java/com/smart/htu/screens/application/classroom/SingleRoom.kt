@@ -15,20 +15,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
 @Composable
 fun SingleRoom(
+    themeMode: Int,
     label: String,
     state: Boolean,
     onClick: () -> Unit,
     modifier: Modifier
 ) {
-    Card(
+    top.yukonga.miuix.kmp.basic.Surface(
+        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
         modifier = modifier
             .height(50.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (state) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainer
-        ),
+        color = when(state) {
+            true -> if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.primaryContainer
+            false -> if (themeMode == 0) MiuixTheme.colorScheme.disabledSecondaryVariant  else MaterialTheme.colorScheme.surfaceContainer
+        },
         onClick = {
             onClick()
         }
@@ -51,15 +57,4 @@ fun SingleRoom(
             )
         }
     }
-}
-
-@Preview
-@Composable
-fun SingleRoomStatePreview() {
-    SingleRoom(
-        label = "新五五四888",
-        state = true,
-        onClick = {},
-        modifier = Modifier
-    )
 }

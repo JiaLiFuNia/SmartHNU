@@ -133,7 +133,7 @@ fun NavHostScreen() {
             )
         }
         animatedComposable(Destinations.ClassroomSearch.route) {
-            ClassroomSearchScreen(navController = navController)
+            ClassroomSearchScreen(navController = navController, themeMode = uiState.themeMode)
         }
         animatedComposable(
             route = "${Destinations.WebView.route}/{url}/{title}",
@@ -159,7 +159,7 @@ fun NavHostScreen() {
             LibrarySearchScreen(navController = navController)
         }
         animatedComposable(Destinations.AirCondition.route) {
-            AirCondition(navController = navController)
+            AirCondition(navController = navController, themeMode = uiState.themeMode)
         }
         animatedComposable(Destinations.AccountManage.route) {
             AccountManage(

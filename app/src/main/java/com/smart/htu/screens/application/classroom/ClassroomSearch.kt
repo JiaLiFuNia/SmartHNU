@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,6 +25,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
@@ -63,7 +63,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.smart.htu.R
-import com.smart.htu.component.PreferenceSubtitle
 import com.smart.htu.utils.Constants.Companion.COURSE_PERIOD
 import com.smart.htu.utils.checkTimeInterval
 import com.smart.htu.utils.getCurrentDates
@@ -74,6 +73,8 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalDate
 
 @SuppressLint("UnrememberedMutableState")
@@ -84,6 +85,7 @@ import java.time.LocalDate
 )
 @Composable
 fun ClassroomSearchScreen(
+    themeMode: Int,
     navController: NavController,
     viewModel: ClassroomSearchViewModel = hiltViewModel()
 ) {
@@ -120,14 +122,21 @@ fun ClassroomSearchScreen(
     val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
+        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = topAppBarColors(
-        containerColor = if (uiState.blurEffect) Color.Transparent else colorScheme.surface,
-        scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else colorScheme.surfaceContainer
-        ),
+                    containerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
+                        0 -> MiuixTheme.colorScheme.background
+                        else -> colorScheme.surface
+                    },
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
+                        0 -> MiuixTheme.colorScheme.background
+                        else -> colorScheme.surfaceContainer
+                    }
+                ),
                 title = {
                     Text(
                         text = stringResource(id = R.string.classroom_search)
@@ -178,19 +187,20 @@ fun ClassroomSearchScreen(
         ) {
             LazyColumn(
                 contentPadding = PaddingValues(
-                    top = it.calculateTopPadding() + 15.dp,
-                    start = 15.dp,
-                    end = 15.dp,
-                    bottom = 15.dp
+                    top = it.calculateTopPadding() + 16.dp,
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 16.dp
                 ),
                 modifier = Modifier
                     .hazeSource(state = hazeState)
                     .fillMaxSize()
             ) {
                 item {
-                    PreferenceSubtitle(text = stringResource(id = R.string.building))
-                }
-                item {
+                    SmallTitle(
+                        text = stringResource(id = R.string.building),
+                        insideMargin = PaddingValues(start = 12.dp, top = 4.dp, bottom = 8.dp)
+                    )
                     LazyVerticalGridCustom(
                         modifier = Modifier.fillMaxSize(),
                         list = uiState.buildingsList,
@@ -205,7 +215,10 @@ fun ClassroomSearchScreen(
                     }
                 }
                 item {
-                    PreferenceSubtitle(text = stringResource(id = R.string.time))
+                    SmallTitle(
+                        text = stringResource(id = R.string.time),
+                        insideMargin = PaddingValues(start = 12.dp, top = 12.dp, bottom = 8.dp)
+                    )
                     LazyVerticalGridCustom(
                         modifier = Modifier.fillMaxSize(),
                         list = COURSE_PERIOD.keys.toList(),
@@ -220,7 +233,10 @@ fun ClassroomSearchScreen(
                     }
                 }
                 item {
-                    PreferenceSubtitle(text = stringResource(id = R.string.occupy))
+                    SmallTitle(
+                        text = stringResource(id = R.string.occupy),
+                        insideMargin = PaddingValues(start = 12.dp, top = 12.dp, bottom = 8.dp)
+                    )
                     Log.i("TAG666", "${uiState.isLoading} ${uiState.isTokenValid}")
                     if (uiState.isLoading || !uiState.isTokenValid || uiState.buildingsOccupation[selectedRoomIndex] == null) {
                         Box(
@@ -248,58 +264,85 @@ fun ClassroomSearchScreen(
                             )
                             val selectFloorIndex =
                                 remember { derivedStateOf { floorPagerState.currentPage } }
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 5.dp)
-                                    .padding(bottom = 10.dp),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                TabRow(
-                                    selectedTabIndex = floorPagerState.currentPage,
-                                    indicator = { tabPositions ->
-                                        TabRowDefaults.PrimaryIndicator(
-                                            modifier = Modifier
-                                                .tabIndicatorOffset(tabPositions[floorPagerState.currentPage]),
-                                            width = tabPositions[floorPagerState.currentPage].width / 1.5f,
-                                            shape = RoundedCornerShape(
-                                                topStart = 3.dp,
-                                                topEnd = 3.dp
-                                            ),
+                            if (themeMode == 0) {
+                                top.yukonga.miuix.kmp.basic.TabRow(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 5.dp)
+                                        .padding(bottom = 10.dp),
+                                    tabs = allRoomListGroupByFloor.map {
+                                        stringResource(
+                                            id = when (it.first().floorNumber) {
+                                                1 -> R.string.first_floor
+                                                2 -> R.string.second_floor
+                                                3 -> R.string.third_floor
+                                                4 -> R.string.fourth_floor
+                                                5 -> R.string.fifth_floor
+                                                else -> R.string.other
+                                            }
                                         )
                                     },
-                                    divider = {}
+                                    selectedTabIndex = floorPagerState.currentPage,
+                                    onSelect = {
+                                        coroutineScope.launch {
+                                            floorPagerState.animateScrollToPage(it)
+                                        }
+                                    }
+                                )
+                            } else {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 5.dp)
+                                        .padding(bottom = 10.dp),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    allRoomListGroupByFloor.forEachIndexed { index, floor ->
-                                        Tab(
-                                            text = {
-                                                Text(
-                                                    text = stringResource(
-                                                        id = when (floor.first().floorNumber) {
-                                                            1 -> R.string.first_floor
-                                                            2 -> R.string.second_floor
-                                                            3 -> R.string.third_floor
-                                                            4 -> R.string.fourth_floor
-                                                            5 -> R.string.fifth_floor
-                                                            else -> R.string.other
-                                                        }
+                                    TabRow(
+                                        selectedTabIndex = floorPagerState.currentPage,
+                                        indicator = { tabPositions ->
+                                            TabRowDefaults.PrimaryIndicator(
+                                                modifier = Modifier
+                                                    .tabIndicatorOffset(tabPositions[floorPagerState.currentPage]),
+                                                width = tabPositions[floorPagerState.currentPage].width / 1.5f,
+                                                shape = RoundedCornerShape(
+                                                    topStart = 3.dp,
+                                                    topEnd = 3.dp
+                                                ),
+                                            )
+                                        },
+                                        divider = {}
+                                    ) {
+                                        allRoomListGroupByFloor.forEachIndexed { index, floor ->
+                                            Tab(
+                                                text = {
+                                                    Text(
+                                                        text = stringResource(
+                                                            id = when (floor.first().floorNumber) {
+                                                                1 -> R.string.first_floor
+                                                                2 -> R.string.second_floor
+                                                                3 -> R.string.third_floor
+                                                                4 -> R.string.fourth_floor
+                                                                5 -> R.string.fifth_floor
+                                                                else -> R.string.other
+                                                            }
+                                                        )
                                                     )
-                                                )
-                                            },
-                                            selected = selectFloorIndex.value == index,
-                                            onClick = {
-                                                coroutineScope.launch {
-                                                    floorPagerState.animateScrollToPage(index)
-                                                }
-                                            },
-                                            selectedContentColor = colorScheme.primary,
-                                            unselectedContentColor = colorScheme.onSurface,
-                                        )
+                                                },
+                                                selected = selectFloorIndex.value == index,
+                                                onClick = {
+                                                    coroutineScope.launch {
+                                                        floorPagerState.animateScrollToPage(index)
+                                                    }
+                                                },
+                                                selectedContentColor = colorScheme.primary,
+                                                unselectedContentColor = colorScheme.onSurface,
+                                            )
+                                        }
                                     }
                                 }
                             }
+
                             HorizontalPager(
                                 verticalAlignment = Alignment.Top,
                                 state = floorPagerState,
@@ -307,12 +350,13 @@ fun ClassroomSearchScreen(
                             ) {
                                 val currentRoomList = allRoomListGroupByFloor[it]
                                 LazyVerticalGridCustom(
-                                    modifier = Modifier.fillParentMaxSize(),
+                                    modifier = Modifier.fillMaxSize(),
                                     list = currentRoomList,
                                     columnSize = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 3,
                                     ifEqualWeight = true
                                 ) { _, room ->
                                     SingleRoom(
+                                        themeMode = themeMode,
                                         label = room.roomName,
                                         state = !busyRoomListFilterByPeriod?.map { it.roomName }
                                             ?.contains(room.roomName)!!,
@@ -363,7 +407,7 @@ fun ClassroomSearchScreen(
 }
 
 @Composable
-fun <T> LazyItemScope.LazyVerticalGridCustom(
+fun <T> LazyVerticalGridCustom(
     modifier: Modifier,
     list: List<T>,
     columnSize: Int,

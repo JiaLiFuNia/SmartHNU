@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -119,10 +118,9 @@ fun SmartHNUTheme(
         else -> lightScheme
     }
 
-    val miuixSchemeColor = when (uiState.themeMode) {
-        1 -> top.yukonga.miuix.kmp.theme.lightColorScheme()
-        2 -> top.yukonga.miuix.kmp.theme.darkColorScheme()
-        else -> if (darkTheme) top.yukonga.miuix.kmp.theme.darkColorScheme() else top.yukonga.miuix.kmp.theme.lightColorScheme()
+    val miuixSchemeColor = when(darkTheme) {
+        true -> top.yukonga.miuix.kmp.theme.darkColorScheme()
+        false -> top.yukonga.miuix.kmp.theme.lightColorScheme()
     }
 
     val view = LocalView.current
@@ -134,15 +132,14 @@ fun SmartHNUTheme(
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
-    if (uiState.themeMode == 0)
-        MiuixTheme(
-            colors = miuixSchemeColor,
-            content = content
-        )
-    else
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography,
-            content = content
+            content = {
+                MiuixTheme(
+                    colors = miuixSchemeColor,
+                    content = content
+                )
+            }
         )
 }

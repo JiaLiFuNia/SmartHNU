@@ -19,6 +19,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
 @Composable
 fun SuggestChip(
@@ -32,6 +34,7 @@ fun SuggestChip(
 ) {
     AnimatedVisibility(visible = visibility.value) {
         top.yukonga.miuix.kmp.basic.Surface(
+            shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
             color = if (type == SuggestChipType.ERROR) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer,
             onClick = onClick,
         ) {

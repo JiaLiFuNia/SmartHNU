@@ -20,8 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -78,6 +76,9 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -87,6 +88,7 @@ import kotlinx.coroutines.launch
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AirCondition(
+    themeMode: Int,
     navController: NavController,
     viewModel: AirConditionViewModel = hiltViewModel()
 ) {
@@ -110,14 +112,21 @@ fun AirCondition(
         }
     }
     Scaffold(
+        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = topAppBarColors(
-        containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
-        scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
-        ),
+                    containerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
+                        0 -> MiuixTheme.colorScheme.background
+                        else -> MaterialTheme.colorScheme.surface
+                    },
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
+                        0 -> MiuixTheme.colorScheme.background
+                        else -> MaterialTheme.colorScheme.surfaceContainer
+                    }
+                ),
                 title = { Text(text = "寝室空调电费") },
                 navigationIcon = {
                     IconButton(
@@ -168,14 +177,13 @@ fun AirCondition(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            LazyColumn(
+            top.yukonga.miuix.kmp.basic.LazyColumn(
                 contentPadding = PaddingValues(
                     top = it.calculateTopPadding() + 8.dp,
                     start = 15.dp,
                     end = 15.dp,
                     bottom = 15.dp
                 ),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
                     .hazeSource(state = hazeState)
                     .fillMaxSize()
@@ -191,13 +199,15 @@ fun AirCondition(
                         type = SuggestChipType.ERROR,
                         visibility = remember {
                             derivedStateOf { uiState.roomCode == "" || uiState.buildingCode == "" || !uiState.isCookieValid }
-                        }
+                        },
+                        modifier = Modifier.padding(bottom = 20.dp)
                     )
                 }
                 item {
-                    Card(
+                    top.yukonga.miuix.kmp.basic.Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+                        color = MaterialTheme.colorScheme.primaryContainer,
                     ) {
                         ListItem(
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -233,37 +243,50 @@ fun AirCondition(
                             }
                         )
                     }
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
                 item {
-                    TabRow(
-                        selectedTabIndex = selectTabIndex,
-                        indicator = { tabPositions ->
-                            TabRowDefaults.PrimaryIndicator(
-                                modifier = Modifier
-                                    .tabIndicatorOffset(tabPositions[selectTabIndex]),
-                                width = tabPositions[selectTabIndex].width / 2f,
-                                shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
-                            )
-                        },
-                        divider = {}
+                    val tabItem =
+                        listOf("近 ${uiState.billRecords?.total ?: 0} 天用电情况", "缴费情况")
+                    if (themeMode == 0)
+                        top.yukonga.miuix.kmp.basic.TabRow(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            tabs = tabItem,
+                            selectedTabIndex = selectTabIndex,
+                            onSelect = { onSelectTabIndex(it) }
+                        )
+                    else
+                        TabRow(
+                            containerColor = Color.Transparent,
+                            selectedTabIndex = selectTabIndex,
+                            indicator = { tabPositions ->
+                                TabRowDefaults.PrimaryIndicator(
+                                    modifier = Modifier
+                                        .tabIndicatorOffset(tabPositions[selectTabIndex]),
+                                    width = tabPositions[selectTabIndex].width / 2f,
+                                    shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
+                                )
+                            },
+                            divider = {}
                     ) {
-                        Tab(selected = selectTabIndex == 0, onClick = { onSelectTabIndex(0) }) {
-                            Text(
-                                text = "近 ${uiState.billRecords?.total ?: 0} 天用电情况",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(8.dp)
-                            )
-                        }
-                        Tab(selected = selectTabIndex == 1, onClick = { onSelectTabIndex(1) }) {
-                            Text(
-                                text = "缴费情况",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(12.dp)
-                            )
+                            tabItem.forEachIndexed { index, s ->
+                                Tab(
+                                    selected = selectTabIndex == index,
+                                    onClick = { onSelectTabIndex(index) },
+                                    selectedContentColor = MaterialTheme.colorScheme.primary,
+                                    unselectedContentColor = MaterialTheme.colorScheme.onSurface
+                                ) {
+                                    Text(
+                                        text = s,
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(12.dp)
+                                    )
+                                }
                         }
                     }
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
                 if (uiState.isLoadingBillRecords) {
                     item {
@@ -280,8 +303,10 @@ fun AirCondition(
                     when (selectTabIndex) {
                         0 -> {
                             item {
-                                Card(
-                                    modifier = Modifier.fillMaxWidth()
+                                top.yukonga.miuix.kmp.basic.Surface(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+                                    color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
                                 ) {
                                     Box(
                                         modifier = Modifier
@@ -298,10 +323,13 @@ fun AirCondition(
                                         )
                                     }
                                 }
+                                Spacer(modifier = Modifier.height(12.dp))
                             }
                             items(uiState.billRecords?.rows ?: emptyList()) {
-                                Card(
-                                    modifier = Modifier.fillMaxWidth()
+                                top.yukonga.miuix.kmp.basic.Surface(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+                                    color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
                                 ) {
                                     ListItem(
                                         modifier = Modifier.fillMaxWidth(),
@@ -315,13 +343,16 @@ fun AirCondition(
                                         }
                                     )
                                 }
+                                Spacer(modifier = Modifier.height(12.dp))
                             }
                         }
 
                         1 -> {
                             item {
-                                Card(
-                                    modifier = Modifier.fillMaxWidth()
+                                top.yukonga.miuix.kmp.basic.Surface(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+                                    color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
                                 ) {
                                     Box(
                                         modifier = Modifier
@@ -338,10 +369,13 @@ fun AirCondition(
                                         )
                                     }
                                 }
+                                Spacer(modifier = Modifier.height(12.dp))
                             }
                             items(uiState.buyRecords?.rows ?: emptyList()) {
-                                Card(
-                                    modifier = Modifier.fillMaxWidth()
+                                top.yukonga.miuix.kmp.basic.Surface(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+                                    color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
                                 ) {
                                     ListItem(
                                         modifier = Modifier.fillMaxWidth(),
@@ -355,6 +389,7 @@ fun AirCondition(
                                         }
                                     )
                                 }
+                                Spacer(modifier = Modifier.height(12.dp))
                             }
                         }
                     }

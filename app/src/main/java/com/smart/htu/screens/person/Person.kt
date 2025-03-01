@@ -8,7 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -16,8 +16,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,7 +51,6 @@ import com.smart.htu.component.EditMessageDialog
 import com.smart.htu.component.LogoutDialog
 import com.smart.htu.component.PreferencesCard
 import com.smart.htu.component.ScaffoldWithHazeLazyColumn
-import com.smart.htu.component.SettingItemCard
 import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateToWebView
@@ -61,6 +58,8 @@ import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.startWebUrl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.TextButton
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -115,10 +114,11 @@ fun PersonScreen(
                     navController.navigateToWebView("https://www.htu.edu.cn/", "河南师范大学")
                 }
             )
+            Spacer(modifier = Modifier.height(20.dp))
         }
         item {
             LargeCardDisplay(
-                themeMode = 0,
+                themeMode = themeMode,
                 modifier = Modifier,
                 title = "我的信息",
                 leadingIconPainting = R.drawable.outline_account_box_24
@@ -190,10 +190,11 @@ fun PersonScreen(
                     }
                 )
             }
+            Spacer(modifier = Modifier.height(20.dp))
         }
         item {
             LargeCardDisplay(
-                themeMode = 0,
+                themeMode = themeMode,
                 modifier = Modifier,
                 title = "账号管理",
                 leadingIconPainting = R.drawable.admin_panel_settings_24px
@@ -219,33 +220,20 @@ fun PersonScreen(
                     }
                 )
             }
+            Spacer(modifier = Modifier.height(20.dp))
         }
         item {
-            SettingItemCard(
-                themeMode = 1,
-                modifier = Modifier
-            ) {
-                Card(
-                    onClick = {
-                        showLogoutDialog = true
-                    },
-                    modifier = Modifier.height(50.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    )
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.log_out),
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-            }
+            TextButton(
+                text = stringResource(id = R.string.log_out),
+                onClick = {
+                    showLogoutDialog = true
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.textButtonColors(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    textColor = MaterialTheme.colorScheme.error
+                )
+            )
         }
     }
 
