@@ -1,40 +1,30 @@
 package com.smart.htu.repo
 
-import android.content.Context
 import android.util.Log
-import com.smart.htu.R
 import com.smart.htu.api.module.Area
 import com.smart.htu.api.module.BillDetail
 import com.smart.htu.api.module.BillRecords
 import com.smart.htu.api.module.BuyRecords
 import com.smart.htu.api.module.GiteeEntity
-import com.smart.htu.api.module.LoginJWCEntity
-import com.smart.htu.api.module.LoginPost
 import com.smart.htu.api.module.PersonalMessage
+import com.smart.htu.api.module.WeatherNowData
 import com.smart.htu.api.network.AirConditionService
 import com.smart.htu.api.network.AuthLoginService
 import com.smart.htu.api.network.EHallService
 import com.smart.htu.api.network.GiteeService
-import com.smart.htu.api.network.JWCService
 import com.smart.htu.api.network.LibraryService
+import com.smart.htu.api.network.WeatherService
 import com.smart.htu.di.NetworkCookieJar
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_MESSAGE
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN
 import com.smart.htu.screens.application.librarySearch.LibraryBookDetail
 import com.smart.htu.screens.application.librarySearch.LibraryBookListEntity
 import com.smart.htu.utils.AESUtils
-import com.smart.htu.utils.RSAUtil
 import com.smart.htu.utils.parseLibraryBookDetail
 import com.smart.htu.utils.parseLibrarySearchResult
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
+import retrofit2.awaitResponse
 import java.io.IOException
 import javax.inject.Inject
 
@@ -44,8 +34,21 @@ class NetworkRepo @Inject constructor(
     private val libraryService: LibraryService,
     private val airConditionService: AirConditionService,
     private val giteeService: GiteeService,
+    private val weatherService: WeatherService,
     private val networkCookieJar: NetworkCookieJar
 ) {
+
+    // 获取实时天气
+    suspend fun getWeatherService(): WeatherNowData? {
+        val call = weatherService.getWeather()
+        val res = call.awaitResponse().body()
+        try {
+            return res?.now
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return null
+        }
+    }
 
     // 获取gitee配置
     suspend fun getGiteeConfig(): Result<GiteeEntity> {

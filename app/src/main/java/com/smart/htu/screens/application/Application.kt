@@ -140,7 +140,7 @@ fun Application(
                     app.category == item
                 }
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    SmallTitle(text = item.category, insideMargin = PaddingValues(12.dp, 4.dp))
+                    SmallTitle(text = item.category, insideMargin = PaddingValues(start = 12.dp, top = 8.dp))
                 }
                 items(appList) { app ->
                     SmallMediumCardDisplay(

@@ -126,6 +126,14 @@ class Constants {
                 routeType = RouteType.SCREEN,
                 route = Destinations.TeacherEvaluation.route,
                 category = SmallCardCategory.ACADEMIC_AFFAIRS
+            ),
+            SmallCardContent(
+                guestEnable = false,
+                icon = R.drawable.deep_seek,
+                label = R.string.deepseek,
+                routeType = RouteType.URL,
+                route = "https://chat.htu.edu.cn/",
+                category = SmallCardCategory.OTHERS
             )
         )
         val INIT_COMMON_APP_LIST = listOf(

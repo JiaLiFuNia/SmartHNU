@@ -192,7 +192,7 @@ fun SettingScreen(
                     )
                     SuperDropdown(
                         title = stringResource(id = R.string.dark_theme),
-                        summary = "切换应用色彩模式",
+                        summary = "切换应用深色模式",
                         items = DarkMode.entries.map { item -> item.toStringResourceId() },
                         selectedIndex = uiState.isDarkTheme,
                         mode = DropDownMode.AlwaysOnRight,

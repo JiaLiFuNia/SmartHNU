@@ -127,7 +127,7 @@ fun AirCondition(
                         else -> MaterialTheme.colorScheme.surfaceContainer
                     }
                 ),
-                title = { Text(text = "寝室空调电费") },
+                title = { Text(text = "空调电费") },
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() }) {
@@ -180,29 +180,31 @@ fun AirCondition(
             top.yukonga.miuix.kmp.basic.LazyColumn(
                 contentPadding = PaddingValues(
                     top = it.calculateTopPadding() + 8.dp,
-                    start = 15.dp,
-                    end = 15.dp,
-                    bottom = 15.dp
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 16.dp
                 ),
                 modifier = Modifier
                     .hazeSource(state = hazeState)
                     .fillMaxSize()
             ) {
-                item {
-                    SuggestChip(
-                        onClick = {
-                            onOpenBottomSheet(true)
-                        },
-                        onActionClick = {
-                        },
-                        text = "请设置你的宿舍楼和房间号和配置 Cookie",
-                        type = SuggestChipType.ERROR,
-                        visibility = remember {
-                            derivedStateOf { uiState.roomCode == "" || uiState.buildingCode == "" || !uiState.isCookieValid }
-                        },
-                        modifier = Modifier.padding(bottom = 20.dp)
-                    )
-                }
+                if (uiState.roomCode == "" || uiState.buildingCode == "" || !uiState.isCookieValid)
+                    item {
+                        SuggestChip(
+                            onClick = {
+                                onOpenBottomSheet(true)
+                            },
+                            onActionClick = {
+                            },
+                            text = "请设置你的宿舍楼，房间号和 Cookie",
+                            type = SuggestChipType.ERROR,
+                            visibility = remember {
+                                derivedStateOf { uiState.roomCode == "" || uiState.buildingCode == "" || !uiState.isCookieValid }
+                            },
+                            modifier = Modifier
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
                 item {
                     top.yukonga.miuix.kmp.basic.Surface(
                         modifier = Modifier.fillMaxWidth(),

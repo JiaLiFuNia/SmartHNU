@@ -7,6 +7,7 @@ import com.smart.htu.api.module.Course
 import com.smart.htu.api.module.GiteeEntity
 import com.smart.htu.api.module.OverallTerm
 import com.smart.htu.api.module.ResultWithStatus
+import com.smart.htu.api.module.WeatherNowData
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
@@ -28,6 +29,7 @@ import javax.inject.Inject
 
 data class AppUiState(
     val toDayCourseList: ResultWithStatus<List<Course>> = ResultWithStatus(),
+    val nowWeather: ResultWithStatus<WeatherNowData> = ResultWithStatus(),
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val username: String = DEFAULT_USERNAME,
     val isLogSuccess: Boolean = false,
@@ -112,9 +114,22 @@ class MainViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
+            getNowWeather()
             getGiteeConfigService()
             getTermIndex()
             getTodayCourse()
+        }
+    }
+
+    suspend fun getNowWeather() {
+        try {
+            val res = networkRepo.getWeatherService()
+            Log.i("TAG666", "getNowWeather: $res")
+            _uiState.update {
+                it.copy(nowWeather = ResultWithStatus(res))
+            }
+        } catch (e: Exception) {
+            Log.i("TAG666", "getNowWeather: $e")
         }
     }
 

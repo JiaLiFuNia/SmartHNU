@@ -141,4 +141,6 @@ dependencies {
 
     // vico
     implementation(libs.vico.compose.m3)
+
+    implementation(libs.eddsa)
 }

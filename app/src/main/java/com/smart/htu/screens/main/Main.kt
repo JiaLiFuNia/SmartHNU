@@ -2,7 +2,6 @@ package com.smart.htu.screens.main
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,13 +12,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
@@ -50,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -73,12 +71,13 @@ import com.smart.htu.component.card.SmallCardDisplay
 import com.smart.htu.component.svgVector.DrawableVectors
 import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.screens.application.ApplicationViewModel
+import com.smart.htu.screens.application.airCondition.AirConditionUiState
+import com.smart.htu.screens.application.airCondition.AirConditionViewModel
+import com.smart.htu.screens.application.entity.RouteType
 import com.smart.htu.screens.login.LoginUiState
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateWithAuthCheck
 import com.smart.htu.screens.navigation.Destinations
-import com.smart.htu.ui.icon.WeatherIcon
-import com.smart.htu.ui.icon.weatherIcon._303
 import com.smart.htu.utils.startCalendar
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
@@ -89,6 +88,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Date
 import java.util.Locale
@@ -100,6 +100,7 @@ import kotlin.math.ceil
 fun Main(
     mainViewModel: MainViewModel,
     applicationViewModel: ApplicationViewModel,
+    airConditionViewModel: AirConditionViewModel,
     loginViewModel: LoginViewModel,
     navController: NavController,
     navigateToApplication: () -> Unit,
@@ -107,6 +108,7 @@ fun Main(
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val loginUiState by loginViewModel.uiState.collectAsState()
+    val airConditionUiState by airConditionViewModel.uiState.collectAsState()
 
     val hazeState = remember { HazeState() }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -118,6 +120,7 @@ fun Main(
         isRefreshing = true
         coroutineScope.launch {
             delay(500)
+            mainViewModel.getNowWeather()
             mainViewModel.getGiteeConfigService()
             if (loginUiState.loginJWCState == 1)
                 mainViewModel.getTodayCourse()
@@ -251,7 +254,7 @@ fun Main(
                     }
                 }*/
                 item {
-                    FocusCard(themeMode)
+                    FocusCard(themeMode, navController, loginUiState, airConditionUiState, uiState)
                     Spacer(modifier = Modifier.height(20.dp))
                 }
                 item {
@@ -299,46 +302,15 @@ fun Main(
     }
 }
 
-
 @Composable
-fun CalendarCard(modifier: Modifier) {
-    val today = LocalDate.now() // 阳历
-    val dayOfWeek = today.dayOfWeek
-    val dayOfWeekName = dayOfWeek.getDisplayName(TextStyle.FULL, Locale.CHINA)
-    val chineseToday = Lunar.fromDate(Date()) // 农历
-    MediumCardDisplay(
-        onClick = { },
-        modifier = modifier,
-        title = "${today.year}/${today.month.value}",
-        leadingContent = {
-            Text(
-                text = "${today.dayOfMonth}",
-                fontSize = 30.sp,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-        },
-        content = {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomStart
-            ) {
-                Text(
-                    text = "${chineseToday.monthInChinese}月${chineseToday.dayInChinese} $dayOfWeekName",
-                    color = Color.Gray
-                )
-            }
-        },
-        navigateTo = {
-            startCalendar()
-        }
-    )
-}
-
-
-@Composable
-fun FocusCard(themeMode: Int) {
+fun FocusCard(
+    themeMode: Int,
+    navController: NavController,
+    loginUiState: LoginUiState,
+    airConditionUiState: AirConditionUiState,
+    mainUiState: AppUiState
+) {
+    val context = LocalContext.current
     LargeCardDisplay(
         themeMode = themeMode,
         modifier = Modifier,
@@ -349,134 +321,116 @@ fun FocusCard(themeMode: Int) {
     ) {
         Column {
             Row {
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    leadingContent = {
-                        Icon(imageVector = Icons.Outlined.DateRange, contentDescription = "date")
-                    },
-                    headlineContent = {
-                        Text(
-                            text = "星期五",
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    },
-                    supportingContent = {
-                        Text(text = "2月28日", style = MaterialTheme.typography.titleMedium)
-                    },
-                    modifier = Modifier
-                        .weight(0.5f)
-                        .clickable {
-                            startCalendar()
-                        }
-                )
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                val today = LocalDate.now()
+                val dayOfWeek = today.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.CHINA)
+                val formatter = DateTimeFormatter.ofPattern("MM-dd")
+                FocusCardItem(
                     leadingContent = {
                         Icon(
-                            painter = painterResource(id = R.drawable.format_paint_24px),
-                            contentDescription = "two"
+                            painter = painterResource(id = R.drawable.today_24px),
+                            contentDescription = "today"
                         )
                     },
-                    headlineContent = {
-                        Text(
-                            text = "第二课堂",
-                            style = MaterialTheme.typography.labelMedium
+                    trailingContent = {
+                    },
+                    title = today.format(formatter),
+                    content = "第 3 周 $dayOfWeek",
+                    onClick = { startCalendar() },
+                    modifier = Modifier.weight(0.5f)
+                )
+                FocusCardItem(
+                    leadingContent = {
+                        Icon(
+                            painter = painterResource(
+                                id = mainUiState.nowWeather.data?.getIconResourceId(
+                                    context = context
+                                ) ?: R.drawable.qweather101
+                            ),
+                            contentDescription = "weather",
+                            modifier = Modifier.size(24.dp)
                         )
                     },
-                    supportingContent = {
-                        Text(text = "625 学时", style = MaterialTheme.typography.titleMedium)
-                    },
-                    modifier = Modifier
-                        .weight(0.5f)
-                        .clickable {}
+                    title = "当前天气",
+                    content = "${mainUiState.nowWeather.data?.weather ?: "--"} ${mainUiState.nowWeather.data?.temperature ?: "--"} ℃",
+                    onClick = { /*TODO*/ },
+                    modifier = Modifier.weight(0.5f)
                 )
             }
             Row {
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                FocusCardItem(
                     leadingContent = {
                         Icon(
                             painter = painterResource(id = R.drawable.format_paint_24px),
                             contentDescription = "two"
                         )
                     },
-                    headlineContent = {
-                        Text(
-                            text = "今日气温",
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    },
-                    supportingContent = {
-                        Text(text = "4-16 ℃", style = MaterialTheme.typography.titleMedium)
-                    },
-                    modifier = Modifier
-                        .weight(0.5f)
-                        .clickable {}
+                    title = "第二课堂",
+                    content = "625 学时",
+                    onClick = { /*TODO*/ },
+                    modifier = Modifier.weight(0.5f)
                 )
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                FocusCardItem(
                     leadingContent = {
                         Icon(
                             painter = painterResource(id = R.drawable.bolt_24px),
                             contentDescription = "two"
                         )
                     },
-                    headlineContent = {
-                        Text(
-                            text = "寝室电费",
-                            style = MaterialTheme.typography.labelMedium
+                    title = "寝室电费",
+                    content = "${airConditionUiState.billData?.data?.soc ?: 0.0} 度",
+                    onClick = {
+                        navController.navigateWithAuthCheck(
+                            isGuest = false,
+                            route = Destinations.AirCondition.route,
+                            routeType = RouteType.SCREEN,
+                            logState = loginUiState.isLogSuccess,
+                            label = R.string.dorm_air_conditioner
                         )
                     },
-                    supportingContent = {
-                        Text(text = "52.99 度", style = MaterialTheme.typography.titleMedium)
-                    },
-                    modifier = Modifier
-                        .weight(0.5f)
-                        .clickable {}
+                    modifier = Modifier.weight(0.5f)
                 )
             }
         }
     }
 }
 
+
 @Composable
-fun WeatherCard(modifier: Modifier) {
-    MediumCardDisplay(
-        onClick = {
-        },
-        modifier = modifier,
-        title = "多云转晴",
+fun FocusCardItem(
+    containerColor: Color = Color.Transparent,
+    leadingContent: @Composable () -> Unit,
+    trailingContent: (@Composable () -> Unit)? = null,
+    title: String,
+    content: String,
+    onClick: () -> Unit,
+    modifier: Modifier
+) {
+    ListItem(
+        colors = ListItemDefaults.colors(containerColor = containerColor),
         leadingContent = {
-            Icon(
-                imageVector = WeatherIcon._303,
-                contentDescription = "",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(30.dp)
-            )
-            /*Row(
-                verticalAlignment = Alignment.Top
-            ) {
-                Text(
-                    text = "11 ℃",
-                    fontSize = 30.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-            }*/
+            leadingContent()
         },
-        content = {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomStart
-            ) {
-                Text(
-                    text = "-1~11 ℃ | 1 级风",
-                    color = Color.Gray,
-                    maxLines = 1
-                )
+        headlineContent = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelMedium
+            )
+        },
+        trailingContent = {
+            if (trailingContent != null) {
+                trailingContent()
             }
-        }
+        },
+        supportingContent = {
+            Text(
+                text = content,
+                style = MaterialTheme.typography.titleMedium
+            )
+        },
+        modifier = modifier
+            .clickable {
+                onClick()
+            }
     )
 }
 
@@ -589,6 +543,43 @@ fun CommonAppsCard(
         },
         navigateTo = {
             navigateToApplication()
+        }
+    )
+}
+
+
+@Composable
+fun CalendarCard(modifier: Modifier) {
+    val today = LocalDate.now() // 阳历
+    val dayOfWeek = today.dayOfWeek
+    val dayOfWeekName = dayOfWeek.getDisplayName(TextStyle.FULL, Locale.CHINA)
+    val chineseToday = Lunar.fromDate(Date()) // 农历
+    MediumCardDisplay(
+        onClick = { },
+        modifier = modifier,
+        title = "${today.year}/${today.month.value}",
+        leadingContent = {
+            Text(
+                text = "${today.dayOfMonth}",
+                fontSize = 30.sp,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        },
+        content = {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomStart
+            ) {
+                Text(
+                    text = "${chineseToday.monthInChinese}月${chineseToday.dayInChinese} $dayOfWeekName",
+                    color = Color.Gray
+                )
+            }
+        },
+        navigateTo = {
+            startCalendar()
         }
     )
 }

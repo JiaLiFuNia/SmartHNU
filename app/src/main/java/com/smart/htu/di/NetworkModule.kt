@@ -7,6 +7,7 @@ import com.smart.htu.api.network.EHallService
 import com.smart.htu.api.network.GiteeService
 import com.smart.htu.api.network.JWCService
 import com.smart.htu.api.network.LibraryService
+import com.smart.htu.api.network.WeatherService
 import com.smart.htu.repo.DataStoreRepo
 import dagger.Module
 import dagger.Provides
@@ -42,10 +43,10 @@ object NetworkModule {
         const val AUTH_SERVER_BASE_URL = "https://authserver2.htu.edu.cn/"
         const val JWC_BASE_URL = "https://jwc.htu.edu.cn/"
         const val E_HALL_BASE_URL = "https://ehall2.htu.edu.cn/"
-        const val QQ_BASE_URL = "https://q1.qlogo.cn/"
         const val LIBRARY_BASE_URL = "http://libmsg.htu.cn/"
         const val AIR_CONDITION_BASE_URL = "https://application.xiaofubao.com/"
         const val GITEE_BASE_URL = "https://gitee.com/"
+        const val WEATHER_BASE_URL = "https://devapi.qweather.com/v7/"
     }
 
     @Provides
@@ -152,6 +153,16 @@ object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(GiteeService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWeatherService(): WeatherService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(ApiConstants.WEATHER_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(WeatherService::class.java)
     }
 }
 

@@ -35,6 +35,7 @@ import com.smart.htu.component.LoginDialog
 import com.smart.htu.component.animation.SlideTransition
 import com.smart.htu.screens.application.Application
 import com.smart.htu.screens.application.ApplicationViewModel
+import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.Main
 import com.smart.htu.screens.main.MainViewModel
@@ -55,7 +56,8 @@ fun MainFrame(
     loginViewModel: LoginViewModel,
     settingViewModel: SettingViewModel,
     newsViewModel: NewsViewModel,
-    applicationViewModel: ApplicationViewModel
+    applicationViewModel: ApplicationViewModel,
+    airConditionViewModel: AirConditionViewModel
 ) {
     val context = LocalContext.current
     val savableStateHolder = rememberSaveableStateHolder()
@@ -157,6 +159,7 @@ fun MainFrame(
                                 },
                                 loginViewModel = loginViewModel,
                                 applicationViewModel = applicationViewModel,
+                                airConditionViewModel = airConditionViewModel,
                                 themeMode = themeMode
                             )
 

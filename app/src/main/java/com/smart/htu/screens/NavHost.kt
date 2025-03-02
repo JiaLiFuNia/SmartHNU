@@ -15,6 +15,7 @@ import com.smart.htu.component.animation.animatedComposable
 import com.smart.htu.screens.application.Application
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.airCondition.AirCondition
+import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.application.classroom.ClassroomSearchScreen
 import com.smart.htu.screens.application.entity.RouteType
 import com.smart.htu.screens.application.grade.Grade
@@ -51,6 +52,7 @@ fun NavHostScreen() {
     val applicationViewModel: ApplicationViewModel = hiltViewModel()
     val newsViewModel: NewsViewModel = hiltViewModel()
     val messageViewModel: MessageViewModel = hiltViewModel()
+    val airConditionViewModel: AirConditionViewModel = hiltViewModel()
     val navController = rememberNavController()
     val uiState = settingViewModel.uiState.collectAsState().value
     NavHost(
@@ -64,7 +66,8 @@ fun NavHostScreen() {
                 loginViewModel = loginViewModel,
                 applicationViewModel = applicationViewModel,
                 newsViewModel = newsViewModel,
-                settingViewModel = settingViewModel
+                settingViewModel = settingViewModel,
+                airConditionViewModel = airConditionViewModel
             )
         }
         animatedComposable(Destinations.News.route) {
@@ -159,7 +162,11 @@ fun NavHostScreen() {
             LibrarySearchScreen(navController = navController)
         }
         animatedComposable(Destinations.AirCondition.route) {
-            AirCondition(navController = navController, themeMode = uiState.themeMode)
+            AirCondition(
+                navController = navController,
+                themeMode = uiState.themeMode,
+                viewModel = airConditionViewModel
+            )
         }
         animatedComposable(Destinations.AccountManage.route) {
             AccountManage(
@@ -226,7 +233,7 @@ fun NavController.navigateWithAuthCheck(
     if (logState || isGuest) {
         when (routeType) {
             RouteType.URL -> {
-                this.navigate("${Destinations.WebView.route}/${Uri.encode(route)}/${label}")
+                this.navigate("${Destinations.WebView.route}/${Uri.encode(route)}/${context.getString(label)}")
             }
 
             RouteType.SCREEN -> {
