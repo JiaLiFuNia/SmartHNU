@@ -7,6 +7,7 @@ import com.smart.htu.api.network.EHallService
 import com.smart.htu.api.network.GiteeService
 import com.smart.htu.api.network.JWCService
 import com.smart.htu.api.network.LibraryService
+import com.smart.htu.api.network.NewsService
 import com.smart.htu.api.network.WeatherService
 import com.smart.htu.repo.DataStoreRepo
 import dagger.Module
@@ -40,6 +41,7 @@ import javax.inject.Singleton
 object NetworkModule {
 
     object ApiConstants {
+        const val HTU_BASE_URL = "https://www.htu.edu.cn/"
         const val AUTH_SERVER_BASE_URL = "https://authserver2.htu.edu.cn/"
         const val JWC_BASE_URL = "https://jwc.htu.edu.cn/"
         const val E_HALL_BASE_URL = "https://ehall2.htu.edu.cn/"
@@ -163,6 +165,15 @@ object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(WeatherService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNewsService(): NewsService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(ApiConstants.HTU_BASE_URL)
+            .build()
+        return retrofit.create(NewsService::class.java)
     }
 }
 

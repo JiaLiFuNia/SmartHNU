@@ -257,14 +257,16 @@ class LoginViewModel @Inject constructor(
 
     private suspend fun checkJWCToken() {
         try {
-            val res = jwcNetworkRepo.checkJWCTokenService()
-            res.onSuccess {
-                setTokenValid(true)
-                changeLoginJWCState(1)
-            }
-            res.onFailure {
-                setTokenValid(false)
-                changeLoginJWCState(-1)
+            if (_uiState.value.studentID.isNotEmpty()) {
+                val res = jwcNetworkRepo.checkJWCTokenService()
+                res.onSuccess {
+                    setTokenValid(true)
+                    changeLoginJWCState(1)
+                }
+                res.onFailure {
+                    setTokenValid(false)
+                    changeLoginJWCState(-1)
+                }
             }
         } catch (e: Exception) {
             changeLoginJWCState(1)

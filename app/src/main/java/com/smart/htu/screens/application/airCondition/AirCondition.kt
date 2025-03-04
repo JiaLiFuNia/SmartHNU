@@ -250,15 +250,6 @@ fun AirCondition(
                 item {
                     val tabItem =
                         listOf("近 ${uiState.billRecords?.total ?: 0} 天用电情况", "缴费情况")
-                    if (themeMode == 0)
-                        top.yukonga.miuix.kmp.basic.TabRow(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            tabs = tabItem,
-                            selectedTabIndex = selectTabIndex,
-                            onSelect = { onSelectTabIndex(it) }
-                        )
-                    else
                         TabRow(
                             containerColor = Color.Transparent,
                             selectedTabIndex = selectTabIndex,

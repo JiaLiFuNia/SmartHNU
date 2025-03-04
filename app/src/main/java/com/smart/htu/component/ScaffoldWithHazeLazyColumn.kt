@@ -43,6 +43,7 @@ fun ScaffoldWithHazeLazyColumn(
     title: @Composable () -> Unit,
     actions: @Composable () -> Unit,
     navigationIcon: @Composable () -> Unit,
+    snackBarHost: (@Composable () -> Unit)? = null,
     itemSpacePadding: Dp = 20.dp,
     isMediumTopAppBar: Boolean = false,
     isRefreshing: Boolean,
@@ -55,7 +56,9 @@ fun ScaffoldWithHazeLazyColumn(
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = {
-            SnackbarHost(hostState = snackBarHostState)
+            if (snackBarHost != null) {
+                snackBarHost()
+            }
         },
         topBar = {
             if (isMediumTopAppBar)

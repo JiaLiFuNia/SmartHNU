@@ -130,7 +130,7 @@ class Constants {
             SmallCardContent(
                 guestEnable = false,
                 icon = R.drawable.deep_seek,
-                label = R.string.deepseek,
+                label = R.string.deep_seek,
                 routeType = RouteType.URL,
                 route = "https://chat.htu.edu.cn/",
                 category = SmallCardCategory.OTHERS

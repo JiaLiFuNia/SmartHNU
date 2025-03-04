@@ -172,7 +172,8 @@ fun MainFrame(
 
                             2 -> NewsScreen(
                                 navController = navController,
-                                viewModel = newsViewModel
+                                viewModel = newsViewModel,
+                                themeMode = themeMode
                             )
 
                             3 -> PersonScreen(

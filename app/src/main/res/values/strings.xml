@@ -91,5 +91,16 @@
     <string name="water_washer">热水·洗衣</string>
     <string name="teacher_evaluation">教学评价</string>
     <string name="i_hnu">i 师大</string>
-    <string name="deepseek">DeepSeek</string>
+    <string name="deep_seek">DeepSeek</string>
+    <string name="headlines">师大要闻</string>
+    <string name="fast_news">新闻速递</string>
+    <string name="media">媒体师大</string>
+    <string name="notice">通知公告</string>
+    <string name="math_news">数院新闻</string>
+    <string name="math_notice">数院公告</string>
+    <string name="teaching_news">教学新闻</string>
+    <string name="teaching_notice">教务通知</string>
+    <string name="teaching_announcement">公示公告</string>
+    <string name="examination_notice">考务管理</string>
+    <string name="banner_img">图片速览</string>
 </resources>

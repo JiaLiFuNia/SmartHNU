@@ -3,10 +3,6 @@ package com.smart.htu.screens.application
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -36,7 +32,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.window.core.layout.WindowWidthSizeClass
-import com.smart.htu.component.PreferenceSubtitle
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.SmallMediumCardDisplay
@@ -100,7 +95,7 @@ fun Application(
                     }
                 }
             )
-        },
+        }
     ) {
         LazyVerticalGrid(
             contentPadding = PaddingValues(
@@ -115,16 +110,17 @@ fun Application(
             modifier = Modifier
                 .hazeSource(state = hazeState),
         ) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                SuggestChip(
-                    onClick = { navController.navigate(Destinations.Login.route) },
-                    onActionClick = { navController.navigate(Destinations.Login.route) },
-                    text = "暂未登录，登录后即可体验全部功能",
-                    type = SuggestChipType.ERROR,
-                    visibility = visibility.value,
-                    icon = Icons.AutoMirrored.Filled.ArrowForward
-                )
-            }
+            if (visibility.value.value)
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    SuggestChip(
+                        onClick = { navController.navigate(Destinations.Login.route) },
+                        onActionClick = { navController.navigate(Destinations.Login.route) },
+                        text = "暂未登录，登录后即可体验全部功能",
+                        type = SuggestChipType.ERROR,
+                        visibility = visibility.value,
+                        icon = Icons.AutoMirrored.Filled.ArrowForward
+                    )
+                }
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SuggestChip(
                     onClick = {  },

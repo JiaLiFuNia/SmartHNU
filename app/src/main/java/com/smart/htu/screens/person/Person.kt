@@ -22,6 +22,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -46,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.EditMessageDialog
 import com.smart.htu.component.LogoutDialog
@@ -86,6 +88,7 @@ fun PersonScreen(
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showEditMessageDialog by remember { mutableStateOf(false) }
     ScaffoldWithHazeLazyColumn(
+        snackBarHost = { SnackbarHost(hostState = snackBarHostState) },
         themeMode = themeMode,
         scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
         blurEnabledState = uiState.blurEffect,

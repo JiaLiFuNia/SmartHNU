@@ -25,7 +25,6 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
@@ -264,40 +263,14 @@ fun ClassroomSearchScreen(
                             )
                             val selectFloorIndex =
                                 remember { derivedStateOf { floorPagerState.currentPage } }
-                            if (themeMode == 0) {
-                                top.yukonga.miuix.kmp.basic.TabRow(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 5.dp)
-                                        .padding(bottom = 10.dp),
-                                    tabs = allRoomListGroupByFloor.map {
-                                        stringResource(
-                                            id = when (it.first().floorNumber) {
-                                                1 -> R.string.first_floor
-                                                2 -> R.string.second_floor
-                                                3 -> R.string.third_floor
-                                                4 -> R.string.fourth_floor
-                                                5 -> R.string.fifth_floor
-                                                else -> R.string.other
-                                            }
-                                        )
-                                    },
-                                    selectedTabIndex = floorPagerState.currentPage,
-                                    onSelect = {
-                                        coroutineScope.launch {
-                                            floorPagerState.animateScrollToPage(it)
-                                        }
-                                    }
-                                )
-                            } else {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 5.dp)
-                                        .padding(bottom = 10.dp),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 5.dp)
+                                    .padding(bottom = 10.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                     TabRow(
                                         selectedTabIndex = floorPagerState.currentPage,
                                         indicator = { tabPositions ->
@@ -341,8 +314,6 @@ fun ClassroomSearchScreen(
                                         }
                                     }
                                 }
-                            }
-
                             HorizontalPager(
                                 verticalAlignment = Alignment.Top,
                                 state = floorPagerState,

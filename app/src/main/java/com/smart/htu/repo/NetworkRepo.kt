@@ -6,6 +6,7 @@ import com.smart.htu.api.module.BillDetail
 import com.smart.htu.api.module.BillRecords
 import com.smart.htu.api.module.BuyRecords
 import com.smart.htu.api.module.GiteeEntity
+import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.PersonalMessage
 import com.smart.htu.api.module.WeatherNowData
 import com.smart.htu.api.network.AirConditionService
@@ -13,12 +14,15 @@ import com.smart.htu.api.network.AuthLoginService
 import com.smart.htu.api.network.EHallService
 import com.smart.htu.api.network.GiteeService
 import com.smart.htu.api.network.LibraryService
+import com.smart.htu.api.network.NewsService
 import com.smart.htu.api.network.WeatherService
 import com.smart.htu.di.NetworkCookieJar
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_MESSAGE
 import com.smart.htu.screens.application.librarySearch.LibraryBookDetail
 import com.smart.htu.screens.application.librarySearch.LibraryBookListEntity
+import com.smart.htu.screens.news.entity.NewsCategoryEntity
 import com.smart.htu.utils.AESUtils
+import com.smart.htu.utils.ParseNewsUtil.parseBannerImg
 import com.smart.htu.utils.parseLibraryBookDetail
 import com.smart.htu.utils.parseLibrarySearchResult
 import kotlinx.coroutines.Dispatchers
@@ -35,8 +39,41 @@ class NetworkRepo @Inject constructor(
     private val airConditionService: AirConditionService,
     private val giteeService: GiteeService,
     private val weatherService: WeatherService,
+    private val newsService: NewsService,
     private val networkCookieJar: NetworkCookieJar
 ) {
+
+    // 获取新闻
+    suspend fun getNewsService(
+        page: Int,
+        newsOptionItems: NewsCategoryEntity
+    ): List<NewsItemEntity> {
+        val call =
+            newsService.getNewsList(newsOptionItems.academic, page.toString(), newsOptionItems.url)
+        val res = call.awaitResponse().body()
+        try {
+            return parseBannerImg(res.toString(), newsOptionItems.label)
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return emptyList()
+        }
+    }
+
+    // 获取Banner
+    suspend fun getBannerPicService(
+        newsOptionItems: NewsCategoryEntity
+    ): List<NewsItemEntity> {
+        try {
+            val call =
+                newsService.getBannerPic(newsOptionItems.academic)
+            val res = call.awaitResponse().body()
+            // Log.i("TAG666", "getBannerPicService: ${res?.string()}")
+            return parseBannerImg(res?.string() ?: "666", newsOptionItems.label)
+        } catch (e: Exception) {
+            Log.e("TAG666", "getB $e")
+            return emptyList()
+        }
+    }
 
     // 获取实时天气
     suspend fun getWeatherService(): WeatherNowData? {

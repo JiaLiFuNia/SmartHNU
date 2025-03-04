@@ -72,6 +72,7 @@ fun NavHostScreen() {
         }
         animatedComposable(Destinations.News.route) {
             NewsScreen(
+                themeMode = uiState.themeMode,
                 navController = navController,
                 viewModel = newsViewModel
             )
