@@ -250,33 +250,33 @@ fun AirCondition(
                 item {
                     val tabItem =
                         listOf("近 ${uiState.billRecords?.total ?: 0} 天用电情况", "缴费情况")
-                        TabRow(
-                            containerColor = Color.Transparent,
-                            selectedTabIndex = selectTabIndex,
-                            indicator = { tabPositions ->
-                                TabRowDefaults.PrimaryIndicator(
-                                    modifier = Modifier
+                    TabRow(
+                        containerColor = Color.Transparent,
+                        selectedTabIndex = selectTabIndex,
+                        indicator = { tabPositions ->
+                            TabRowDefaults.PrimaryIndicator(
+                                modifier = Modifier
                                         .tabIndicatorOffset(tabPositions[selectTabIndex]),
                                     width = tabPositions[selectTabIndex].width / 2f,
                                     shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
-                                )
-                            },
-                            divider = {}
+                            )
+                        },
+                        divider = {}
                     ) {
-                            tabItem.forEachIndexed { index, s ->
-                                Tab(
-                                    selected = selectTabIndex == index,
-                                    onClick = { onSelectTabIndex(index) },
-                                    selectedContentColor = MaterialTheme.colorScheme.primary,
-                                    unselectedContentColor = MaterialTheme.colorScheme.onSurface
-                                ) {
-                                    Text(
-                                        text = s,
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.primary,
+                        tabItem.forEachIndexed { index, s ->
+                            Tab(
+                                selected = selectTabIndex == index,
+                                onClick = { onSelectTabIndex(index) },
+                                selectedContentColor = MaterialTheme.colorScheme.primary,
+                                unselectedContentColor = MaterialTheme.colorScheme.onSurface
+                            ) {
+                                Text(
+                                    text = s,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.padding(12.dp)
                                     )
-                                }
+                            }
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
