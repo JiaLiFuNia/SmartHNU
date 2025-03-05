@@ -21,7 +21,7 @@ object GenerateQWeather {
     //用于生成和风天气密钥
     fun getQWeatherAuth(): String {
         return "Bearer " + generateJWT(
-            privateKeyStr = RSAUtil.getPrivateKeyFromRaw(context, R.raw.private_key),
+            privateKeyStr = "MC4CAQAwBQYDK2VwBCIEILLPuzDVvJ0tIE1/2wiDwUSwZr2Lwt/BaOxJ7sYaIPrk",
             projectID = "2AKUWC7K78",
             keyID = "CHPN45DFAX"
         )
