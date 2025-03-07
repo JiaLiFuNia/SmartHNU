@@ -1,7 +1,5 @@
 package com.smart.htu.utils
 
-import com.smart.htu.App.Companion.context
-import com.smart.htu.R
 import net.i2p.crypto.eddsa.EdDSAEngine
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
@@ -38,11 +36,7 @@ object GenerateQWeather {
         projectID: String,
         keyID: String
     ): String {
-        val privateKeyBytes = Base64.getDecoder().decode(
-            privateKeyStr.trim()
-                .replace("-----BEGIN PRIVATE KEY-----", "")
-                .replace("-----END PRIVATE KEY-----", "")
-        )
+        val privateKeyBytes = Base64.getDecoder().decode(privateKeyStr)
         val keySpec = PKCS8EncodedKeySpec(privateKeyBytes)
         val privateKey = EdDSAPrivateKey(keySpec)
 

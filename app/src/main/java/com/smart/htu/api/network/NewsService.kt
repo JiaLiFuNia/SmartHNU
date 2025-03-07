@@ -15,7 +15,4 @@ interface NewsService {
         @Path("type") type: String
     ): Call<ResponseBody>
 
-    @GET
-    fun getBannerPic(@Url url: String): Call<ResponseBody>
-
 }

@@ -1,6 +1,5 @@
 package com.smart.htu.api.module
 
-import androidx.annotation.StringRes
 import com.smart.htu.screens.news.entity.NewsType
 
 data class NewsItemEntity(

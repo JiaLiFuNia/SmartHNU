@@ -37,7 +37,7 @@ import javax.inject.Inject
 
 data class LoginUiState(
     val isLogSuccess: Boolean = false,
-    val loginState: Int = DEFAULT_LOGIN_STATE, // -1 失败   0 未登录   1 登录成功   2 登录过期
+    val loginState: Int = DEFAULT_LOGIN_STATE, // -1 失败   0 未登录   1 登录成功
     val loginJWCState: Int = DEFAULT_LOGIN_STATE,
     val isGuest: Boolean = false,
     val isLoading: Boolean = false,

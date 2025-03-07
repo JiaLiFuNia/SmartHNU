@@ -24,7 +24,8 @@ import javax.inject.Inject
 data class NewsUiState(
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val newsOptionItems: List<NewsCategoryEntity> = emptyList(),
-    val bannerPicList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus()
+    val bannerPicList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
+    val newsList: List<ResultWithStatus<List<NewsItemEntity>>> = List(newsOptionItems.size) { ResultWithStatus() }
 )
 
 
@@ -36,10 +37,10 @@ class NewsViewModel @Inject constructor(
 
 
     private val newsOptionItems = listOf(
-        NewsCategoryEntity(NewsType.BANNER, "河南师范大学主页", "", ""),
+        NewsCategoryEntity(NewsType.BANNER, "河南师范大学主页", "", "21040"),
         NewsCategoryEntity(NewsType.NOTICE, "河南师范大学主页", "", "8955"),
-        NewsCategoryEntity(NewsType.FAST_NEWS, "河南师范大学主页", "", "8954"),
-        NewsCategoryEntity(NewsType.HEADLINES, "河南师范大学主页", "", "8957"),
+        NewsCategoryEntity(NewsType.FAST_NEWS, "河南师范大学主页", "", "8957"),
+        NewsCategoryEntity(NewsType.HEADLINES, "河南师范大学主页", "", "8954"),
         NewsCategoryEntity(NewsType.MEDIA, "河南师范大学主页", "", "9008"),
         NewsCategoryEntity(NewsType.MATH_NEWS, "数学与信息科学学院", "math", "1074"),
         NewsCategoryEntity(NewsType.MATH_NOTICE, "数学与信息科学学院", "math", "1143"),
@@ -85,14 +86,31 @@ class NewsViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            getNewsList()
+            getBannerImgList()
         }
     }
 
 
-    suspend fun getNewsList() {
+    /*
+    * @Param index: tab index
+    * @Param page: page index
+    * */
+    suspend fun getNewsList(index: Int, page: Int = 1) {
         try {
-            val res = networkRepo.getBannerPicService(_uiState.value.newsOptionItems[0])
+            val res = networkRepo.getNewsService(_uiState.value.newsOptionItems[index], page)
+            val tempList = _uiState.value.newsList.toMutableList()
+            tempList[index] = ResultWithStatus(res)
+            _uiState.update { it.copy(newsList = tempList) }
+            Log.i("TAG666", "getNewsList: $res")
+        } catch (e: Exception) {
+            Log.i("TAG666", "getNewsList: $e")
+        }
+    }
+
+
+    suspend fun getBannerImgList() {
+        try {
+            val res = networkRepo.getNewsService(_uiState.value.newsOptionItems[0])
             _uiState.update { it.copy(bannerPicList = ResultWithStatus(res)) }
             Log.i("TAG666", "getNewsList: $res")
         } catch (e: Exception) {

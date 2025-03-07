@@ -45,30 +45,19 @@ class NetworkRepo @Inject constructor(
 
     // 获取新闻
     suspend fun getNewsService(
-        page: Int,
-        newsOptionItems: NewsCategoryEntity
-    ): List<NewsItemEntity> {
-        val call =
-            newsService.getNewsList(newsOptionItems.academic, page.toString(), newsOptionItems.url)
-        val res = call.awaitResponse().body()
-        try {
-            return parseBannerImg(res.toString(), newsOptionItems.label)
-        } catch (e: Exception) {
-            Log.e("TAG666", "${e.message}")
-            return emptyList()
-        }
-    }
-
-    // 获取Banner
-    suspend fun getBannerPicService(
-        newsOptionItems: NewsCategoryEntity
+        newsOptionItems: NewsCategoryEntity,
+        page: Int? = 1
     ): List<NewsItemEntity> {
         try {
             val call =
-                newsService.getBannerPic(newsOptionItems.academic)
+                newsService.getNewsList(
+                    academic = newsOptionItems.academic,
+                    page = page.toString(),
+                    type = newsOptionItems.url
+                )
             val res = call.awaitResponse().body()
             // Log.i("TAG666", "getBannerPicService: ${res?.string()}")
-            return parseBannerImg(res?.string() ?: "666", newsOptionItems.label)
+            return parseBannerImg(res?.string() ?: "", newsOptionItems.label)
         } catch (e: Exception) {
             Log.e("TAG666", "getB $e")
             return emptyList()
