@@ -25,7 +25,7 @@ object ParseNewsUtil {
     )
 
 
-    fun parseBannerImg(html: String, label: NewsType): List<NewsItemEntity> {
+    fun parseNewsHTML(html: String, label: NewsType): List<NewsItemEntity> {
         // Log.i("TAG666 parseHtml", html)
         val resultList = mutableListOf<NewsItemEntity>()
         val rules = when (label) {
@@ -33,7 +33,7 @@ object ParseNewsUtil {
             else -> PARSE_RULE
         }
         val document = Jsoup.parse(html)
-        val newsListSize = document.select(rules.allElementPath.path)
+        val newsListSize = document.select(rules.elementPath.path)
         // Log.i("TAG666 parseHtml", newsListSize.toString())
         newsListSize.forEach {
             val newsListElement = NewsItemEntity(
@@ -60,7 +60,7 @@ object ParseNewsUtil {
 }
 
 data class ParseRule(
-    val allElementPath: SingleParseRule = SingleParseRule(),
+    val elementPath: SingleParseRule = SingleParseRule(),
     val titlePath: SingleParseRule = SingleParseRule(),
     val urlPath: SingleParseRule = SingleParseRule(),
     val timePath: SingleParseRule = SingleParseRule(),

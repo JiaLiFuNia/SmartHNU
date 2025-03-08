@@ -22,7 +22,7 @@ import com.smart.htu.screens.application.librarySearch.LibraryBookDetail
 import com.smart.htu.screens.application.librarySearch.LibraryBookListEntity
 import com.smart.htu.screens.news.entity.NewsCategoryEntity
 import com.smart.htu.utils.AESUtils
-import com.smart.htu.utils.ParseNewsUtil.parseBannerImg
+import com.smart.htu.utils.ParseNewsUtil.parseNewsHTML
 import com.smart.htu.utils.parseLibraryBookDetail
 import com.smart.htu.utils.parseLibrarySearchResult
 import kotlinx.coroutines.Dispatchers
@@ -49,15 +49,14 @@ class NetworkRepo @Inject constructor(
         page: Int? = 1
     ): List<NewsItemEntity> {
         try {
-            val call =
-                newsService.getNewsList(
+            val call = newsService.getNewsList(
                     academic = newsOptionItems.academic,
                     page = page.toString(),
                     type = newsOptionItems.url
                 )
             val res = call.awaitResponse().body()
             // Log.i("TAG666", "getBannerPicService: ${res?.string()}")
-            return parseBannerImg(res?.string() ?: "", newsOptionItems.label)
+            return parseNewsHTML(res?.string() ?: "", newsOptionItems.label)
         } catch (e: Exception) {
             Log.e("TAG666", "getB $e")
             return emptyList()

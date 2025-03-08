@@ -151,6 +151,7 @@ fun NavHostScreen() {
             )
         ) { webview ->
             WebView(
+                themeMode = uiState.themeMode,
                 navController = navController,
                 url = Uri.decode(webview.arguments?.getString("url") ?: ""),
                 initTitle = webview.arguments?.getString("title") ?: ""

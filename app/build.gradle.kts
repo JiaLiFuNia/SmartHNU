@@ -16,8 +16,8 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 33
-        versionCode = 202503071
-        versionName = "3.0.9.12-beta"
+        versionCode = 202503081
+        versionName = "3.0.9.13-beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

@@ -15,9 +15,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 
@@ -35,7 +37,6 @@ class NewsViewModel @Inject constructor(
     private val networkRepo: NetworkRepo
 ) : ViewModel() {
 
-
     private val newsOptionItems = listOf(
         NewsCategoryEntity(NewsType.BANNER, "河南师范大学主页", "", "21040"),
         NewsCategoryEntity(NewsType.NOTICE, "河南师范大学主页", "", "8955"),
@@ -45,17 +46,12 @@ class NewsViewModel @Inject constructor(
         NewsCategoryEntity(NewsType.MATH_NEWS, "数学与信息科学学院", "math", "1074"),
         NewsCategoryEntity(NewsType.MATH_NOTICE, "数学与信息科学学院", "math", "1143"),
         NewsCategoryEntity(NewsType.TEACHING_NEWS, "河南师范大学教务处", "teaching", "3257"),
-        NewsCategoryEntity(
-            NewsType.TEACHING_NOTICE,
-            "河南师范大学教务处",
-            "teaching",
-            "3251"
-        ),
+        NewsCategoryEntity(NewsType.TEACHING_NOTICE, "河南师范大学教务处", "teaching", "3251"),
         NewsCategoryEntity(
             NewsType.TEACHING_ANNOUNCEMENT,
             "河南师范大学教务处",
             "teaching",
-            "3258",
+            "3258"
         ),
         NewsCategoryEntity(
             NewsType.EXAMINATION_NOTICE,
@@ -76,7 +72,9 @@ class NewsViewModel @Inject constructor(
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            DEFAULT_BLUR_EFFECT
+            runBlocking {
+                dataStoreRepo.observerBlurState().first()
+            }
         )
 
     init {
@@ -89,7 +87,6 @@ class NewsViewModel @Inject constructor(
             getBannerImgList()
         }
     }
-
 
     /*
     * @Param index: tab index
@@ -106,7 +103,6 @@ class NewsViewModel @Inject constructor(
             Log.i("TAG666", "getNewsList: $e")
         }
     }
-
 
     suspend fun getBannerImgList() {
         try {
