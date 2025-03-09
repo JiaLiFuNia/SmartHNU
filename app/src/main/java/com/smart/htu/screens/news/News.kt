@@ -33,6 +33,7 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarDefaults.inputFieldColors
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabIndicatorScope
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -323,7 +324,7 @@ fun NewsScreen(
 
 
 @Composable
-fun NewsItem(news: NewsItemEntity, themeMode: Int, onClick: () -> Unit) {
+fun NewsItem(news: NewsItemEntity, themeMode: Int, maxLines: Int = 2, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         modifier = Modifier
@@ -339,7 +340,7 @@ fun NewsItem(news: NewsItemEntity, themeMode: Int, onClick: () -> Unit) {
                 Text(
                     text = news.title,
                     style = MaterialTheme.typography.titleMedium,
-                    maxLines = 2,
+                    maxLines = maxLines,
                     overflow = TextOverflow.Ellipsis
                 )
             },

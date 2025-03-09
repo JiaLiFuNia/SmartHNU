@@ -38,12 +38,13 @@ class NewsViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val newsOptionItems = listOf(
-        NewsCategoryEntity(NewsType.BANNER, "河南师范大学主页", "", "21040"),
+        NewsCategoryEntity(NewsType.RESEARCH, "河南师范大学主页", "", "xsygcs"),
         NewsCategoryEntity(NewsType.NOTICE, "河南师范大学主页", "", "8955"),
         NewsCategoryEntity(NewsType.FAST_NEWS, "河南师范大学主页", "", "8957"),
         NewsCategoryEntity(NewsType.HEADLINES, "河南师范大学主页", "", "8954"),
         NewsCategoryEntity(NewsType.MEDIA, "河南师范大学主页", "", "9008"),
-        NewsCategoryEntity(NewsType.MATH_NEWS, "数学与信息科学学院", "math", "1074"),
+        NewsCategoryEntity(NewsType.MATH_LECTURES, "数学与信息科学学院", "math", "xsyg"),
+        NewsCategoryEntity(NewsType.MATH_NEWS, "数学与信息科学学院", "math", "xinwen"),
         NewsCategoryEntity(NewsType.MATH_NOTICE, "数学与信息科学学院", "math", "1143"),
         NewsCategoryEntity(NewsType.TEACHING_NEWS, "河南师范大学教务处", "teaching", "3257"),
         NewsCategoryEntity(NewsType.TEACHING_NOTICE, "河南师范大学教务处", "teaching", "3251"),
@@ -106,7 +107,14 @@ class NewsViewModel @Inject constructor(
 
     suspend fun getBannerImgList() {
         try {
-            val res = networkRepo.getNewsService(_uiState.value.newsOptionItems[0])
+            val res = networkRepo.getNewsService(
+                newsOptionItems = NewsCategoryEntity(
+                    label = NewsType.BANNER,
+                    source = "河南师范大学主页",
+                    academic = "",
+                    type = "21040"
+                )
+            )
             _uiState.update { it.copy(bannerPicList = ResultWithStatus(res)) }
             Log.i("TAG666", "getNewsList: $res")
         } catch (e: Exception) {

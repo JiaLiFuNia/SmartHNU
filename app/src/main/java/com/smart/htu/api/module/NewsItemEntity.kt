@@ -6,7 +6,7 @@ data class NewsItemEntity(
     val label: NewsType,
     val title: String,
     private val _url: String,
-    private val _imgUrl: String? = "",
+    val _imgUrl: String? = "",
     val time: String
 ){
     val url: String

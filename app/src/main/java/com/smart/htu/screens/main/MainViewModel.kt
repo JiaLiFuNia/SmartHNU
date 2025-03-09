@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.Course
 import com.smart.htu.api.module.GiteeEntity
+import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.OverallTerm
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.WeatherNowData
@@ -14,6 +15,8 @@ import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.screens.application.entity.SmallCardContent
+import com.smart.htu.screens.news.entity.NewsCategoryEntity
+import com.smart.htu.screens.news.entity.NewsType
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +38,8 @@ data class AppUiState(
     val isLogSuccess: Boolean = false,
     val config: GiteeEntity? = null,
     val hadReadIdList: List<Int> = emptyList(),
-    val appListIsCommonList: List<SmallCardContent> = INIT_COMMON_APP_LIST
+    val appListIsCommonList: List<SmallCardContent> = INIT_COMMON_APP_LIST,
+    val newsList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus()
 )
 
 @HiltViewModel
@@ -118,6 +122,25 @@ class MainViewModel @Inject constructor(
             getGiteeConfigService()
             getTermIndex()
             getTodayCourse()
+            getNewsList()
+        }
+    }
+
+    suspend fun getNewsList() {
+        try {
+            val res = networkRepo.getNewsService(
+                newsOptionItems = NewsCategoryEntity(
+                    label = NewsType.RESEARCH,
+                    source = "河南师范大学主页",
+                    academic = "",
+                    type = "xsygcs"
+                ),
+                page = 1
+            )
+            _uiState.update { it.copy(newsList = ResultWithStatus(res)) }
+            Log.i("TAG666", "getNewsList: $res")
+        } catch (e: Exception) {
+            Log.i("TAG666", "getNewsList: $e")
         }
     }
 

@@ -10,11 +10,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.Email
@@ -60,6 +63,7 @@ import com.nlf.calendar.Lunar
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.api.module.Course
+import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.Status
 import com.smart.htu.component.CircularProgressIndicator
@@ -70,16 +74,16 @@ import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.component.card.MediumCardDisplay
 import com.smart.htu.component.card.SmallCardDisplay
-import com.smart.htu.component.svgVector.DrawableVectors
-import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.airCondition.AirConditionUiState
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.application.entity.RouteType
 import com.smart.htu.screens.login.LoginUiState
 import com.smart.htu.screens.login.LoginViewModel
+import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigateWithAuthCheck
 import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.news.NewsItem
 import com.smart.htu.utils.startCalendar
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
@@ -124,6 +128,7 @@ fun Main(
             delay(500)
             mainViewModel.getNowWeather()
             mainViewModel.getGiteeConfigService()
+            mainViewModel.getNewsList()
             if (loginUiState.loginJWCState == 1)
                 mainViewModel.getTodayCourse()
             isRefreshing = false
@@ -276,33 +281,72 @@ fun Main(
                     Spacer(modifier = Modifier.height(20.dp))
                 }
                 item {
-                    LargeCardDisplay(
+                    NewsCard(
                         themeMode = themeMode,
-                        modifier = Modifier,
-                        title = "通知公告",
-                        leadingIconPainting = R.drawable.ic_outline_article,
-                        content = {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(20.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                EmptyContent(
-                                    text = "开发中...",
-                                    modifier = Modifier.fillMaxSize(),
-                                    image = DrawableVectors.emptyData()
-                                )
-                            }
-                        },
-                        navigateTo = {},
-                        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface
-                        else MaterialTheme.colorScheme.surfaceVariant
+                        navController = navController,
+                        newsListStatus = uiState.newsList
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+fun NewsCard(
+    themeMode: Int,
+    navController: NavController,
+    newsListStatus: ResultWithStatus<List<NewsItemEntity>>
+) {
+    LargeCardDisplay(
+        themeMode = themeMode,
+        modifier = Modifier,
+        title = "学术预告",
+        leadingIconPainting = R.drawable.ic_outline_article,
+        content = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 320.dp, max = 320.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                        .fillMaxSize()
+                ) {
+                    when (newsListStatus.status) {
+                        Status.SUCCESS -> {
+                            if (newsListStatus.data.isNullOrEmpty()) {
+                                EmptyContent(
+                                    modifier = Modifier.fillMaxSize(),
+                                    text = "获取失败"
+                                )
+                            } else {
+                                newsListStatus.data.forEach { news ->
+                                    NewsItem(news = news, themeMode = themeMode, maxLines = 1) {
+                                        navController.navigateToWebView(
+                                            url = news.url,
+                                            label = news.title
+                                        )
+                                    }
+                            }
+                            }
+                        }
+
+                        else -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        navigateTo = {},
+        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface
+        else MaterialTheme.colorScheme.surfaceVariant
+    )
 }
 
 @Composable
@@ -318,7 +362,7 @@ fun FocusCard(
         themeMode = themeMode,
         modifier = Modifier,
         title = "聚焦",
-        leadingIconPainting = R.drawable.contract_edit_24px,
+        leadingIconPainting = R.drawable.center_focus_weak_24px,
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface
         else MaterialTheme.colorScheme.surfaceVariant
     ) {

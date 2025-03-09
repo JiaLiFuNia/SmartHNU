@@ -104,4 +104,6 @@
     <string name="teaching_announcement">公示公告</string>
     <string name="examination_notice">考务管理</string>
     <string name="banner_img">图片速览</string>
+    <string name="research">学术预告</string>
+    <string name="math_lectures">数院学术预告</string>
 </resources>

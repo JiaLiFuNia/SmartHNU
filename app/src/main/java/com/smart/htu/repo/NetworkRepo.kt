@@ -52,11 +52,11 @@ class NetworkRepo @Inject constructor(
             val call = newsService.getNewsList(
                     academic = newsOptionItems.academic,
                     page = page.toString(),
-                    type = newsOptionItems.url
+                type = newsOptionItems.type
                 )
-            val res = call.awaitResponse().body()
-            // Log.i("TAG666", "getBannerPicService: ${res?.string()}")
-            return parseNewsHTML(res?.string() ?: "", newsOptionItems.label)
+            val res = call.awaitResponse().body()?.string() ?: ""
+            Log.i("TAG666", "getBannerPicService: $res")
+            return parseNewsHTML(res, newsOptionItems.label)
         } catch (e: Exception) {
             Log.e("TAG666", "getB $e")
             return emptyList()

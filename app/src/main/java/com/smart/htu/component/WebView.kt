@@ -230,7 +230,7 @@ fun WebView(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(top = paddingValues.calculateTopPadding())
         ) {
             when (val loadingState = state.loadingState) {
                 is LoadingState.Initializing -> LinearProgressIndicator(
