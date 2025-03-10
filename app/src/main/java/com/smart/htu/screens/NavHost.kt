@@ -161,7 +161,7 @@ fun NavHostScreen() {
             Licence(navController = navController, viewModel = settingViewModel)
         }
         animatedComposable(Destinations.LibrarySearch.route) {
-            LibrarySearchScreen(navController = navController)
+            LibrarySearchScreen(navController = navController, themeMode = uiState.themeMode)
         }
         animatedComposable(Destinations.AirCondition.route) {
             AirCondition(

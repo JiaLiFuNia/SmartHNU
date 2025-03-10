@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.RichTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -34,6 +35,8 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -41,6 +44,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -56,6 +60,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -95,6 +100,8 @@ fun ClassroomSearchScreen(
     val (selectedTimeIndex, onSelectedTimeIndex) = rememberSaveable {
         mutableIntStateOf(checkTimeInterval())
     }
+
+    val tooltipState = rememberTooltipState(isPersistent = true)
 
     val (selectedDate, onSelectedDate) = remember { mutableStateOf(getCurrentDates()) }
     val (showDatePicker, onShowDatePicker) = remember { mutableStateOf(false) }
@@ -232,10 +239,39 @@ fun ClassroomSearchScreen(
                     }
                 }
                 item {
-                    SmallTitle(
-                        text = stringResource(id = R.string.occupy),
-                        insideMargin = PaddingValues(start = 12.dp, top = 12.dp, bottom = 8.dp)
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        SmallTitle(
+                            text = stringResource(id = R.string.occupy),
+                            insideMargin = PaddingValues(start = 12.dp, top = 12.dp, bottom = 8.dp)
+                        )
+                        TooltipBox(
+                            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
+                            tooltip = {
+                                RichTooltip(
+                                    title = { Text("说明") },
+                                    action = {
+                                        TextButton(onClick = { coroutineScope.launch { tooltipState.dismiss() } }) {
+                                            Text(text = "关闭")
+                                        }
+                                    }
+                                ) {
+                                    Text(text = "浅色模式下，浅色卡片（呈现灰色）为当前已被占用教室；白色（或其他颜色）卡片为空闲教室。\n若当天该栋教学楼为考场，则占用情况以实际为准。")
+                                }
+                            },
+                            state = tooltipState
+                        ) {
+                            IconButton(onClick = { coroutineScope.launch { tooltipState.show() } }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.help_24px),
+                                    contentDescription = "help"
+                                )
+                            }
+                        }
+                    }
                     Log.i("TAG666", "${uiState.isLoading} ${uiState.isTokenValid}")
                     if (uiState.isLoading || !uiState.isTokenValid || uiState.buildingsOccupation[selectedRoomIndex] == null) {
                         Box(
@@ -272,6 +308,7 @@ fun ClassroomSearchScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                     TabRow(
+                                        containerColor = Color.Transparent,
                                         selectedTabIndex = floorPagerState.currentPage,
                                         indicator = { tabPositions ->
                                             TabRowDefaults.PrimaryIndicator(

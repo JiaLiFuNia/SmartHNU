@@ -5,7 +5,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,12 +25,12 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -60,7 +59,6 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
@@ -104,6 +102,7 @@ import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(
@@ -112,6 +111,7 @@ import kotlinx.coroutines.launch
 )
 @Composable
 fun LibrarySearchScreen(
+    themeMode: Int,
     navController: NavController,
     viewModel: LibrarySearchViewModel = hiltViewModel()
 ) {
@@ -119,8 +119,8 @@ fun LibrarySearchScreen(
 
     val hazeState = remember { HazeState() }
     val (showBottomSheet, onShowBottomSheet) = rememberSaveable { mutableStateOf(false) }
-    var expand by rememberSaveable { mutableStateOf(false) }
-    var isSearching by rememberSaveable { mutableStateOf(false) }
+    val (expand, onExpand) = rememberSaveable { mutableStateOf(false) }
+    val (isSearching, onSearch) = rememberSaveable { mutableStateOf(false) }
     val searchTextFieldState = rememberTextFieldState()
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -139,14 +139,15 @@ fun LibrarySearchScreen(
 
     BackHandler {
         if (expand || isSearching) {
-            expand = false
-            isSearching = false
+            onExpand(false)
+            onSearch(false)
         } else {
             navController.popBackStack()
         }
     }
 
     Scaffold(
+        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = {
             SnackbarHost(hostState = MainActivity.snackBarHostState)
@@ -155,8 +156,14 @@ fun LibrarySearchScreen(
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else colorScheme.surface,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else colorScheme.surfaceContainer
+                    containerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
+                        0 -> MiuixTheme.colorScheme.background
+                        else -> colorScheme.surface
+                    },
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
+                        0 -> MiuixTheme.colorScheme.background
+                        else -> colorScheme.surfaceContainer
+                    }
                 ),
                 title = {
                     Text(text = "图书查询")
@@ -232,41 +239,39 @@ fun LibrarySearchScreen(
                     DockedSearchBar(
                         modifier = Modifier
                             .align(Alignment.TopCenter)
+                            .heightIn(max = 240.dp)
                             .fillMaxWidth(),
                         inputField = {
                             SearchBarDefaults.InputField(
+                                modifier = Modifier.fillMaxWidth(),
                                 state = searchTextFieldState,
                                 onSearch = {
-                                    expand = false
-                                    isSearching = true
+                                    onExpand(false)
+                                    onSearch(true)
                                     viewModel.librarySearch(it, 1)
                                     viewModel.addSearchHistory(it)
                                 },
                                 expanded = expand,
-                                onExpandedChange = { expand = it },
+                                onExpandedChange = { onExpand(it) },
                                 placeholder = { Text(text = "搜索书名、作者、ISBN...") },
                                 leadingIcon = {
                                     Icon(
-                                        Icons.Default.Search,
+                                        imageVector = Icons.Default.Search,
                                         contentDescription = null
                                     )
                                 },
                                 trailingIcon = {
-                                    if (isSearching || expand)
-                                        TextButton(
-                                            onClick = {
-                                                isSearching = false
-                                                expand = false
-                                                searchTextFieldState.clearText()
-                                            }
-                                        ) {
-                                            Text(text = "取消")
-                                        }
+                                    IconButton(onClick = { /*TODO*/ }) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
+                                            contentDescription = ""
+                                        )
+                                    }
                                 }
                             )
                         },
                         expanded = expand,
-                        onExpandedChange = { expand = it },
+                        onExpandedChange = { onExpand(it) },
                     ) {
                         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                             uiState.searchHistoryList.forEachIndexed { index, resultText ->
@@ -293,8 +298,8 @@ fun LibrarySearchScreen(
                                                 resultText
                                             )
                                             viewModel.librarySearch(resultText, page = 1)
-                                            isSearching = true
-                                            expand = false
+                                            onSearch(true)
+                                            onExpand(false)
                                         }
                                         .fillMaxWidth()
                                 )
@@ -375,6 +380,7 @@ fun LibrarySearchScreen(
                     item {
                         Spacer(modifier = Modifier.height(10.dp))
                         RentBooksList(
+                            themeMode = themeMode,
                             uiState = uiState,
                             viewModel = viewModel,
                             onClick = {
@@ -395,7 +401,7 @@ fun LibrarySearchScreen(
 }
 
 @OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalMaterial3Api::class,
     ExperimentalMaterial3ExpressiveApi::class
 )
 @Composable
@@ -441,12 +447,13 @@ fun BookRentDetailBottomSheet(
 
 @Composable
 fun RentBooksList(
+    themeMode: Int,
     uiState: LibrarySearchUiState,
     viewModel: LibrarySearchViewModel,
     onClick: () -> Unit = {}
 ) {
     LargeCardDisplay(
-        themeMode = 0,
+        themeMode = themeMode,
         modifier = Modifier,
         title = "待借清单(${uiState.rentList.size}/5)",
         leadingIconPainting = R.drawable.book_4_24px

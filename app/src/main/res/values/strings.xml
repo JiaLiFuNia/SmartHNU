@@ -48,7 +48,7 @@
     <string name="classroom_search">空闲教室</string>
     <string name="building">教学楼</string>
     <string name="time">时间</string>
-    <string name="occupy">占用情况</string>
+    <string name="occupy">空闲情况</string>
     <string name="first_floor">一楼</string>
     <string name="second_floor">二楼</string>
     <string name="third_floor">三楼</string>

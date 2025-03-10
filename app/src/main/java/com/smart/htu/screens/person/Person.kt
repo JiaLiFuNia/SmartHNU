@@ -88,7 +88,7 @@ fun PersonScreen(
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showEditMessageDialog by remember { mutableStateOf(false) }
     ScaffoldWithHazeLazyColumn(
-        snackBarHost = { SnackbarHost(hostState = snackBarHostState) },
+        snackBarHost = null,
         themeMode = themeMode,
         scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
         blurEnabledState = uiState.blurEffect,

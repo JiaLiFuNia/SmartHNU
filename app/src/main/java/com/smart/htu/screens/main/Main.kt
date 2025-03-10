@@ -144,7 +144,6 @@ fun Main(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
-        snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -308,7 +307,7 @@ fun NewsCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 320.dp, max = 320.dp),
-                contentAlignment = Alignment.TopCenter
+                contentAlignment = Alignment.Center
             ) {
                 Column(
                     modifier = Modifier
