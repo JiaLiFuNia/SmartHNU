@@ -2,11 +2,11 @@ package com.smart.htu.screens.main
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,14 +31,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -46,11 +41,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -60,7 +53,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.nlf.calendar.Lunar
-import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.api.module.Course
 import com.smart.htu.api.module.NewsItemEntity
@@ -84,13 +76,9 @@ import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigateWithAuthCheck
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsItem
+import com.smart.htu.utils.sendToast
 import com.smart.htu.utils.startCalendar
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
-import dev.chrisbanes.haze.materials.HazeMaterials
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalDate
@@ -100,8 +88,8 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.ceil
 
-@SuppressLint("RestrictedApi", "UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
+@SuppressLint("RestrictedApi")
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Main(
     mainViewModel: MainViewModel,
@@ -116,54 +104,40 @@ fun Main(
     val loginUiState by loginViewModel.uiState.collectAsState()
     val airConditionUiState by airConditionViewModel.uiState.collectAsState()
 
-    val hazeState = remember { HazeState() }
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val context = LocalContext.current
 
-    val state = rememberPullToRefreshState()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
+
     val coroutineScope = rememberCoroutineScope()
-    var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
-        isRefreshing = true
         coroutineScope.launch {
-            delay(500)
             mainViewModel.getNowWeather()
             mainViewModel.getGiteeConfigService()
             mainViewModel.getNewsList()
             if (loginUiState.loginJWCState == 1)
                 mainViewModel.getTodayCourse()
-            isRefreshing = false
+            pullToRefreshState.completeRefreshing {
+                sendToast(context, "刷新成功")
+            }
         }
     }
 
-    val visibility = remember {
+    val loginState = remember {
         derivedStateOf { mutableStateOf(!loginUiState.isLogSuccess) }
     }
 
-    Scaffold(
+    top.yukonga.miuix.kmp.basic.Scaffold(
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background,
         modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+            .fillMaxSize(),
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
-                        0 -> MiuixTheme.colorScheme.background
-                        else -> MaterialTheme.colorScheme.surface
-                    },
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
-                        0 -> MiuixTheme.colorScheme.background
-                        else -> MaterialTheme.colorScheme.surfaceContainer
-                    },
+                    containerColor = MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = MiuixTheme.colorScheme.background,
                 ),
-                modifier = Modifier.hazeEffect(
-                    state = hazeState,
-                    style = HazeMaterials.regular()
-                ) {
-                    blurRadius = 30.dp
-                    blurEnabled = uiState.blurEffect
-                },
                 title = {
                     Text(text = "欢迎！${uiState.username}")
                 },
@@ -212,61 +186,38 @@ fun Main(
             )
         }
     ) {
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = { onRefresh() },
-            state = state,
-            indicator = {
-                Indicator(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = it.calculateTopPadding()),
-                    isRefreshing = isRefreshing,
-                    state = state
-                )
-            },
+        top.yukonga.miuix.kmp.basic.PullToRefresh(
+            pullToRefreshState = pullToRefreshState,
+            onRefresh = onRefresh,
             modifier = Modifier
-                .fillMaxSize(),
+                .padding(it)
+                .fillMaxSize()
         ) {
             top.yukonga.miuix.kmp.basic.LazyColumn(
-                contentPadding = PaddingValues(
-                    top = it.calculateTopPadding() + 16.dp,
-                    start = 16.dp,
-                    end = 16.dp,
-                    bottom = 16.dp
-                ),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 modifier = Modifier
-                    .hazeSource(state = hazeState)
-                    .fillMaxSize()
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                if (visibility.value.value)
+                if (loginState.value.value)
                     item {
                         SuggestChip(
                             onClick = { navController.navigate(Destinations.Login.route) },
                             onActionClick = { navController.navigate(Destinations.Login.route) },
                             text = "暂未登录，登录后即可体验全部功能",
                             type = SuggestChipType.ERROR,
-                            visibility = visibility.value,
+                            visibility = loginState.value,
                             icon = Icons.AutoMirrored.Filled.ArrowForward
                         )
-                        Spacer(modifier = Modifier.height(20.dp))
+                        // Spacer(modifier = Modifier.height(20.dp))
                     }
-                /*item {
-                    Row(
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        CalendarCard(modifier = Modifier.weight(0.5f))
-                        Spacer(modifier = Modifier.width(20.dp))
-                        WeatherCard(modifier = Modifier.weight(0.5f))
-                    }
-                }*/
                 item {
                     FocusCard(themeMode, navController, loginUiState, airConditionUiState, uiState)
-                    Spacer(modifier = Modifier.height(20.dp))
+                    // Spacer(modifier = Modifier.height(20.dp))
                 }
                 item {
                     TodayCourseCard(uiState.toDayCourseList, themeMode)
-                    Spacer(modifier = Modifier.height(20.dp))
+                    // Spacer(modifier = Modifier.height(20.dp))
                 }
                 item {
                     CommonAppsCard(
@@ -277,7 +228,7 @@ fun Main(
                         loginUiState = loginUiState,
                         themeMode = themeMode
                     )
-                    Spacer(modifier = Modifier.height(20.dp))
+                    // Spacer(modifier = Modifier.height(20.dp))
                 }
                 item {
                     NewsCard(
@@ -519,6 +470,7 @@ fun TodayCourseCard(todayCourseResult: ResultWithStatus<List<Course>>, themeMode
 
                 else -> {
                     CircularProgressIndicator(
+                        size = 24.dp,
                         modifier = Modifier
                             .height(86.dp)
                             .fillMaxWidth()

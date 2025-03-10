@@ -248,7 +248,7 @@ fun SingleMessage(
 
                             NoticeType.SCREEN -> {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.add_circle_24px),
+                                    painter = painterResource(id = R.drawable.circle_add),
                                     contentDescription = "url"
                                 )
                             }

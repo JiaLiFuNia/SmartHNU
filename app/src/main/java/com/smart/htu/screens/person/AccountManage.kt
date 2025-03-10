@@ -36,7 +36,6 @@ import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.screens.login.LoginViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.basic.TextField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,7 +94,7 @@ fun AccountManage(
                 themeMode = themeMode,
                 modifier = Modifier,
                 title = "统一认证登录",
-                leadingIconPainting = R.drawable.admin_panel_settings_24px
+                leadingIconPainting = R.drawable.circle_admin
             ) {
                 Column(
                     modifier = Modifier
@@ -126,7 +125,7 @@ fun AccountManage(
                 themeMode = themeMode,
                 modifier = Modifier,
                 title = "河南师大智慧教务",
-                leadingIconPainting = R.drawable.admin_panel_settings_24px
+                leadingIconPainting = R.drawable.circle_admin
             ) {
                 OutlinedTextField(
                     shape = RoundedCornerShape(10.dp),

@@ -117,16 +117,14 @@ class MainViewModel @Inject constructor(
                 _uiState.update { it.copy(hadReadIdList = value) }
             }
         }
-        viewModelScope.launch {
-            getNowWeather()
-            getGiteeConfigService()
-            getTermIndex()
-            getTodayCourse()
-            getNewsList()
-        }
+        getGiteeConfigService()
+        getTermIndex()
+        getNewsList()
+        getNowWeather()
+        getTodayCourse()
     }
 
-    suspend fun getNewsList() {
+    fun getNewsList() = viewModelScope.launch {
         try {
             val res = networkRepo.getNewsService(
                 newsOptionItems = NewsCategoryEntity(
@@ -144,7 +142,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    suspend fun getNowWeather() {
+    fun getNowWeather() = viewModelScope.launch {
         try {
             val res = networkRepo.getWeatherService()
             Log.i("TAG666", "getNowWeather: $res")
@@ -156,7 +154,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    suspend fun getTodayCourse() {
+    fun getTodayCourse() = viewModelScope.launch {
         try {
             val res = jwcNetworkRepo.getTodayCourseService()
             Log.i("TAG666", "getTodayCourse: $res")
@@ -168,14 +166,14 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getTermIndex() {
+    private fun getTermIndex() = viewModelScope.launch {
         val res = jwcNetworkRepo.getTermIndexService(OverallTerm())
         res.onSuccess {
             setOverallTerm(term = it.termCode)
         }
     }
 
-    suspend fun getGiteeConfigService() {
+    fun getGiteeConfigService() = viewModelScope.launch {
         val giteeConfig = networkRepo.getGiteeConfig()
         giteeConfig.onSuccess { res ->
             _uiState.update { it.copy(config = res) }

@@ -119,8 +119,15 @@ fun SmartHNUTheme(
     }
 
     val miuixSchemeColor = when(darkTheme) {
-        true -> top.yukonga.miuix.kmp.theme.darkColorScheme()
-        false -> top.yukonga.miuix.kmp.theme.lightColorScheme()
+        true -> top.yukonga.miuix.kmp.theme.darkColorScheme(
+            tertiaryContainer = colorScheme.secondaryContainer,
+            onTertiaryContainer = colorScheme.primary
+        )
+
+        false -> top.yukonga.miuix.kmp.theme.lightColorScheme(
+            tertiaryContainer = colorScheme.secondaryContainer,
+            onTertiaryContainer = colorScheme.primary
+        )
     }
 
     val view = LocalView.current
@@ -132,14 +139,14 @@ fun SmartHNUTheme(
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
-        MaterialTheme(
-            colorScheme = colorScheme,
-            typography = Typography,
-            content = {
-                MiuixTheme(
-                    colors = miuixSchemeColor,
-                    content = content
-                )
-            }
-        )
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = {
+            MiuixTheme(
+                colors = miuixSchemeColor,
+                content = content
+            )
+        }
+    )
 }

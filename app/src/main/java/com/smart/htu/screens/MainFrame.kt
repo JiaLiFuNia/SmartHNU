@@ -3,7 +3,6 @@ package com.smart.htu.screens
 import android.app.Activity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -27,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
@@ -47,7 +45,6 @@ import com.smart.htu.screens.person.PersonScreen
 import com.smart.htu.screens.setting.SettingViewModel
 import com.smart.htu.utils.DoubleBackToExitApp
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.HorizontalDivider
 
 @Composable
 fun MainFrame(
@@ -131,22 +128,17 @@ fun MainFrame(
                 }
             }
         }
-    ) {
-        Box(
+    ) { paddingValues ->
+        AnimatedContent(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = it.calculateBottomPadding())
-        ) {
-            AnimatedContent(
-                modifier = Modifier
-                    .fillMaxSize(),
-                label = "page",
-                targetState = selectedItemIndex,
-                transitionSpec = {
-                    SlideTransition.slideLeft.enterTransition()
-                        .togetherWith(SlideTransition.slideLeft.exitTransition())
-                },
-            ) { page ->
+                .fillMaxSize().padding(bottom = paddingValues.calculateBottomPadding()),
+            label = "page",
+            targetState = selectedItemIndex,
+            transitionSpec = {
+                SlideTransition.slideLeft.enterTransition()
+                    .togetherWith(SlideTransition.slideLeft.exitTransition())
+            }
+        ) { page ->
                 savableStateHolder.SaveableStateProvider(
                     key = page,
                     content = {
@@ -185,7 +177,6 @@ fun MainFrame(
                     }
                 )
             }
-        }
     }
 
     DoubleBackToExitApp(

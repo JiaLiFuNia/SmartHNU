@@ -86,7 +86,7 @@ class Constants {
             SmallCardContent(
                 guestEnable = true,
                 icon = R.drawable.bathtub_24px,
-                trailingIcon = R.drawable.alipay_circle,
+                trailingIcon = R.drawable.circle_alipay,
                 description = "支付宝-卡博士",
                 label = R.string.shower_water,
                 routeType = RouteType.ALIPAY,
@@ -96,7 +96,7 @@ class Constants {
             SmallCardContent(
                 guestEnable = true,
                 icon = R.drawable.water_voc_24px,
-                trailingIcon = R.drawable.alipay_circle,
+                trailingIcon = R.drawable.circle_alipay,
                 description = "支付宝-胖乖生活",
                 label = R.string.water_washer,
                 routeType = RouteType.ALIPAY,
