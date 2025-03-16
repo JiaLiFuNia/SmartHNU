@@ -63,7 +63,7 @@ jobs:
         run: |
           if [ ! -z "${BOT_TOKEN}" ]; then
             if [ ! -z "${CHANNEL_ID}" ]; then
-              export RELEASE=$(find ./app/build/outputs/apk/release -name "*.apk")
+              export RELEASE=$(find ./app/build/outputs/apk/release -name "*-release-signed.apk" | head -n 1)
               echo "Debug: RELEASE path is $RELEASE"
 
               if [ -f "$RELEASE" ]; then
