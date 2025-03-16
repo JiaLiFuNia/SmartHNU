@@ -78,7 +78,6 @@ import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsItem
 import com.smart.htu.utils.sendToast
 import com.smart.htu.utils.startCalendar
-import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalDate

@@ -3,7 +3,6 @@ package com.smart.htu.component
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,7 +18,11 @@ fun LazyItemScope.CircularProgressIndicator() {
         modifier = Modifier.fillParentMaxSize(),
         contentAlignment = Alignment.TopCenter
     ) {
-        CircularWavyProgressIndicator(modifier = Modifier.padding(top = 88.dp))
+        top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator(
+            modifier = Modifier.padding(top = 88.dp),
+            size = 24.dp
+        )
+        // CircularWavyProgressIndicator(modifier = Modifier.padding(top = 88.dp))
     }
 }
 

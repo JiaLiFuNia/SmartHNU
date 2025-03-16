@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -17,7 +19,7 @@ android {
         minSdk = 29
         targetSdk = 33
         versionCode = 202503102
-        versionName = "3.0.9.15-beta.2"
+        versionName = "3.0.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -49,6 +51,12 @@ android {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
     packaging {
+        applicationVariants.all {
+            outputs.all {
+                (this as BaseVariantOutputImpl).outputFileName =
+                    "SmartHNU-v${versionName}($versionCode)-$name.apk"
+            }
+        }
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
