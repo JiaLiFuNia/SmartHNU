@@ -91,6 +91,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.smart.htu.MainActivity
+import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.BasicBottomSheet
 import com.smart.htu.component.card.LargeCardDisplay
@@ -150,7 +151,7 @@ fun LibrarySearchScreen(
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = {
-            SnackbarHost(hostState = MainActivity.snackBarHostState)
+            SnackbarHost(hostState = snackBarHostState)
         },
         topBar = {
             MediumTopAppBar(
@@ -338,7 +339,7 @@ fun LibrarySearchScreen(
                                         }
                                         scope.launch {
                                             val result =
-                                                MainActivity.snackBarHostState.showSnackbar(
+                                                snackBarHostState.showSnackbar(
                                                 message = message,
                                                     actionLabel = "取消",
                                                 duration = SnackbarDuration.Short
@@ -641,7 +642,7 @@ fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
                 onClick = {
                     copyContent("${content.bookName} ${content.publisher} ${content.isbn}")
                     scope.launch {
-                        MainActivity.snackBarHostState.showSnackbar("已复制到剪切板")
+                        snackBarHostState.showSnackbar("已复制到剪切板")
                     }
                 }
             ) {

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,15 +33,13 @@ import com.smart.htu.api.module.Course
 @Composable
 fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
     val (isBottomSheetShow, onBottomSheetStateChange) = remember { mutableStateOf(false) }
-    Card(
+    top.yukonga.miuix.kmp.basic.Surface(
         modifier = modifier,
         onClick = {
             onClick()
             onBottomSheetStateChange(true)
         },
-        colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        )
+        color = Color.Transparent
     ) {
         Row(
             modifier = Modifier

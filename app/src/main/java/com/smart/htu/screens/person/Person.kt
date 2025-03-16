@@ -102,9 +102,8 @@ fun PersonScreen(
             }
         },
         navigationIcon = {},
-        isRefreshing = isRefreshing,
         onRefresh = onRefresh,
-        refreshState = state,
+        refreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState(),
     ) {
         item {
             PreferencesCard(

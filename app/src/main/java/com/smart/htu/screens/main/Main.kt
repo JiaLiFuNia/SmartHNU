@@ -76,6 +76,7 @@ import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigateWithAuthCheck
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsItem
+import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.sendToast
 import com.smart.htu.utils.startCalendar
 import kotlinx.coroutines.launch
@@ -187,6 +188,7 @@ fun Main(
     ) {
         top.yukonga.miuix.kmp.basic.PullToRefresh(
             pullToRefreshState = pullToRefreshState,
+            refreshTexts = PULL_TO_REFRESH_TEXT,
             onRefresh = onRefresh,
             modifier = Modifier
                 .padding(it)
@@ -215,7 +217,7 @@ fun Main(
                     // Spacer(modifier = Modifier.height(20.dp))
                 }
                 item {
-                    TodayCourseCard(uiState.toDayCourseList, themeMode)
+                    TodayCourseCard(uiState.toDayCourseList, themeMode, loginUiState)
                     // Spacer(modifier = Modifier.height(20.dp))
                 }
                 item {
@@ -431,7 +433,11 @@ fun FocusCardItem(
 }
 
 @Composable
-fun TodayCourseCard(todayCourseResult: ResultWithStatus<List<Course>>, themeMode: Int) {
+fun TodayCourseCard(
+    todayCourseResult: ResultWithStatus<List<Course>>,
+    themeMode: Int,
+    loginUiState: LoginUiState
+) {
     LargeCardDisplay(
         themeMode = themeMode,
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface
@@ -468,12 +474,20 @@ fun TodayCourseCard(todayCourseResult: ResultWithStatus<List<Course>>, themeMode
                 }
 
                 else -> {
-                    CircularProgressIndicator(
-                        size = 24.dp,
-                        modifier = Modifier
-                            .height(86.dp)
-                            .fillMaxWidth()
-                    )
+                    if (loginUiState.loginJWCState == 1)
+                        CircularProgressIndicator(
+                            size = 24.dp,
+                            modifier = Modifier
+                                .height(86.dp)
+                                .fillMaxWidth()
+                        )
+                    else
+                        EmptyContent(
+                            modifier = Modifier
+                                .height(86.dp)
+                                .fillMaxWidth(),
+                            text = "请登录教务系统"
+                        )
                 }
             }
         }

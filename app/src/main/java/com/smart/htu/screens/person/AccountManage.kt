@@ -73,8 +73,7 @@ fun AccountManage(
                 Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
             }
         },
-        isRefreshing = isRefreshing,
-        refreshState = state,
+        refreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState(),
         onRefresh = { onRefresh() }
     ) {
         item {

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -264,7 +265,7 @@ fun ClassroomSearchScreen(
                             },
                             state = tooltipState
                         ) {
-                            IconButton(onClick = { coroutineScope.launch { tooltipState.show() } }) {
+                            IconButton(onClick = { coroutineScope.launch { tooltipState.show() } }, modifier = Modifier.size(20.dp)) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.help_24px),
                                     contentDescription = "help"

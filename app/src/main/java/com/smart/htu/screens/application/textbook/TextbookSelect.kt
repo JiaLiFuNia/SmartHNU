@@ -44,6 +44,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -110,13 +111,13 @@ fun TextbookSelect(
                 )
             }
         },
-        isRefreshing = isRefreshing,
-        refreshState = state,
+        refreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState(),
         onRefresh = { onRefresh() },
         itemSpacePadding = 12.dp
     ) {
-        item {
+        stickyHeader {
             TabRow(
+                containerColor = Color.Transparent,
                 selectedTabIndex = pagerState.currentPage,
                 indicator = { tabPositions ->
                     TabRowDefaults.PrimaryIndicator(

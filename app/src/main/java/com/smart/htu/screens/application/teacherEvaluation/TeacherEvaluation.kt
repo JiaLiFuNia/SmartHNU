@@ -97,8 +97,7 @@ fun TeacherEvaluation(
                 )
             }
         },
-        isRefreshing = isRefreshing,
-        refreshState = state,
+        refreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState(),
         onRefresh = { onRefresh() },
         itemSpacePadding = 12.dp
     ) {

@@ -44,7 +44,6 @@ fun About(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    val state = rememberPullToRefreshState()
     val scope = rememberCoroutineScope()
     var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
@@ -66,8 +65,7 @@ fun About(
                 Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
             }
         },
-        isRefreshing = isRefreshing,
-        refreshState = state,
+        refreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState(),
         onRefresh = { onRefresh() }
     ) {
         item {

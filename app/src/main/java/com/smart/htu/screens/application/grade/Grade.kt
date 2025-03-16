@@ -63,21 +63,14 @@ fun Grade(
     viewModel: GradeViewModel = hiltViewModel(),
     navController: NavController
 ) {
-
     val uiState = viewModel.uiState.collectAsState().value
-    val state = rememberPullToRefreshState()
-
     val (isBottomSheetShow, onShowBottomSheet) = remember {
         mutableStateOf(false)
     }
-
     val coroutineScope = rememberCoroutineScope()
-    var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
-        isRefreshing = true
         coroutineScope.launch {
             viewModel.getCourseGrade()
-            isRefreshing = false
         }
     }
 
@@ -100,8 +93,7 @@ fun Grade(
                 )
             }
         },
-        isRefreshing = isRefreshing,
-        refreshState = state,
+        refreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState(),
         onRefresh = { onRefresh() },
         itemSpacePadding = 12.dp
     ) {

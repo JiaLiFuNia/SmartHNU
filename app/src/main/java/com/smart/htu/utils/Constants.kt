@@ -18,6 +18,7 @@ class Constants {
             "alipays://platformapi/startapp?appId=20000067&url=https://ur.alipay.com/_3Zz793BHBpUQsAf6r8hLXZ"
         const val HOT_WATER_WASHER_ALIPAY_URL =
             "alipays://platformapi/startapp?appId=20000067&url=https://ur.alipay.com/_5vgVGlXsaUEmCUjnaEvLJL"
+        val PULL_TO_REFRESH_TEXT = listOf("下拉刷新", "松开刷新", "正在刷新...", "刷新成功")
         val BUILDING_LIST = listOf(
             BuildingEntity("104", "启智楼"),
             BuildingEntity("107", "新五五四楼"),

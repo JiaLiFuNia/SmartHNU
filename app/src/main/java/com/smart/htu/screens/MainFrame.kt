@@ -15,13 +15,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -57,12 +55,12 @@ fun MainFrame(
     airConditionViewModel: AirConditionViewModel
 ) {
     val context = LocalContext.current
-    val savableStateHolder = rememberSaveableStateHolder()
-    val (selectedItemIndex, onSelectedItemIndex) = rememberSaveable { mutableIntStateOf(0) }
     val loginUiState = loginViewModel.uiState.collectAsState().value
     val mainUiState = mainViewModel.uiState.collectAsState().value
     val settingUiState = settingViewModel.uiState.collectAsState().value
-    val themeMode = settingUiState.themeMode// 0 黑白 1 动态 2 师大青
+    val savableStateHolder = rememberSaveableStateHolder()
+    val (selectedItemIndex, onSelectedItemIndex) = rememberSaveable { mutableIntStateOf(0) }
+    val themeMode = settingUiState.themeMode // 0 黑白 1 动态 2 师大青
     val navigationItem = listOf(
         BottomNavigationItem(
             title = R.string.main,
@@ -131,7 +129,8 @@ fun MainFrame(
     ) { paddingValues ->
         AnimatedContent(
             modifier = Modifier
-                .fillMaxSize().padding(bottom = paddingValues.calculateBottomPadding()),
+                .fillMaxSize()
+                .padding(bottom = paddingValues.calculateBottomPadding()),
             label = "page",
             targetState = selectedItemIndex,
             transitionSpec = {
@@ -185,18 +184,18 @@ fun MainFrame(
         }
     )
 
-    var showLoginDialog by remember { mutableStateOf(false) }
+    val (showLoginDialog, onShowLoginDialog) = remember { mutableStateOf(false) }
     LaunchedEffect(key1 = loginUiState.isLogSuccess, key2 = loginUiState.isGuest) {
-        showLoginDialog = !(loginUiState.isLogSuccess || loginUiState.isGuest)
+        onShowLoginDialog(!(loginUiState.isLogSuccess || loginUiState.isGuest))
     }
     LoginDialog(
         showDialog = showLoginDialog,
         onDismissRequests = {
             loginViewModel.guest()
-            showLoginDialog = true
+            onShowLoginDialog(true)
         },
         onConfirmClick = {
-            showLoginDialog = false
+            onShowLoginDialog(false)
             navController.navigate(Destinations.Login.route)
         }
     )
