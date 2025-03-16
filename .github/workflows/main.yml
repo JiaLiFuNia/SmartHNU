@@ -41,7 +41,7 @@ jobs:
 
       - name: Release Apk
         uses: ncipollo/release-action@v1
-        if: "! contains(github.ref, 'beta')"
+        if: contains(github.ref, 'refs/tags/')
         with:
           tag_name: ${{ github.ref }}
           artifacts: "*.apk"
