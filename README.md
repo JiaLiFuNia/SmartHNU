@@ -7,9 +7,10 @@
 ### 一款 [河star](https://www.htu.edu.cn) 校园生活助手
 ![Gitea Stars](https://img.shields.io/github/stars/JiaLiFuNia/SmartHNU?style=flat)
 ![GitHub top language](https://img.shields.io/github/languages/top/JiaLiFuNia/SmartHNU)
-![GitHub License](https://img.shields.io/github/license/JiaLiFuNia/SmartHNU)
-![GitHub Release Date](https://img.shields.io/github/release-date/JiaLiFuNia/SmartHNU)
+![GitHub license](https://img.shields.io/github/license/JiaLiFuNia/SmartHNU.svg)
+
 ![GitHub Release](https://img.shields.io/github/v/release/JiaLiFuNia/SmartHNU)
+![Github all releases](https://img.shields.io/github/downloads/JiaLiFuNia/SmartHNU/total.svg)
 </div>
 
 ## 简介
@@ -20,7 +21,7 @@
 
 ## 使用
 
-在使用本应用时，登录密码会被加密后存储在本地。其余信息均为实时获取，不会被存储。由于登录令牌具有有效性，故存储的密码将用于当令牌失效时自动重新登录。
+在使用本应用时，登录密码会被加密后存储在本地。其余信息均为实时获取，不会被存储。由于登录令牌具有有效性，当令牌失效时，存储的密码将用于自动重新登录。
 
 ## 功能
 
