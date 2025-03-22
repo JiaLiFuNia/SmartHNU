@@ -465,9 +465,6 @@ fun TodayCourseCard(
                                     onClick = {},
                                     message = it
                                 )
-                                if (index < todayCourseResult.data.size - 1) {
-                                    HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
-                                }
                             }
                         }
                     }
