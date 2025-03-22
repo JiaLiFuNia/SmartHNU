@@ -120,11 +120,13 @@ fun SmartHNUTheme(
 
     val miuixSchemeColor = when(darkTheme) {
         true -> top.yukonga.miuix.kmp.theme.darkColorScheme(
+            primary = colorScheme.primary,
             tertiaryContainer = colorScheme.secondaryContainer,
             onTertiaryContainer = colorScheme.primary
         )
 
         false -> top.yukonga.miuix.kmp.theme.lightColorScheme(
+            primary = colorScheme.primary,
             tertiaryContainer = colorScheme.secondaryContainer,
             onTertiaryContainer = colorScheme.primary
         )

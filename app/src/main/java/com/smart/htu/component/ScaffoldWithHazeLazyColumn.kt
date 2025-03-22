@@ -1,5 +1,6 @@
 package com.smart.htu.component
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -34,6 +35,7 @@ fun ScaffoldWithHazeLazyColumn(
     isMediumTopAppBar: Boolean = false,
     refreshState: top.yukonga.miuix.kmp.basic.PullToRefreshState,
     onRefresh: () -> Unit,
+    headContent: (@Composable () -> Unit)? = null,
     content: LazyListScope.() -> Unit
 ) {
     Scaffold(
@@ -81,21 +83,30 @@ fun ScaffoldWithHazeLazyColumn(
                 )
         }
     ) {
-        top.yukonga.miuix.kmp.basic.PullToRefresh(
-            pullToRefreshState = refreshState,
-            refreshTexts = PULL_TO_REFRESH_TEXT,
-            onRefresh = onRefresh,
+        Column(
             modifier = Modifier
                 .padding(it)
                 .fillMaxSize()
         ) {
-            top.yukonga.miuix.kmp.basic.LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            if (headContent != null) {
+                headContent()
+            }
+            top.yukonga.miuix.kmp.basic.PullToRefresh(
+                pullToRefreshState = refreshState,
+                refreshTexts = PULL_TO_REFRESH_TEXT,
+                onRefresh = onRefresh,
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                content()
+                top.yukonga.miuix.kmp.basic.LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    content()
+                }
             }
         }
+
     }
 }

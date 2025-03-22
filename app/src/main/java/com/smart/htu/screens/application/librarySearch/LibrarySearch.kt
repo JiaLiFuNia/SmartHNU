@@ -652,7 +652,6 @@ fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
                 )
             }
         }
-
     }
 }
 

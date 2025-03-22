@@ -17,16 +17,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,6 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.smart.htu.App.Companion.context
+import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseTextbook
 import com.smart.htu.api.module.Status
@@ -50,6 +51,8 @@ import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.screens.application.grade.SelectTermBottomSheet
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Term.termConverter
+import com.smart.htu.utils.sendToast
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Surface
@@ -64,23 +67,24 @@ fun Textbook(
     navController: NavController
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val state = rememberPullToRefreshState()
+    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
 
     val (isBottomSheetShow, onShowBottomSheet) = remember {
         mutableStateOf(false)
     }
 
     val coroutineScope = rememberCoroutineScope()
-    var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
-        isRefreshing = true
         coroutineScope.launch {
             viewModel.getTextbook(uiState.termCode)
-            isRefreshing = false
+            pullToRefreshState.completeRefreshing {
+                sendToast(context, "刷新成功")
+            }
         }
     }
 
     ScaffoldWithHazeLazyColumn(
+        snackBarHost = { SnackbarHost(hostState = snackBarHostState) },
         themeMode = themeMode,
         isMediumTopAppBar = true,
         scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
@@ -99,7 +103,7 @@ fun Textbook(
                 )
             }
         },
-        refreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState(),
+        refreshState = pullToRefreshState,
         onRefresh = { onRefresh() },
         itemSpacePadding = 12.dp
     ) {
