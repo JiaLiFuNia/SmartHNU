@@ -64,7 +64,7 @@ fun TeacherEvaluation(
     val uiState by viewModel.uiState.collectAsState()
     val state = rememberPullToRefreshState()
 
-    val (isBottomSheetShow, onShowBottomSheet) = remember {
+    val isBottomSheetShow = remember {
         mutableStateOf(false)
     }
 
@@ -85,7 +85,7 @@ fun TeacherEvaluation(
         blurEnabledState = uiState.blurEffect,
         title = { Text(text = stringResource(id = R.string.teacher_evaluation)) },
         actions = {
-            IconButton(onClick = { onShowBottomSheet(true) }) {
+            IconButton(onClick = { isBottomSheetShow.value = true }) {
                 Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "more")
             }
         },
@@ -134,9 +134,6 @@ fun TeacherEvaluation(
         termSelectedCode = uiState.termCode,
         termList = uiState.termIndex,
         isBottomSheetShow = isBottomSheetShow,
-        onDismissRequest = {
-            onShowBottomSheet(false)
-        },
         onClick = {
             viewModel.changeTermCode(it)
             onRefresh()

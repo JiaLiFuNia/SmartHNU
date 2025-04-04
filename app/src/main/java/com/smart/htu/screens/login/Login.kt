@@ -1,12 +1,9 @@
 package com.smart.htu.screens.login
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -25,17 +21,16 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -46,12 +41,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -61,13 +59,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
-import com.smart.htu.component.SettingItemCard
-import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
-import com.smart.htu.utils.Constants.Companion.HENAN_NORMAL_UNIVERSITY
 import com.smart.htu.utils.Constants.Companion.RETRIEVE_PASSWORD
 import com.smart.htu.utils.startLaunchAPK
 import com.smart.htu.utils.startWebUrl
+import top.yukonga.miuix.kmp.basic.Button
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,6 +75,7 @@ fun LoginScreen(
 ) {
     val uiState = viewModel.uiState.collectAsState().value
     val focusManager = LocalFocusManager.current
+    val autofillManager = LocalAutofillManager.current
 
     var displayPassword by rememberSaveable { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
@@ -89,18 +88,20 @@ fun LoginScreen(
         }
     }
 
-    Scaffold(
+    top.yukonga.miuix.kmp.basic.Scaffold(
+        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = MiuixTheme.colorScheme.background,
+                ),
                 title = {
-                    Text(
-                        text = "师韵 登录",
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Text(text = "师韵 登录")
                 },
                 actions = {
                     TextButton(onClick = { startLaunchAPK("com.autewifi.sd.enroll") }) {
-                        Text(text = "i师大")
+                        Text(text = "i 师大")
                     }
                 }
             )
@@ -120,21 +121,14 @@ fun LoginScreen(
         ) {
             Spacer(modifier = Modifier.height(12.dp))
             Card(
-                onClick = {
-                    navController.navigateToWebView(
-                        url = HENAN_NORMAL_UNIVERSITY,
-                        label = "河南师范大学"
-                    )
-                },
                 modifier = Modifier
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 24.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.school_logo),
                     contentDescription = "logo",
-                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary),
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp)
+                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary)
                 )
             }
             // Color(90,158,157) 师大绿
@@ -160,7 +154,7 @@ fun LoginScreen(
                         viewModel.changeStudentID(it)
                     },
                     label = { Text(text = "学号") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().semantics { contentType = ContentType.Username },
                     isError = uiState.loginState == -1 || uiState.studentID.length > 10,
                     readOnly = uiState.isLoading,
                     keyboardOptions = KeyboardOptions.Default.copy(
@@ -190,7 +184,7 @@ fun LoginScreen(
                     },
                     label = { Text(text = "统一认证密码") },
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth().semantics { contentType = ContentType.Password },
                     visualTransformation = if (displayPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         when (uiState.loginState) {
@@ -253,7 +247,7 @@ fun LoginScreen(
                     },
                     label = { Text(text = "智慧教务密码") },
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth().semantics { contentType = ContentType.Password },
                     visualTransformation = if (displayPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         when (uiState.loginJWCState) {
@@ -302,51 +296,22 @@ fun LoginScreen(
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
-            SettingItemCard(
-                themeMode = 1,
-                modifier = Modifier
-                    .padding(horizontal = 36.dp)
-            ) {
-                Card(
-                    onClick = {
-                        if (uiState.studentID == "admin")
-                            navController.navigate(Destinations.AccountManage.route)
-                        else
-                            viewModel.login()
-                    },
-                    enabled = !uiState.isLoading,
-                    modifier = Modifier.height(50.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            if (uiState.isLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier
-                                        .padding(end = 8.dp)
-                                        .size(20.dp),
-                                    strokeWidth = 3.5.dp
-                                )
-                            }
-                            Text(
-                                text = if (uiState.isLoading) "正在登录中..." else stringResource(
-                                    id = R.string.login
-                                ),
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
+            top.yukonga.miuix.kmp.basic.TextButton(
+                text = if (uiState.isLoading) "正在登录..." else "登录",
+                onClick = {
+                    if (uiState.studentID == "admin")
+                        navController.navigate(Destinations.AccountManage.route)
+                    else {
+                        focusManager.clearFocus()
+                        autofillManager?.commit()
+                        viewModel.login()
                     }
-                }
-            }
+                },
+                colors = ButtonDefaults.textButtonColorsPrimary(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(36.dp)
+            )
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier

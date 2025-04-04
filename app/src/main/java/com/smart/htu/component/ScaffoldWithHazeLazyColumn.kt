@@ -13,12 +13,16 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.smart.htu.App.Companion.context
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
+import com.smart.htu.utils.sendToast
+import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,7 +42,8 @@ fun ScaffoldWithHazeLazyColumn(
     headContent: (@Composable () -> Unit)? = null,
     content: LazyListScope.() -> Unit
 ) {
-    Scaffold(
+    val scope = rememberCoroutineScope()
+    top.yukonga.miuix.kmp.basic.Scaffold(
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = {
@@ -85,7 +90,7 @@ fun ScaffoldWithHazeLazyColumn(
     ) {
         Column(
             modifier = Modifier
-                .padding(it)
+                .padding(top = it.calculateTopPadding())
                 .fillMaxSize()
         ) {
             if (headContent != null) {
@@ -94,7 +99,14 @@ fun ScaffoldWithHazeLazyColumn(
             top.yukonga.miuix.kmp.basic.PullToRefresh(
                 pullToRefreshState = refreshState,
                 refreshTexts = PULL_TO_REFRESH_TEXT,
-                onRefresh = onRefresh,
+                onRefresh = {
+                    scope.launch {
+                        onRefresh
+                        refreshState.completeRefreshing {
+                            sendToast(context, "刷新成功")
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxSize()
             ) {

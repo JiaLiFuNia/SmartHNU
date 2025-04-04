@@ -20,14 +20,11 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -64,7 +61,7 @@ fun Grade(
     navController: NavController
 ) {
     val uiState = viewModel.uiState.collectAsState().value
-    val (isBottomSheetShow, onShowBottomSheet) = remember {
+    val isBottomSheetShow = remember {
         mutableStateOf(false)
     }
     val coroutineScope = rememberCoroutineScope()
@@ -81,7 +78,7 @@ fun Grade(
         blurEnabledState = uiState.blurEffect,
         title = { Text(text = stringResource(id = R.string.course_grade)) },
         actions = {
-            IconButton(onClick = { onShowBottomSheet(true) }) {
+            IconButton(onClick = { isBottomSheetShow.value = true }) {
                 Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "more")
             }
         },
@@ -125,9 +122,6 @@ fun Grade(
         termSelectedCode = uiState.termCode,
         termList = uiState.termIndex,
         isBottomSheetShow = isBottomSheetShow,
-        onDismissRequest = {
-            onShowBottomSheet(false)
-        },
         onClick = {
             viewModel.changeTermCode(it)
             onRefresh()

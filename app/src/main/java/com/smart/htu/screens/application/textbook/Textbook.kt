@@ -69,7 +69,7 @@ fun Textbook(
     val uiState by viewModel.uiState.collectAsState()
     val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
 
-    val (isBottomSheetShow, onShowBottomSheet) = remember {
+    val isBottomSheetShow = remember {
         mutableStateOf(false)
     }
 
@@ -91,7 +91,7 @@ fun Textbook(
         blurEnabledState = uiState.blurEffect,
         title = { Text(text = stringResource(id = R.string.textbook_select)) },
         actions = {
-            IconButton(onClick = { onShowBottomSheet(true) }) {
+            IconButton(onClick = { isBottomSheetShow.value = true }) {
                 Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "more")
             }
         },
@@ -135,9 +135,6 @@ fun Textbook(
         termSelectedCode = uiState.termCode,
         termList = uiState.termIndex,
         isBottomSheetShow = isBottomSheetShow,
-        onDismissRequest = {
-            onShowBottomSheet(false)
-        },
         onClick = {
             viewModel.changeTermCode(it)
             onRefresh()

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -31,7 +30,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -44,6 +42,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -78,6 +77,7 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissDialog
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
 @OptIn(
@@ -96,7 +96,7 @@ fun AirCondition(
     val hazeState = remember { HazeState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
-    val (openBottomSheet, onOpenBottomSheet) = remember { mutableStateOf(false) }
+    val openBottomSheet = remember { mutableStateOf(false) }
     val (selectTabIndex, onSelectTabIndex) = remember { mutableIntStateOf(0) }
 
     val state = rememberPullToRefreshState()
@@ -111,7 +111,7 @@ fun AirCondition(
             isRefreshing = false
         }
     }
-    Scaffold(
+    top.yukonga.miuix.kmp.basic.Scaffold(
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -141,7 +141,7 @@ fun AirCondition(
                     IconButton(
                         onClick = {
                             scope.launch {
-                                onOpenBottomSheet(true)
+                                openBottomSheet.value = true
                             }
                         }
                     ) {
@@ -192,7 +192,7 @@ fun AirCondition(
                     item {
                         SuggestChip(
                             onClick = {
-                                onOpenBottomSheet(true)
+                                openBottomSheet.value = true
                             },
                             onActionClick = {
                             },
@@ -394,10 +394,8 @@ fun AirCondition(
         isBottomSheetShow = openBottomSheet,
         uiState = uiState,
         viewModel = viewModel,
-        onDismissRequest = { onOpenBottomSheet(false) },
         onConfirmClick = {
             scope.launch {
-                onOpenBottomSheet(false)
                 viewModel.saveUserCookie()
                 onRefresh()
             }
@@ -408,28 +406,23 @@ fun AirCondition(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetCookieBottomSheet(
-    isBottomSheetShow: Boolean,
+    isBottomSheetShow: MutableState<Boolean>,
     uiState: AirConditionUiState,
     viewModel: AirConditionViewModel,
-    onDismissRequest: () -> Unit,
     onConfirmClick: () -> Unit
 ) {
     var buildingId by remember { mutableStateOf(uiState.buildingCode) }
     var roomId by remember { mutableStateOf(uiState.roomCode) }
     BasicBottomSheet(
         title = "设置",
-        isBottomSheetShow = isBottomSheetShow,
-        onDismissRequest = onDismissRequest,
+        showDialog = isBottomSheetShow,
         onConfirmClick = {
+            dismissDialog(isBottomSheetShow)
             viewModel.saveBuildingAndRoomId(buildingId, roomId)
             onConfirmClick()
         }
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(12.dp)
-        ) {
-            item {
+        Column {
                 PreferenceSubtitle(text = "宿舍楼和房间")
                 val buildingIdPattern = Regex("^[西|东]\\d{2}$")
                 val roomIdPattern = Regex("^\\d{4}$")
@@ -482,8 +475,6 @@ fun SetCookieBottomSheet(
                         shape = RoundedCornerShape(10.dp)
                     )
                 }
-            }
-            item {
                 PreferenceSubtitle(text = "设置 Cookie")
                 val radioOptions = listOf("云端 Cookie", "自定义 Cookie")
                 Column(
@@ -600,6 +591,5 @@ fun SetCookieBottomSheet(
                     }
                 }
             }*/
-        }
     }
 }

@@ -1,16 +1,18 @@
 package com.smart.htu.screens.person
 
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,9 +24,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -36,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -46,22 +52,26 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.smart.htu.App.Companion.context
+import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.EditMessageDialog
-import com.smart.htu.component.LogoutDialog
 import com.smart.htu.component.PreferencesCard
-import com.smart.htu.component.ScaffoldWithHazeLazyColumn
 import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.screens.login.LoginViewModel
+import com.smart.htu.screens.login.LogoutDialog
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
+import com.smart.htu.utils.sendToast
 import com.smart.htu.utils.startWebUrl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.LazyColumn
 import top.yukonga.miuix.kmp.basic.TextButton
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonScreen(
@@ -71,169 +81,199 @@ fun PersonScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    val state = rememberPullToRefreshState()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
     val scope = rememberCoroutineScope()
-    var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
-        isRefreshing = true
         scope.launch {
+            delay(5000)
             viewModel.getStudentInfo()
-            delay(1500)
-            isRefreshing = false
         }
     }
 
-    var showLogoutDialog by remember { mutableStateOf(false) }
+    var showLogoutDialog = remember { mutableStateOf(false) }
     var showEditMessageDialog by remember { mutableStateOf(false) }
-    ScaffoldWithHazeLazyColumn(
-        snackBarHost = null,
-        themeMode = themeMode,
-        scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
-        blurEnabledState = uiState.blurEffect,
-        title = {
-            Text(text = stringResource(id = R.string.my))
+    Scaffold(
+        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else colorScheme.background,
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = {
+            SnackbarHost(hostState = snackBarHostState)
         },
-        actions = {
-            IconButton(onClick = { navController.navigate(Destinations.AccountManage.route) }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.key_24px),
-                    contentDescription = "key"
-                )
-            }
-        },
-        navigationIcon = {},
-        onRefresh = onRefresh,
-        refreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState(),
-    ) {
-        item {
-            PreferencesCard(
-                headlineText = "河南师范大学",
-                supportingText = "省属重点大学、省特色骨干大学建设高校",
-                leadingIcon = R.drawable.hnu,
-                onClick = {
-                    navController.navigateToWebView("https://www.htu.edu.cn/", "河南师范大学")
+        topBar = {
+            TopAppBar(
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = MiuixTheme.colorScheme.background,
+                ),
+                title = {
+                    Text(text = stringResource(id = R.string.my))
+                },
+                actions = {
+                    IconButton(onClick = { navController.navigate(Destinations.AccountManage.route) }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.key_24px),
+                            contentDescription = "key"
+                        )
+                    }
                 }
             )
-            Spacer(modifier = Modifier.height(20.dp))
         }
-        item {
-            LargeCardDisplay(
-                themeMode = themeMode,
-                modifier = Modifier,
-                title = "我的信息",
-                leadingIconPainting = R.drawable.outline_account_box_24
+    ) {
+        top.yukonga.miuix.kmp.basic.PullToRefresh(
+            pullToRefreshState = pullToRefreshState,
+            refreshTexts = PULL_TO_REFRESH_TEXT,
+            onRefresh = {
+                scope.launch {
+                    onRefresh
+                    pullToRefreshState.completeRefreshing {
+                        sendToast(context, "刷新成功")
+                    }
+                }
+            },
+            modifier = Modifier
+                .padding(it)
+                .fillMaxSize()
+        ) {
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier
+                    .fillMaxSize()
             ) {
-                PersonalMessage(
-                    label = stringResource(id = R.string.avatar),
-                    content = {
-                        if (uiState.qqNumber == "")
-                            Image(
-                                painter = painterResource(id = R.drawable.avator_1),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(RoundedCornerShape(10.dp))
+                item {
+                    PreferencesCard(
+                        headlineText = "河南师范大学",
+                        supportingText = "省属重点大学、省特色骨干大学建设高校",
+                        leadingIcon = R.drawable.hnu,
+                        onClick = {
+                            navController.navigateToWebView(
+                                "https://www.htu.edu.cn/",
+                                "河南师范大学"
                             )
-                        else
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data("https://q1.qlogo.cn/g?b=qq&nk=${uiState.qqNumber}&s=100")
-                                    .crossfade(true)
-                                    .addHeader("User-Agent", "Mozilla/5.0")
-                                    .error(R.drawable.avator_1)
-                                    .build(),
-                                contentDescription = "picture",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(RoundedCornerShape(10.dp)),
-                                placeholder = painterResource(id = R.drawable.book_failure)
-                            )
-                    },
-                    onClick = {
-                        showEditMessageDialog = true
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+                item {
+                    LargeCardDisplay(
+                        themeMode = themeMode,
+                        modifier = Modifier,
+                        title = "我的信息",
+                        leadingIconPainting = R.drawable.person_search_24px
+                    ) {
+                        PersonalMessage(
+                            label = stringResource(id = R.string.avatar),
+                            content = {
+                                if (uiState.qqNumber == "")
+                                    Image(
+                                        painter = painterResource(id = R.drawable.avator_1),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                    )
+                                else
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data("https://q1.qlogo.cn/g?b=qq&nk=${uiState.qqNumber}&s=100")
+                                            .crossfade(true)
+                                            .addHeader("User-Agent", "Mozilla/5.0")
+                                            .error(R.drawable.avator_1)
+                                            .build(),
+                                        contentDescription = "picture",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .clip(RoundedCornerShape(10.dp)),
+                                        placeholder = painterResource(id = R.drawable.book_failure)
+                                    )
+                            },
+                            onClick = {
+                                showEditMessageDialog = true
+                            }
+                        )
+                        PersonalMessage(
+                            label = stringResource(id = R.string.username),
+                            trailingText = uiState.uneditableMessage.username ?: ""
+                        )
+                        PersonalMessage(
+                            label = stringResource(id = R.string.birthday),
+                            trailingText = uiState.uneditableMessage.birthday
+                        )
+                        PersonalMessage(
+                            label = stringResource(id = R.string.student_id),
+                            trailingText = uiState.uneditableMessage.studentId ?: ""
+                        )
+                        PersonalMessage(
+                            label = stringResource(id = R.string.class_name),
+                            trailingText = uiState.uneditableMessage.className ?: ""
+                        )
+                        PersonalMessage(
+                            label = stringResource(id = R.string.academic),
+                            trailingText = uiState.uneditableMessage.academic ?: ""
+                        )
+                        PersonalMessage(
+                            label = stringResource(id = R.string.political_outlook),
+                            trailingText = uiState.uneditableMessage.politicalProfile ?: "",
+                        )
+                        PersonalMessage(
+                            label = stringResource(id = R.string.phone),
+                            trailingText = uiState.uneditableMessage.phoneNumber ?: ""
+                        )
+                        PersonalMessage(
+                            label = stringResource(id = R.string.email),
+                            trailingText = uiState.uneditableMessage.emailNumber,
+                            onClick = {
+                                startWebUrl("mailto:${uiState.uneditableMessage.emailNumber}")
+                            }
+                        )
                     }
-                )
-                PersonalMessage(
-                    label = stringResource(id = R.string.username),
-                    trailingText = uiState.uneditableMessage.username ?: ""
-                )
-                PersonalMessage(
-                    label = stringResource(id = R.string.birthday),
-                    trailingText = uiState.uneditableMessage.birthday
-                )
-                PersonalMessage(
-                    label = stringResource(id = R.string.student_id),
-                    trailingText = uiState.uneditableMessage.studentId ?: ""
-                )
-                PersonalMessage(
-                    label = stringResource(id = R.string.class_name),
-                    trailingText = uiState.uneditableMessage.className ?: ""
-                )
-                PersonalMessage(
-                    label = stringResource(id = R.string.academic),
-                    trailingText = uiState.uneditableMessage.academic ?: ""
-                )
-                PersonalMessage(
-                    label = stringResource(id = R.string.political_outlook),
-                    trailingText = uiState.uneditableMessage.politicalProfile ?: "",
-                )
-                PersonalMessage(
-                    label = stringResource(id = R.string.phone),
-                    trailingText = uiState.uneditableMessage.phoneNumber ?: ""
-                )
-                PersonalMessage(
-                    label = stringResource(id = R.string.email),
-                    trailingText = uiState.uneditableMessage.emailNumber,
-                    onClick = {
-                        startWebUrl("mailto:${uiState.uneditableMessage.emailNumber}")
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+                item {
+                    LargeCardDisplay(
+                        themeMode = themeMode,
+                        modifier = Modifier,
+                        title = "账号管理",
+                        leadingIconPainting = R.drawable.circle_admin
+                    ) {
+                        PersonalMessage(
+                            label = "统一身份认证系统",
+                            trailingText = stringResource(id = loginStateString(uiState.loginState)),
+                            onClick = {
+                                if (uiState.loginState != 1) navController.navigate(Destinations.Login.route)
+                            }
+                        )
+                        PersonalMessage(
+                            label = "河南师大智慧教务",
+                            trailingText = stringResource(id = loginStateString(uiState.loginJWCState)),
+                            onClick = {
+                                if (uiState.loginJWCState != 1) navController.navigate(Destinations.Login.route)
+                            }
+                        )
+                        PersonalMessage(
+                            label = "第二课堂管理系统",
+                            trailingText = stringResource(id = loginStateString(0)),
+                            onClick = {
+                            }
+                        )
                     }
-                )
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+                item {
+                    TextButton(
+                        text = stringResource(id = R.string.log_out),
+                        onClick = {
+                            showLogoutDialog.value = true
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.textButtonColors(
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            textColor = MaterialTheme.colorScheme.error
+                        )
+                    )
+                }
             }
-            Spacer(modifier = Modifier.height(20.dp))
-        }
-        item {
-            LargeCardDisplay(
-                themeMode = themeMode,
-                modifier = Modifier,
-                title = "账号管理",
-                leadingIconPainting = R.drawable.circle_admin
-            ) {
-                PersonalMessage(
-                    label = "统一身份认证系统",
-                    trailingText = stringResource(id = loginStateString(uiState.loginState)),
-                    onClick = {
-                        if (uiState.loginState != 1) navController.navigate(Destinations.Login.route)
-                    }
-                )
-                PersonalMessage(
-                    label = "河南师大智慧教务",
-                    trailingText = stringResource(id = loginStateString(uiState.loginJWCState)),
-                    onClick = {
-                        if (uiState.loginJWCState != 1) navController.navigate(Destinations.Login.route)
-                    }
-                )
-                PersonalMessage(
-                    label = "第二课堂管理系统",
-                    trailingText = stringResource(id = loginStateString(0)),
-                    onClick = {
-                    }
-                )
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-        }
-        item {
-            TextButton(
-                text = stringResource(id = R.string.log_out),
-                onClick = {
-                    showLogoutDialog = true
-                },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.textButtonColors(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    textColor = MaterialTheme.colorScheme.error
-                )
-            )
         }
     }
 
@@ -247,11 +287,10 @@ fun PersonScreen(
 
     LogoutDialog(
         showDialog = showLogoutDialog,
-        onDismissRequests = { showLogoutDialog = false },
         onConfirmClick = {
             viewModel.logout()
             navController.navigate(Destinations.App.route)
-            showLogoutDialog = false
+            showLogoutDialog.value = false
         }
     )
 }

@@ -119,14 +119,20 @@ fun SmartHNUTheme(
     }
 
     val miuixSchemeColor = when(darkTheme) {
-        true -> top.yukonga.miuix.kmp.theme.darkColorScheme(
-            primary = colorScheme.primary,
+        false -> top.yukonga.miuix.kmp.theme.lightColorScheme(
+            disabledPrimaryButton = colorScheme.primaryContainer.copy(0.5f),
+            disabledOnPrimaryButton = colorScheme.primary.copy(0.5f),
+            onPrimary = colorScheme.primary,
+            primary = colorScheme.primaryContainer,
             tertiaryContainer = colorScheme.secondaryContainer,
             onTertiaryContainer = colorScheme.primary
         )
 
-        false -> top.yukonga.miuix.kmp.theme.lightColorScheme(
-            primary = colorScheme.primary,
+        true -> top.yukonga.miuix.kmp.theme.darkColorScheme(
+            disabledPrimaryButton = colorScheme.primaryContainer.copy(0.5f),
+            disabledOnPrimaryButton = colorScheme.primary.copy(0.5f),
+            onPrimary = colorScheme.primary,
+            primary = colorScheme.primaryContainer,
             tertiaryContainer = colorScheme.secondaryContainer,
             onTertiaryContainer = colorScheme.primary
         )

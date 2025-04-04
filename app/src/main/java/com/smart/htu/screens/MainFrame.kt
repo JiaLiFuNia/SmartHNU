@@ -27,7 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
-import com.smart.htu.component.LoginDialog
+import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.component.animation.SlideTransition
 import com.smart.htu.screens.application.Application
 import com.smart.htu.screens.application.ApplicationViewModel
@@ -92,7 +92,7 @@ fun MainFrame(
     )
 
     // val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
-    Scaffold(
+    top.yukonga.miuix.kmp.basic.Scaffold(
         modifier = Modifier.fillMaxSize(),
         snackbarHost = {
             SnackbarHost(hostState = snackBarHostState)

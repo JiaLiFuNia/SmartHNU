@@ -6,79 +6,69 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Done
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetState
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.smart.htu.R
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BasicBottomSheet(
-    isBottomSheetShow: Boolean,
-    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false),
+    showDialog: MutableState<Boolean>,
     title: String,
-    onDismissRequest: () -> Unit,
+    summary: String? = null,
     onConfirmClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
-    if (isBottomSheetShow)
-        ModalBottomSheet(
-            sheetState = sheetState,
-            onDismissRequest = onDismissRequest
-
+    SuperDialog(
+        title = title,
+        summary = summary,
+        show = showDialog,
+        onDismissRequest = {
+            dismissDialog(showDialog)
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp),
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-            ) {
+            Card(modifier = Modifier) {
+                content()
+            }
+
+            if (onConfirmClick != null) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    if (onConfirmClick != null) {
-                        IconButton(onClick = { onDismissRequest() }) {
-                            Icon(
-                                imageVector = Icons.Outlined.Close,
-                                contentDescription = "close"
-                            )
-                        }
-                    }
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.weight(1f),
-                        textAlign = TextAlign.Center
+                    top.yukonga.miuix.kmp.basic.TextButton(
+                        text = stringResource(id = R.string.cancel),
+                        onClick = {
+                            dismissDialog(showDialog)
+                        },
+                        modifier = Modifier.weight(1f)
                     )
-                    if (onConfirmClick != null) {
-                        IconButton(onClick = { onConfirmClick() }) {
-                            Icon(
-                                imageVector = Icons.Outlined.Done,
-                                contentDescription = "save"
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Box(modifier = Modifier) {
-                    content()
-                }
+                    Spacer(Modifier.width(20.dp))
+                    top.yukonga.miuix.kmp.basic.TextButton(
+                        text = stringResource(id = R.string.confirm),
+                        onClick = {
+                            onConfirmClick()
+                            dismissDialog(showDialog)
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.textButtonColorsPrimary()
+                    )
+            }
             }
         }
+    }
 }

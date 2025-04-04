@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,21 +22,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.smart.htu.R
 import com.smart.htu.api.module.Course
+import com.smart.htu.component.card.MessageCardDisplay
+import com.smart.htu.component.card.SingleInfo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
-    val (isBottomSheetShow, onBottomSheetStateChange) = remember { mutableStateOf(false) }
+    val isBottomSheetShow = remember { mutableStateOf(false) }
     top.yukonga.miuix.kmp.basic.Surface(
         modifier = modifier,
         onClick = {
             onClick()
-            onBottomSheetStateChange(true)
+            isBottomSheetShow.value = true
         },
         color = Color.Transparent
     ) {
@@ -50,7 +51,7 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
             Box(
                 modifier = Modifier
                     .width(4.dp)
-                    .height(36.dp)
+                    .height(32.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.primary)
             )
@@ -107,71 +108,43 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
     }
 
     BasicBottomSheet(
-        isBottomSheetShow = isBottomSheetShow,
-        title = "详情",
-        onDismissRequest = { onBottomSheetStateChange(false) }
+        showDialog = isBottomSheetShow,
+        title = "${message.courseName} ${message.projectName}"
     ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = "${message.courseName} ${message.projectName}",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.fillMaxWidth()
+        MessageCardDisplay(
+            modifier = Modifier.fillMaxWidth(),
+            message = listOf(
+                SingleInfo(
+                    label = "教师",
+                    content = message.teacherNames,
+                    leadingIcon = R.drawable.ic_outline_person
+                ),
+                SingleInfo(
+                    label = "教室",
+                    content = message.classroomName,
+                    leadingIcon = R.drawable.apartment_24px
+                ),
+                SingleInfo(
+                    label = "时间",
+                    content = "${message.startTime} - ${message.endTime}",
+                    leadingIcon = R.drawable.schedule_24px
+                ),
+                SingleInfo(
+                    label = "班级",
+                    content = message.className,
+                    leadingIcon = R.drawable.school_24px
+                ),
+                SingleInfo(
+                    label = "考试方式",
+                    content = message.assessmentMethod,
+                    leadingIcon = R.drawable.ic_outline_person
+                ),
+                SingleInfo(
+                    label = "教学环境",
+                    content = message.teachingEnvironment,
+                    leadingIcon = R.drawable.ic_outline_person
                 )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(0.5f),
-                        horizontalAlignment = Alignment.Start,
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        SingleInfo("教师", message.teacherNames)
-                        SingleInfo("教室", message.classroomName)
-                        SingleInfo("时间", "${message.startTime} - ${message.endTime}")
-                        SingleInfo("班级", message.className)
-                        SingleInfo("考试方式", message.assessmentMethod)
-                        SingleInfo("教学环境", message.teachingEnvironment)
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun SingleInfo(label: String, content: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.4f),
-            style = MaterialTheme.typography.bodyLarge
-        )
-        Text(
-            text = content,
-            modifier = Modifier.weight(0.6f),
-            style = MaterialTheme.typography.bodyLarge
+            )
         )
     }
 }

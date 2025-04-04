@@ -66,6 +66,7 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -90,7 +91,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.smart.htu.MainActivity
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.BasicBottomSheet
@@ -119,7 +119,7 @@ fun LibrarySearchScreen(
     val uiState = viewModel.uiState.collectAsState().value
 
     val hazeState = remember { HazeState() }
-    val (showBottomSheet, onShowBottomSheet) = rememberSaveable { mutableStateOf(false) }
+    val showBottomSheet = rememberSaveable { mutableStateOf(false) }
     val (expand, onExpand) = rememberSaveable { mutableStateOf(false) }
     val (isSearching, onSearch) = rememberSaveable { mutableStateOf(false) }
     val searchTextFieldState = rememberTextFieldState()
@@ -147,7 +147,7 @@ fun LibrarySearchScreen(
         }
     }
 
-    Scaffold(
+    top.yukonga.miuix.kmp.basic.Scaffold(
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = {
@@ -325,7 +325,7 @@ fun LibrarySearchScreen(
                                     state = uiState.rentList.any { item.id == it.id },
                                     content = item,
                                     onClick = {
-                                        onShowBottomSheet(true)
+                                        showBottomSheet.value = true
                                         viewModel.libraryBookDetail(item.id)
                                     },
                                     onFavorite = {
@@ -385,7 +385,7 @@ fun LibrarySearchScreen(
                             uiState = uiState,
                             viewModel = viewModel,
                             onClick = {
-                                onShowBottomSheet(true)
+                                showBottomSheet.value = true
                             }
                         )
                     }
@@ -394,9 +394,7 @@ fun LibrarySearchScreen(
         }
         BookRentDetailBottomSheet(
             isBottomSheetShow = showBottomSheet,
-            onDismissRequest = { onShowBottomSheet(false) },
             uiState = uiState,
-            sheetState = bottomSheetState
         )
     }
 }
@@ -407,20 +405,14 @@ fun LibrarySearchScreen(
 )
 @Composable
 fun BookRentDetailBottomSheet(
-    isBottomSheetShow: Boolean,
-    sheetState: SheetState,
-    onDismissRequest: () -> Unit,
+    isBottomSheetShow: MutableState<Boolean>,
     uiState: LibrarySearchUiState,
 ) {
     BasicBottomSheet(
-        sheetState = sheetState,
-        isBottomSheetShow = isBottomSheetShow,
-        title = "详情",
-        onDismissRequest = onDismissRequest
+        showDialog = isBottomSheetShow,
+        title = "详情"
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (uiState.isLoading) {

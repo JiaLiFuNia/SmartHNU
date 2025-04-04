@@ -44,7 +44,7 @@ fun Licence(
                     containerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surface,
                     scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
                 ),
-                title = { Text(text = "致谢") },
+                title = { Text(text = "开源许可证") },
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() }

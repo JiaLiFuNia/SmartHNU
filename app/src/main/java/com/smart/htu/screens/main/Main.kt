@@ -31,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -65,6 +66,7 @@ import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.component.card.MediumCardDisplay
+import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SmallCardDisplay
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.airCondition.AirConditionUiState
@@ -87,6 +89,7 @@ import java.time.format.TextStyle
 import java.util.Date
 import java.util.Locale
 import kotlin.math.ceil
+import kotlin.math.max
 
 @SuppressLint("RestrictedApi")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -127,7 +130,7 @@ fun Main(
         derivedStateOf { mutableStateOf(!loginUiState.isLogSuccess) }
     }
 
-    top.yukonga.miuix.kmp.basic.Scaffold(
+    Scaffold(
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background,
         modifier = Modifier
             .fillMaxSize(),
@@ -411,7 +414,8 @@ fun FocusCardItem(
         headlineContent = {
             Text(
                 text = title,
-                style = MaterialTheme.typography.labelMedium
+                style = MaterialTheme.typography.labelMedium,
+                maxLines = 1
             )
         },
         trailingContent = {
@@ -422,7 +426,8 @@ fun FocusCardItem(
         supportingContent = {
             Text(
                 text = content,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1
             )
         },
         modifier = modifier
