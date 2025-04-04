@@ -6,7 +6,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
-    alias(libs.plugins.aboutlibraries)
+    id("com.mikepenz.aboutlibraries.plugin")
     kotlin("plugin.serialization") version "2.0.0"
 }
 
@@ -17,8 +17,8 @@ android {
     defaultConfig {
         applicationId = "com.smart.htu"
         minSdk = 29
-        targetSdk = 33
-        versionCode = 202503161
+        targetSdk = 35
+        versionCode = 202504041
         versionName = "3.0.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -145,6 +145,7 @@ dependencies {
 
     // About Screen
     implementation(libs.aboutlibraries.core)
+    implementation(libs.aboutlibraries)
     implementation(libs.aboutlibraries.compose.m3)
 
     // vico
