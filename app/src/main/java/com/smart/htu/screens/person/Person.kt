@@ -24,9 +24,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -52,8 +48,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.smart.htu.App.Companion.context
-import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.EditMessageDialog
 import com.smart.htu.component.PreferencesCard
@@ -63,7 +57,6 @@ import com.smart.htu.screens.login.LogoutDialog
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
-import com.smart.htu.utils.sendToast
 import com.smart.htu.utils.startWebUrl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -77,7 +70,8 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 fun PersonScreen(
     themeMode: Int,
     navController: NavController,
-    viewModel: LoginViewModel
+    viewModel: LoginViewModel,
+    contentPadding: PaddingValues
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -86,54 +80,21 @@ fun PersonScreen(
     val scope = rememberCoroutineScope()
     val onRefresh: () -> Unit = {
         scope.launch {
-            delay(5000)
-            viewModel.getStudentInfo()
+            pullToRefreshState.completeRefreshing {
+                delay(5000)
+                viewModel.getStudentInfo()
+            }
         }
     }
 
     var showLogoutDialog = remember { mutableStateOf(false) }
     var showEditMessageDialog by remember { mutableStateOf(false) }
-    Scaffold(
-        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else colorScheme.background,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        snackbarHost = {
-            SnackbarHost(hostState = snackBarHostState)
-        },
-        topBar = {
-            TopAppBar(
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background,
-                ),
-                title = {
-                    Text(text = stringResource(id = R.string.my))
-                },
-                actions = {
-                    IconButton(onClick = { navController.navigate(Destinations.AccountManage.route) }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.key_24px),
-                            contentDescription = "key"
-                        )
-                    }
-                }
-            )
-        }
-    ) {
         top.yukonga.miuix.kmp.basic.PullToRefresh(
             pullToRefreshState = pullToRefreshState,
             refreshTexts = PULL_TO_REFRESH_TEXT,
-            onRefresh = {
-                scope.launch {
-                    onRefresh
-                    pullToRefreshState.completeRefreshing {
-                        sendToast(context, "刷新成功")
-                    }
-                }
-            },
+            onRefresh = onRefresh,
             modifier = Modifier
-                .padding(it)
-                .fillMaxSize()
+                .fillMaxSize().padding(contentPadding)
         ) {
             LazyColumn(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -275,7 +236,6 @@ fun PersonScreen(
                 }
             }
         }
-    }
 
     EditMessageDialog(
         showDialog = showEditMessageDialog,

@@ -25,13 +25,11 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -54,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.nlf.calendar.Lunar
+import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.api.module.Course
 import com.smart.htu.api.module.NewsItemEntity
@@ -66,7 +65,6 @@ import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.component.card.MediumCardDisplay
-import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SmallCardDisplay
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.airCondition.AirConditionUiState
@@ -89,7 +87,6 @@ import java.time.format.TextStyle
 import java.util.Date
 import java.util.Locale
 import kotlin.math.ceil
-import kotlin.math.max
 
 @SuppressLint("RestrictedApi")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,27 +98,24 @@ fun Main(
     loginViewModel: LoginViewModel,
     navController: NavController,
     navigateToApplication: () -> Unit,
+    contentPadding: PaddingValues,
     themeMode: Int
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val loginUiState by loginViewModel.uiState.collectAsState()
     val airConditionUiState by airConditionViewModel.uiState.collectAsState()
 
-    val context = LocalContext.current
-
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
 
     val coroutineScope = rememberCoroutineScope()
     val onRefresh: () -> Unit = {
         coroutineScope.launch {
-            mainViewModel.getNowWeather()
-            mainViewModel.getGiteeConfigService()
-            mainViewModel.getNewsList()
-            if (loginUiState.loginJWCState == 1)
-                mainViewModel.getTodayCourse()
             pullToRefreshState.completeRefreshing {
-                sendToast(context, "刷新成功")
+                mainViewModel.getNowWeather()
+                mainViewModel.getGiteeConfigService()
+                mainViewModel.getNewsList()
+                if (loginUiState.loginJWCState == 1)
+                    mainViewModel.getTodayCourse()
             }
         }
     }
@@ -130,91 +124,28 @@ fun Main(
         derivedStateOf { mutableStateOf(!loginUiState.isLogSuccess) }
     }
 
-    Scaffold(
-        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background,
-        modifier = Modifier
-            .fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background,
-                ),
-                title = {
-                    Text(text = "欢迎！${uiState.username}")
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            navController.navigate(
-                                route = Destinations.Message.route
-                            )
-                        }
-                    ) {
-                        BadgedBox(
-                            badge = {
-                                val messageCount = uiState.config?.notice?.filter {
-                                    !uiState.hadReadIdList.contains(it.id)
-                                }?.size ?: 0
-                                if (messageCount != 0)
-                                    Badge {
-                                        Text(
-                                            text = messageCount.toString()
-                                        )
-                                    }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Email,
-                                contentDescription = null
-                            )
-                        }
-                    }
-                    IconButton(
-                        onClick = {
-                            navController.navigate(Destinations.Setting.route)
-                        }
-                    ) {
-                        BadgedBox(
-                            badge = { Badge() }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Settings,
-                                contentDescription = "setting"
-                            )
-                        }
-                    }
-                }
-            )
-        }
-    ) {
         top.yukonga.miuix.kmp.basic.PullToRefresh(
             pullToRefreshState = pullToRefreshState,
             refreshTexts = PULL_TO_REFRESH_TEXT,
             onRefresh = onRefresh,
-            modifier = Modifier
-                .padding(it)
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize().padding(contentPadding)
         ) {
             top.yukonga.miuix.kmp.basic.LazyColumn(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                if (loginState.value.value)
-                    item {
-                        SuggestChip(
-                            onClick = { navController.navigate(Destinations.Login.route) },
-                            onActionClick = { navController.navigate(Destinations.Login.route) },
-                            text = "暂未登录，登录后即可体验全部功能",
-                            type = SuggestChipType.ERROR,
-                            visibility = loginState.value,
-                            icon = Icons.AutoMirrored.Filled.ArrowForward
-                        )
-                        // Spacer(modifier = Modifier.height(20.dp))
-                    }
+                if (loginState.value.value) item {
+                    SuggestChip(
+                        onClick = { navController.navigate(Destinations.Login.route) },
+                        onActionClick = { navController.navigate(Destinations.Login.route) },
+                        text = "暂未登录，登录后即可体验全部功能",
+                        type = SuggestChipType.ERROR,
+                        visibility = loginState.value,
+                        icon = Icons.AutoMirrored.Filled.ArrowForward
+                    )
+                    // Spacer(modifier = Modifier.height(20.dp))
+                }
                 item {
                     FocusCard(themeMode, navController, loginUiState, airConditionUiState, uiState)
                     // Spacer(modifier = Modifier.height(20.dp))
@@ -243,7 +174,7 @@ fun Main(
                 }
             }
         }
-    }
+
 }
 
 @Composable
@@ -278,7 +209,7 @@ fun NewsCard(
                                 )
                             } else {
                                 newsListStatus.data.forEach { news ->
-                                    NewsItem(news = news, themeMode = themeMode, maxLines = 1) {
+                                    NewsItem(news = news, maxLines = 1) {
                                         navController.navigateToWebView(
                                             url = news.url,
                                             label = news.title

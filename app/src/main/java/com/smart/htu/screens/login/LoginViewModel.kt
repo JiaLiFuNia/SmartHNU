@@ -360,8 +360,6 @@ class LoginViewModel @Inject constructor(
         changLoginState(DEFAULT_LOGIN_STATE)
         changeLoginJWCState(DEFAULT_LOGIN_STATE)
         changeUsername(DEFAULT_USERNAME)
-        changePassword(DEFAULT_PASSWORD)
-        changeJWCPassword(DEFAULT_PASSWORD)
         editQQNumber(DEFAULT_QQ_NUMBER)
         setJWCLogToken(DEFAULT_TOKEN)
         dataStoreRepo.saveCookies(emptyList())

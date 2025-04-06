@@ -1,17 +1,27 @@
 package com.smart.htu.screens
 
 import android.app.Activity
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -24,14 +34,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
-import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.component.animation.SlideTransition
 import com.smart.htu.screens.application.Application
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
+import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.Main
 import com.smart.htu.screens.main.MainViewModel
@@ -42,11 +53,25 @@ import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.person.PersonScreen
 import com.smart.htu.screens.setting.SettingViewModel
 import com.smart.htu.utils.DoubleBackToExitApp
+import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
+data class Screen(
+    val route: String,
+    @StringRes val label: Int,
+    val unselectedIcon: Int,
+    val selectedIcon: Int,
+    val enabled: Boolean,
+    val badge: Int = 0,
+    val title: String? = null,
+    val fab: @Composable (() -> Unit)? = null,
+    val actions: @Composable (() -> Unit)? = null
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainFrame(
-    navController: NavHostController,
+    navController: NavController,
     mainViewModel: MainViewModel,
     loginViewModel: LoginViewModel,
     settingViewModel: SettingViewModel,
@@ -61,6 +86,7 @@ fun MainFrame(
     val savableStateHolder = rememberSaveableStateHolder()
     val (selectedItemIndex, onSelectedItemIndex) = rememberSaveable { mutableIntStateOf(0) }
     val themeMode = settingUiState.themeMode // 0 黑白 1 动态 2 师大青
+
     val navigationItem = listOf(
         BottomNavigationItem(
             title = R.string.main,
@@ -91,31 +117,103 @@ fun MainFrame(
         )
     )
 
-    // val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
     top.yukonga.miuix.kmp.basic.Scaffold(
         modifier = Modifier.fillMaxSize(),
-        snackbarHost = {
-            SnackbarHost(hostState = snackBarHostState)
+        snackbarHost = { SnackbarHost(snackBarHostState) },
+        topBar = {
+            when(selectedItemIndex) {
+                0 -> TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
+                    title = { Text(text = "欢迎！${mainUiState.username}") },
+                    actions = {
+                        IconButton(
+                            onClick = {
+                                navController.navigate(
+                                    route = Destinations.Message.route
+                                )
+                            }
+                        ) {
+                            BadgedBox(
+                                badge = {
+                                    val messageCount = mainUiState.config?.notice?.filter {
+                                        !mainUiState.hadReadIdList.contains(it.id)
+                                    }?.size ?: 0
+                                    if (messageCount != 0)
+                                        Badge {
+                                            Text(
+                                                text = messageCount.toString()
+                                            )
+                                        }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Email,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                        IconButton(
+                            onClick = {
+                                navController.navigate(Destinations.Setting.route)
+                            }
+                        ) {
+                            BadgedBox(
+                                badge = { Badge() }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Settings,
+                                    contentDescription = "setting"
+                                )
+                            }
+                        }
+                    }
+                )
+                1 -> TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
+                    title = { Text(text = stringResource(R.string.application)) },
+                    actions = {
+                        IconButton(onClick = { /*TODO*/ }) {
+                            Icon(imageVector = Icons.Default.Add, contentDescription = "add")
+                        }
+                    }
+                )
+
+                2 -> null
+
+                3 -> TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
+                    title = { Text(text = stringResource(R.string.my)) },
+                    actions = {
+                        IconButton(onClick = { navController.navigate(Destinations.AccountManage.route) }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.key_24px),
+                                contentDescription = "key"
+                            )
+                        }
+                    }
+                )
+            }
         },
         bottomBar = {
             NavigationBar(
-                containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surfaceContainer else NavigationBarDefaults.containerColor
+                containerColor = MiuixTheme.colorScheme.surfaceContainer
             ) {
-                navigationItem.filter { it.enabled }.forEachIndexed { index, bottomNavigationItem ->
+                navigationItem.filter { it.enabled }.forEachIndexed { index, item ->
                     NavigationBarItem(
                         icon = {
                             Icon(
                                 painter = painterResource(
                                     id = if (index == selectedItemIndex) {
-                                        bottomNavigationItem.selectedIcon
-                                    } else
-                                        bottomNavigationItem.unselectedIcon
+                                        item.selectedIcon
+                                    } else {
+                                        item.unselectedIcon
+                                    }
                                 ),
                                 contentDescription = "icon"
                             )
                         },
                         label = {
-                            Text(text = stringResource(id = bottomNavigationItem.title))
+                            Text(text = stringResource(id = item.title))
                         },
                         selected = selectedItemIndex == index,
                         onClick = {
@@ -126,11 +224,10 @@ fun MainFrame(
                 }
             }
         }
-    ) { paddingValues ->
+    ) {
         AnimatedContent(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = paddingValues.calculateBottomPadding()),
+                .fillMaxSize(),
             label = "page",
             targetState = selectedItemIndex,
             transitionSpec = {
@@ -138,45 +235,50 @@ fun MainFrame(
                     .togetherWith(SlideTransition.slideLeft.exitTransition())
             }
         ) { page ->
-                savableStateHolder.SaveableStateProvider(
-                    key = page,
-                    content = {
-                        when (page) {
-                            0 -> Main(
-                                navController = navController,
-                                mainViewModel = mainViewModel,
-                                navigateToApplication = {
-                                    onSelectedItemIndex(1)
-                                },
-                                loginViewModel = loginViewModel,
-                                applicationViewModel = applicationViewModel,
-                                airConditionViewModel = airConditionViewModel,
-                                themeMode = themeMode
-                            )
+            savableStateHolder.SaveableStateProvider(
+                key = page,
+                content = {
+                    when (page) {
+                        0 -> Main(
+                            navController = navController,
+                            mainViewModel = mainViewModel,
+                            navigateToApplication = {
+                                onSelectedItemIndex(1)
+                            },
+                            loginViewModel = loginViewModel,
+                            applicationViewModel = applicationViewModel,
+                            airConditionViewModel = airConditionViewModel,
+                            contentPadding = it,
+                            themeMode = themeMode
+                        )
 
-                            1 -> Application(
-                                themeMode = themeMode,
-                                navController = navController,
-                                viewModel = applicationViewModel,
-                                loginViewModel = loginViewModel
-                            )
+                        1 -> Application(
+                            themeMode = themeMode,
+                            navController = navController,
+                            viewModel = applicationViewModel,
+                            loginViewModel = loginViewModel,
+                            contentPadding = it
+                        )
 
-                            2 -> NewsScreen(
-                                navController = navController,
-                                viewModel = newsViewModel,
-                                themeMode = themeMode
-                            )
+                        2 -> NewsScreen(
+                            navController = navController,
+                            viewModel = newsViewModel,
+                            contentPadding = it
+                        )
 
-                            3 -> PersonScreen(
-                                navController = navController,
-                                viewModel = loginViewModel,
-                                themeMode = themeMode
-                            )
-                        }
+                        3 -> PersonScreen(
+                            navController = navController,
+                            viewModel = loginViewModel,
+                            themeMode = themeMode,
+                            contentPadding = it
+                        )
                     }
-                )
-            }
+                }
+            )
+        }
     }
+
+    // val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
     DoubleBackToExitApp(
         onExit = {

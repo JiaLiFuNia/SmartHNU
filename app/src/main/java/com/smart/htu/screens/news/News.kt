@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +29,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarDefaults.inputFieldColors
@@ -38,8 +38,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,7 +53,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -66,6 +63,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -74,6 +72,7 @@ import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.Status
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.screens.navigateToWebView
+import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -86,8 +85,8 @@ import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun NewsScreen(
-    themeMode: Int,
-    navController: NavHostController,
+    contentPadding: PaddingValues,
+    navController: NavController,
     viewModel: NewsViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -103,13 +102,16 @@ fun NewsScreen(
 
     val scope = rememberCoroutineScope()
     val state = rememberPullToRefreshState()
+    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
     var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
         isRefreshing = true
         scope.launch {
-            viewModel.getBannerImgList()
-            viewModel.getNewsList(selectedTabIndex.value)
-            isRefreshing = false
+            pullToRefreshState.completeRefreshing {
+                viewModel.getBannerImgList()
+                viewModel.getNewsList(selectedTabIndex.value)
+                isRefreshing = false
+            }
         }
     }
 
@@ -122,25 +124,22 @@ fun NewsScreen(
             viewModel.getNewsList(selectedTabIndex.value)
     }
 
-    Scaffold(
-        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-    ) { contentPadding ->
-        Box(
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Transparent)
+            .padding(bottom = contentPadding.calculateBottomPadding())
+    ) {
+        Column(
             modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Transparent)
+                .align(Alignment.TopCenter)
+                .zIndex(2f)
+                .background(MiuixTheme.colorScheme.background)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .zIndex(2f)
-                    .background(if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.surface)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                SearchBar(
-                    inputField = {
+            SearchBar(
+                inputField = {
                         SearchBarDefaults.InputField(
                             modifier = Modifier,
                             state = textFieldState,
@@ -168,27 +167,27 @@ fun NewsScreen(
                             colors = inputFieldColors(unfocusedContainerColor = Color.Transparent),
                         )
                     },
-                    expanded = expanded,
-                    onExpandedChange = { onExpand(it) },
-                    modifier = Modifier
-                ) {
+                expanded = expanded,
+                onExpandedChange = { onExpand(it) },
+                modifier = Modifier
+            ) {
 
                 }
-                PrimaryScrollableTabRow(
-                    containerColor = Color.Transparent,
-                    selectedTabIndex = newsPagerState.currentPage,
-                    modifier = Modifier
-                        .padding(top = 4.dp)
-                        .padding(horizontal = 16.dp),
-                    indicator = {
-                        TabRowDefaults.PrimaryIndicator(
-                            modifier = Modifier.tabIndicatorOffset(newsPagerState.currentPage),
-                            shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
-                            width = 24.dp
-                        )
-                    },
-                    divider = {}
-                ) {
+            PrimaryScrollableTabRow(
+                containerColor = Color.Transparent,
+                selectedTabIndex = newsPagerState.currentPage,
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .padding(horizontal = 16.dp),
+                indicator = {
+                    TabRowDefaults.PrimaryIndicator(
+                        modifier = Modifier.tabIndicatorOffset(newsPagerState.currentPage),
+                        shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
+                        width = 24.dp
+                    )
+                },
+                divider = {}
+            ) {
                     tabItems.forEachIndexed { index, item ->
                         Tab(
                             selected = index == selectedTabIndex.value,
@@ -207,49 +206,40 @@ fun NewsScreen(
                         }
                     }
                 }
-            }
-            val bannerPicUrl = uiState.bannerPicList.data?.map { it.imgUrl } ?: emptyList()
-            val bannerTitle = uiState.bannerPicList.data?.map { it.title } ?: emptyList()
-            val bannerUrl = uiState.bannerPicList.data?.map { it.url } ?: emptyList()
-            PullToRefreshBox(
-                isRefreshing = isRefreshing,
-                onRefresh = { onRefresh() },
-                state = state,
-                indicator = {
-                    Indicator(
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(top = 118.dp),
-                        isRefreshing = isRefreshing,
-                        state = state
-                    )
-                },
+        }
+        val bannerPicUrl = uiState.bannerPicList.data?.map { it.imgUrl } ?: emptyList()
+        val bannerTitle = uiState.bannerPicList.data?.map { it.title } ?: emptyList()
+        val bannerUrl = uiState.bannerPicList.data?.map { it.url } ?: emptyList()
+
+        top.yukonga.miuix.kmp.basic.PullToRefresh(
+            pullToRefreshState = pullToRefreshState,
+            refreshTexts = PULL_TO_REFRESH_TEXT,
+            onRefresh = onRefresh,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 148.dp)
+        ) {
+            Column(
                 modifier = Modifier
+                    .hazeSource(state = hazeState)
                     .fillMaxSize()
-                    .zIndex(1f)
+                    .padding(top = 4.dp)
             ) {
-                Column(
+                HorizontalPager(
+                    state = newsPagerState,
                     modifier = Modifier
-                        .hazeSource(state = hazeState)
                         .fillMaxSize()
-                        .padding(top = 118.dp)
+                        .padding(horizontal = 12.dp),
+                    pageSpacing = 12.dp
                 ) {
-                    HorizontalPager(
-                        state = newsPagerState,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 12.dp),
-                        pageSpacing = 12.dp
-                    ) {
-                        if (uiState.newsList[it].status == Status.LOADING) {
-                            CircularProgressIndicator(modifier = Modifier.fillMaxSize())
-                        } else {
-                            top.yukonga.miuix.kmp.basic.LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = contentPadding
-                            ) {
-                                if (it == 1)
-                                    item {
+                    if (uiState.newsList[it].status == Status.LOADING) {
+                        CircularProgressIndicator(modifier = Modifier.fillMaxSize())
+                    } else {
+                        top.yukonga.miuix.kmp.basic.LazyColumn(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            if (it == 1)
+                                item {
                                         HorizontalMultiBrowseCarousel(
                                             state = rememberCarouselState { bannerPicUrl.count() },
                                             modifier = Modifier
@@ -301,17 +291,16 @@ fun NewsScreen(
                                         }
                                         Spacer(modifier = Modifier.height(8.dp))
                                     }
-                                itemsIndexed(
-                                    uiState.newsList[it].data ?: emptyList()
-                                ) { _, news ->
-                                    NewsItem(news = news, themeMode = themeMode) {
-                                        navController.navigateToWebView(
-                                            url = news.url,
-                                            label = news.title
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.height(8.dp))
+                            itemsIndexed(
+                                uiState.newsList[it].data ?: emptyList()
+                            ) { _, news ->
+                                NewsItem(news = news) {
+                                    navController.navigateToWebView(
+                                        url = news.url,
+                                        label = news.title
+                                    )
                                 }
+                                Spacer(modifier = Modifier.height(8.dp))
                             }
                         }
                     }
@@ -323,7 +312,7 @@ fun NewsScreen(
 
 
 @Composable
-fun NewsItem(news: NewsItemEntity, themeMode: Int, maxLines: Int = 2, onClick: () -> Unit) {
+fun NewsItem(news: NewsItemEntity, maxLines: Int = 2, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         modifier = Modifier
@@ -331,7 +320,7 @@ fun NewsItem(news: NewsItemEntity, themeMode: Int, maxLines: Int = 2, onClick: (
             .fillMaxWidth()
             .animateContentSize(),
         shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
-        color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant,
+        color = MiuixTheme.colorScheme.surface,
     ) {
         ListItem(
             colors = ListItemDefaults.colors(containerColor = Color.Transparent),

@@ -70,30 +70,8 @@ fun NavHostScreen() {
                 airConditionViewModel = airConditionViewModel
             )
         }
-        animatedComposable(Destinations.News.route) {
-            NewsScreen(
-                themeMode = uiState.themeMode,
-                navController = navController,
-                viewModel = newsViewModel
-            )
-        }
         animatedComposable(Destinations.Login.route) {
             LoginScreen(
-                navController = navController,
-                viewModel = loginViewModel
-            )
-        }
-        animatedComposable(Destinations.Application.route) {
-            Application(
-                navController = navController,
-                viewModel = applicationViewModel,
-                themeMode = uiState.themeMode,
-                loginViewModel = loginViewModel
-            )
-        }
-        animatedComposable(Destinations.Person.route) {
-            PersonScreen(
-                themeMode = uiState.themeMode,
                 navController = navController,
                 viewModel = loginViewModel
             )

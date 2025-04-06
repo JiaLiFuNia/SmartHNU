@@ -2,7 +2,7 @@
 aboutlibraries = "12.0.0-a04"
 accompanistSystemuicontroller = "0.36.0"
 adaptiveNavigationAndroid = "1.1.0"
-agp = "8.6.0"
+agp = "8.9.1"
 composeWebviewMultiplatform = "1.9.40"
 converterGson = "2.11.0"
 converterScalarsVersion = "2.9.0"
@@ -16,14 +16,14 @@ konfettiComposeVersion = "2.0.5"
 libraryVersion = "1.1.1"
 material = "1.7.8"
 jsoup = "1.18.1"
-kotlin = "2.0.0"
+kotlin = "2.1.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
-kotlinxCoroutinesAndroid = "1.8.1"
-kotlinxSerializationJson = "1.6.2"
-lifecycleRuntimeKtx = "2.8.6"
+kotlinxCoroutinesAndroid = "1.10.1"
+kotlinxSerializationJson = "1.8.0"
+lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
 composeBom = "2025.03.01"
 lunarVersion = "1.6.3"
@@ -91,10 +91,9 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 retrofit2-converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "converterScalarsVersion" }
 ui-tiles = { module = "com.github.alorma.compose-settings:ui-tiles", version.ref = "uiTiles" }
 xtail-lunar = { module = "cn.6tail:lunar", version.ref = "lunarVersion" }
-
 vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
