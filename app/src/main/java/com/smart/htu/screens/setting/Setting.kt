@@ -164,12 +164,7 @@ fun SettingScreen(
                     modifier = Modifier,
                     themeMode = themeMode
                 ) {
-                    val themeModes = mapOf(
-                        0 to "简洁",
-                        1 to "动态",
-                        2 to "师大"
-                    )
-                    SuperDropdown(
+                    /*SuperDropdown(
                         title = stringResource(id = R.string.theme_color),
                         summary = stringResource(id = R.string.theme_color_description),
                         items = themeModes.values.toList(),
@@ -179,8 +174,8 @@ fun SettingScreen(
                             viewModel.changeDynamicTheme(mode)
                             if (mode == 0) viewModel.changeBlurState(false)
                         },
-                    )
-                    SuperSwitch(
+                    )*/
+                    /*SuperSwitch(
                         title = "实时模糊",
                         checked = uiState.blurEffect,
                         summary = "开启后部分页面将具有模糊效果，具体效果因机型、系统而异",
@@ -189,7 +184,7 @@ fun SettingScreen(
                         },
                         enabled = uiState.themeMode != 0,
                         switchColors = SwitchDefaults.switchColors(checkedTrackColor = MaterialTheme.colorScheme.primary)
-                    )
+                    )*/
                     SuperDropdown(
                         title = stringResource(id = R.string.dark_theme),
                         summary = "切换应用深色模式",

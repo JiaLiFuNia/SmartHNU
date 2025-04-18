@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.smart.htu.R
+import com.smart.htu.component.textButtonPrimaryColors
 import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.extra.SuperDialog
@@ -75,7 +76,7 @@ fun LogoutDialog(
                     dismissDialog(showDialog)
                 },
                 modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.textButtonColorsPrimary()
+                colors = ButtonDefaults.textButtonPrimaryColors()
             )
         }
     }

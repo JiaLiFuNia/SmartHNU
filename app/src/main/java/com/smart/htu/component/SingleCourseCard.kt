@@ -29,6 +29,9 @@ import com.smart.htu.R
 import com.smart.htu.api.module.Course
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +43,8 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
             onClick()
             isBottomSheetShow.value = true
         },
-        color = Color.Transparent
+        color = Color.Transparent,
+        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius)
     ) {
         Row(
             modifier = Modifier
@@ -53,7 +57,7 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
                     .width(4.dp)
                     .height(32.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.primary)
+                    .background(MiuixTheme.colorScheme.onPrimary)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Column(
@@ -74,7 +78,7 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
                 ) {
                     Text(
                         text = message.teacherNames.ifEmpty { "暂无" },
-                        modifier = Modifier.weight(3 / 10f),
+                        modifier = Modifier.weight(2 / 10f),
                         textAlign = TextAlign.Start,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             color = MaterialTheme.colorScheme.onSurface.copy(
@@ -84,7 +88,7 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
                     )
                     Text(
                         text = "${message.startTime}-${message.endTime}".ifEmpty { "暂无" },
-                        modifier = Modifier.weight(3 / 10f),
+                        modifier = Modifier.weight(4 / 10f),
                         textAlign = TextAlign.Start,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             color = MaterialTheme.colorScheme.onSurface.copy(
@@ -94,7 +98,7 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
                     )
                     Text(
                         text = message.classroomName.ifEmpty { "暂无" },
-                        modifier = Modifier.weight(3 / 10f),
+                        modifier = Modifier.weight(4 / 10f),
                         textAlign = TextAlign.Start,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             color = MaterialTheme.colorScheme.onSurface.copy(
@@ -109,30 +113,21 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
 
     BasicBottomSheet(
         showDialog = isBottomSheetShow,
-        title = "${message.courseName} ${message.projectName}"
+        title = "${message.courseName} ${message.projectName}",
+        summary = "上课时间：${message.startTime} - ${message.endTime}",
     ) {
         MessageCardDisplay(
             modifier = Modifier.fillMaxWidth(),
             message = listOf(
                 SingleInfo(
                     label = "教师",
-                    content = message.teacherNames,
+                    content = message.teacherNames.ifEmpty { "暂无" },
                     leadingIcon = R.drawable.ic_outline_person
                 ),
                 SingleInfo(
-                    label = "教室",
+                    label = "教室".ifEmpty { "暂无" },
                     content = message.classroomName,
                     leadingIcon = R.drawable.apartment_24px
-                ),
-                SingleInfo(
-                    label = "时间",
-                    content = "${message.startTime} - ${message.endTime}",
-                    leadingIcon = R.drawable.schedule_24px
-                ),
-                SingleInfo(
-                    label = "班级",
-                    content = message.className,
-                    leadingIcon = R.drawable.school_24px
                 ),
                 SingleInfo(
                     label = "考试方式",

@@ -108,33 +108,26 @@ fun SmartHNUTheme(
         DarkMode.OFF.ordinal -> false
         else -> isSystemInDarkTheme()
     }
-    val colorScheme = when {
-        uiState.themeMode == 1 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
 
-        darkTheme -> darkScheme
-        else -> lightScheme
-    }
-
-    val miuixSchemeColor = when(darkTheme) {
+    val miuixSchemeColor = when (darkTheme) {
         false -> top.yukonga.miuix.kmp.theme.lightColorScheme(
-            disabledPrimaryButton = colorScheme.primaryContainer.copy(0.5f),
-            disabledOnPrimaryButton = colorScheme.primary.copy(0.5f),
-            onPrimary = colorScheme.primary,
-            primary = colorScheme.primaryContainer,
-            tertiaryContainer = colorScheme.secondaryContainer,
-            onTertiaryContainer = colorScheme.primary
+            disabledPrimaryButton = lightScheme.primaryContainer.copy(0.5f),
+            disabledOnPrimaryButton = lightScheme.primary.copy(0.5f),
+            onPrimary = lightScheme.primary,
+            primary = lightScheme.primary,
+            primaryContainer = lightScheme.primaryContainer,
+            tertiaryContainer = lightScheme.secondaryContainer,
+            onTertiaryContainer = lightScheme.primary
         )
 
         true -> top.yukonga.miuix.kmp.theme.darkColorScheme(
-            disabledPrimaryButton = colorScheme.primaryContainer.copy(0.5f),
-            disabledOnPrimaryButton = colorScheme.primary.copy(0.5f),
-            onPrimary = colorScheme.primary,
-            primary = colorScheme.primaryContainer,
-            tertiaryContainer = colorScheme.secondaryContainer,
-            onTertiaryContainer = colorScheme.primary
+            disabledPrimaryButton = darkScheme.primaryContainer.copy(0.5f),
+            disabledOnPrimaryButton = darkScheme.primary.copy(0.5f),
+            onPrimary = darkScheme.primary,
+            primary = darkScheme.primary,
+            primaryContainer = lightScheme.primaryContainer,
+            tertiaryContainer = darkScheme.secondaryContainer,
+            onTertiaryContainer = darkScheme.primary
         )
     }
 
@@ -147,14 +140,8 @@ fun SmartHNUTheme(
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = {
-            MiuixTheme(
-                colors = miuixSchemeColor,
-                content = content
-            )
-        }
+    MiuixTheme(
+        colors = miuixSchemeColor,
+        content = content
     )
 }

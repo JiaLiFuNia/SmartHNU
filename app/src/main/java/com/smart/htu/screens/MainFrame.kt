@@ -121,7 +121,7 @@ fun MainFrame(
         modifier = Modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
-            when(selectedItemIndex) {
+            when (selectedItemIndex) {
                 0 -> TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
                     title = { Text(text = "欢迎！${mainUiState.username}") },
@@ -135,9 +135,10 @@ fun MainFrame(
                         ) {
                             BadgedBox(
                                 badge = {
-                                    val messageCount = mainUiState.config?.notice?.filter {
-                                        !mainUiState.hadReadIdList.contains(it.id)
-                                    }?.size ?: 0
+                                    val messageCount =
+                                        mainUiState.config?.notice?.filter {
+                                            !mainUiState.hadReadIdList.contains(it.id)
+                                        }?.size ?: 0
                                     if (messageCount != 0)
                                         Badge {
                                             Text(
@@ -168,12 +169,16 @@ fun MainFrame(
                         }
                     }
                 )
+
                 1 -> TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
                     title = { Text(text = stringResource(R.string.application)) },
                     actions = {
                         IconButton(onClick = { /*TODO*/ }) {
-                            Icon(imageVector = Icons.Default.Add, contentDescription = "add")
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "add"
+                            )
                         }
                     }
                 )

@@ -17,7 +17,9 @@ import androidx.compose.ui.unit.dp
 import com.smart.htu.R
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,7 +52,7 @@ fun BasicBottomSheet(
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    top.yukonga.miuix.kmp.basic.TextButton(
+                    TextButton(
                         text = stringResource(id = R.string.cancel),
                         onClick = {
                             dismissDialog(showDialog)
@@ -58,17 +60,25 @@ fun BasicBottomSheet(
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(Modifier.width(20.dp))
-                    top.yukonga.miuix.kmp.basic.TextButton(
+                    TextButton(
                         text = stringResource(id = R.string.confirm),
                         onClick = {
                             onConfirmClick()
                             dismissDialog(showDialog)
                         },
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.textButtonColorsPrimary()
+                        colors = ButtonDefaults.textButtonPrimaryColors()
                     )
-            }
+                }
             }
         }
     }
 }
+
+@Composable
+fun ButtonDefaults.textButtonPrimaryColors() = textButtonColors(
+    color = MiuixTheme.colorScheme.primaryContainer,
+    disabledColor = MiuixTheme.colorScheme.disabledPrimaryButton,
+    textColor = MiuixTheme.colorScheme.onPrimary,
+    disabledTextColor = MiuixTheme.colorScheme.disabledOnPrimaryButton
+)

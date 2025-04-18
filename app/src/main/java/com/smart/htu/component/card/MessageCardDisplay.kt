@@ -46,7 +46,7 @@ fun MessageCardDisplay(
                 modifier = Modifier.weight(0.5f)
             ) {
                 message.forEachIndexed { index, it ->
-                    if (index > message.size / 2)
+                    if (index >= message.size / 2)
                         FocusCardItem(
                             title = it.label,
                             content = it.content,

@@ -56,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -76,6 +77,9 @@ import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissDialog
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
@@ -256,9 +260,9 @@ fun AirCondition(
                         indicator = { tabPositions ->
                             TabRowDefaults.PrimaryIndicator(
                                 modifier = Modifier
-                                        .tabIndicatorOffset(tabPositions[selectTabIndex]),
-                                    width = tabPositions[selectTabIndex].width / 2f,
-                                    shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
+                                    .tabIndicatorOffset(tabPositions[selectTabIndex]),
+                                width = tabPositions[selectTabIndex].width / 2f,
+                                shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
                             )
                         },
                         divider = {}
@@ -274,8 +278,8 @@ fun AirCondition(
                                     text = s,
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.padding(12.dp)
-                                    )
+                                    modifier = Modifier.padding(12.dp)
+                                )
                             }
                         }
                     }
@@ -423,115 +427,97 @@ fun SetCookieBottomSheet(
         }
     ) {
         Column {
-                PreferenceSubtitle(text = "宿舍楼和房间")
-                val buildingIdPattern = Regex("^[西|东]\\d{2}$")
-                val roomIdPattern = Regex("^\\d{4}$")
-                val (buildingIdError, onBuildingError) = remember { mutableStateOf(false) }
-                val (roomIdError, onRoomError) = remember { mutableStateOf(false) }
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    OutlinedTextField(
-                        label = { Text(text = "宿舍楼") },
-                        placeholder = { Text(text = "如：西01 或 东02") },
-                        maxLines = 1,
-                        value = buildingId,
-                        onValueChange = {
-                            buildingId = it
-                            onBuildingError(!buildingIdPattern.matches(it))
-                        },
-                        trailingIcon = {
-                            if (buildingIdError)
-                                Icon(
-                                    painter = painterResource(id = R.drawable.warning_24px),
-                                    contentDescription = "warning",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                        },
-                        isError = buildingIdError,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    OutlinedTextField(
-                        label = { Text(text = "房间") },
-                        placeholder = { Text(text = "如：0213(2层 13房间)") },
-                        value = roomId,
-                        onValueChange = {
-                            roomId = it
-                            onRoomError(!roomIdPattern.matches(it) || roomId.length != 4)
-                        },
-                        trailingIcon = {
-                            if (roomIdError) Icon(
+            SmallTitle(
+                text = "宿舍楼和房间",
+                insideMargin = PaddingValues(start = 12.dp, top = 12.dp, bottom = 8.dp)
+            )
+            val buildingIdPattern = Regex("^[西|东]\\d{2}$")
+            val roomIdPattern = Regex("^\\d{4}$")
+            val (buildingIdError, onBuildingError) = remember { mutableStateOf(false) }
+            val (roomIdError, onRoomError) = remember { mutableStateOf(false) }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                top.yukonga.miuix.kmp.basic.TextField(
+                    value = buildingId,
+                    label = "宿舍楼",
+                    onValueChange = {
+                        buildingId = it
+                        onBuildingError(!buildingIdPattern.matches(it))
+                    },
+                    singleLine = true,
+                    maxLines = 1,
+                    trailingIcon = {
+                        if (buildingIdError)
+                            Icon(
                                 painter = painterResource(id = R.drawable.warning_24px),
                                 contentDescription = "warning",
                                 tint = MaterialTheme.colorScheme.error
                             )
-                        },
-                        isError = roomIdError,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                }
-                PreferenceSubtitle(text = "设置 Cookie")
-                val radioOptions = listOf("云端 Cookie", "自定义 Cookie")
+                    }
+                )
+                top.yukonga.miuix.kmp.basic.TextField(
+                    value = roomId,
+                    label = "房间",
+                    onValueChange = {
+                        roomId = it
+                        onRoomError(!roomIdPattern.matches(it) || roomId.length != 4)
+                    },
+                    singleLine = true,
+                    maxLines = 1,
+                    trailingIcon = {
+                        if (roomIdError)
+                            Icon(
+                                painter = painterResource(id = R.drawable.warning_24px),
+                                contentDescription = "warning",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                    }
+                )
+            }
+            SmallTitle(
+                text = "Cookie",
+                insideMargin = PaddingValues(start = 12.dp, top = 16.dp, bottom = 8.dp)
+            )
+            val dropdownOptions = listOf("云端 Cookie", "自定义 Cookie")
+            Card(
+                color = MiuixTheme.colorScheme.secondaryContainer,
+            ) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        modifier = Modifier.selectableGroup(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        radioOptions.forEachIndexed { index, text ->
-                            Row(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(50.dp)
-                                    .selectable(
-                                        selected = (index == uiState.setCookieType),
-                                        onClick = { viewModel.changeCookieType(index) },
-                                        role = Role.RadioButton
-                                    )
-                                    .padding(horizontal = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                RadioButton(
-                                    selected = (index == uiState.setCookieType),
-                                    onClick = null
-                                )
-                                Text(
-                                    text = text,
-                                    modifier = Modifier.padding(start = 16.dp)
-                                )
-                            }
-                            AnimatedVisibility(visible = uiState.setCookieType == 1 && index == 1) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(start = 12.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    OutlinedTextField(
-                                        label = { Text(text = "shiroJID") },
-                                        maxLines = 1,
-                                        value = uiState.userLoginCookie?.shiroJID ?: "",
-                                        onValueChange = { viewModel.changeUserShiroJid(it) },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        shape = RoundedCornerShape(10.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    OutlinedTextField(
-                                        label = { Text(text = "ymID") },
-                                        value = uiState.userLoginCookie?.ymId ?: "",
-                                        onValueChange = { viewModel.changeUserYmld(it) },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        shape = RoundedCornerShape(10.dp)
-                                    )
-                                }
-                            }
+                    SuperDropdown(
+                        title = "Cookie 来源",
+                        items = dropdownOptions,
+                        selectedIndex = uiState.setCookieType,
+                        onSelectedIndexChange = { newOption -> viewModel.changeCookieType(newOption) }
+                    )
+                    AnimatedVisibility(visible = uiState.setCookieType == 1) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth().padding(4.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            OutlinedTextField(
+                                label = { Text(text = "shiroJID") },
+                                maxLines = 1,
+                                value = uiState.userLoginCookie?.shiroJID ?: "",
+                                onValueChange = { viewModel.changeUserShiroJid(it) },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(10.dp)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            OutlinedTextField(
+                                label = { Text(text = "ymID") },
+                                value = uiState.userLoginCookie?.ymId ?: "",
+                                onValueChange = { viewModel.changeUserYmld(it) },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(10.dp)
+                            )
                         }
                     }
                 }
@@ -591,5 +577,6 @@ fun SetCookieBottomSheet(
                     }
                 }
             }*/
+        }
     }
 }

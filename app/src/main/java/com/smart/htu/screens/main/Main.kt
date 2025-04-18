@@ -1,6 +1,7 @@
 package com.smart.htu.screens.main
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,19 +21,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -46,13 +40,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.nlf.calendar.Lunar
-import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.api.module.Course
 import com.smart.htu.api.module.NewsItemEntity
@@ -64,7 +54,6 @@ import com.smart.htu.component.SingleCourseCard
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.LargeCardDisplay
-import com.smart.htu.component.card.MediumCardDisplay
 import com.smart.htu.component.card.SmallCardDisplay
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.airCondition.AirConditionUiState
@@ -77,14 +66,12 @@ import com.smart.htu.screens.navigateWithAuthCheck
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsItem
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
-import com.smart.htu.utils.sendToast
 import com.smart.htu.utils.startCalendar
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
-import java.util.Date
 import java.util.Locale
 import kotlin.math.ceil
 
@@ -124,56 +111,58 @@ fun Main(
         derivedStateOf { mutableStateOf(!loginUiState.isLogSuccess) }
     }
 
-        top.yukonga.miuix.kmp.basic.PullToRefresh(
-            pullToRefreshState = pullToRefreshState,
-            refreshTexts = PULL_TO_REFRESH_TEXT,
-            onRefresh = onRefresh,
-            modifier = Modifier.fillMaxSize().padding(contentPadding)
+    top.yukonga.miuix.kmp.basic.PullToRefresh(
+        pullToRefreshState = pullToRefreshState,
+        refreshTexts = PULL_TO_REFRESH_TEXT,
+        onRefresh = onRefresh,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(contentPadding)
+    ) {
+        top.yukonga.miuix.kmp.basic.LazyColumn(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            top.yukonga.miuix.kmp.basic.LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
-                if (loginState.value.value) item {
-                    SuggestChip(
-                        onClick = { navController.navigate(Destinations.Login.route) },
-                        onActionClick = { navController.navigate(Destinations.Login.route) },
-                        text = "暂未登录，登录后即可体验全部功能",
-                        type = SuggestChipType.ERROR,
-                        visibility = loginState.value,
-                        icon = Icons.AutoMirrored.Filled.ArrowForward
-                    )
-                    // Spacer(modifier = Modifier.height(20.dp))
-                }
-                item {
-                    FocusCard(themeMode, navController, loginUiState, airConditionUiState, uiState)
-                    // Spacer(modifier = Modifier.height(20.dp))
-                }
-                item {
-                    TodayCourseCard(uiState.toDayCourseList, themeMode, loginUiState)
-                    // Spacer(modifier = Modifier.height(20.dp))
-                }
-                item {
-                    CommonAppsCard(
-                        uiState = uiState,
-                        navController = navController,
-                        navigateToApplication = navigateToApplication,
-                        applicationViewModel = applicationViewModel,
-                        loginUiState = loginUiState,
-                        themeMode = themeMode
-                    )
-                    // Spacer(modifier = Modifier.height(20.dp))
-                }
-                item {
-                    NewsCard(
-                        themeMode = themeMode,
-                        navController = navController,
-                        newsListStatus = uiState.newsList
-                    )
-                }
+            if (loginState.value.value) item {
+                SuggestChip(
+                    onClick = { navController.navigate(Destinations.Login.route) },
+                    onActionClick = { navController.navigate(Destinations.Login.route) },
+                    text = "暂未登录，登录后即可体验全部功能",
+                    type = SuggestChipType.ERROR,
+                    visibility = loginState.value,
+                    icon = Icons.AutoMirrored.Filled.ArrowForward
+                )
+                // Spacer(modifier = Modifier.height(20.dp))
+            }
+            item {
+                FocusCard(themeMode, navController, loginUiState, airConditionUiState, uiState)
+                // Spacer(modifier = Modifier.height(20.dp))
+            }
+            item {
+                TodayCourseCard(uiState.toDayCourseList, themeMode, loginUiState)
+                // Spacer(modifier = Modifier.height(20.dp))
+            }
+            item {
+                CommonAppsCard(
+                    uiState = uiState,
+                    navController = navController,
+                    navigateToApplication = navigateToApplication,
+                    applicationViewModel = applicationViewModel,
+                    loginUiState = loginUiState,
+                    themeMode = themeMode
+                )
+                // Spacer(modifier = Modifier.height(20.dp))
+            }
+            item {
+                NewsCard(
+                    themeMode = themeMode,
+                    navController = navController,
+                    newsListStatus = uiState.newsList
+                )
             }
         }
+    }
 
 }
 
@@ -215,7 +204,7 @@ fun NewsCard(
                                             label = news.title
                                         )
                                     }
-                            }
+                                }
                             }
                         }
 
@@ -358,7 +347,11 @@ fun FocusCardItem(
             Text(
                 text = content,
                 style = MaterialTheme.typography.titleMedium,
-                maxLines = 1
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.basicMarquee(
+                    repeatDelayMillis = 2_000,
+                )
             )
         },
         modifier = modifier
@@ -487,43 +480,6 @@ fun CommonAppsCard(
         },
         navigateTo = {
             navigateToApplication()
-        }
-    )
-}
-
-
-@Composable
-fun CalendarCard(modifier: Modifier) {
-    val today = LocalDate.now() // 阳历
-    val dayOfWeek = today.dayOfWeek
-    val dayOfWeekName = dayOfWeek.getDisplayName(TextStyle.FULL, Locale.CHINA)
-    val chineseToday = Lunar.fromDate(Date()) // 农历
-    MediumCardDisplay(
-        onClick = { },
-        modifier = modifier,
-        title = "${today.year}/${today.month.value}",
-        leadingContent = {
-            Text(
-                text = "${today.dayOfMonth}",
-                fontSize = 30.sp,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-        },
-        content = {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomStart
-            ) {
-                Text(
-                    text = "${chineseToday.monthInChinese}月${chineseToday.dayInChinese} $dayOfWeekName",
-                    color = Color.Gray
-                )
-            }
-        },
-        navigateTo = {
-            startCalendar()
         }
     )
 }
