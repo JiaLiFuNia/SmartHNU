@@ -64,13 +64,13 @@ fun Application(
     val hazeState = remember { HazeState() }
     val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
-        LazyVerticalGrid(
+    LazyVerticalGrid(
             contentPadding = PaddingValues(16.dp),
             columns = GridCells.Fixed(if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 2),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.padding(contentPadding),
-        ) {
+    ) {
             if (visibility.value.value) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     SuggestChip(
