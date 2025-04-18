@@ -1,23 +1,23 @@
 [versions]
-aboutlibraries = "12.0.0-a04"
+agp = "8.9.1"
+kotlin = "2.1.0"
+aboutlibraries = "12.0.0-b03"
 accompanistSystemuicontroller = "0.36.0"
 adaptiveNavigationAndroid = "1.1.0"
-agp = "8.9.1"
 composeWebviewMultiplatform = "1.9.40"
 converterGson = "2.11.0"
 converterScalarsVersion = "2.9.0"
 coreSplashscreen = "1.0.1"
 datastorePreferences = "1.1.4"
 eddsa = "0.3.0"
-haze = "1.3.0"
+haze = "1.5.3"
 hiltAndroid = "2.51.1"
 hiltNavigationCompose = "1.2.0"
 konfettiComposeVersion = "2.0.5"
 libraryVersion = "1.1.1"
 material = "1.7.8"
 jsoup = "1.18.1"
-kotlin = "2.1.0"
-coreKtx = "1.15.0"
+coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
@@ -25,20 +25,18 @@ kotlinxCoroutinesAndroid = "1.10.1"
 kotlinxSerializationJson = "1.8.0"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
-composeBom = "2025.03.01"
-lunarVersion = "1.6.3"
-material3AdaptiveNavigationSuite = "1.3.1"
+composeBom = "2025.04.00"
+material3AdaptiveNavigationSuite = "1.3.2"
 miuixAndroid = "0.3.8"
 navigationCompose = "2.8.9"
 coil = "2.6.0"
 appcompat = "1.7.0"
 retrofit = "2.11.0"
 retrofit2KotlinxSerializationConverterVersion = "0.8.0"
-securityCryptoVersion = "1.1.0-alpha06"
-uiTiles = "2.9.0"
+securityCryptoVersion = "1.1.0-alpha07"
 webkit = "1.13.0"
 vico = "2.0.1"
-material3 = "1.4.0-alpha11"
+material3 = "1.4.0-alpha12"
 
 [libraries]
 aboutlibraries = { module = "com.mikepenz:aboutlibraries", version.ref = "aboutlibraries" }
@@ -85,15 +83,13 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
-miuix-android = { module = "top.yukonga.miuix.kmp:miuix-android", version.ref = "miuixAndroid" }
-preference-library = { module = "me.zhanghai.compose.preference:library", version.ref = "libraryVersion" }
+miuix = { module = "top.yukonga.miuix.kmp:miuix-android", version.ref = "miuixAndroid" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit2-converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "converterScalarsVersion" }
-ui-tiles = { module = "com.github.alorma.compose-settings:ui-tiles", version.ref = "uiTiles" }
-xtail-lunar = { module = "cn.6tail:lunar", version.ref = "lunarVersion" }
-vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
+vico = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+about-library = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }

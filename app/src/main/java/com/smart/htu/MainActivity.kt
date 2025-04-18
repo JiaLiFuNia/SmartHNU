@@ -15,7 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity() 
 
     companion object {
         lateinit var snackBarHostState: SnackbarHostState

@@ -3,10 +3,10 @@ import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.about.library)
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
-    id("com.mikepenz.aboutlibraries.plugin")
     kotlin("plugin.serialization") version "2.1.0"
 }
 
@@ -38,11 +38,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     buildFeatures {
         compose = true
@@ -86,13 +86,9 @@ dependencies {
     implementation(libs.androidx.material3.adaptive.navigation.suite)
     implementation(libs.androidx.adaptive.navigation.android)
     implementation(libs.accompanist.systemuicontroller)
-    implementation(libs.ui.tiles)
-
-    // Preference
-    // implementation(libs.preference.library)
 
     // miuix
-    implementation(libs.miuix.android)
+    implementation(libs.miuix)
 
     // Splash
     implementation(libs.androidx.core.splashscreen)
@@ -111,9 +107,6 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
-
-    // 阴历
-    implementation(libs.xtail.lunar)
 
     // Konfetti
     implementation(libs.dionsegijn.konfetti.compose)
@@ -146,7 +139,7 @@ dependencies {
     implementation(libs.aboutlibraries.compose.m3)
 
     // vico
-    implementation(libs.vico.compose.m3)
+    implementation(libs.vico)
 
     implementation(libs.eddsa)
 }
