@@ -5,9 +5,9 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.about.library)
-    id("kotlin-kapt")
-    id("dagger.hilt.android.plugin")
-    kotlin("plugin.serialization") version "2.1.0"
+    alias(libs.plugins.ksp)
+    id("com.google.dagger.hilt.android")
+    kotlin("plugin.serialization") version "2.1.20"
 }
 
 android {
@@ -105,23 +105,22 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
+    ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
-    // Konfetti
-    implementation(libs.dionsegijn.konfetti.compose)
+    // Confetti
+    implementation(libs.konfetti)
 
     // haze
     implementation(libs.haze)
 
     // webview
     implementation(libs.androidx.webkit)
-    implementation(libs.compose.webview.multiplatform)
+    implementation(libs.compose.webview)
 
     // json
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.jakewharton.retrofit2.kotlinx.serialization.converter)
-    implementation(libs.converter.gson)
+    implementation(libs.gson)
 
     // Jsoup
     implementation(libs.jsoup)
@@ -141,5 +140,6 @@ dependencies {
     // vico
     implementation(libs.vico)
 
+    // JWT
     implementation(libs.eddsa)
 }

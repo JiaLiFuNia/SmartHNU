@@ -1,6 +1,7 @@
 [versions]
 agp = "8.9.1"
 kotlin = "2.1.0"
+ksp = "2.0.21-1.0.27"
 aboutlibraries = "12.0.0-b03"
 accompanistSystemuicontroller = "0.36.0"
 adaptiveNavigationAndroid = "1.1.0"
@@ -11,7 +12,7 @@ coreSplashscreen = "1.0.1"
 datastorePreferences = "1.1.4"
 eddsa = "0.3.0"
 haze = "1.5.3"
-hiltAndroid = "2.51.1"
+hiltAndroid = "2.56.1"
 hiltNavigationCompose = "1.2.0"
 konfettiComposeVersion = "2.0.5"
 libraryVersion = "1.1.1"
@@ -22,7 +23,7 @@ junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 kotlinxCoroutinesAndroid = "1.10.1"
-kotlinxSerializationJson = "1.8.0"
+serialization = "1.8.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
 composeBom = "2025.04.00"
@@ -57,9 +58,9 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite", version.ref = "material3AdaptiveNavigationSuite" }
-compose-webview-multiplatform = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "composeWebviewMultiplatform" }
-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
-dionsegijn-konfetti-compose = { module = "nl.dionsegijn:konfetti-compose", version.ref = "konfettiComposeVersion" }
+compose-webview = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "composeWebviewMultiplatform" }
+gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
+konfetti = { module = "nl.dionsegijn:konfetti-compose", version.ref = "konfettiComposeVersion" }
 eddsa = { module = "net.i2p.crypto:eddsa", version.ref = "eddsa" }
 haze = { module = "dev.chrisbanes.haze:haze-materials", version.ref = "haze" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
@@ -82,7 +83,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3",
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 miuix = { module = "top.yukonga.miuix.kmp:miuix-android", version.ref = "miuixAndroid" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit2-converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "converterScalarsVersion" }
@@ -93,3 +94,4 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 about-library = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
