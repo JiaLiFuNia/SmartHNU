@@ -63,14 +63,18 @@ jobs:
         run: |
           if [ ! -z "${BOT_TOKEN}" ]; then
             if [ ! -z "${CHANNEL_ID}" ]; then
-              export RELEASE=$(find ./app/build/outputs/apk/release -name "*-release-signed.apk" | head -n 1)
-              echo "Debug: RELEASE path is $RELEASE"
+              RELEASES=$(find ./app/build/outputs/apk/release -name "*-release-signed.apk")
+              echo "Debug: RELEASE paths are $RELEASES"
 
-              if [ -f "$RELEASE" ]; then
+              if [ ! -z "$RELEASES" ]; then
                 ESCAPED=$(python3 -c 'import json,os,urllib.parse; print(urllib.parse.quote(json.dumps(os.environ["COMMIT_MESSAGE"])))')
-                curl -v "https://api.telegram.org/bot${BOT_TOKEN}/sendMediaGroup?chat_id=${CHANNEL_ID}&media=%5b%7b%22type%22%3a%22document%22%2c+%22media%22%3a%22attach%3a%2f%2frelease%22%2c%22parse_mode%22%3a%22MarkdownV2%22%2c%22caption%22%3a${ESCAPED}%7D%5D" -F release="@$RELEASE"
+                MEDIA=""
+                for RELEASE in $RELEASES; do
+                  MEDIA="$MEDIA%7B%22type%22%3A%22document%22%2C%22media%22%3A%22attach%3A%2F%2F$(basename $RELEASE)%22%7D%2C"
+                  curl -F "$(basename $RELEASE)=@$RELEASE" "https://api.telegram.org/bot${BOT_TOKEN}/sendMediaGroup?chat_id=${CHANNEL_ID}&media=%5B$MEDIA%5D"
+                done
               else
-                echo "Error: APK file not found at $RELEASE"
+                echo "Error: No APK files found in release directory"
                 exit 1
               fi
             fi
