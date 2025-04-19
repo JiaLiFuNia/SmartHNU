@@ -108,7 +108,7 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[SSO_TICKET] = Gson().toJson(cookies) }
     }
 
-    override suspend fun changeRentBookList(list: List<RentBookEntity>) {
+    override suspend fun addRentBookList(list: List<RentBookEntity>) {
         context.dataStore.edit { it[RENT_BOOK_LIST] = Gson().toJson(list) }
     }
 

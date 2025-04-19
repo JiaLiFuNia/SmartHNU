@@ -17,7 +17,7 @@ interface DataStoreService {
     suspend fun changeUsername(name: String)
     suspend fun changeLoginState(state: Int)
     suspend fun saveCookies(cookies: List<Cookie>)
-    suspend fun changeRentBookList(list: List<RentBookEntity>)
+    suspend fun addRentBookList(list: List<RentBookEntity>)
     suspend fun saveStudentId(id: String)
     suspend fun changeBuildingId(id: String)
     suspend fun changeRoomId(room: String)
