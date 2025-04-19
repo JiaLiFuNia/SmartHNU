@@ -41,7 +41,7 @@ class LibrarySearchViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(LibrarySearchUiState())
     val uiState: StateFlow<LibrarySearchUiState> = _uiState.asStateFlow()
 
-    private val _rentBookList = dataStoreRepo.observeRentBookList()
+    private val rentBookList = dataStoreRepo.observeRentBookList()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -50,7 +50,7 @@ class LibrarySearchViewModel @Inject constructor(
             }
     )
 
-    private val _blurStateFlow = dataStoreRepo.observerBlurState()
+    private val blurStateFlow = dataStoreRepo.observerBlurState()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -59,7 +59,7 @@ class LibrarySearchViewModel @Inject constructor(
             }
         )
 
-    private val _searchHistoryList = dataStoreRepo.observeBookSearchHistoryList()
+    private val searchHistoryList = dataStoreRepo.observeBookSearchHistoryList()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -70,23 +70,23 @@ class LibrarySearchViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _rentBookList.collect { value ->
+            rentBookList.collect { value ->
                 _uiState.update { it.copy(rentList = value) }
             }
         }
         viewModelScope.launch {
-            _blurStateFlow.collect { value ->
+            blurStateFlow.collect { value ->
                 _uiState.update { it.copy(blurEffect = value) }
             }
         }
         viewModelScope.launch {
-            _searchHistoryList.collect { value ->
+            searchHistoryList.collect { value ->
                 _uiState.update { it.copy(searchHistoryList = value) }
             }
         }
     }
 
-    fun changeRentBookState(book: RentBookEntity) {
+    fun addRentBookList(book: RentBookEntity) {
         viewModelScope.launch {
             val currentRentList = _uiState.value.rentList.toMutableList()
             if (currentRentList.contains(book))
@@ -94,7 +94,7 @@ class LibrarySearchViewModel @Inject constructor(
             else
                 if (uiState.value.rentList.size <= 4)
                     currentRentList.apply { add(book) }
-            dataStoreRepo.changeRentBookList(currentRentList)
+            dataStoreRepo.addRentBookList(currentRentList)
             _uiState.update { it.copy(rentList = currentRentList) }
         }
     }

@@ -55,8 +55,10 @@ import com.smart.htu.api.module.Notice
 import com.smart.htu.api.module.NoticeType
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.svgVector.DrawableVectors
+import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.component.svgVector.drawablevectors.emptyList
 import com.smart.htu.screens.navigateToWebView
+import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.startWebUrl
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
@@ -65,6 +67,7 @@ import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
@@ -79,17 +82,17 @@ fun MessageScreen(
     val uiState = viewModel.uiState.collectAsState().value
     val hazeState = remember { HazeState() }
     val scope = rememberCoroutineScope()
-    val state = rememberPullToRefreshState()
-    var isRefreshing by remember { mutableStateOf(false) }
+
+    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
     val onRefresh: () -> Unit = {
-        isRefreshing = true
         scope.launch {
-            viewModel.getNoticeByGiteeService()
-            isRefreshing = false
+            pullToRefreshState.completeRefreshing {
+                viewModel.getNoticeByGiteeService()
+            }
         }
     }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    Scaffold(
+    top.yukonga.miuix.kmp.basic.Scaffold(
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -125,29 +128,16 @@ fun MessageScreen(
             )
         }
     ) {
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = { onRefresh() },
-            state = state,
-            indicator = {
-                Indicator(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = it.calculateTopPadding()),
-                    isRefreshing = isRefreshing,
-                    state = state
-                )
-            },
+        PullToRefresh(
+            pullToRefreshState = pullToRefreshState,
+            refreshTexts = PULL_TO_REFRESH_TEXT,
+            onRefresh = onRefresh,
             modifier = Modifier
                 .fillMaxSize()
+                .padding(it)
         ) {
             top.yukonga.miuix.kmp.basic.LazyColumn(
-                contentPadding = PaddingValues(
-                    top = it.calculateTopPadding() + 16.dp,
-                    start = 16.dp,
-                    end = 16.dp,
-                    bottom = 16.dp
-                ),
+                contentPadding = PaddingValues(16.dp),
                 modifier = Modifier
                     .hazeSource(state = hazeState)
             ) {
@@ -195,7 +185,7 @@ fun LazyItemScope.NoticeList(
     else
         EmptyContent(
             text = "暂无消息",
-            image = DrawableVectors.emptyList()
+            image = DrawableVectors.emptyData()
         )
 }
 

@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
+import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.RETRIEVE_PASSWORD
 import com.smart.htu.utils.startLaunchAPK
@@ -307,7 +308,7 @@ fun LoginScreen(
                         viewModel.login()
                     }
                 },
-                colors = ButtonDefaults.textButtonColorsPrimary(),
+                colors = ButtonDefaults.textButtonPrimaryColors(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(36.dp)

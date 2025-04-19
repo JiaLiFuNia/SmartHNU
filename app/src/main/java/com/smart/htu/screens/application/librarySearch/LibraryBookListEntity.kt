@@ -43,6 +43,7 @@ data class LibraryBookDetail(
 
 
 data class RentBookEntity(
+    val imageUrl: String,
     val bookName: String,
     val publisher: String,
     val id: String

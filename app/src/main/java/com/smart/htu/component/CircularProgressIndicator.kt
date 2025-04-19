@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.ProgressIndicatorDefaults
@@ -33,13 +34,11 @@ fun LazyItemScope.CircularProgressIndicator(
                 size = size
             )
             Text(
-                text = "正在加载中...",
+                text = "正在加载中",
                 modifier = Modifier.padding(top = 8.dp),
-                style = MiuixTheme.textStyles.footnote1.copy(
-                    color = MiuixTheme.colorScheme.onSurface.copy(
-                        alpha = 0.7f
-                    )
-                ),
+                style = MiuixTheme.textStyles.subtitle.copy(
+                    color = Color.Gray
+                )
             )
         }
         // CircularWavyProgressIndicator(modifier = Modifier.padding(top = 88.dp))
@@ -62,9 +61,11 @@ fun CircularProgressIndicator(
         ) {
             top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator(size = size)
             Text(
-                text = "正在加载中...",
+                text = "正在加载中",
                 modifier = Modifier.padding(top = 8.dp),
-                color = MiuixTheme.colorScheme.onSurface.copy(0.7f)
+                style = MiuixTheme.textStyles.subtitle.copy(
+                    color = Color.Gray
+                )
             )
         }
         //CircularWavyProgressIndicator(modifier = Modifier.size(size))

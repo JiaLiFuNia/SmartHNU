@@ -15,10 +15,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun LazyItemScope.EmptyContent(
@@ -49,10 +51,8 @@ fun LazyItemScope.EmptyContent(
             Text(
                 text = text,
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurface.copy(
-                        0.6f
-                    )
+                style = MiuixTheme.textStyles.subtitle.copy(
+                    color = Color.Gray
                 )
             )
         }
@@ -89,10 +89,8 @@ fun EmptyContent(
             Text(
                 text = text,
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurface.copy(
-                        0.6f
-                    )
+                style = MiuixTheme.textStyles.subtitle.copy(
+                    color = Color.Gray
                 )
             )
         }

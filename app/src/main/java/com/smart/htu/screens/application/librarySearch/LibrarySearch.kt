@@ -1,6 +1,5 @@
 package com.smart.htu.screens.application.librarySearch
 
-import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
@@ -20,7 +19,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -52,28 +58,21 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.SheetState
+import androidx.compose.material3.SearchBarDefaults.inputFieldColors
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -86,6 +85,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -94,20 +94,24 @@ import coil.request.ImageRequest
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.BasicBottomSheet
+import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.card.LargeCardDisplay
+import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.copyContent
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
-import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.InputField
+import top.yukonga.miuix.kmp.basic.PullToRefresh
+import top.yukonga.miuix.kmp.basic.SearchBar
+import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class,
+    ExperimentalMaterial3Api::class,
     ExperimentalMaterial3ExpressiveApi::class
 )
 @Composable
@@ -125,16 +129,15 @@ fun LibrarySearchScreen(
     val searchTextFieldState = rememberTextFieldState()
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    val state = rememberPullToRefreshState()
-    var isRefreshing by remember { mutableStateOf(false) }
+
+    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
     val onRefresh: () -> Unit = {
-        isRefreshing = true
         scope.launch {
-            delay(2000)
-            isRefreshing = false
+            pullToRefreshState.completeRefreshing {
+                delay(2000)
+            }
         }
     }
 
@@ -148,7 +151,7 @@ fun LibrarySearchScreen(
     }
 
     top.yukonga.miuix.kmp.basic.Scaffold(
-        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else colorScheme.background,
+        containerColor = MiuixTheme.colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = {
             SnackbarHost(hostState = snackBarHostState)
@@ -172,64 +175,47 @@ fun LibrarySearchScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() }) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "back"
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(imageVector = Icons.Outlined.Info, contentDescription = "info")
                     }
-                },
-                modifier = Modifier.hazeEffect(
-                    state = hazeState,
-                    style = HazeMaterials.regular()
-                ) {
-                    blurRadius = 30.dp
-                    blurEnabled = uiState.blurEffect
-                },
+                }
             )
         },
         floatingActionButton = {
-                AnimatedVisibility(
-                    modifier = Modifier,
-                    visible = lazyListState.firstVisibleItemIndex != 0,
-                    enter = slideInVertically(initialOffsetY = { it * 2 }),
-                    exit = slideOutVertically(targetOffsetY = { it * 2 }),
+            AnimatedVisibility(
+                modifier = Modifier,
+                visible = lazyListState.firstVisibleItemIndex != 0,
+                enter = slideInVertically(initialOffsetY = { it * 2 }),
+                exit = slideOutVertically(targetOffsetY = { it * 2 }),
+            ) {
+                FloatingActionButton(
+                    onClick = { scope.launch { lazyListState.scrollToItem(0) } }
                 ) {
-                    FloatingActionButton(
-                        onClick = { scope.launch { lazyListState.scrollToItem(0) } }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.outline_arrow_upward_24),
-                            contentDescription = "up"
-                        )
-                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_arrow_upward_24),
+                        contentDescription = "up"
+                    )
                 }
+            }
         }
     ) {
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = { onRefresh() },
-            state = state,
-            indicator = {
-                Indicator(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = it.calculateTopPadding()),
-                    isRefreshing = isRefreshing,
-                    state = state
-                )
-            },
+        PullToRefresh(
+            pullToRefreshState = pullToRefreshState,
+            onRefresh = onRefresh,
+            refreshTexts = PULL_TO_REFRESH_TEXT,
             modifier = Modifier
-                .padding()
+                .fillMaxSize()
+                .padding(it)
         ) {
             LazyColumn(
-                contentPadding = PaddingValues(
-                    top = it.calculateTopPadding() + 15.dp,
-                    start = 15.dp,
-                    end = 15.dp,
-                    bottom = 15.dp
-                ),
+                contentPadding = PaddingValues(16.dp),
                 state = lazyListState,
                 modifier = Modifier
                     .hazeSource(state = hazeState)
@@ -238,12 +224,16 @@ fun LibrarySearchScreen(
             ) {
                 item {
                     DockedSearchBar(
+                        colors = SearchBarDefaults.colors(containerColor = MiuixTheme.colorScheme.surfaceContainerHigh),
                         modifier = Modifier
-                            .align(Alignment.TopCenter)
                             .heightIn(max = 240.dp)
                             .fillMaxWidth(),
                         inputField = {
                             SearchBarDefaults.InputField(
+                                colors = inputFieldColors(
+                                    focusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh,
+                                    unfocusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh
+                                ),
                                 modifier = Modifier.fillMaxWidth(),
                                 state = searchTextFieldState,
                                 onSearch = {
@@ -329,8 +319,13 @@ fun LibrarySearchScreen(
                                         viewModel.libraryBookDetail(item.id)
                                     },
                                     onFavorite = {
-                                        viewModel.changeRentBookState(
-                                            RentBookEntity(item.title, item.publisher, item.id)
+                                        viewModel.addRentBookList(
+                                            RentBookEntity(
+                                                bookName = item.title,
+                                                publisher = item.publisher,
+                                                id = item.id,
+                                                imageUrl = item.imageUrl
+                                            )
                                         )
                                         val message = when {
                                             uiState.rentList.size > 4 && !uiState.rentList.any { item.id == it.id } -> "最多添加 5 本"
@@ -340,16 +335,17 @@ fun LibrarySearchScreen(
                                         scope.launch {
                                             val result =
                                                 snackBarHostState.showSnackbar(
-                                                message = message,
+                                                    message = message,
                                                     actionLabel = "取消",
-                                                duration = SnackbarDuration.Short
-                                            )
+                                                    duration = SnackbarDuration.Short
+                                                )
                                             when (result) {
-                                                SnackbarResult.ActionPerformed -> viewModel.changeRentBookState(
+                                                SnackbarResult.ActionPerformed -> viewModel.addRentBookList(
                                                     RentBookEntity(
-                                                        item.title,
-                                                        item.publisher,
-                                                        item.id
+                                                        bookName = item.title,
+                                                        publisher = item.publisher,
+                                                        id = item.id,
+                                                        imageUrl = item.imageUrl
                                                     )
                                                 )
 
@@ -451,76 +447,63 @@ fun RentBooksList(
         title = "待借清单(${uiState.rentList.size}/5)",
         leadingIconPainting = R.drawable.book_4_24px
     ) {
-        Column(
-            modifier = Modifier
-        ) {
-            if (uiState.rentList.isNotEmpty()) {
-                uiState.rentList.forEachIndexed { index, it ->
+        if (uiState.rentList.isNotEmpty()) {
+            LazyRow(
+                modifier = Modifier.padding(4.dp)
+            ) {
+                itemsIndexed(uiState.rentList) { index, it ->
                     Card(
                         colors = CardDefaults.cardColors(Color.Transparent),
                         onClick = {
                             onClick()
                             viewModel.libraryBookDetail(it.id)
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
+                        modifier = Modifier.widthIn(max = 108.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(
-                                horizontal = 12.dp,
-                                vertical = if (index == 0 || index == uiState.rentList.size - 1) 10.dp else 5.dp
-                            )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(4.dp)
                         ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.outline_book_24),
-                                contentDescription = "book",
-                                tint = colorScheme.primary,
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(it.imageUrl)
+                                    .crossfade(true)
+                                    .addHeader("User-Agent", "Mozilla/5.0")
+                                    .error(R.drawable.book_failure)
+                                    .build(),
+                                contentDescription = "picture",
+                                contentScale = ContentScale.Crop,
                                 modifier = Modifier
+                                    .width(100.dp)
+                                    .aspectRatio(10 / 15f)
+                                    .clip(RoundedCornerShape(10.dp)),
+                                placeholder = painterResource(id = R.drawable.book_failure)
                             )
-                            Column(
+                            Text(
+                                text = it.bookName,
+                                style = MiuixTheme.textStyles.body2,
+                                maxLines = 1,
+                                textAlign = TextAlign.Start,
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .padding(horizontal = 10.dp)
-                            ) {
-                                Text(
-                                    text = it.bookName,
-                                    fontSize = 18.sp,
-                                    maxLines = 1,
-                                    modifier = Modifier.basicMarquee(
+                                    .basicMarquee(
                                         repeatDelayMillis = 2_000,
                                     )
-                                )
-                                Text(
-                                    text = it.publisher,
-                                    color = colorScheme.onSurface.copy(alpha = 0.6f),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                            FilledTonalIconButton(onClick = { viewModel.changeRentBookState(it) }) {
-                                Icon(
-                                    imageVector = Icons.Outlined.CheckCircle,
-                                    contentDescription = null
-                                )
-                            }
+                                    .fillMaxWidth()
+                            )
+                            Text(
+                                text = it.publisher,
+                                style = MiuixTheme.textStyles.footnote1.copy(color = Color.Gray),
+                                maxLines = 1,
+                                textAlign = TextAlign.Start,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         }
                     }
                 }
-            } else
-                Card(
-                    colors = CardDefaults.cardColors(Color.Transparent),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp)
-                ) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "搜索以添加待借书籍",
-                            color = colorScheme.onBackground.copy(0.38f)
-                        )
-                    }
-                }
+            }
+        } else {
+            EmptyContent(text = "搜索以添加待借书籍", modifier = Modifier.height(120.dp))
         }
     }
 }
@@ -532,7 +515,12 @@ fun LibrarySingleBook(
     onClick: () -> Unit = {},
     onFavorite: () -> Unit = {}
 ) {
-    Card(modifier = Modifier.fillMaxWidth(), onClick = { onClick() }) {
+    top.yukonga.miuix.kmp.basic.Surface(
+        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        color = MiuixTheme.colorScheme.surface
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -601,9 +589,10 @@ fun LibrarySingleBook(
 @Composable
 fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
     val scope = rememberCoroutineScope()
-    Card(
+    top.yukonga.miuix.kmp.basic.Surface(
+        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp),
+        color = MiuixTheme.colorScheme.secondaryContainer,
     ) {
         Row(
             modifier = Modifier
@@ -649,7 +638,11 @@ fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
 
 @Composable
 fun LibrarySingleBookDetail(content: LibraryBookDetail) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    top.yukonga.miuix.kmp.basic.Surface(
+        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        modifier = Modifier.fillMaxWidth(),
+        color = MiuixTheme.colorScheme.secondaryContainer,
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth(),

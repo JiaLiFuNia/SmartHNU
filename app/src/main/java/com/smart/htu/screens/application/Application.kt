@@ -65,67 +65,67 @@ fun Application(
     val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
     LazyVerticalGrid(
-            contentPadding = PaddingValues(16.dp),
-            columns = GridCells.Fixed(if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 2),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(contentPadding),
+        contentPadding = PaddingValues(16.dp),
+        columns = GridCells.Fixed(if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 2),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.padding(contentPadding),
     ) {
-            if (visibility.value.value) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    SuggestChip(
-                        onClick = { navController.navigate(Destinations.Login.route) },
-                        onActionClick = { navController.navigate(Destinations.Login.route) },
-                        text = "暂未登录，登录后即可体验全部功能",
-                        type = SuggestChipType.ERROR,
-                        visibility = visibility.value,
-                        icon = Icons.AutoMirrored.Filled.ArrowForward
-                    )
-                }
-            }
-
+        if (visibility.value.value) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SuggestChip(
-                    onClick = { },
-                    onActionClick = { },
-                    text = "点击反馈提交你的需求",
-                    type = SuggestChipType.INFO,
-                    visibility = mutableStateOf(true),
-                    icon = Icons.Outlined.Info
+                    onClick = { navController.navigate(Destinations.Login.route) },
+                    onActionClick = { navController.navigate(Destinations.Login.route) },
+                    text = "暂未登录，登录后即可体验全部功能",
+                    type = SuggestChipType.ERROR,
+                    visibility = visibility.value,
+                    icon = Icons.AutoMirrored.Filled.ArrowForward
                 )
             }
+        }
 
-            SmallCardCategory.entries.forEach { item ->
-                val appList = uiState.appList.filter { app ->
-                    app.category == item
-                }
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    SmallTitle(
-                        text = item.category,
-                        insideMargin = PaddingValues(start = 12.dp, top = 8.dp)
-                    )
-                }
-                items(appList) { app ->
-                    SmallMediumCardDisplay(
-                        themeMode = themeMode,
-                        enabled = (loginUiState.isGuest && app.guestEnable) || loginUiState.isLogSuccess,
-                        content = app,
-                        modifier = Modifier,
-                        onLongClick = {
-                            viewModel.changeCommonAppListState(app)
-                        },
-                        onCLick = {
-                            navController.navigateWithAuthCheck(
-                                isGuest = loginUiState.isGuest && app.guestEnable,
-                                route = app.route,
-                                routeType = app.routeType,
-                                logState = loginUiState.isLogSuccess,
-                                label = app.label
-                            )
-                        },
-                        isCommon = !uiState.appListIsCommonList.contains(app)
-                    )
-                }
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            SuggestChip(
+                onClick = { },
+                onActionClick = { },
+                text = "点击反馈提交你的需求",
+                type = SuggestChipType.INFO,
+                visibility = mutableStateOf(true),
+                icon = Icons.Outlined.Info
+            )
+        }
+
+        SmallCardCategory.entries.forEach { item ->
+            val appList = uiState.appList.filter { app ->
+                app.category == item
+            }
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                SmallTitle(
+                    text = item.category,
+                    insideMargin = PaddingValues(start = 12.dp, top = 8.dp)
+                )
+            }
+            items(appList) { app ->
+                SmallMediumCardDisplay(
+                    themeMode = themeMode,
+                    enabled = (loginUiState.isGuest && app.guestEnable) || loginUiState.isLogSuccess,
+                    content = app,
+                    modifier = Modifier,
+                    onLongClick = {
+                        viewModel.changeCommonAppListState(app)
+                    },
+                    onCLick = {
+                        navController.navigateWithAuthCheck(
+                            isGuest = loginUiState.isGuest && app.guestEnable,
+                            route = app.route,
+                            routeType = app.routeType,
+                            logState = loginUiState.isLogSuccess,
+                            label = app.label
+                        )
+                    },
+                    isCommon = !uiState.appListIsCommonList.contains(app)
+                )
             }
         }
+    }
 }

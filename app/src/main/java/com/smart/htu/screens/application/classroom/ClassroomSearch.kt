@@ -2,13 +2,16 @@ package com.smart.htu.screens.application.classroom
 
 import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.Space
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -68,7 +72,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.smart.htu.R
+import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.utils.Constants.Companion.COURSE_PERIOD
+import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.checkTimeInterval
 import com.smart.htu.utils.getCurrentDates
 import com.smart.htu.utils.timeStamp2DateStr
@@ -78,6 +84,7 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalDate
@@ -111,14 +118,13 @@ fun ClassroomSearchScreen(
     )
     val confirmEnabled = derivedStateOf { datePickerState.selectedDateMillis != null }
 
-    val state = rememberPullToRefreshState()
+    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
-    var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
-        isRefreshing = true
         coroutineScope.launch {
-            viewModel.getClassroomOccupation(selectedDate, selectedRoomIndex)
-            isRefreshing = false
+            pullToRefreshState.completeRefreshing {
+                viewModel.getClassroomOccupation(selectedDate, selectedRoomIndex)
+            }
         }
     }
 
@@ -128,8 +134,8 @@ fun ClassroomSearchScreen(
 
     val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    Scaffold(
-        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else colorScheme.background,
+    top.yukonga.miuix.kmp.basic.Scaffold(
+        containerColor = MiuixTheme.colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
@@ -153,7 +159,10 @@ fun ClassroomSearchScreen(
                     IconButton(
                         onClick = { navController.popBackStack() }
                     ) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "back"
+                        )
                     }
                 },
                 actions = {
@@ -176,29 +185,14 @@ fun ClassroomSearchScreen(
             )
         }
     ) {
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = { onRefresh() },
-            state = state,
-            indicator = {
-                Indicator(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = it.calculateTopPadding()),
-                    isRefreshing = isRefreshing,
-                    state = state
-                )
-            },
-            modifier = Modifier
-                .fillMaxSize()
+        PullToRefresh(
+            pullToRefreshState = pullToRefreshState,
+            onRefresh = onRefresh,
+            refreshTexts = PULL_TO_REFRESH_TEXT,
+            modifier = Modifier.padding(it)
         ) {
             LazyColumn(
-                contentPadding = PaddingValues(
-                    top = it.calculateTopPadding() + 16.dp,
-                    start = 16.dp,
-                    end = 16.dp,
-                    bottom = 16.dp
-                ),
+                contentPadding = PaddingValues(16.dp),
                 modifier = Modifier
                     .hazeSource(state = hazeState)
                     .fillMaxSize()
@@ -265,7 +259,10 @@ fun ClassroomSearchScreen(
                             },
                             state = tooltipState
                         ) {
-                            IconButton(onClick = { coroutineScope.launch { tooltipState.show() } }, modifier = Modifier.size(20.dp)) {
+                            IconButton(
+                                onClick = { coroutineScope.launch { tooltipState.show() } },
+                                modifier = Modifier.size(20.dp)
+                            ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.help_24px),
                                     contentDescription = "help"
@@ -275,12 +272,7 @@ fun ClassroomSearchScreen(
                     }
                     Log.i("TAG666", "${uiState.isLoading} ${uiState.isTokenValid}")
                     if (uiState.isLoading || !uiState.isTokenValid || uiState.buildingsOccupation[selectedRoomIndex] == null) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularWavyProgressIndicator()
-                        }
+                        CircularProgressIndicator()
                     } else {
                         Column(
                             modifier = Modifier.fillMaxWidth()
@@ -300,58 +292,28 @@ fun ClassroomSearchScreen(
                             )
                             val selectFloorIndex =
                                 remember { derivedStateOf { floorPagerState.currentPage } }
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 5.dp)
-                                    .padding(bottom = 10.dp),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                    TabRow(
-                                        containerColor = Color.Transparent,
-                                        selectedTabIndex = floorPagerState.currentPage,
-                                        indicator = { tabPositions ->
-                                            TabRowDefaults.PrimaryIndicator(
-                                                modifier = Modifier
-                                                    .tabIndicatorOffset(tabPositions[floorPagerState.currentPage]),
-                                                width = tabPositions[floorPagerState.currentPage].width / 1.5f,
-                                                shape = RoundedCornerShape(
-                                                    topStart = 3.dp,
-                                                    topEnd = 3.dp
-                                                ),
-                                            )
-                                        },
-                                        divider = {}
-                                    ) {
-                                        allRoomListGroupByFloor.forEachIndexed { index, floor ->
-                                            Tab(
-                                                text = {
-                                                    Text(
-                                                        text = stringResource(
-                                                            id = when (floor.first().floorNumber) {
-                                                                1 -> R.string.first_floor
-                                                                2 -> R.string.second_floor
-                                                                3 -> R.string.third_floor
-                                                                4 -> R.string.fourth_floor
-                                                                5 -> R.string.fifth_floor
-                                                                else -> R.string.other
-                                                            }
-                                                        )
-                                                    )
-                                                },
-                                                selected = selectFloorIndex.value == index,
-                                                onClick = {
-                                                    coroutineScope.launch {
-                                                        floorPagerState.animateScrollToPage(index)
-                                                    }
-                                                },
-                                                selectedContentColor = colorScheme.primary,
-                                                unselectedContentColor = colorScheme.onSurface,
-                                            )
-                                        }
+                            val tabRowItem = allRoomListGroupByFloor.map {
+                                stringResource(
+                                    id = when (it.first().floorNumber) {
+                                        1 -> R.string.first_floor
+                                        2 -> R.string.second_floor
+                                        3 -> R.string.third_floor
+                                        4 -> R.string.fourth_floor
+                                        5 -> R.string.fifth_floor
+                                        else -> R.string.other
+                                    }
+                                )
+                            }
+                            top.yukonga.miuix.kmp.basic.TabRow(
+                                tabs = tabRowItem,
+                                selectedTabIndex = selectFloorIndex.value,
+                                onTabSelected = {
+                                    coroutineScope.launch {
+                                        floorPagerState.animateScrollToPage(it)
                                     }
                                 }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
                             HorizontalPager(
                                 verticalAlignment = Alignment.Top,
                                 state = floorPagerState,
@@ -384,6 +346,9 @@ fun ClassroomSearchScreen(
 
     if (showDatePicker) {
         DatePickerDialog(
+            colors = DatePickerDefaults.colors(
+                containerColor = MiuixTheme.colorScheme.surface
+            ),
             onDismissRequest = {
                 onShowDatePicker(false)
             },
@@ -410,7 +375,10 @@ fun ClassroomSearchScreen(
                 }
             }
         ) {
-            DatePicker(state = datePickerState)
+            DatePicker(
+                state = datePickerState,
+                colors = DatePickerDefaults.colors(containerColor = MiuixTheme.colorScheme.surface)
+            )
         }
     }
 }

@@ -402,7 +402,6 @@ fun TodayCourseCard(
                 else -> {
                     if (loginUiState.loginJWCState == 1)
                         CircularProgressIndicator(
-                            size = 24.dp,
                             modifier = Modifier
                                 .height(86.dp)
                                 .fillMaxWidth()
