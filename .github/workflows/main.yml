@@ -63,12 +63,12 @@ jobs:
         run: |
           if [ ! -z "${BOT_TOKEN}" ]; then
             if [ ! -z "${CHANNEL_ID}" ]; then
-              # 使用 find 命令查找所有符合条件的 release-signed.apk 文件
-              APK_FILES=$(find ./app/build/outputs/apk/release -name "*-release-signed.apk")
-              echo "Debug: APK files found: $APK_FILES"
+              # 查找所有 signed apk
+              mapfile -t APK_FILES < <(find ./app/build/outputs/apk/release -name "*-release-signed.apk" | sort)
+              echo "Debug: APK files found:"
+              printf '%s\n' "${APK_FILES[@]}"
 
-              # 检查是否找到了文件
-              if [ -z "$APK_FILES" ]; then
+              if [ ${#APK_FILES[@]} -eq 0 ]; then
                 echo "Error: No APK files found!"
                 exit 1
               fi
@@ -76,25 +76,23 @@ jobs:
               # 转义提交信息
               ESCAPED=$(python3 -c 'import json,os,urllib.parse; print(urllib.parse.quote(json.dumps(os.environ["COMMIT_MESSAGE"])))')
 
-              # 构建 media 参数
+              # 构建 media JSON
               MEDIA_JSON=""
-              INDEX=1
-              for APK in $APK_FILES; do
-                MEDIA_JSON="${MEDIA_JSON}{\"type\":\"document\",\"media\":\"attach://file${INDEX}\",\"caption\":\"${ESCAPED}\"},"
-                INDEX=$((INDEX+1))
+              for i in "${!APK_FILES[@]}"; do
+                INDEX=$((i + 1))
+                MEDIA_JSON+="{\"type\":\"document\",\"media\":\"attach://file${INDEX}\",\"caption\":\"${ESCAPED}\"},"
+              done
+              MEDIA_JSON="[${MEDIA_JSON%,}]"  # 去掉末尾的逗号
+
+              # 构建 curl 命令
+              CURL_CMD=(curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMediaGroup" -F "chat_id=${CHANNEL_ID}" -F "media=${MEDIA_JSON}")
+              for i in "${!APK_FILES[@]}"; do
+                INDEX=$((i + 1))
+                CURL_CMD+=(-F "file${INDEX}=@${APK_FILES[$i]}")
               done
 
-              # 去掉末尾的逗号
-              MEDIA_JSON="${MEDIA_JSON%,}"
-
-              # 上传文件
-              FILE_INDEX=1
-              for APK in $APK_FILES; do
-                curl -v "https://api.telegram.org/bot${BOT_TOKEN}/sendMediaGroup" \
-                  -F "chat_id=${CHANNEL_ID}" \
-                  -F "media=[${MEDIA_JSON}]" \
-                  -F "file${FILE_INDEX}=@${APK}"
-                FILE_INDEX=$((FILE_INDEX+1))
-              done
+              # 执行 curl
+              echo "Uploading to Telegram..."
+              "${CURL_CMD[@]}"
             fi
           fi
