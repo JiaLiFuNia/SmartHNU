@@ -56,10 +56,11 @@ fun LargeCardDisplay(
             ) {
                 Icon(
                     painter = painterResource(id = leadingIconPainting),
-                    contentDescription = "icon"
+                    contentDescription = "icon",
+                    tint = MaterialTheme.colorScheme.onSurface,
                 )
                 Spacer(modifier = Modifier.width(5.dp))
-                Text(text = title, fontSize = 17.sp)
+                Text(text = title, style = MiuixTheme.textStyles.main)
             }
             if (navigateTo != null)
                 Row(

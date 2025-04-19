@@ -108,12 +108,19 @@ fun SmartHNUTheme(
         DarkMode.OFF.ordinal -> false
         else -> isSystemInDarkTheme()
     }
+    val colorScheme = when {
+        uiState.themeMode == 1 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            val context = LocalContext.current
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
 
+        darkTheme -> darkScheme
+        else -> lightScheme
+    }
     val miuixSchemeColor = when (darkTheme) {
         false -> top.yukonga.miuix.kmp.theme.lightColorScheme(
             disabledPrimaryButton = lightScheme.primaryContainer.copy(0.5f),
             disabledOnPrimaryButton = lightScheme.primary.copy(0.5f),
-            onPrimary = lightScheme.primary,
             primary = lightScheme.primary,
             primaryContainer = lightScheme.primaryContainer,
             tertiaryContainer = lightScheme.secondaryContainer,
@@ -123,7 +130,6 @@ fun SmartHNUTheme(
         true -> top.yukonga.miuix.kmp.theme.darkColorScheme(
             disabledPrimaryButton = darkScheme.primaryContainer.copy(0.5f),
             disabledOnPrimaryButton = darkScheme.primary.copy(0.5f),
-            onPrimary = darkScheme.primary,
             primary = darkScheme.primary,
             primaryContainer = lightScheme.primaryContainer,
             tertiaryContainer = darkScheme.secondaryContainer,
@@ -142,6 +148,12 @@ fun SmartHNUTheme(
     }
     MiuixTheme(
         colors = miuixSchemeColor,
-        content = content
+        content = {
+            MaterialTheme(
+                typography = Typography,
+                colorScheme = colorScheme,
+                content = content
+            )
+        }
     )
 }

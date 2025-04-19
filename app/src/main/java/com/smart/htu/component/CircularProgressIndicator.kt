@@ -1,27 +1,47 @@
 package com.smart.htu.component
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.ProgressIndicatorDefaults
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun LazyItemScope.CircularProgressIndicator() {
+fun LazyItemScope.CircularProgressIndicator(
+    size: Dp = ProgressIndicatorDefaults.DefaultInfiniteProgressIndicatorSize
+) {
     Box(
         modifier = Modifier.fillParentMaxSize(),
         contentAlignment = Alignment.TopCenter
     ) {
-        top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator(
-            modifier = Modifier.padding(top = 88.dp),
-            size = 24.dp
-        )
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator(
+                modifier = Modifier.padding(top = 88.dp),
+                size = size
+            )
+            Text(
+                text = "正在加载中...",
+                modifier = Modifier.padding(top = 8.dp),
+                style = MiuixTheme.textStyles.footnote1.copy(
+                    color = MiuixTheme.colorScheme.onSurface.copy(
+                        alpha = 0.7f
+                    )
+                ),
+            )
+        }
         // CircularWavyProgressIndicator(modifier = Modifier.padding(top = 88.dp))
     }
 }
@@ -36,7 +56,17 @@ fun CircularProgressIndicator(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator(size = size)
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator(size = size)
+            Text(
+                text = "正在加载中...",
+                modifier = Modifier.padding(top = 8.dp),
+                color = MiuixTheme.colorScheme.onSurface.copy(0.7f)
+            )
+        }
         //CircularWavyProgressIndicator(modifier = Modifier.size(size))
     }
 }

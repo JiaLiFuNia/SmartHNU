@@ -57,8 +57,8 @@ class DataStoreRepo @Inject constructor(
 
         const val DEFAULT_VALUE_COOKIES = "[]"
         const val DEFAULT_MESSAGE_READ_ID = "[]"
-        const val DEFAULT_THEME_MODE = 1
-        const val DEFAULT_BLUR_EFFECT = true
+        const val DEFAULT_THEME_MODE = 0
+        const val DEFAULT_BLUR_EFFECT = false
         const val DEFAULT_IS_TOKEN_VALID = true
         const val DEFAULT_LOGIN_STATE = 0
         const val DEFAULT_DARK_THEME = 0

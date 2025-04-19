@@ -3,9 +3,11 @@ package com.smart.htu.component
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -15,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.smart.htu.R
+import com.smart.htu.ui.theme.onPrimaryLight
+import com.smart.htu.ui.theme.primaryLight
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.TextButton
@@ -29,7 +33,7 @@ fun BasicBottomSheet(
     title: String,
     summary: String? = null,
     onConfirmClick: (() -> Unit)? = null,
-    content: @Composable () -> Unit
+    content: @Composable (ColumnScope.() -> Unit)
 ) {
     SuperDialog(
         title = title,
@@ -49,6 +53,7 @@ fun BasicBottomSheet(
             }
 
             if (onConfirmClick != null) {
+                Spacer(modifier = Modifier.height(12.dp))
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -79,6 +84,6 @@ fun BasicBottomSheet(
 fun ButtonDefaults.textButtonPrimaryColors() = textButtonColors(
     color = MiuixTheme.colorScheme.primaryContainer,
     disabledColor = MiuixTheme.colorScheme.disabledPrimaryButton,
-    textColor = MiuixTheme.colorScheme.onPrimary,
+    textColor = primaryLight,
     disabledTextColor = MiuixTheme.colorScheme.disabledOnPrimaryButton
 )

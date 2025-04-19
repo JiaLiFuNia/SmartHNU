@@ -1,6 +1,8 @@
 package com.smart.htu.screens.application.airCondition
 
 import android.annotation.SuppressLint
+import android.util.Log
+import android.widget.Space
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,17 +10,27 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -42,6 +54,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -66,10 +79,12 @@ import androidx.navigation.NavController
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.BasicBottomSheet
+import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.PreferenceSubtitle
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.chart.ColumnChart
+import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -78,7 +93,9 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.HorizontalPager
 import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissDialog
@@ -101,20 +118,33 @@ fun AirCondition(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
     val openBottomSheet = remember { mutableStateOf(false) }
+    val isShowSuggestChip = remember {
+        mutableStateOf((uiState.roomCode.isEmpty() || uiState.buildingCode.isEmpty() || !uiState.isCookieValid))
+    }
+
+    val tabItem = listOf("用电情况", "缴费情况")
+    val pagerState = rememberPagerState { tabItem.size }
     val (selectTabIndex, onSelectTabIndex) = remember { mutableIntStateOf(0) }
 
-    val state = rememberPullToRefreshState()
-    var isRefreshing by remember { mutableStateOf(false) }
+    LaunchedEffect(pagerState.currentPage) {
+        onSelectTabIndex(pagerState.currentPage)
+    }
+
+    LaunchedEffect(selectTabIndex) {
+        pagerState.animateScrollToPage(selectTabIndex)
+    }
+    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
     val onRefresh: () -> Unit = {
-        isRefreshing = true
         scope.launch {
-            viewModel.getAirConditionConfig()
-            viewModel.getBillDetailService()
-            viewModel.getBillRecords()
-            viewModel.getBuyRecords()
-            isRefreshing = false
+            pullToRefreshState.completeRefreshing {
+                viewModel.getAirConditionConfig()
+                viewModel.getBillDetailService()
+                viewModel.getBillRecords()
+                viewModel.getBuyRecords()
+            }
         }
     }
+
     top.yukonga.miuix.kmp.basic.Scaffold(
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -149,7 +179,7 @@ fun AirCondition(
                             }
                         }
                     ) {
-                        Icon(imageVector = Icons.Outlined.Edit, contentDescription = null)
+                        Icon(imageVector = Icons.Outlined.Settings, contentDescription = "setting")
                     }
                 },
                 modifier = Modifier.hazeEffect(
@@ -165,55 +195,40 @@ fun AirCondition(
             SnackbarHost(hostState = snackBarHostState)
         }
     ) {
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = { onRefresh() },
-            state = state,
-            indicator = {
-                Indicator(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = it.calculateTopPadding()),
-                    isRefreshing = isRefreshing,
-                    state = state
-                )
-            },
+        top.yukonga.miuix.kmp.basic.PullToRefresh(
+            pullToRefreshState = pullToRefreshState,
+            refreshTexts = PULL_TO_REFRESH_TEXT,
+            onRefresh = onRefresh,
             modifier = Modifier
                 .fillMaxSize()
+                .padding(it)
         ) {
             top.yukonga.miuix.kmp.basic.LazyColumn(
-                contentPadding = PaddingValues(
-                    top = it.calculateTopPadding() + 8.dp,
-                    start = 16.dp,
-                    end = 16.dp,
-                    bottom = 16.dp
-                ),
-                modifier = Modifier
-                    .hazeSource(state = hazeState)
-                    .fillMaxSize()
+                contentPadding = PaddingValues(16.dp),
+                modifier = Modifier.fillMaxSize()
             ) {
-                if (uiState.roomCode == "" || uiState.buildingCode == "" || !uiState.isCookieValid)
-                    item {
-                        SuggestChip(
-                            onClick = {
-                                openBottomSheet.value = true
-                            },
-                            onActionClick = {
-                            },
-                            text = "请设置你的宿舍楼，房间号和 Cookie",
-                            type = SuggestChipType.ERROR,
-                            visibility = remember {
-                                derivedStateOf { uiState.roomCode == "" || uiState.buildingCode == "" || !uiState.isCookieValid }
-                            },
-                            modifier = Modifier
-                        )
+                item {
+                    Log.e("TAG666 airLog", isShowSuggestChip.value.toString())
+                    SuggestChip(
+                        onClick = {
+                            openBottomSheet.value = true
+                        },
+                        onActionClick = {
+                        },
+                        text = "请设置你的宿舍楼，房间号和 Cookie",
+                        type = SuggestChipType.ERROR,
+                        icon = Icons.Outlined.Info,
+                        visibility = isShowSuggestChip,
+                        modifier = Modifier
+                    )
+                    if (isShowSuggestChip.value)
                         Spacer(modifier = Modifier.height(12.dp))
-                    }
+                }
                 item {
                     top.yukonga.miuix.kmp.basic.Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
-                        color = MaterialTheme.colorScheme.primaryContainer,
+                        color = MiuixTheme.colorScheme.primaryContainer,
                     ) {
                         ListItem(
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -242,7 +257,7 @@ fun AirCondition(
                                 Text(
                                     text = "${uiState.billData?.data?.soc ?: 0.0} 度",
                                     fontSize = 16.sp,
-                                    color = MaterialTheme.colorScheme.primary,
+                                    color = MiuixTheme.colorScheme.primary,
                                     style = MaterialTheme.typography.labelLarge,
                                     textAlign = TextAlign.Center
                                 )
@@ -252,65 +267,44 @@ fun AirCondition(
                     Spacer(modifier = Modifier.height(12.dp))
                 }
                 item {
-                    val tabItem =
-                        listOf("近 ${uiState.billRecords?.total ?: 0} 天用电情况", "缴费情况")
-                    TabRow(
-                        containerColor = Color.Transparent,
+                    top.yukonga.miuix.kmp.basic.TabRow(
+                        tabs = tabItem,
                         selectedTabIndex = selectTabIndex,
-                        indicator = { tabPositions ->
-                            TabRowDefaults.PrimaryIndicator(
-                                modifier = Modifier
-                                    .tabIndicatorOffset(tabPositions[selectTabIndex]),
-                                width = tabPositions[selectTabIndex].width / 2f,
-                                shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
-                            )
-                        },
-                        divider = {}
-                    ) {
-                        tabItem.forEachIndexed { index, s ->
-                            Tab(
-                                selected = selectTabIndex == index,
-                                onClick = { onSelectTabIndex(index) },
-                                selectedContentColor = MaterialTheme.colorScheme.primary,
-                                unselectedContentColor = MaterialTheme.colorScheme.onSurface
-                            ) {
-                                Text(
-                                    text = s,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(12.dp)
-                                )
-                            }
+                        onTabSelected = {
+                            onSelectTabIndex(it)
                         }
-                    }
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
-                if (uiState.isLoadingBillRecords) {
-                    item {
-                        Box(
+                item {
+                    if (uiState.isLoadingBillRecords) {
+                        CircularProgressIndicator()
+                    } else {
+                        androidx.compose.foundation.pager.HorizontalPager(
                             modifier = Modifier
-                                .fillMaxSize()
-                                .padding(top = 12.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularWavyProgressIndicator(modifier = Modifier)
-                        }
-                    }
-                } else {
-                    when (selectTabIndex) {
-                        0 -> {
-                            item {
-                                top.yukonga.miuix.kmp.basic.Surface(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
-                                    color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(8.dp)
-                                    ) {
-                                        ColumnChart(
+                                .windowInsetsPadding(
+                                    WindowInsets.displayCutout.only(
+                                        WindowInsetsSides.Horizontal
+                                    )
+                                )
+                                .windowInsetsPadding(
+                                    WindowInsets.navigationBars.only(
+                                        WindowInsetsSides.Horizontal
+                                    )
+                                ),
+                            pageSpacing = 12.dp,
+                            state = pagerState,
+                            beyondViewportPageCount = 1,
+                            verticalAlignment = Alignment.Top,
+                            userScrollEnabled = true,
+                            flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
+                        ) { page ->
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                when (page) {
+                                    0 -> {
+                                        AirConditionChart(
                                             xData = uiState.billRecords?.rows?.map {
                                                 it.dateTimeDouble
                                             } ?: listOf("0.0"),
@@ -318,45 +312,15 @@ fun AirCondition(
                                                 it.used.toDouble()
                                             } ?: listOf(0.0)
                                         )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.height(12.dp))
-                            }
-                            items(uiState.billRecords?.rows ?: emptyList()) {
-                                top.yukonga.miuix.kmp.basic.Surface(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
-                                    color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
-                                ) {
-                                    ListItem(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                        headlineContent = { Text(text = it.datetime) },
-                                        trailingContent = {
-                                            Text(
-                                                text = "${it.used} 度",
-                                                style = MaterialTheme.typography.labelLarge
-                                            )
+                                        // Spacer(modifier = Modifier.height(4.dp))
+                                        uiState.billRecords?.rows?.forEach {
+                                            SingleMessage(it.datetime, "${it.used} 度")
+                                            // Spacer(modifier = Modifier.height(4.dp))
                                         }
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(12.dp))
-                            }
-                        }
+                                    }
 
-                        1 -> {
-                            item {
-                                top.yukonga.miuix.kmp.basic.Surface(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
-                                    color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(8.dp)
-                                    ) {
-                                        ColumnChart(
+                                    1 -> {
+                                        AirConditionChart(
                                             xData = uiState.buyRecords?.rows?.map {
                                                 it.dateTimeDouble
                                             } ?: listOf("0.0"),
@@ -364,47 +328,30 @@ fun AirCondition(
                                                 it.money.toDouble()
                                             } ?: listOf(0.0)
                                         )
+                                        uiState.buyRecords?.rows?.forEach {
+                                            SingleMessage(it.dateTime, "${it.money} 元")
+                                            // Spacer(modifier = Modifier.height(4.dp))
+                                        }
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(12.dp))
-                            }
-                            items(uiState.buyRecords?.rows ?: emptyList()) {
-                                top.yukonga.miuix.kmp.basic.Surface(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
-                                    color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
-                                ) {
-                                    ListItem(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                        headlineContent = { Text(text = it.dateTime) },
-                                        trailingContent = {
-                                            Text(
-                                                text = "${it.money} 元",
-                                                style = MaterialTheme.typography.labelLarge
-                                            )
-                                        }
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(12.dp))
                             }
                         }
                     }
                 }
             }
         }
-    }
-    SetCookieBottomSheet(
-        isBottomSheetShow = openBottomSheet,
-        uiState = uiState,
-        viewModel = viewModel,
-        onConfirmClick = {
-            scope.launch {
-                viewModel.saveUserCookie()
-                onRefresh()
+        SetCookieBottomSheet(
+            isBottomSheetShow = openBottomSheet,
+            uiState = uiState,
+            viewModel = viewModel,
+            onConfirmClick = {
+                scope.launch {
+                    viewModel.saveUserCookie()
+                    onRefresh()
+                }
             }
-        }
-    )
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -426,157 +373,144 @@ fun SetCookieBottomSheet(
             onConfirmClick()
         }
     ) {
-        Column {
-            SmallTitle(
-                text = "宿舍楼和房间",
-                insideMargin = PaddingValues(start = 12.dp, top = 12.dp, bottom = 8.dp)
+        SmallTitle(
+            text = "宿舍楼和房间",
+            insideMargin = PaddingValues(start = 12.dp, top = 12.dp, bottom = 8.dp)
+        )
+        val buildingIdPattern = Regex("^[西|东]\\d{2}$")
+        val roomIdPattern = Regex("^\\d{4}$")
+        val (buildingIdError, onBuildingError) = remember { mutableStateOf(false) }
+        val (roomIdError, onRoomError) = remember { mutableStateOf(false) }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            TextField(
+                value = buildingId,
+                label = "宿舍楼",
+                onValueChange = {
+                    buildingId = it
+                    onBuildingError(!buildingIdPattern.matches(it))
+                },
+                singleLine = true,
+                maxLines = 1,
+                trailingIcon = {
+                    if (buildingIdError)
+                        Icon(
+                            painter = painterResource(id = R.drawable.warning_24px),
+                            contentDescription = "warning",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                }
             )
-            val buildingIdPattern = Regex("^[西|东]\\d{2}$")
-            val roomIdPattern = Regex("^\\d{4}$")
-            val (buildingIdError, onBuildingError) = remember { mutableStateOf(false) }
-            val (roomIdError, onRoomError) = remember { mutableStateOf(false) }
+            TextField(
+                value = roomId,
+                label = "房间",
+                onValueChange = {
+                    roomId = it
+                    onRoomError(!roomIdPattern.matches(it) || roomId.length != 4)
+                },
+                singleLine = true,
+                maxLines = 1,
+                trailingIcon = {
+                    if (roomIdError)
+                        Icon(
+                            painter = painterResource(id = R.drawable.warning_24px),
+                            contentDescription = "warning",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                }
+            )
+        }
+        SmallTitle(
+            text = "Cookie",
+            insideMargin = PaddingValues(start = 12.dp, top = 16.dp, bottom = 8.dp)
+        )
+        val dropdownOptions = listOf("云端", "自定义")
+        Card(
+            color = MiuixTheme.colorScheme.secondaryContainer,
+        ) {
+            SuperDropdown(
+                title = "Cookie 来源",
+                summary = "云端 Cookie 统一由开发者提供，自定义 Cookie 由用户自行抓包获取",
+                items = dropdownOptions,
+                selectedIndex = uiState.setCookieType,
+                onSelectedIndexChange = { newOption ->
+                    viewModel.changeCookieType(
+                        newOption
+                    )
+                }
+            )
+        }
+
+        AnimatedVisibility(visible = uiState.setCookieType == 1) {
+            Spacer(modifier = Modifier.height(8.dp))
             Column(
                 modifier = Modifier
                     .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                top.yukonga.miuix.kmp.basic.TextField(
-                    value = buildingId,
-                    label = "宿舍楼",
-                    onValueChange = {
-                        buildingId = it
-                        onBuildingError(!buildingIdPattern.matches(it))
-                    },
-                    singleLine = true,
-                    maxLines = 1,
-                    trailingIcon = {
-                        if (buildingIdError)
-                            Icon(
-                                painter = painterResource(id = R.drawable.warning_24px),
-                                contentDescription = "warning",
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                    }
+                TextField(
+                    label = "shiroJID",
+                    value = uiState.userLoginCookie?.shiroJID ?: "",
+                    onValueChange = { viewModel.changeUserShiroJid(it) }
                 )
-                top.yukonga.miuix.kmp.basic.TextField(
-                    value = roomId,
-                    label = "房间",
-                    onValueChange = {
-                        roomId = it
-                        onRoomError(!roomIdPattern.matches(it) || roomId.length != 4)
-                    },
-                    singleLine = true,
-                    maxLines = 1,
-                    trailingIcon = {
-                        if (roomIdError)
-                            Icon(
-                                painter = painterResource(id = R.drawable.warning_24px),
-                                contentDescription = "warning",
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                    }
+                TextField(
+                    label = "ymId",
+                    value = uiState.userLoginCookie?.ymId ?: "",
+                    onValueChange = { viewModel.changeUserYmld(it) }
                 )
             }
-            SmallTitle(
-                text = "Cookie",
-                insideMargin = PaddingValues(start = 12.dp, top = 16.dp, bottom = 8.dp)
-            )
-            val dropdownOptions = listOf("云端 Cookie", "自定义 Cookie")
-            Card(
-                color = MiuixTheme.colorScheme.secondaryContainer,
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    SuperDropdown(
-                        title = "Cookie 来源",
-                        items = dropdownOptions,
-                        selectedIndex = uiState.setCookieType,
-                        onSelectedIndexChange = { newOption -> viewModel.changeCookieType(newOption) }
-                    )
-                    AnimatedVisibility(visible = uiState.setCookieType == 1) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth().padding(4.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            OutlinedTextField(
-                                label = { Text(text = "shiroJID") },
-                                maxLines = 1,
-                                value = uiState.userLoginCookie?.shiroJID ?: "",
-                                onValueChange = { viewModel.changeUserShiroJid(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(10.dp)
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            OutlinedTextField(
-                                label = { Text(text = "ymID") },
-                                value = uiState.userLoginCookie?.ymId ?: "",
-                                onValueChange = { viewModel.changeUserYmld(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(10.dp)
-                            )
-                        }
-                    }
-                }
-            }
-            /*item {
-                PreferenceSubtitle(text = "显示形式")
-                val dataShowOptions = mapOf(
-                    "显示数据和图表" to DataShowType.CHART_LIST,
-                    "仅显示数据" to DataShowType.LIST,
-                    "仅显示图表" to DataShowType.CHART
-                )
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Column(
-                        modifier = Modifier.selectableGroup(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        dataShowOptions.keys.forEachIndexed { _, text ->
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                onClick = {
-                                    viewModel.changeDataShowType(
-                                        dataShowOptions[text] ?: DataShowType.LIST
-                                    )
-                                }
-                            ) {
-                                Row(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .height(50.dp)
-                                        .selectable(
-                                            selected = (dataShowOptions[text] == uiState.dataShowType),
-                                            onClick = {
-                                                viewModel.changeDataShowType(
-                                                    dataShowOptions[text] ?: DataShowType.LIST
-                                                )
-                                            },
-                                            role = Role.RadioButton
-                                        )
-                                        .padding(horizontal = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    RadioButton(
-                                        selected = (dataShowOptions[text] == uiState.dataShowType),
-                                        onClick = null
-                                    )
-                                    Text(
-                                        text = text,
-                                        modifier = Modifier.padding(start = 16.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }*/
         }
+    }
+}
+
+@Composable
+fun AirConditionChart(
+    xData: List<String>,
+    yData: List<Double>,
+) {
+    top.yukonga.miuix.kmp.basic.Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        color = MiuixTheme.colorScheme.surface
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp)
+        ) {
+            ColumnChart(
+                xData = xData,
+                yData = yData
+            )
+        }
+    }
+}
+
+@Composable
+fun SingleMessage(
+    label: String,
+    content: String
+) {
+    top.yukonga.miuix.kmp.basic.Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        color = MiuixTheme.colorScheme.surface
+    ) {
+        ListItem(
+            modifier = Modifier.fillMaxWidth(),
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            headlineContent = { Text(text = label, style = MiuixTheme.textStyles.body1) },
+            trailingContent = {
+                Text(
+                    text = content,
+                    style = MiuixTheme.textStyles.subtitle
+                )
+            }
+        )
     }
 }
