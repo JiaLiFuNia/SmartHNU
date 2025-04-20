@@ -41,10 +41,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.AutofillNode
 import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -155,7 +157,9 @@ fun LoginScreen(
                         viewModel.changeStudentID(it)
                     },
                     label = { Text(text = "学号") },
-                    modifier = Modifier.fillMaxWidth().semantics { contentType = ContentType.Username },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { contentType = ContentType.Username },
                     isError = uiState.loginState == -1 || uiState.studentID.length > 10,
                     readOnly = uiState.isLoading,
                     keyboardOptions = KeyboardOptions.Default.copy(
@@ -185,7 +189,8 @@ fun LoginScreen(
                     },
                     label = { Text(text = "统一认证密码") },
                     modifier = Modifier
-                        .fillMaxWidth().semantics { contentType = ContentType.Password },
+                        .fillMaxWidth()
+                        .semantics { contentType = ContentType.Password },
                     visualTransformation = if (displayPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         when (uiState.loginState) {
@@ -248,7 +253,8 @@ fun LoginScreen(
                     },
                     label = { Text(text = "智慧教务密码") },
                     modifier = Modifier
-                        .fillMaxWidth().semantics { contentType = ContentType.Password },
+                        .fillMaxWidth()
+                        .semantics { contentType = ContentType.Password },
                     visualTransformation = if (displayPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         when (uiState.loginJWCState) {

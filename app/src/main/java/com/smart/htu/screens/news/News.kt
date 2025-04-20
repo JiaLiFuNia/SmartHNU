@@ -91,7 +91,7 @@ fun NewsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val hazeState = remember { HazeState() }
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    TopAppBarDefaults.pinnedScrollBehavior()
 
     val tabItems = uiState.newsOptionItems.map { it.label.label }
     val newsPagerState = rememberPagerState(
@@ -101,16 +101,12 @@ fun NewsScreen(
     val selectedTabIndex = remember { derivedStateOf { newsPagerState.currentPage } }
 
     val scope = rememberCoroutineScope()
-    val state = rememberPullToRefreshState()
     val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
-    var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
-        isRefreshing = true
         scope.launch {
             pullToRefreshState.completeRefreshing {
                 viewModel.getBannerImgList()
                 viewModel.getNewsList(selectedTabIndex.value)
-                isRefreshing = false
             }
         }
     }
@@ -139,40 +135,44 @@ fun NewsScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             SearchBar(
+                colors =  SearchBarDefaults.colors(containerColor = MiuixTheme.colorScheme.surfaceContainerHigh),
                 inputField = {
-                        SearchBarDefaults.InputField(
-                            modifier = Modifier,
-                            state = textFieldState,
-                            onSearch = { onExpand(false) },
-                            expanded = expanded,
-                            onExpandedChange = { onExpand(it) },
-                            placeholder = { Text("搜索新闻、公告和通知...") },
-                            leadingIcon = {
-                                if (expanded) {
-                                    IconButton(onClick = { onExpand(false) }) {
-                                        Icon(
-                                            Icons.AutoMirrored.Default.ArrowBack,
-                                            contentDescription = null
-                                        )
-                                    }
-                                } else {
-                                    Icon(Icons.Default.Search, contentDescription = null)
+                    SearchBarDefaults.InputField(
+                        modifier = Modifier,
+                        state = textFieldState,
+                        onSearch = { onExpand(false) },
+                        expanded = expanded,
+                        onExpandedChange = { onExpand(it) },
+                        placeholder = { Text("搜索新闻、公告和通知...") },
+                        leadingIcon = {
+                            if (expanded) {
+                                IconButton(onClick = { onExpand(false) }) {
+                                    Icon(
+                                        Icons.AutoMirrored.Default.ArrowBack,
+                                        contentDescription = null
+                                    )
                                 }
-                            },
-                            trailingIcon = {
-                                IconButton(onClick = { }) {
-                                    Icon(Icons.Default.MoreVert, contentDescription = null)
-                                }
-                            },
-                            colors = inputFieldColors(unfocusedContainerColor = Color.Transparent),
+                            } else {
+                                Icon(Icons.Default.Search, contentDescription = null)
+                            }
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { }) {
+                                Icon(Icons.Default.MoreVert, contentDescription = null)
+                            }
+                        },
+                        colors = inputFieldColors(
+                            focusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh,
+                            unfocusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh
                         )
-                    },
+                    )
+                },
                 expanded = expanded,
                 onExpandedChange = { onExpand(it) },
                 modifier = Modifier
             ) {
 
-                }
+            }
             PrimaryScrollableTabRow(
                 containerColor = Color.Transparent,
                 selectedTabIndex = newsPagerState.currentPage,
@@ -188,24 +188,24 @@ fun NewsScreen(
                 },
                 divider = {}
             ) {
-                    tabItems.forEachIndexed { index, item ->
-                        Tab(
-                            selected = index == selectedTabIndex.value,
-                            onClick = {
-                                scope.launch {
-                                    newsPagerState.animateScrollToPage(index)
-                                }
-                            },
-                            selectedContentColor = MaterialTheme.colorScheme.primary,
-                            unselectedContentColor = MaterialTheme.colorScheme.onSurface
-                        ) {
-                            Text(
-                                text = stringResource(id = item),
-                                modifier = Modifier.padding(8.dp)
-                            )
-                        }
+                tabItems.forEachIndexed { index, item ->
+                    Tab(
+                        selected = index == selectedTabIndex.value,
+                        onClick = {
+                            scope.launch {
+                                newsPagerState.animateScrollToPage(index)
+                            }
+                        },
+                        selectedContentColor = MaterialTheme.colorScheme.primary,
+                        unselectedContentColor = MaterialTheme.colorScheme.onSurface
+                    ) {
+                        Text(
+                            text = stringResource(id = item),
+                            modifier = Modifier.padding(8.dp)
+                        )
                     }
                 }
+            }
         }
         val bannerPicUrl = uiState.bannerPicList.data?.map { it.imgUrl } ?: emptyList()
         val bannerTitle = uiState.bannerPicList.data?.map { it.title } ?: emptyList()
@@ -232,7 +232,7 @@ fun NewsScreen(
                         .padding(horizontal = 12.dp),
                     pageSpacing = 12.dp
                 ) {
-                    if (uiState.newsList[it].status == Status.LOADING) {
+                    if (uiState.newsList[it].status != Status.SUCCESS) {
                         CircularProgressIndicator(modifier = Modifier.fillMaxSize())
                     } else {
                         top.yukonga.miuix.kmp.basic.LazyColumn(
@@ -240,57 +240,57 @@ fun NewsScreen(
                         ) {
                             if (it == 1)
                                 item {
-                                        HorizontalMultiBrowseCarousel(
-                                            state = rememberCarouselState { bannerPicUrl.count() },
-                                            modifier = Modifier
-                                                .clip(RoundedCornerShape(16.dp))
-                                                .fillMaxWidth(),
-                                            preferredItemWidth = 320.dp,
-                                            itemSpacing = 4.dp
-                                        ) { index ->
-                                            Box(
-                                                modifier = Modifier.clickable {
-                                                    navController.navigateToWebView(
-                                                        bannerUrl[index],
-                                                        bannerTitle[index]
+                                    HorizontalMultiBrowseCarousel(
+                                        state = rememberCarouselState { bannerPicUrl.count() },
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .fillMaxWidth(),
+                                        preferredItemWidth = 320.dp,
+                                        itemSpacing = 4.dp
+                                    ) { index ->
+                                        Box(
+                                            modifier = Modifier.clickable {
+                                                navController.navigateToWebView(
+                                                    bannerUrl[index],
+                                                    bannerTitle[index]
+                                                )
+                                            },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            AsyncImage(
+                                                model = ImageRequest.Builder(LocalContext.current)
+                                                    .data(bannerPicUrl[index])
+                                                    .crossfade(true)
+                                                    .addHeader("User-Agent", "Mozilla/5.0")
+                                                    .error(R.drawable.image_placeholder)
+                                                    .build(),
+                                                contentDescription = "picture",
+                                                contentScale = ContentScale.FillBounds,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .aspectRatio(16 / 9f)
+                                                    .maskClip(MaterialTheme.shapes.extraLarge),
+                                                placeholder = painterResource(id = R.drawable.image_placeholder)
+                                            )
+                                            Text(
+                                                text = bannerTitle[index],
+                                                overflow = TextOverflow.Ellipsis,
+                                                maxLines = 1,
+                                                style = MaterialTheme.typography.titleMedium.copy(
+                                                    color = MaterialTheme.colorScheme.onSecondary
+                                                ),
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .align(Alignment.BottomEnd)
+                                                    .padding(
+                                                        horizontal = 16.dp,
+                                                        vertical = 8.dp
                                                     )
-                                                },
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                AsyncImage(
-                                                    model = ImageRequest.Builder(LocalContext.current)
-                                                        .data(bannerPicUrl[index])
-                                                        .crossfade(true)
-                                                        .addHeader("User-Agent", "Mozilla/5.0")
-                                                        .error(R.drawable.image_placeholder)
-                                                        .build(),
-                                                    contentDescription = "picture",
-                                                    contentScale = ContentScale.FillBounds,
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .aspectRatio(16 / 9f)
-                                                        .maskClip(MaterialTheme.shapes.extraLarge),
-                                                    placeholder = painterResource(id = R.drawable.image_placeholder)
-                                                )
-                                                Text(
-                                                    text = bannerTitle[index],
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    maxLines = 1,
-                                                    style = MaterialTheme.typography.titleMedium.copy(
-                                                        color = MaterialTheme.colorScheme.onSecondary
-                                                    ),
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .align(Alignment.BottomEnd)
-                                                        .padding(
-                                                            horizontal = 16.dp,
-                                                            vertical = 8.dp
-                                                        )
-                                                )
-                                            }
+                                            )
                                         }
-                                        Spacer(modifier = Modifier.height(8.dp))
                                     }
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
                             itemsIndexed(
                                 uiState.newsList[it].data ?: emptyList()
                             ) { _, news ->

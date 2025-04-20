@@ -2,13 +2,11 @@ package com.smart.htu.screens.application.airCondition
 
 import android.annotation.SuppressLint
 import android.util.Log
-import android.widget.Space
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -20,18 +18,12 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -40,24 +32,14 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -69,8 +51,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -80,14 +60,13 @@ import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.BasicBottomSheet
 import com.smart.htu.component.CircularProgressIndicator
-import com.smart.htu.component.PreferenceSubtitle
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.chart.ColumnChart
+import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.launch
@@ -116,7 +95,6 @@ fun AirCondition(
     val hazeState = remember { HazeState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
-    val openBottomSheet = remember { mutableStateOf(false) }
     val isShowSuggestChip = remember {
         mutableStateOf((uiState.roomCode.isEmpty() || uiState.buildingCode.isEmpty() || !uiState.isCookieValid))
     }
@@ -173,9 +151,7 @@ fun AirCondition(
                 actions = {
                     IconButton(
                         onClick = {
-                            scope.launch {
-                                openBottomSheet.value = true
-                            }
+                            navController.navigate(Destinations.AirConditionSetting.route)
                         }
                     ) {
                         Icon(imageVector = Icons.Outlined.Settings, contentDescription = "setting")
@@ -210,7 +186,7 @@ fun AirCondition(
                     Log.e("TAG666 airLog", isShowSuggestChip.value.toString())
                     SuggestChip(
                         onClick = {
-                            openBottomSheet.value = true
+                            navController.navigate(Destinations.AirConditionSetting.route)
                         },
                         onActionClick = {
                         },
@@ -337,131 +313,6 @@ fun AirCondition(
                         }
                     }
                 }
-            }
-        }
-        SetCookieBottomSheet(
-            isBottomSheetShow = openBottomSheet,
-            uiState = uiState,
-            viewModel = viewModel,
-            onConfirmClick = {
-                scope.launch {
-                    viewModel.saveUserCookie()
-                    onRefresh()
-                }
-            }
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SetCookieBottomSheet(
-    isBottomSheetShow: MutableState<Boolean>,
-    uiState: AirConditionUiState,
-    viewModel: AirConditionViewModel,
-    onConfirmClick: () -> Unit
-) {
-    var buildingId by remember { mutableStateOf(uiState.buildingCode) }
-    var roomId by remember { mutableStateOf(uiState.roomCode) }
-    BasicBottomSheet(
-        title = "设置",
-        showDialog = isBottomSheetShow,
-        onConfirmClick = {
-            dismissDialog(isBottomSheetShow)
-            viewModel.saveBuildingAndRoomId(buildingId, roomId)
-            onConfirmClick()
-        }
-    ) {
-        SmallTitle(
-            text = "宿舍楼和房间",
-            insideMargin = PaddingValues(start = 12.dp, top = 12.dp, bottom = 8.dp)
-        )
-        val buildingIdPattern = Regex("^[西|东]\\d{2}$")
-        val roomIdPattern = Regex("^\\d{4}$")
-        val (buildingIdError, onBuildingError) = remember { mutableStateOf(false) }
-        val (roomIdError, onRoomError) = remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            TextField(
-                value = buildingId,
-                label = "宿舍楼",
-                onValueChange = {
-                    buildingId = it
-                    onBuildingError(!buildingIdPattern.matches(it))
-                },
-                singleLine = true,
-                maxLines = 1,
-                trailingIcon = {
-                    if (buildingIdError)
-                        Icon(
-                            painter = painterResource(id = R.drawable.warning_24px),
-                            contentDescription = "warning",
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                }
-            )
-            TextField(
-                value = roomId,
-                label = "房间",
-                onValueChange = {
-                    roomId = it
-                    onRoomError(!roomIdPattern.matches(it) || roomId.length != 4)
-                },
-                singleLine = true,
-                maxLines = 1,
-                trailingIcon = {
-                    if (roomIdError)
-                        Icon(
-                            painter = painterResource(id = R.drawable.warning_24px),
-                            contentDescription = "warning",
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                }
-            )
-        }
-        SmallTitle(
-            text = "Cookie",
-            insideMargin = PaddingValues(start = 12.dp, top = 16.dp, bottom = 8.dp)
-        )
-        val dropdownOptions = listOf("云端", "自定义")
-        Card(
-            color = MiuixTheme.colorScheme.secondaryContainer,
-        ) {
-            SuperDropdown(
-                title = "Cookie 来源",
-                summary = "云端 Cookie 统一由开发者提供，自定义 Cookie 由用户自行抓包获取",
-                items = dropdownOptions,
-                selectedIndex = uiState.setCookieType,
-                onSelectedIndexChange = { newOption ->
-                    viewModel.changeCookieType(
-                        newOption
-                    )
-                }
-            )
-        }
-
-        AnimatedVisibility(visible = uiState.setCookieType == 1) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                TextField(
-                    label = "shiroJID",
-                    value = uiState.userLoginCookie?.shiroJID ?: "",
-                    onValueChange = { viewModel.changeUserShiroJid(it) }
-                )
-                TextField(
-                    label = "ymId",
-                    value = uiState.userLoginCookie?.ymId ?: "",
-                    onValueChange = { viewModel.changeUserYmld(it) }
-                )
             }
         }
     }

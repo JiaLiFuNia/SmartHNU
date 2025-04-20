@@ -52,6 +52,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -70,9 +71,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.smart.htu.R
 import com.smart.htu.component.CircularProgressIndicator
+import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.utils.Constants.Companion.COURSE_PERIOD
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.checkTimeInterval
@@ -84,9 +87,12 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissDialog
 import java.time.LocalDate
 
 @SuppressLint("UnrememberedMutableState")
@@ -109,7 +115,7 @@ fun ClassroomSearchScreen(
         mutableIntStateOf(checkTimeInterval())
     }
 
-    val tooltipState = rememberTooltipState(isPersistent = true)
+    val showTooltip = remember { mutableStateOf(false) }
 
     val (selectedDate, onSelectedDate) = remember { mutableStateOf(getCurrentDates()) }
     val (showDatePicker, onShowDatePicker) = remember { mutableStateOf(false) }
@@ -132,7 +138,7 @@ fun ClassroomSearchScreen(
         viewModel.getClassroomOccupation(selectedDate, selectedRoomIndex)
     }
 
-    val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+    val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.minWidthDp
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     top.yukonga.miuix.kmp.basic.Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
@@ -205,7 +211,7 @@ fun ClassroomSearchScreen(
                     LazyVerticalGridCustom(
                         modifier = Modifier.fillMaxSize(),
                         list = uiState.buildingsList,
-                        columnSize = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 3
+                        columnSize = if (windowWidthClass == WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) 4 else 3
                     ) { index, building ->
                         FilterChip(
                             selected = index == selectedRoomIndex,
@@ -223,7 +229,7 @@ fun ClassroomSearchScreen(
                     LazyVerticalGridCustom(
                         modifier = Modifier.fillMaxSize(),
                         list = COURSE_PERIOD.keys.toList(),
-                        columnSize = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 5 else 3
+                        columnSize = if (windowWidthClass == WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) 5 else 3
                     ) { currentIndex, timeLabel ->
                         FilterChip(
                             selected = currentIndex == selectedTimeIndex,
@@ -243,31 +249,14 @@ fun ClassroomSearchScreen(
                             text = stringResource(id = R.string.occupy),
                             insideMargin = PaddingValues(start = 12.dp, top = 12.dp, bottom = 8.dp)
                         )
-                        TooltipBox(
-                            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
-                            tooltip = {
-                                RichTooltip(
-                                    title = { Text("说明") },
-                                    action = {
-                                        TextButton(onClick = { coroutineScope.launch { tooltipState.dismiss() } }) {
-                                            Text(text = "关闭")
-                                        }
-                                    }
-                                ) {
-                                    Text(text = "浅色模式下，浅色卡片（呈现灰色）为当前已被占用教室；白色（或其他颜色）卡片为空闲教室。\n若当天该栋教学楼为考场，则占用情况以实际为准。")
-                                }
-                            },
-                            state = tooltipState
+                        IconButton(
+                            onClick = { showTooltip.value = true },
+                            modifier = Modifier.size(20.dp)
                         ) {
-                            IconButton(
-                                onClick = { coroutineScope.launch { tooltipState.show() } },
-                                modifier = Modifier.size(20.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.help_24px),
-                                    contentDescription = "help"
-                                )
-                            }
+                            Icon(
+                                painter = painterResource(id = R.drawable.help_24px),
+                                contentDescription = "help"
+                            )
                         }
                     }
                     Log.i("TAG666", "${uiState.isLoading} ${uiState.isTokenValid}")
@@ -323,7 +312,7 @@ fun ClassroomSearchScreen(
                                 LazyVerticalGridCustom(
                                     modifier = Modifier.fillMaxSize(),
                                     list = currentRoomList,
-                                    columnSize = if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 3,
+                                    columnSize = if (windowWidthClass == WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) 4 else 3,
                                     ifEqualWeight = true
                                 ) { _, room ->
                                     SingleRoom(
@@ -381,6 +370,7 @@ fun ClassroomSearchScreen(
             )
         }
     }
+    TipDialog(showTooltip)
 }
 
 @Composable
@@ -421,6 +411,36 @@ fun <T> LazyVerticalGridCustom(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun TipDialog(
+    show: MutableState<Boolean>
+) {
+    SuperDialog(
+        show = show,
+        title = "说明",
+        onDismissRequest = {
+            dismissDialog(show)
+        }
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "浅色模式下，浅色卡片（呈现灰色）为当前已被占用教室；白色（或其他颜色）卡片为空闲教室。\n若当天该栋教学楼为考场，则占用情况以实际为准。")
+            Spacer(modifier = Modifier.height(12.dp))
+            top.yukonga.miuix.kmp.basic.TextButton(
+                text = "我知道了",
+                onClick = {
+                    dismissDialog(show)
+                },
+                colors = ButtonDefaults.textButtonPrimaryColors(),
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
         }
     }
 }
