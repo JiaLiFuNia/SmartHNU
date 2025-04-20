@@ -18,7 +18,7 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 35
-        versionCode = 202504191
+        versionCode = 202504201
         versionName = "3.0.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -105,9 +105,6 @@ dependencies {
     // dataStore
     implementation(libs.androidx.datastore.preferences)
 
-    // Crypt
-    implementation(libs.androidx.security.crypto)
-
     // Coil
     implementation(libs.coil.base)
     implementation(libs.coil.compose)
@@ -129,14 +126,14 @@ dependencies {
 
     // json
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.gson)
 
     // Jsoup
     implementation(libs.jsoup)
 
     // Retrofit
     implementation(libs.retrofit)
-    implementation(libs.retrofit2.converter.scalars)
+    implementation(libs.converter.scalars)
+    implementation(libs.converter.gson)
 
     // Coroutine 支持
     implementation(libs.kotlinx.coroutines.android)
