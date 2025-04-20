@@ -17,6 +17,7 @@ import com.smart.htu.api.module.TextbookSelectPost
 import com.smart.htu.api.module.TodayCourseResponse
 import com.smart.htu.api.network.JWCService
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN
+import com.smart.htu.repo.PasswordRepo.Companion.JWC_PASSWORD
 import com.smart.htu.utils.RSAUtil
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -32,7 +33,7 @@ class JWCNetworkRepo @Inject constructor(
     @ApplicationContext private val context: Context,
     private val jwcService: JWCService,
     private val dataStoreRepo: DataStoreRepo,
-    passwordManager: PasswordManager
+    private val passwordRepo: PasswordRepo
 ) {
 
     val scope = CoroutineScope(Dispatchers.IO)
@@ -45,8 +46,6 @@ class JWCNetworkRepo @Inject constructor(
                 dataStoreRepo.observeStudentId().first()
             }
         )
-
-    private val password = passwordManager.getPassword("jwc_password") ?: ""
 
     suspend fun getTodayCourseService(): TodayCourseResponse? {
         val call = jwcService.getTodayCourse()
@@ -150,6 +149,7 @@ class JWCNetworkRepo @Inject constructor(
                     else
                         Result.failure(Exception("获取失败"))
                 }
+
                 else -> Result.failure(Exception("获取失败"))
             }
         } catch (e: Exception) {
@@ -244,6 +244,7 @@ class JWCNetworkRepo @Inject constructor(
     }
 
     private suspend fun reLogin(): Boolean {
+        val password = passwordRepo.getPassword(JWC_PASSWORD) ?: ""
         val res = jwcLogin(studentIdStateFlow.value, password)
         Log.i("TAG666 relogin", res.toString())
         res.onSuccess {

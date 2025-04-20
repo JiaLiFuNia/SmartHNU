@@ -15,6 +15,7 @@ import com.smart.htu.component.animation.animatedComposable
 import com.smart.htu.screens.application.Application
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.airCondition.AirCondition
+import com.smart.htu.screens.application.airCondition.AirConditionSetting
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.application.classroom.ClassroomSearchScreen
 import com.smart.htu.screens.application.entity.RouteType
@@ -145,6 +146,12 @@ fun NavHostScreen() {
             AirCondition(
                 navController = navController,
                 themeMode = uiState.themeMode,
+                viewModel = airConditionViewModel
+            )
+        }
+        animatedComposable(Destinations.AirConditionSetting.route) {
+            AirConditionSetting(
+                navController = navController,
                 viewModel = airConditionViewModel
             )
         }

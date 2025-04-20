@@ -20,8 +20,9 @@ import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.NetworkRepo
-import com.smart.htu.repo.PasswordManager
-import com.smart.htu.repo.PasswordManager.Companion.JWC_PASSWORD
+import com.smart.htu.repo.PasswordRepo
+import com.smart.htu.repo.PasswordRepo.Companion.JWC_PASSWORD
+import com.smart.htu.repo.PasswordRepo.Companion.PASSWORD
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -59,7 +60,7 @@ class LoginViewModel @Inject constructor(
     private val networkRepo: NetworkRepo,
     private val dataStoreRepo: DataStoreRepo,
     private val networkCookieJar: NetworkCookieJar,
-    private val passwordManager: PasswordManager
+    private val passwordRepo: PasswordRepo
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -147,8 +148,12 @@ class LoginViewModel @Inject constructor(
         )
 
     init {
-        _uiState.update { it.copy(password = passwordManager.getPassword() ?: "") }
-        _uiState.update { it.copy(jwcPassword = passwordManager.getPassword("jwc_password") ?: "") }
+        _uiState.update { it.copy(password = passwordRepo.getPassword(PASSWORD) ?: "") }
+        _uiState.update {
+            it.copy(
+                jwcPassword = passwordRepo.getPassword(JWC_PASSWORD) ?: ""
+            )
+        }
         viewModelScope.launch {
             blurStateFlow.collect { value ->
                 _uiState.update { it.copy(blurEffect = value) }
@@ -223,13 +228,13 @@ class LoginViewModel @Inject constructor(
                 changLoginState(1)
                 getStudentInfo()
                 dataStoreRepo.saveStudentId(_uiState.value.studentID)
-                passwordManager.savePassword(_uiState.value.password)
+                passwordRepo.savePassword(_uiState.value.password, PASSWORD)
             }
             logState.onFailure {
                 changLoginState(-1)
                 MainActivity.snackBarHostState.showSnackbar(it.message ?: "统一认证登录失败")
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Log.i("TAG666 viewModel", "Failed to login")
         }
     }
@@ -244,20 +249,20 @@ class LoginViewModel @Inject constructor(
                 changeLoginJWCState(1)
                 setTokenValid(true)
                 setJWCLogToken(it.user?.token ?: DEFAULT_TOKEN)
-                passwordManager.savePassword(_uiState.value.jwcPassword, JWC_PASSWORD)
+                passwordRepo.savePassword(_uiState.value.jwcPassword, JWC_PASSWORD)
             }
             logState.onFailure {
                 changeLoginJWCState(-1)
                 MainActivity.snackBarHostState.showSnackbar(it.message ?: "智慧教务登录失败")
             }
         } catch (e: Exception) {
-            Log.i("TAG666 viewModel", "Failed to login")
+            Log.i("TAG666 viewModel", "Failed to login $e")
         }
     }
 
     private suspend fun checkJWCToken() {
         try {
-            if (_uiState.value.studentID.isNotEmpty()) {
+            if (_uiState.value.studentID.isNotEmpty() && _uiState.value.jwcPassword.isNotEmpty()) {
                 val res = jwcNetworkRepo.checkJWCTokenService()
                 res.onSuccess {
                     setTokenValid(true)
@@ -267,8 +272,12 @@ class LoginViewModel @Inject constructor(
                     setTokenValid(false)
                     changeLoginJWCState(-1)
                 }
+            } else {
+                setTokenValid(false)
+                changeLoginJWCState(0)
             }
         } catch (e: Exception) {
+            Log.i("TAG666", "Failed to check JWC token $e")
             changeLoginJWCState(1)
         }
     }
@@ -281,7 +290,7 @@ class LoginViewModel @Inject constructor(
             changLoginState(1)
             _uiState.update { it.copy(uneditableMessage = res!!) }
         } catch (e: Exception) {
-            // Log.i("TAG666 viewModel", "Failed to get student info")
+            Log.i("TAG666 viewModel", "Failed to get student info $e")
             changLoginState(if (_uiState.value.loginState == 1) 2 else 0)
         }
     }

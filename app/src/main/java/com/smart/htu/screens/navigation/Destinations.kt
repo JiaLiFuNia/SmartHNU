@@ -20,6 +20,7 @@ sealed class Destinations(
     data object Appreciate : Destinations("appreciate")
     data object LibrarySearch : Destinations("library_search")
     data object AirCondition : Destinations("air_condition")
+    data object AirConditionSetting : Destinations("air_condition_setting")
     data object AccountManage : Destinations("account_manage")
     data object Grade : Destinations("grade")
     data object TeacherEvaluation : Destinations("teacher_evaluation")

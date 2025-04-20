@@ -37,7 +37,7 @@ data class AirConditionUiState(
     val billRecords: BillRecords? = null,
     val buyRecords: BuyRecords? = null,
     val isLoadingBillRecords: Boolean = true,
-    val isCookieValid: Boolean = true
+    val isCookieValid: Boolean = false
 )
 
 @HiltViewModel
@@ -146,12 +146,14 @@ class AirConditionViewModel @Inject constructor(
             else -> ("" to "")
         }
         val res = networkRepo.getAirConditionAreaService("shiroJID=$shiroJID", ymId)
-        res.onSuccess { _uiState.update { it.copy(customConfig = res.getOrNull()?.rows?.first()) } }
+        res.onSuccess {
+            _uiState.update { it.copy(customConfig = res.getOrNull()?.rows?.first()) }
+            changeCookieValidState(true)
+            MainActivity.snackBarHostState.showSnackbar("已配置有效 Cookie")
+        }
         res.onFailure {
-            MainActivity.snackBarHostState.showSnackbar(
-                it.message ?: ""
-            )
             changeCookieValidState(false)
+            MainActivity.snackBarHostState.showSnackbar("请重新配置 Cookie")
         }
         Log.i("TAG666 air", res.getOrNull().toString())
     }
@@ -241,7 +243,7 @@ class AirConditionViewModel @Inject constructor(
         }
     }
 
-    fun changeUserYmld(text: String) {
+    fun changeUserYmId(text: String) {
         _uiState.update {
             it.copy(
                 userLoginCookie = LoginCookie(
@@ -274,6 +276,7 @@ class AirConditionViewModel @Inject constructor(
     fun changeCookieType(type: Int) {
         viewModelScope.launch {
             _uiState.update { it.copy(setCookieType = type) }
+            changeCookieValidState(false)
             dataStoreRepo.saveAirConditionCookieType(type)
         }
     }
