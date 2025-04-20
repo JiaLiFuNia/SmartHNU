@@ -94,6 +94,7 @@ import coil.request.ImageRequest
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.BasicBottomSheet
+import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
@@ -301,12 +302,7 @@ fun LibrarySearchScreen(
                 if (isSearching) {
                     if (uiState.isSearching) {
                         item {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularWavyProgressIndicator()
-                            }
+                            CircularProgressIndicator()
                         }
                     } else {
                         if (uiState.searchResult.isNotEmpty()) {
@@ -362,14 +358,7 @@ fun LibrarySearchScreen(
                             }
                         } else {
                             item {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(100.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(text = "没有搜索结果")
-                                }
+                                EmptyContent("没有搜索结果")
                             }
                         }
                     }

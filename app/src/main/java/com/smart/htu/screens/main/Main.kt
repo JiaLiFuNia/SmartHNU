@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.api.module.Course
 import com.smart.htu.api.module.NewsItemEntity
@@ -198,10 +199,10 @@ fun NewsCard(
                                 )
                             } else {
                                 newsListStatus.data.forEach { news ->
-                                    NewsItem(news = news, maxLines = 1) {
+                                    NewsItem(news = news, maxLines = 2) {
                                         navController.navigateToWebView(
                                             url = news.url,
-                                            label = news.title
+                                            label = context.getString(news.label.label)
                                         )
                                     }
                                 }

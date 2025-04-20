@@ -97,7 +97,7 @@ class NewsViewModel @Inject constructor(
         try {
             val res = networkRepo.getNewsService(_uiState.value.newsOptionItems[index], page)
             val tempList = _uiState.value.newsList.toMutableList()
-            tempList[index] = ResultWithStatus(res)
+            tempList[index] = ResultWithStatus(res.sortedByDescending { it.time })
             _uiState.update { it.copy(newsList = tempList) }
             Log.i("TAG666", "getNewsList: $res")
         } catch (e: Exception) {

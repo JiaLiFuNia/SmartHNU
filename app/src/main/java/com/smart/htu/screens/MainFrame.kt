@@ -206,16 +206,26 @@ fun MainFrame(
                 navigationItem.filter { it.enabled }.forEachIndexed { index, item ->
                     NavigationBarItem(
                         icon = {
-                            Icon(
-                                painter = painterResource(
-                                    id = if (index == selectedItemIndex) {
-                                        item.selectedIcon
-                                    } else {
-                                        item.unselectedIcon
+                            BadgedBox(
+                                badge = {
+                                    if (item.badge > 0) {
+                                        Badge {
+                                            Text(text = item.badge.toString())
+                                        }
                                     }
-                                ),
-                                contentDescription = "icon"
-                            )
+                                }
+                            ) {
+                                Icon(
+                                    painter = painterResource(
+                                        id = if (index == selectedItemIndex) {
+                                            item.selectedIcon
+                                        } else {
+                                            item.unselectedIcon
+                                        }
+                                    ),
+                                    contentDescription = "icon"
+                                )
+                            }
                         },
                         label = {
                             Text(text = stringResource(id = item.title))

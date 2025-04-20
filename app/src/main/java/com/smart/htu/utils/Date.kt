@@ -4,6 +4,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 
 // 时间戳转日期字符串
@@ -32,4 +33,31 @@ fun convertDateToDouble(dateString: String, pattern: String): String {
     val month = date.monthValue
     val day = date.dayOfMonth
     return "$month.$day"
+}
+
+/**
+ * 将日期转换为更友好的显示格式
+ * - 最近三天：今天、昨天、前天
+ * - 3-7天内：n天前
+ * - 今年内：MM月DD日
+ * - 其他年份：YYYY年MM月DD日
+ *
+ * @param dateString 日期字符串，格式为 "yyyy-MM-dd"
+ * @return 格式化后的日期字符串
+ */
+fun formatDateToFriendly(dateString: String): String {
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val date = LocalDate.parse(dateString, formatter)
+    val today = LocalDate.now()
+
+    val daysDiff = ChronoUnit.DAYS.between(date, today)
+
+    return when {
+        daysDiff == 0L -> "今天"
+        daysDiff == 1L -> "昨天"
+        daysDiff == 2L -> "前天"
+        daysDiff in 3L..5L -> "${daysDiff}天前"
+        date.year == today.year -> "${date.monthValue}月${date.dayOfMonth}日"
+        else -> "${date.year}年${date.monthValue}月${date.dayOfMonth}日"
+    }
 }

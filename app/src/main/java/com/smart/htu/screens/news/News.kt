@@ -67,12 +67,14 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.Status
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
+import com.smart.htu.utils.formatDateToFriendly
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -135,7 +137,7 @@ fun NewsScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             SearchBar(
-                colors =  SearchBarDefaults.colors(containerColor = MiuixTheme.colorScheme.surfaceContainerHigh),
+                colors = SearchBarDefaults.colors(containerColor = MiuixTheme.colorScheme.surfaceContainerHigh),
                 inputField = {
                     SearchBarDefaults.InputField(
                         modifier = Modifier,
@@ -294,12 +296,15 @@ fun NewsScreen(
                             itemsIndexed(
                                 uiState.newsList[it].data ?: emptyList()
                             ) { _, news ->
-                                NewsItem(news = news) {
-                                    navController.navigateToWebView(
-                                        url = news.url,
-                                        label = news.title
-                                    )
-                                }
+                                NewsItem(
+                                    news = news,
+                                    onClick = {
+                                        navController.navigateToWebView(
+                                            url = news.url,
+                                            label = context.getString(news.label.label)
+                                        )
+                                    }
+                                )
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
                         }
@@ -327,13 +332,13 @@ fun NewsItem(news: NewsItemEntity, maxLines: Int = 2, onClick: () -> Unit) {
             headlineContent = {
                 Text(
                     text = news.title,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MiuixTheme.textStyles.headline2,
                     maxLines = maxLines,
                     overflow = TextOverflow.Ellipsis
                 )
             },
             supportingContent = {
-                Text(text = news.time)
+                Text(text = formatDateToFriendly(news.time))
             },
             trailingContent = {
                 if (news.imgUrl.endsWith(".jpg") || news.imgUrl.endsWith(".png")) {

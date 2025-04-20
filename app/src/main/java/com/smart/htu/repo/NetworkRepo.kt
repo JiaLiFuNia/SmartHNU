@@ -50,10 +50,10 @@ class NetworkRepo @Inject constructor(
     ): List<NewsItemEntity> {
         try {
             val call = newsService.getNewsList(
-                    academic = newsOptionItems.academic,
-                    page = page.toString(),
+                academic = newsOptionItems.academic,
+                page = page.toString(),
                 type = newsOptionItems.type
-                )
+            )
             val res = call.awaitResponse().body()?.string() ?: ""
             // Log.i("TAG666", "getBannerPicService: $res")
             return parseNewsHTML(res, newsOptionItems.label)
@@ -196,10 +196,10 @@ class NetworkRepo @Inject constructor(
             val res = libraryService.librarySearch(keyword, page)
             val resParsed: Pair<String, MutableList<LibraryBookListEntity>> =
                 if (res.code() == 200) {
-                parseLibrarySearchResult(res.body()?.string() ?: "")
-            } else {
+                    parseLibrarySearchResult(res.body()?.string() ?: "")
+                } else {
                     "0" to mutableListOf()
-            }
+                }
             return resParsed
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")

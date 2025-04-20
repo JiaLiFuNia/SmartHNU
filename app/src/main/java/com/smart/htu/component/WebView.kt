@@ -55,7 +55,13 @@ import com.smart.htu.utils.copyContent
 import com.smart.htu.utils.sendToast
 import com.smart.htu.utils.startWebUrl
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.ListPopup
+import top.yukonga.miuix.kmp.basic.ListPopupColumn
+import top.yukonga.miuix.kmp.basic.ListPopupDefaults
+import top.yukonga.miuix.kmp.basic.PopupPositionProvider
+import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissPopup
 
 @SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,7 +79,7 @@ fun WebView(
     val uriHandler = LocalUriHandler.current
     val scope = rememberCoroutineScope()
     var currentUrl by remember { mutableStateOf(url) }
-    var showDropDownMenu by remember {
+    var showDropDownMenu = remember {
         mutableStateOf(false)
     }
     val scrollState = rememberScrollState()
@@ -126,7 +132,7 @@ fun WebView(
             }
         }
     }
-    Scaffold(
+    top.yukonga.miuix.kmp.basic.Scaffold(
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
@@ -154,48 +160,53 @@ fun WebView(
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
 
                     }
-                    IconButton(onClick = { showDropDownMenu = true }) {
+                    IconButton(onClick = { showDropDownMenu.value = true }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "more")
                     }
-                    DropdownMenu(
-                        expanded = showDropDownMenu,
-                        onDismissRequest = { showDropDownMenu = false },
-                        shape = RoundedCornerShape(15.dp),
+                    ListPopup(
+                        show = showDropDownMenu,
+                        popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
+                        alignment = PopupPositionProvider.Align.TopRight,
+                        onDismissRequest = {
+                            dismissPopup(showDropDownMenu)
+                        }
                     ) {
-                        DropdownMenuItem(
-                            text = { Text(text = "复制链接") },
-                            onClick = {
-                                copyContent(currentUrl)
-                                sendToast(context, "已复制")
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.content_copy_24px),
-                                    contentDescription = "copy"
-                                )
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(text = stringResource(id = R.string.open_outside)) },
-                            onClick = { startWebUrl(url) },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.public_24px),
-                                    contentDescription = "outside"
-                                )
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(text = stringResource(id = R.string.forward)) },
-                            onClick = { if (navigator.canGoForward) navigator.navigateForward() },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.ArrowForward,
-                                    contentDescription = "forward"
-                                )
-                            },
-                            enabled = navigator.canGoForward
-                        )
+                        ListPopupColumn {
+                            DropdownMenuItem(
+                                text = { Text(text = "复制链接") },
+                                onClick = {
+                                    copyContent(currentUrl)
+                                    sendToast(context, "已复制")
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.content_copy_24px),
+                                        contentDescription = "copy"
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = stringResource(id = R.string.open_outside)) },
+                                onClick = { startWebUrl(url) },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.public_24px),
+                                        contentDescription = "outside"
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(text = stringResource(id = R.string.forward)) },
+                                onClick = { if (navigator.canGoForward) navigator.navigateForward() },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.ArrowForward,
+                                        contentDescription = "forward"
+                                    )
+                                },
+                                enabled = navigator.canGoForward
+                            )
+                        }
                     }
                 },
                 navigationIcon = {
