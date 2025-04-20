@@ -8,12 +8,64 @@
   "variantName": "release",
   "elements": [
     {
-      "type": "SINGLE",
+      "type": "UNIVERSAL",
       "filters": [],
       "attributes": [],
-      "versionCode": 202504041,
+      "versionCode": 202504191,
       "versionName": "3.0.9",
-      "outputFile": "SmartHNU-v3.0.9(202504041)-release.apk"
+      "outputFile": "SmartHNU-v3.0.9(202504191)-universal-release.apk"
+    },
+    {
+      "type": "ONE_OF_MANY",
+      "filters": [
+        {
+          "filterType": "ABI",
+          "value": "arm64-v8a"
+        }
+      ],
+      "attributes": [],
+      "versionCode": 202504191,
+      "versionName": "3.0.9",
+      "outputFile": "SmartHNU-v3.0.9(202504191)-arm64-v8a-release.apk"
+    },
+    {
+      "type": "ONE_OF_MANY",
+      "filters": [
+        {
+          "filterType": "ABI",
+          "value": "x86"
+        }
+      ],
+      "attributes": [],
+      "versionCode": 202504191,
+      "versionName": "3.0.9",
+      "outputFile": "SmartHNU-v3.0.9(202504191)-x86-release.apk"
+    },
+    {
+      "type": "ONE_OF_MANY",
+      "filters": [
+        {
+          "filterType": "ABI",
+          "value": "armeabi-v7a"
+        }
+      ],
+      "attributes": [],
+      "versionCode": 202504191,
+      "versionName": "3.0.9",
+      "outputFile": "SmartHNU-v3.0.9(202504191)-armeabi-v7a-release.apk"
+    },
+    {
+      "type": "ONE_OF_MANY",
+      "filters": [
+        {
+          "filterType": "ABI",
+          "value": "x86_64"
+        }
+      ],
+      "attributes": [],
+      "versionCode": 202504191,
+      "versionName": "3.0.9",
+      "outputFile": "SmartHNU-v3.0.9(202504191)-x86_64-release.apk"
     }
   ],
   "elementType": "File",
@@ -22,14 +74,22 @@
       "minApi": 28,
       "maxApi": 30,
       "baselineProfiles": [
-        "baselineProfiles/1/SmartHNU-v3.0.9(202504041)-release.dm"
+        "baselineProfiles/1/SmartHNU-v3.0.9(202504191)-universal-release.dm",
+        "baselineProfiles/1/SmartHNU-v3.0.9(202504191)-arm64-v8a-release.dm",
+        "baselineProfiles/1/SmartHNU-v3.0.9(202504191)-x86-release.dm",
+        "baselineProfiles/1/SmartHNU-v3.0.9(202504191)-armeabi-v7a-release.dm",
+        "baselineProfiles/1/SmartHNU-v3.0.9(202504191)-x86_64-release.dm"
       ]
     },
     {
       "minApi": 31,
       "maxApi": 2147483647,
       "baselineProfiles": [
-        "baselineProfiles/0/SmartHNU-v3.0.9(202504041)-release.dm"
+        "baselineProfiles/0/SmartHNU-v3.0.9(202504191)-universal-release.dm",
+        "baselineProfiles/0/SmartHNU-v3.0.9(202504191)-arm64-v8a-release.dm",
+        "baselineProfiles/0/SmartHNU-v3.0.9(202504191)-x86-release.dm",
+        "baselineProfiles/0/SmartHNU-v3.0.9(202504191)-armeabi-v7a-release.dm",
+        "baselineProfiles/0/SmartHNU-v3.0.9(202504191)-x86_64-release.dm"
       ]
     }
   ],

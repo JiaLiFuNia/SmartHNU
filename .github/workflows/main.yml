@@ -63,36 +63,15 @@ jobs:
         run: |
           if [ ! -z "${BOT_TOKEN}" ]; then
             if [ ! -z "${CHANNEL_ID}" ]; then
-              # 查找所有 signed apk
-              mapfile -t APK_FILES < <(find ./app/build/outputs/apk/release -name "*-release-signed.apk" | sort)
-              echo "Debug: APK files found:"
-              printf '%s\n' "${APK_FILES[@]}"
+              export RELEASE=$(find ./app/build/outputs/apk/release -name "*arm64-v8a-release-signed.apk" | head -n 1)
+              echo "Debug: RELEASE path is $RELEASE"
 
-              if [ ${#APK_FILES[@]} -eq 0 ]; then
-                echo "Error: No APK files found!"
+              if [ -f "$RELEASE" ]; then
+                ESCAPED=$(python3 -c 'import json,os,urllib.parse; print(urllib.parse.quote(json.dumps(os.environ["COMMIT_MESSAGE"])))')
+                curl -v "https://api.telegram.org/bot${BOT_TOKEN}/sendMediaGroup?chat_id=${CHANNEL_ID}&media=%5b%7b%22type%22%3a%22document%22%2c+%22media%22%3a%22attach%3a%2f%2frelease%22%2c%22parse_mode%22%3a%22MarkdownV2%22%2c%22caption%22%3a${ESCAPED}%7D%5D" -F release="@$RELEASE"
+              else
+                echo "Error: APK file not found at $RELEASE"
                 exit 1
               fi
-
-              # 转义提交信息
-              ESCAPED=$(python3 -c 'import json,os,urllib.parse; print(urllib.parse.quote(json.dumps(os.environ["COMMIT_MESSAGE"])))')
-
-              # 构建 media JSON
-              MEDIA_JSON=""
-              for i in "${!APK_FILES[@]}"; do
-                INDEX=$((i + 1))
-                MEDIA_JSON+="{\"type\":\"document\",\"media\":\"attach://file${INDEX}\",\"caption\":\"${ESCAPED}\"},"
-              done
-              MEDIA_JSON="[${MEDIA_JSON%,}]"  # 去掉末尾的逗号
-
-              # 构建 curl 命令
-              CURL_CMD=(curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMediaGroup" -F "chat_id=${CHANNEL_ID}" -F "media=${MEDIA_JSON}")
-              for i in "${!APK_FILES[@]}"; do
-                INDEX=$((i + 1))
-                CURL_CMD+=(-F "file${INDEX}=@${APK_FILES[$i]}")
-              done
-
-              # 执行 curl
-              echo "Uploading to Telegram..."
-              "${CURL_CMD[@]}"
             fi
           fi

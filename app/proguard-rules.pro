@@ -25,3 +25,18 @@
 -keep class * {
     public private *;
 }
+
+#-keep class retrofit2.** { *; }
+#-keep class okhttp3.** { *; }
+#-keep class okhttp3.Cookie { *; }
+#-keep class okhttp3.OkHttpClient { *; }
+#-keep class com.google.gson.** { *; }
+#-keep class com.google.gson.reflect.TypeToken { *; }
+#
+#-keep class * extends com.google.gson.reflect.TypeToken
+#-keepclassmembers class * {
+#    @com.google.gson.annotations.SerializedName <fields>;
+#}
+#
+#-keepattributes Signature
+#-keepattributes Exceptions
