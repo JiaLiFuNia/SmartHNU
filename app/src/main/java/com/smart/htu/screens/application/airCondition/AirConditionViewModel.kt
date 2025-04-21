@@ -1,6 +1,7 @@
 package com.smart.htu.screens.application.airCondition
 
 import android.util.Log
+import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.MainActivity
@@ -48,6 +49,8 @@ class AirConditionViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(AirConditionUiState())
     val uiState: StateFlow<AirConditionUiState> = _uiState.asStateFlow()
+
+    val snackBarHostState = SnackbarHostState()
 
     private val _blurStateFlow = dataStoreRepo.observerBlurState()
         .stateIn(
@@ -149,11 +152,11 @@ class AirConditionViewModel @Inject constructor(
         res.onSuccess {
             _uiState.update { it.copy(customConfig = res.getOrNull()?.rows?.first()) }
             changeCookieValidState(true)
-            MainActivity.snackBarHostState.showSnackbar("已配置有效 Cookie")
+            showSnackbar("已配置有效 Cookie")
         }
         res.onFailure {
             changeCookieValidState(false)
-            MainActivity.snackBarHostState.showSnackbar("请重新配置 Cookie")
+            showSnackbar("请重新配置 Cookie")
         }
         Log.i("TAG666 air", res.getOrNull().toString())
     }
@@ -270,6 +273,7 @@ class AirConditionViewModel @Inject constructor(
             }
             dataStoreRepo.changeBuildingId(buildingId)
             dataStoreRepo.changeRoomId(roomId)
+            showSnackbar("配置保存成功")
         }
     }
 
@@ -287,5 +291,11 @@ class AirConditionViewModel @Inject constructor(
 
     private fun changeCookieValidState(state: Boolean) {
         _uiState.update { it.copy(isCookieValid = state) }
+    }
+
+    fun showSnackbar(message: String, actionLabel: String? = null) {
+        viewModelScope.launch {
+            snackBarHostState.showSnackbar(message, actionLabel)
+        }
     }
 }

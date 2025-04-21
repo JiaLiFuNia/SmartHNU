@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.smart.htu.R
 import com.smart.htu.ui.theme.onPrimaryLight
@@ -23,6 +24,7 @@ import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.extra.SuperDialogDefaults
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissDialog
 
@@ -33,12 +35,14 @@ fun BasicBottomSheet(
     title: String,
     summary: String? = null,
     onConfirmClick: (() -> Unit)? = null,
+    insideMargin: DpSize = SuperDialogDefaults.insideMargin,
     content: @Composable (ColumnScope.() -> Unit)
 ) {
     SuperDialog(
         title = title,
         summary = summary,
         show = showDialog,
+        insideMargin = insideMargin,
         onDismissRequest = {
             dismissDialog(showDialog)
         }

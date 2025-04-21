@@ -2,6 +2,7 @@ package com.smart.htu.component.chart
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
@@ -23,15 +24,15 @@ private val BottomAxisValueFormatter = CartesianValueFormatter { context, x, _ -
 
 @Composable
 fun ColumnChart(
-    xData: List<String>,
-    yData: List<Double>,
+    xData: MutableState<List<String>>,
+    yData: MutableState<List<Double>>,
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
 
     LaunchedEffect(Unit) {
         modelProducer.runTransaction {
-            columnSeries { series(yData) }
-            extras { it[BottomAxisLabelKey] = xData }
+            columnSeries { series(yData.value) }
+            extras { it[BottomAxisLabelKey] = xData.value }
         }
     }
     CartesianChartHost(

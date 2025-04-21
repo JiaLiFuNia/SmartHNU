@@ -34,7 +34,7 @@ fun LazyItemScope.CircularProgressIndicator(
                 size = size
             )
             Text(
-                text = "正在加载中",
+                text = "正在加载...",
                 modifier = Modifier.padding(top = 8.dp),
                 style = MiuixTheme.textStyles.subtitle.copy(
                     color = Color.Gray
@@ -61,7 +61,7 @@ fun CircularProgressIndicator(
         ) {
             top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator(size = size)
             Text(
-                text = "正在加载中",
+                text = "正在加载...",
                 modifier = Modifier.padding(top = 8.dp),
                 style = MiuixTheme.textStyles.subtitle.copy(
                     color = Color.Gray

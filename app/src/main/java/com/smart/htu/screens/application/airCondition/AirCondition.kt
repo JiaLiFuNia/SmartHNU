@@ -33,6 +33,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
@@ -98,6 +99,7 @@ fun AirCondition(
     val isShowSuggestChip = remember {
         mutableStateOf((uiState.roomCode.isEmpty() || uiState.buildingCode.isEmpty() || !uiState.isCookieValid))
     }
+    val snackBarHostState = viewModel.snackBarHostState
 
     val tabItem = listOf("用电情况", "缴费情况")
     val pagerState = rememberPagerState { tabItem.size }
@@ -279,13 +281,19 @@ fun AirCondition(
                             ) {
                                 when (page) {
                                     0 -> {
-                                        AirConditionChart(
-                                            xData = uiState.billRecords?.rows?.map {
+                                        val xData1 = remember {
+                                            mutableStateOf(uiState.billRecords?.rows?.map {
                                                 it.dateTimeDouble
-                                            } ?: listOf("0.0"),
-                                            yData = uiState.billRecords?.rows?.map {
+                                            } ?: listOf("0.0"))
+                                        }
+                                        val yData1 = remember {
+                                            mutableStateOf(uiState.billRecords?.rows?.map {
                                                 it.used.toDouble()
-                                            } ?: listOf(0.0)
+                                            } ?: listOf(0.0))
+                                        }
+                                        AirConditionChart(
+                                            xData = xData1,
+                                            yData = yData1
                                         )
                                         // Spacer(modifier = Modifier.height(4.dp))
                                         uiState.billRecords?.rows?.forEach {
@@ -295,13 +303,19 @@ fun AirCondition(
                                     }
 
                                     1 -> {
-                                        AirConditionChart(
-                                            xData = uiState.buyRecords?.rows?.map {
+                                        val xData2 = remember {
+                                            mutableStateOf(uiState.buyRecords?.rows?.map {
                                                 it.dateTimeDouble
-                                            } ?: listOf("0.0"),
-                                            yData = uiState.buyRecords?.rows?.map {
+                                            } ?: listOf("0.0"))
+                                        }
+                                        val yData2 = remember {
+                                            mutableStateOf(uiState.buyRecords?.rows?.map {
                                                 it.money.toDouble()
-                                            } ?: listOf(0.0)
+                                            } ?: listOf(0.0))
+                                        }
+                                        AirConditionChart(
+                                            xData = xData2,
+                                            yData = yData2
                                         )
                                         uiState.buyRecords?.rows?.forEach {
                                             SingleMessage(it.dateTime, "${it.money} 元")
@@ -320,8 +334,8 @@ fun AirCondition(
 
 @Composable
 fun AirConditionChart(
-    xData: List<String>,
-    yData: List<Double>,
+    xData: MutableState<List<String>>,
+    yData: MutableState<List<Double>>,
 ) {
     top.yukonga.miuix.kmp.basic.Surface(
         modifier = Modifier.fillMaxWidth(),

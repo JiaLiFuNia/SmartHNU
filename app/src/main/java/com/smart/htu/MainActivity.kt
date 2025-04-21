@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
 
             SmartHNUTheme {
                 Surface(
-                    color = MiuixTheme.colorScheme.surface
+                    color = MiuixTheme.colorScheme.background
                 ) {
                     NavHostScreen()
                 }

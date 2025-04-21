@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.smart.htu.R
 import com.smart.htu.api.module.Course
@@ -57,7 +58,7 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
                     .width(4.dp)
                     .height(32.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(MiuixTheme.colorScheme.onPrimary)
+                    .background(MiuixTheme.colorScheme.primary)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Column(
@@ -115,6 +116,7 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
         showDialog = isBottomSheetShow,
         title = "${message.courseName} ${message.projectName}",
         summary = "上课时间：${message.startTime} - ${message.endTime}",
+        insideMargin = DpSize(16.dp, 24.dp)
     ) {
         MessageCardDisplay(
             modifier = Modifier.fillMaxWidth(),
@@ -125,19 +127,19 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
                     leadingIcon = R.drawable.ic_outline_person
                 ),
                 SingleInfo(
-                    label = "教室".ifEmpty { "暂无" },
-                    content = message.classroomName,
+                    label = "教室",
+                    content = message.classroomName.ifEmpty { "暂无" },
                     leadingIcon = R.drawable.apartment_24px
                 ),
                 SingleInfo(
-                    label = "考试方式",
-                    content = message.assessmentMethod,
-                    leadingIcon = R.drawable.ic_outline_person
+                    label = "课程类型",
+                    content = "${message.assessmentMethod} / ${message.teachingEnvironment}",
+                    leadingIcon = R.drawable.category_24px
                 ),
                 SingleInfo(
-                    label = "教学环境",
-                    content = message.teachingEnvironment,
-                    leadingIcon = R.drawable.ic_outline_person
+                    label = "节次",
+                    content = message.classTimeCodeDetailed,
+                    leadingIcon = R.drawable.nest_clock_farsight_analog_24px
                 )
             )
         )

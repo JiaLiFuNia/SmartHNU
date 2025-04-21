@@ -253,8 +253,8 @@ fun NewsScreen(
                                         Box(
                                             modifier = Modifier.clickable {
                                                 navController.navigateToWebView(
-                                                    bannerUrl[index],
-                                                    bannerTitle[index]
+                                                    url = bannerUrl[index],
+                                                    label = "河南师范大学"
                                                 )
                                             },
                                             contentAlignment = Alignment.Center
@@ -321,7 +321,6 @@ fun NewsItem(news: NewsItemEntity, maxLines: Int = 2, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         modifier = Modifier
-            .semantics { role = Role.Button }
             .fillMaxWidth()
             .animateContentSize(),
         shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
@@ -332,7 +331,7 @@ fun NewsItem(news: NewsItemEntity, maxLines: Int = 2, onClick: () -> Unit) {
             headlineContent = {
                 Text(
                     text = news.title,
-                    style = MiuixTheme.textStyles.headline2,
+                    style = MaterialTheme.typography.titleMedium,
                     maxLines = maxLines,
                     overflow = TextOverflow.Ellipsis
                 )

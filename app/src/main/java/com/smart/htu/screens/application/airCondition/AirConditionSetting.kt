@@ -58,6 +58,7 @@ fun AirConditionSetting(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    val snackBarHostState = viewModel.snackBarHostState
     var buildingId by remember { mutableStateOf(uiState.buildingCode) }
     var roomId by remember { mutableStateOf(uiState.roomCode) }
     val scope = rememberCoroutineScope()
@@ -204,7 +205,7 @@ fun AirConditionSetting(
             item {
                 top.yukonga.miuix.kmp.basic.TextButton(
                     text = "保存",
-                    enabled = uiState.isCookieValid,
+                    enabled = uiState.isCookieValid && buildingId.isNotEmpty() && roomId.isNotEmpty(),
                     onClick = {
                         viewModel.saveBuildingAndRoomId(buildingId, roomId)
                         navController.popBackStack()

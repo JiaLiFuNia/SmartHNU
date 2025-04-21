@@ -84,6 +84,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
@@ -395,6 +396,7 @@ fun BookRentDetailBottomSheet(
 ) {
     BasicBottomSheet(
         showDialog = isBottomSheetShow,
+        insideMargin = DpSize(16.dp, 24.dp),
         title = "详情"
     ) {
         LazyColumn(
@@ -402,13 +404,7 @@ fun BookRentDetailBottomSheet(
         ) {
             if (uiState.isLoading) {
                 item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularWavyProgressIndicator()
-                    }
+                    CircularProgressIndicator(modifier = Modifier.height(100.dp).fillMaxWidth())
                 }
             } else {
                 stickyHeader {
