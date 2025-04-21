@@ -1,8 +1,10 @@
 package com.smart.htu.screens.application.teacherEvaluation
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -50,6 +52,7 @@ import com.smart.htu.screens.application.grade.SelectTermBottomSheet
 import com.smart.htu.utils.Term.termConverter
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.LazyColumn
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
@@ -101,30 +104,36 @@ fun TeacherEvaluation(
         onRefresh = { onRefresh() },
         itemSpacePadding = 12.dp
     ) {
-        when (uiState.evaluationInfo.status == Status.LOADING || !uiState.isTokenValid) {
-            true ->
-                item {
-                    CircularProgressIndicator()
-                }
+        LazyColumn(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            when (uiState.evaluationInfo.status == Status.LOADING || !uiState.isTokenValid) {
+                true ->
+                    item {
+                        CircularProgressIndicator()
+                    }
 
-            false -> {
-                item {
-                    if (uiState.evaluationInfo.data?.evaluationInfoList?.isEmpty() == true)
-                        EmptyContent(
-                            text = "学期 ${termConverter(uiState.termCode)}\n评价时间 ${uiState.evaluationInfo.data?.msg}",
-                            image = DrawableVectors.emptyData()
-                        )
-                    else
-                        EmptyContent(
-                            text = "学期 ${termConverter(uiState.termCode)}\n评价时间 ${uiState.evaluationInfo.data?.msg}",
-                            modifier = Modifier
-                                .fillParentMaxWidth()
-                                .padding(bottom = 12.dp)
-                        )
-                }
-                items(uiState.evaluationInfo.data?.evaluationInfoList ?: emptyList()) {
-                    SingleTeacher(it, themeMode)
-                    Spacer(modifier = Modifier.height(12.dp))
+                false -> {
+                    item {
+                        if (uiState.evaluationInfo.data?.evaluationInfoList?.isEmpty() == true)
+                            EmptyContent(
+                                text = "学期 ${termConverter(uiState.termCode)}\n评价时间 ${uiState.evaluationInfo.data?.msg}",
+                                image = DrawableVectors.emptyData()
+                            )
+                        else
+                            EmptyContent(
+                                text = "学期 ${termConverter(uiState.termCode)}\n评价时间 ${uiState.evaluationInfo.data?.msg}",
+                                modifier = Modifier
+                                    .fillParentMaxWidth()
+                                    .padding(bottom = 12.dp)
+                            )
+                    }
+                    items(uiState.evaluationInfo.data?.evaluationInfoList ?: emptyList()) {
+                        SingleTeacher(it, themeMode)
+                    }
                 }
             }
         }

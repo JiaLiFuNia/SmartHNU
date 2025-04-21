@@ -272,7 +272,7 @@ fun FocusCard(
                             modifier = Modifier.size(24.dp)
                         )
                     },
-                    title = "当前天气",
+                    title = "即时天气",
                     content = "${mainUiState.nowWeather.data?.weather ?: "--"} ${mainUiState.nowWeather.data?.temperature ?: "--"} ℃",
                     onClick = { /*TODO*/ },
                     modifier = Modifier.weight(0.5f)

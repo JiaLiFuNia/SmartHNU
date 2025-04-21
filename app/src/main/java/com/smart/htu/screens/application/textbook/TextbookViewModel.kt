@@ -1,6 +1,7 @@
 package com.smart.htu.screens.application.textbook
 
 import android.util.Log
+import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.OverallTerm
@@ -49,6 +50,7 @@ class TextbookViewModel @Inject constructor(
     )
     val uiState: StateFlow<TextbookUiState> = _uiState.asStateFlow()
 
+    val snackBarHostState = SnackbarHostState()
 
     private val blurStateFlow = dataStoreRepo.observerBlurState()
         .stateIn(
@@ -154,6 +156,12 @@ class TextbookViewModel @Inject constructor(
 
     fun changeTermCode(termCode: String) {
         _uiState.update { it.copy(termCode = termCode) }
+    }
+
+    fun showSnackBar(message: String, actionLabel: String? = null) {
+        viewModelScope.launch {
+            snackBarHostState.showSnackbar(message, actionLabel)
+        }
     }
 
 }

@@ -2,6 +2,7 @@ package com.smart.htu.screens.application.grade
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,6 +50,7 @@ import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.utils.Term.termConverter
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.LazyColumn
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
@@ -94,24 +96,30 @@ fun Grade(
         onRefresh = { onRefresh() },
         itemSpacePadding = 12.dp
     ) {
-        when (uiState.courseGrade.status == Status.LOADING || !uiState.isTokenValid) {
-            true ->
-                item {
-                    CircularProgressIndicator()
-                }
-
-            false -> {
-                if (uiState.courseGrade.data?.isEmpty() != false) {
+        LazyColumn(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            when (uiState.courseGrade.status == Status.LOADING || !uiState.isTokenValid) {
+                true ->
                     item {
-                        EmptyContent(
-                            text = "学期 ${termConverter(uiState.termCode)}\n暂无数据",
-                            image = DrawableVectors.emptyData()
-                        )
+                        CircularProgressIndicator()
                     }
-                } else {
-                    itemsIndexed(uiState.courseGrade.data) { _, course ->
-                        SingleCourseGrade(themeMode, course)
-                        Spacer(modifier = Modifier.height(12.dp))
+
+                false -> {
+                    if (uiState.courseGrade.data?.isEmpty() != false) {
+                        item {
+                            EmptyContent(
+                                text = "学期 ${termConverter(uiState.termCode)}\n暂无数据",
+                                image = DrawableVectors.emptyData()
+                            )
+                        }
+                    } else {
+                        itemsIndexed(uiState.courseGrade.data) { _, course ->
+                            SingleCourseGrade(themeMode, course)
+                        }
                     }
                 }
             }

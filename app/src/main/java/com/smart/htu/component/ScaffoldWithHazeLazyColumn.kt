@@ -1,6 +1,9 @@
 package com.smart.htu.component
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -35,12 +38,11 @@ fun ScaffoldWithHazeLazyColumn(
     actions: @Composable () -> Unit,
     navigationIcon: @Composable () -> Unit,
     snackBarHost: (@Composable () -> Unit)? = null,
-    itemSpacePadding: Dp = 20.dp,
+    itemSpacePadding: Dp = 12.dp,
     isMediumTopAppBar: Boolean = false,
     refreshState: top.yukonga.miuix.kmp.basic.PullToRefreshState,
     onRefresh: () -> Unit,
-    headContent: (@Composable () -> Unit)? = null,
-    content: LazyListScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit
 ) {
     val scope = rememberCoroutineScope()
     top.yukonga.miuix.kmp.basic.Scaffold(
@@ -88,37 +90,23 @@ fun ScaffoldWithHazeLazyColumn(
                 )
         }
     ) {
-        Column(
-            modifier = Modifier
-                .padding(top = it.calculateTopPadding())
-                .fillMaxSize()
-        ) {
-            if (headContent != null) {
-                headContent()
-            }
-            top.yukonga.miuix.kmp.basic.PullToRefresh(
-                pullToRefreshState = refreshState,
-                refreshTexts = PULL_TO_REFRESH_TEXT,
-                onRefresh = {
-                    scope.launch {
-                        onRefresh
-                        refreshState.completeRefreshing {
-                            sendToast(context, "刷新成功")
-                        }
+        top.yukonga.miuix.kmp.basic.PullToRefresh(
+            pullToRefreshState = refreshState,
+            refreshTexts = PULL_TO_REFRESH_TEXT,
+            onRefresh = {
+                scope.launch {
+                    refreshState.completeRefreshing {
+                        onRefresh()
                     }
-                },
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                top.yukonga.miuix.kmp.basic.LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    content()
                 }
+            },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+        ) {
+            Column {
+                content()
             }
         }
-
     }
 }

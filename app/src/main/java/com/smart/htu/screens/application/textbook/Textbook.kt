@@ -1,8 +1,10 @@
 package com.smart.htu.screens.application.textbook
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -55,6 +57,7 @@ import com.smart.htu.utils.sendToast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.LazyColumn
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
@@ -77,9 +80,6 @@ fun Textbook(
     val onRefresh: () -> Unit = {
         coroutineScope.launch {
             viewModel.getTextbook(uiState.termCode)
-            pullToRefreshState.completeRefreshing {
-                sendToast(context, "刷新成功")
-            }
         }
     }
 
@@ -104,27 +104,32 @@ fun Textbook(
             }
         },
         refreshState = pullToRefreshState,
-        onRefresh = { onRefresh() },
-        itemSpacePadding = 12.dp
+        onRefresh = { onRefresh() }
     ) {
-        when (uiState.courseList.status == Status.LOADING || !uiState.isTokenValid) {
-            true ->
-                item {
-                    CircularProgressIndicator()
-                }
-
-            false -> {
-                if (uiState.courseList.data?.courseTextbookList?.isEmpty() == true) {
+        LazyColumn(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            when (uiState.courseList.status == Status.LOADING || !uiState.isTokenValid) {
+                true ->
                     item {
-                        EmptyContent(
-                            text = "学期 ${termConverter(uiState.termCode)}\n暂无数据",
-                            image = DrawableVectors.emptyData()
-                        )
+                        CircularProgressIndicator()
                     }
-                } else {
-                    items(uiState.courseList.data?.courseTextbookList ?: emptyList()) {
-                        SingleCourseTextbook(uiState.termCode, it, navController, themeMode)
-                        Spacer(modifier = Modifier.height(12.dp))
+
+                false -> {
+                    if (uiState.courseList.data?.courseTextbookList?.isEmpty() == true) {
+                        item {
+                            EmptyContent(
+                                text = "学期 ${termConverter(uiState.termCode)}\n暂无数据",
+                                image = DrawableVectors.emptyData()
+                            )
+                        }
+                    } else {
+                        items(uiState.courseList.data?.courseTextbookList ?: emptyList()) {
+                            SingleCourseTextbook(uiState.termCode, it, navController, themeMode)
+                        }
                     }
                 }
             }
@@ -151,7 +156,8 @@ fun SingleCourseTextbook(
 ) {
     Surface(
         onClick = {
-            navController.navigate("${Destinations.TextbookSelect.route}/${course.courseTaskCode}/${termCode}")
+            if (course.isNeedTextbook)
+                navController.navigate("${Destinations.TextbookSelect.route}/${course.courseTaskCode}/${termCode}")
         },
         modifier = Modifier
             .semantics { role = Role.Button }

@@ -60,8 +60,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -181,14 +183,8 @@ fun NewsScreen(
                 modifier = Modifier
                     .padding(top = 4.dp)
                     .padding(horizontal = 16.dp),
-                indicator = {
-                    TabRowDefaults.PrimaryIndicator(
-                        modifier = Modifier.tabIndicatorOffset(newsPagerState.currentPage),
-                        shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
-                        width = 24.dp
-                    )
-                },
-                divider = {}
+                indicator = { },
+                divider = { }
             ) {
                 tabItems.forEachIndexed { index, item ->
                     Tab(
@@ -198,12 +194,14 @@ fun NewsScreen(
                                 newsPagerState.animateScrollToPage(index)
                             }
                         },
-                        selectedContentColor = MaterialTheme.colorScheme.primary,
-                        unselectedContentColor = MaterialTheme.colorScheme.onSurface
+                        selectedContentColor = MiuixTheme.colorScheme.onSurface,
+                        unselectedContentColor = MiuixTheme.colorScheme.onSurface
                     ) {
                         Text(
                             text = stringResource(id = item),
-                            modifier = Modifier.padding(8.dp)
+                            modifier = Modifier.padding(8.dp),
+                            fontSize = if (index == selectedTabIndex.value) 16.sp else 15.sp,
+                            fontWeight = if (index == selectedTabIndex.value) FontWeight.Bold else FontWeight.Medium
                         )
                     }
                 }
@@ -219,7 +217,7 @@ fun NewsScreen(
             onRefresh = onRefresh,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 148.dp)
+                .padding(top = 140.dp)
         ) {
             Column(
                 modifier = Modifier

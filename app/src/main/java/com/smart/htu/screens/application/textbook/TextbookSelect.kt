@@ -3,12 +3,17 @@ package com.smart.htu.screens.application.textbook
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerScope
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -53,10 +58,13 @@ import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.ScaffoldWithHazeLazyColumn
 import com.smart.htu.component.svgVector.DrawableVectors
 import com.smart.htu.component.svgVector.drawablevectors.emptyData
+import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.utils.copyContent
 import com.smart.htu.utils.sendToast
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.LazyColumn
+import java.nio.file.WatchEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,9 +83,6 @@ fun TextbookSelect(
         coroutineScope.launch {
             viewModel.getSelectableTextbookService(courseTaskCode, termCode)
             viewModel.getSelectedTextbookService(courseTaskCode, termCode)
-            pullToRefreshState.completeRefreshing {
-                sendToast(context, "刷新成功")
-            }
         }
     }
 
@@ -91,7 +96,7 @@ fun TextbookSelect(
     val tabItem = listOf("可选教材", "已选教材")
 
     ScaffoldWithHazeLazyColumn(
-        snackBarHost = { SnackbarHost(hostState = snackBarHostState) },
+        snackBarHost = { SnackbarHost(hostState = viewModel.snackBarHostState) },
         themeMode = themeMode,
         isMediumTopAppBar = true,
         scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
@@ -107,80 +112,60 @@ fun TextbookSelect(
             }
         },
         refreshState = pullToRefreshState,
-        onRefresh = { onRefresh() },
-        itemSpacePadding = 12.dp,
-        headContent = {
-            TabRow(
-                containerColor = Color.Transparent,
-                selectedTabIndex = pagerState.currentPage,
-                indicator = { tabPositions ->
-                    TabRowDefaults.PrimaryIndicator(
-                        modifier = Modifier
-                            .tabIndicatorOffset(tabPositions[pagerState.currentPage]),
-                        width = tabPositions[pagerState.currentPage].width / 2f,
-                        shape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp),
-                    )
-                },
-                divider = {}
-            ) {
-                tabItem.forEachIndexed { index, item ->
-                    Tab(
-                        text = { Text(text = item) },
-                        selected = selectIndex == index,
-                        onClick = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
-                            }
-                        }
-                    )
-                }
-            }
-        }
+        onRefresh = { onRefresh() }
     ) {
-        item {
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize(),
-                pageSpacing = 8.dp
-            ) {
-                SelectTextbook(
-                    textbook = if (it == 0) uiState.selectableList
-                    else uiState.selectedList,
-                    viewModel = viewModel
-                )
-            }
+        top.yukonga.miuix.kmp.basic.TabRow(
+            tabs = tabItem,
+            selectedTabIndex = selectIndex,
+            onTabSelected = {
+                coroutineScope.launch {
+                    pagerState.animateScrollToPage(it)
+                }
+            },
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize(),
+            pageSpacing = 12.dp
+        ) {
+            SelectTextbook(
+                textbook = if (it == 0) uiState.selectableList else uiState.selectedList,
+                viewModel = viewModel
+            )
         }
     }
 }
 
 @Composable
-fun LazyItemScope.SelectTextbook(
+fun PagerScope.SelectTextbook(
     textbook: ResultWithStatus<List<Textbook>>,
     viewModel: TextbookViewModel
 ) {
-    Box(
-        modifier = Modifier.fillParentMaxSize(),
-        contentAlignment = Alignment.TopCenter
+    LazyColumn(
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .fillMaxSize()
     ) {
         if (textbook.status == Status.LOADING) {
-            CircularProgressIndicator()
+            item {
+                CircularProgressIndicator()
+            }
         } else {
             if (textbook.status == Status.SUCCESS) {
                 if (textbook.data?.isEmpty() == true) {
-                    EmptyContent(
-                        text = "没有教材",
-                        image = DrawableVectors.emptyData()
-                    )
+                    item {
+                        EmptyContent(
+                            text = "没有教材",
+                            image = DrawableVectors.emptyData()
+                        )
+                    }
                 } else {
-                    Column(
-                        modifier = Modifier
-                            .fillParentMaxSize()
-                            .verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        textbook.data?.forEach {
-                            SingleCourseTextbook(viewModel, it)
-                        }
+                    items(textbook.data ?: emptyList()) {
+                        SingleCourseTextbook(viewModel, it)
                     }
                 }
             }
@@ -218,7 +203,7 @@ fun SingleCourseTextbook(
                 onClick = {
                     scope.launch {
                         copyContent("${textbook.textbookName} ${textbook.isbn}")
-                        snackBarHostState.showSnackbar("已复制到剪切板")
+                        viewModel.showSnackBar("已复制到剪切板")
                     }
                 }
             ) {
@@ -235,7 +220,7 @@ fun SingleCourseTextbook(
                 .padding(horizontal = 12.dp)
                 .padding(bottom = 12.dp),
             text = if (textbook.isSelected) "选订" else "退订",
-            colors = if (textbook.isSelected) ButtonDefaults.textButtonColors() else ButtonDefaults.textButtonColorsPrimary()
+            colors = if (textbook.isSelected) ButtonDefaults.textButtonColors() else ButtonDefaults.textButtonPrimaryColors()
         )
     }
 }

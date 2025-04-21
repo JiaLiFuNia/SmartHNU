@@ -2,7 +2,9 @@ package com.smart.htu.screens.person
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -36,6 +38,7 @@ import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.screens.login.LoginViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.LazyColumn
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,14 +53,10 @@ fun AccountManage(
         mutableStateOf(true)
     }
 
-    val state = rememberPullToRefreshState()
     val scope = rememberCoroutineScope()
-    var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
-        isRefreshing = true
         scope.launch {
             delay(1500)
-            isRefreshing = false
         }
     }
 
@@ -76,72 +75,76 @@ fun AccountManage(
         refreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState(),
         onRefresh = { onRefresh() }
     ) {
-        item {
-            val visibility = remember { mutableStateOf(true) }
-            SuggestChip(
-                onClick = { /*TODO*/ },
-                onActionClick = { onEditable(false) },
-                text = "请不要将此页面信息泄露给他人",
-                type = SuggestChipType.ERROR,
-                icon = Icons.Outlined.Info,
-                visibility = visibility
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-        }
-        item {
-            LargeCardDisplay(
-                themeMode = themeMode,
-                modifier = Modifier,
-                title = "统一认证登录",
-                leadingIconPainting = R.drawable.circle_admin
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+        LazyColumn(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            item {
+                val visibility = remember { mutableStateOf(true) }
+                SuggestChip(
+                    onClick = { /*TODO*/ },
+                    onActionClick = { onEditable(false) },
+                    text = "请不要将此页面信息泄露给他人",
+                    type = SuggestChipType.ERROR,
+                    icon = Icons.Outlined.Info,
+                    visibility = visibility
+                )
+            }
+            item {
+                LargeCardDisplay(
+                    themeMode = themeMode,
+                    modifier = Modifier,
+                    title = "统一认证登录",
+                    leadingIconPainting = R.drawable.circle_admin
                 ) {
-                    uiState.cookies.forEach {
-                        OutlinedTextField(
-                            shape = RoundedCornerShape(10.dp),
-                            value = it.value,
-                            label = {
-                                Text(
-                                    text = it.name
-                                )
-                            },
-                            readOnly = editable,
-                            onValueChange = {},
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        uiState.cookies.forEach {
+                            OutlinedTextField(
+                                shape = RoundedCornerShape(10.dp),
+                                value = it.value,
+                                label = {
+                                    Text(
+                                        text = it.name
+                                    )
+                                },
+                                readOnly = editable,
+                                onValueChange = {},
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(20.dp))
-        }
-        item {
-            LargeCardDisplay(
-                themeMode = themeMode,
-                modifier = Modifier,
-                title = "河南师大智慧教务",
-                leadingIconPainting = R.drawable.circle_admin
-            ) {
-                OutlinedTextField(
-                    shape = RoundedCornerShape(10.dp),
-                    value = uiState.token,
-                    label = {
-                        Text(
-                            text = "token"
-                        )
-                    },
-                    readOnly = editable,
-                    onValueChange = { viewModel.setJWCLogToken(it) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp)
-                )
+            item {
+                LargeCardDisplay(
+                    themeMode = themeMode,
+                    modifier = Modifier,
+                    title = "河南师大智慧教务",
+                    leadingIconPainting = R.drawable.circle_admin
+                ) {
+                    OutlinedTextField(
+                        shape = RoundedCornerShape(10.dp),
+                        value = uiState.token,
+                        label = {
+                            Text(
+                                text = "token"
+                            )
+                        },
+                        readOnly = editable,
+                        onValueChange = { viewModel.setJWCLogToken(it) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp)
+                    )
+                }
             }
-            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
