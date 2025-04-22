@@ -136,7 +136,7 @@ fun MainFrame(
                             BadgedBox(
                                 badge = {
                                     val messageCount =
-                                        mainUiState.config?.notice?.filter {
+                                        mainUiState.giteeConfig?.notice?.filter {
                                             !mainUiState.hadReadIdList.contains(it.id)
                                         }?.size ?: 0
                                     if (messageCount != 0)
