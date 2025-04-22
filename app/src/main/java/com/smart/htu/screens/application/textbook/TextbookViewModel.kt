@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.smart.htu.api.module.OverallTerm
+import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.SingleTerm
 import com.smart.htu.api.module.Textbook
@@ -13,6 +13,7 @@ import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_IS_TOKEN_VALID
 import com.smart.htu.repo.JWCNetworkRepo
+import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.utils.Term.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +29,7 @@ import javax.inject.Inject
 
 data class TextbookUiState(
     val termCode: String,
-    val termIndex: List<SingleTerm> = emptyList(),
+    val termList: List<SingleTerm> = emptyList(),
     val courseTaskCode: String = "",
     val courseList: ResultWithStatus<TextbookEntity> = ResultWithStatus(),
     val selectableList: ResultWithStatus<List<Textbook>> = ResultWithStatus(),
@@ -40,7 +41,8 @@ data class TextbookUiState(
 @HiltViewModel
 class TextbookViewModel @Inject constructor(
     private val jwcNetworkRepo: JWCNetworkRepo,
-    private val dataStoreRepo: DataStoreRepo
+    private val dataStoreRepo: DataStoreRepo,
+    private val sharedDataRepository: SharedDataRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -69,12 +71,12 @@ class TextbookViewModel @Inject constructor(
                 dataStoreRepo.observeTokenValid().first()
             }
         )
-    private val termCodeStateFlow = dataStoreRepo.observeOverallTermCode()
+    private val termCodeStateFlow = dataStoreRepo.observeGlobalTermCode()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
-                dataStoreRepo.observeOverallTermCode().first()
+                dataStoreRepo.observeGlobalTermCode().first()
             }
         )
 
@@ -95,14 +97,27 @@ class TextbookViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            getTermIndex()
+            sharedDataRepository.termIndex
+                .collect { termIndex ->
+                    _uiState.update {
+                        it.copy(termList = termIndex?.termList ?: emptyList())
+                    }
+                }
+        }
+        viewModelScope.launch {
             getTextbook(_uiState.value.termCode)
         }
     }
 
-    suspend fun getTextbook(termCode: String) {
+    fun refreshTermList() {
+        viewModelScope.launch {
+            sharedDataRepository.getTermIndex()
+        }
+    }
+
+    fun getTextbook(termCode: String) = viewModelScope.launch {
         try {
-            val res = jwcNetworkRepo.getTextbookService(OverallTerm(termCode))
+            val res = jwcNetworkRepo.getTextbookService(GlobalTerm(termCode))
             _uiState.update { uiState ->
                 uiState.copy(courseList = ResultWithStatus(res))
             }
@@ -111,10 +126,10 @@ class TextbookViewModel @Inject constructor(
         }
     }
 
-    suspend fun getSelectableTextbookService(
+    fun getSelectableTextbookService(
         courseTaskCode: String,
         termCode: String
-    ) {
+    ) = viewModelScope.launch {
         try {
             val res = jwcNetworkRepo.getSelectableTextbookService(
                 termCode, courseTaskCode
@@ -127,10 +142,10 @@ class TextbookViewModel @Inject constructor(
         }
     }
 
-    suspend fun getSelectedTextbookService(
+    fun getSelectedTextbookService(
         courseTaskCode: String,
         termCode: String
-    ) {
+    ) = viewModelScope.launch {
         try {
             val res = jwcNetworkRepo.getSelectedTextbookService(
                 termCode,
@@ -141,16 +156,6 @@ class TextbookViewModel @Inject constructor(
             }
         } catch (e: Exception) {
             Log.i("TAG666", "getSelectedTextbookService: $e")
-        }
-    }
-
-    private suspend fun getTermIndex() {
-        val res = jwcNetworkRepo.getTermIndexService(OverallTerm())
-        Log.i("TAG666", "getTermIndex: $res")
-        res.onSuccess {
-            _uiState.update { uiState ->
-                uiState.copy(termIndex = it.termList)
-            }
         }
     }
 

@@ -1,0 +1,29 @@
+package com.smart.htu.di
+
+import com.smart.htu.api.network.GiteeService
+import com.smart.htu.api.network.JWCService
+import com.smart.htu.repo.JWCNetworkRepo
+import com.smart.htu.repo.SharedDataRepoImpl
+import com.smart.htu.repo.SharedDataRepository
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import jakarta.inject.Singleton
+
+
+@Module
+@InstallIn(SingletonComponent::class)
+object SharedDataModule {
+
+    @Provides
+    @Singleton
+    fun provideSharedRepository(
+        jwcService: JWCService,
+        giteeService: GiteeService,
+        jwcNetworkRepo: JWCNetworkRepo
+    ): SharedDataRepository {
+        return SharedDataRepoImpl(jwcService, giteeService, jwcNetworkRepo)
+    }
+
+}

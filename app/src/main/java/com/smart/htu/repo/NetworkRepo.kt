@@ -26,6 +26,9 @@ import com.smart.htu.utils.ParseNewsUtil.parseNewsHTML
 import com.smart.htu.utils.parseLibraryBookDetail
 import com.smart.htu.utils.parseLibrarySearchResult
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import retrofit2.awaitResponse
@@ -37,7 +40,6 @@ class NetworkRepo @Inject constructor(
     private val eHallService: EHallService,
     private val libraryService: LibraryService,
     private val airConditionService: AirConditionService,
-    private val giteeService: GiteeService,
     private val weatherService: WeatherService,
     private val newsService: NewsService,
     private val networkCookieJar: NetworkCookieJar
@@ -72,17 +74,6 @@ class NetworkRepo @Inject constructor(
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
             return null
-        }
-    }
-
-    // 获取gitee配置
-    suspend fun getGiteeConfig(): Result<GiteeEntity> {
-        try {
-            val config = giteeService.getGiteeConfig()
-            return Result.success(config)
-        } catch (e: Exception) {
-            Log.e("TAG666", "${e.message}")
-            return Result.failure(Exception("获取失败"))
         }
     }
 

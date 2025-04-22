@@ -100,7 +100,7 @@ fun Main(
         coroutineScope.launch {
             pullToRefreshState.completeRefreshing {
                 mainViewModel.getNowWeather()
-                mainViewModel.getGiteeConfigService()
+                mainViewModel.refreshGiteeConfig()
                 mainViewModel.getNewsList()
                 if (loginUiState.loginJWCState == 1)
                     mainViewModel.getTodayCourse()
@@ -141,7 +141,7 @@ fun Main(
                 // Spacer(modifier = Modifier.height(20.dp))
             }
             item {
-                TodayCourseCard(uiState.toDayCourseList, themeMode, loginUiState)
+                TodayCourseCard(uiState.todayCourseList, themeMode, loginUiState)
                 // Spacer(modifier = Modifier.height(20.dp))
             }
             item {
@@ -264,7 +264,7 @@ fun FocusCard(
                     leadingContent = {
                         Icon(
                             painter = painterResource(
-                                id = mainUiState.nowWeather.data?.getIconResourceId(
+                                id = mainUiState.currentWeather.data?.getIconResourceId(
                                     context = context
                                 ) ?: R.drawable.qweather101
                             ),
@@ -273,7 +273,7 @@ fun FocusCard(
                         )
                     },
                     title = "即时天气",
-                    content = "${mainUiState.nowWeather.data?.weather ?: "--"} ${mainUiState.nowWeather.data?.temperature ?: "--"} ℃",
+                    content = "${mainUiState.currentWeather.data?.weather ?: "--"} ${mainUiState.currentWeather.data?.temperature ?: "--"} ℃",
                     onClick = { /*TODO*/ },
                     modifier = Modifier.weight(0.5f)
                 )

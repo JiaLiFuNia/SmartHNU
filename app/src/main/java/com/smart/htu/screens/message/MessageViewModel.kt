@@ -6,6 +6,8 @@ import com.smart.htu.api.module.Notice
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.NetworkRepo
+import com.smart.htu.repo.SharedDataRepoImpl
+import com.smart.htu.repo.SharedDataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,7 +22,6 @@ import javax.inject.Inject
 
 data class MessageUiState(
     val noticeList: List<Notice> = emptyList(),
-    val messageList: List<String> = emptyList(),
     val hadReadIdList: List<Int> = emptyList(),
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
@@ -28,7 +29,7 @@ data class MessageUiState(
 @HiltViewModel
 class MessageViewModel @Inject constructor(
     private val dataStoreRepo: DataStoreRepo,
-    private val networkRepo: NetworkRepo
+    private val sharedDataRepository: SharedDataRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MessageUiState())
@@ -50,6 +51,14 @@ class MessageViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            sharedDataRepository.giteeConfig
+                .collect { config ->
+                    _uiState.update {
+                        it.copy(noticeList = config?.notice ?: emptyList())
+                    }
+                }
+        }
+        viewModelScope.launch {
             _blurStateFlow.collect { value ->
                 _uiState.update { it.copy(blurEffect = value) }
             }
@@ -59,28 +68,16 @@ class MessageViewModel @Inject constructor(
                 _uiState.update { it.copy(hadReadIdList = value) }
             }
         }
-        viewModelScope.launch {
-            getNoticeByGiteeService()
-        }
     }
 
-    suspend fun getNoticeByGiteeService() {
-        val res = networkRepo.getGiteeConfig()
-        res.onSuccess {
-            _uiState.update {
-                it.copy(
-                    noticeList = res.getOrNull()?.notice ?: emptyList()
-                )
-            }
-        }
+    fun addHadReadList(id: Int) = viewModelScope.launch {
+        _uiState.update { it.copy(hadReadIdList = it.hadReadIdList + id) }
+        dataStoreRepo.saveNoticeReadId(_uiState.value.hadReadIdList)
     }
 
-    fun addHadReadList(id: Int) {
+    fun refreshGiteeConfig() {
         viewModelScope.launch {
-            _uiState.update {
-                it.copy(hadReadIdList = it.hadReadIdList + id)
-            }
-            dataStoreRepo.saveNoticeReadId(_uiState.value.hadReadIdList)
+            sharedDataRepository.getGiteeConfig()
         }
     }
 }

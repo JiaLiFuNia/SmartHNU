@@ -3,10 +3,8 @@ package com.smart.htu.screens.application.teacherEvaluation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -65,20 +63,13 @@ fun TeacherEvaluation(
     navController: NavController
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val state = rememberPullToRefreshState()
 
     val isBottomSheetShow = remember {
         mutableStateOf(false)
     }
-
-    val coroutineScope = rememberCoroutineScope()
-    var isRefreshing by remember { mutableStateOf(false) }
     val onRefresh: () -> Unit = {
-        isRefreshing = true
-        coroutineScope.launch {
-            viewModel.getTeacherListService(uiState.termCode)
-            isRefreshing = false
-        }
+        viewModel.getTeacherListService(uiState.termCode)
+        viewModel.refreshTermIndex()
     }
 
     ScaffoldWithHazeLazyColumn(
@@ -141,7 +132,7 @@ fun TeacherEvaluation(
 
     SelectTermBottomSheet(
         termSelectedCode = uiState.termCode,
-        termList = uiState.termIndex,
+        termList = uiState.termList,
         isBottomSheetShow = isBottomSheetShow,
         onClick = {
             viewModel.changeTermCode(it)

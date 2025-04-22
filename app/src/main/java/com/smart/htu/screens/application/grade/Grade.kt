@@ -4,9 +4,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
@@ -66,11 +64,9 @@ fun Grade(
     val isBottomSheetShow = remember {
         mutableStateOf(false)
     }
-    val coroutineScope = rememberCoroutineScope()
     val onRefresh: () -> Unit = {
-        coroutineScope.launch {
-            viewModel.getCourseGrade()
-        }
+        viewModel.getCourseGrade()
+        viewModel.refreshTermList()
     }
 
     ScaffoldWithHazeLazyColumn(
@@ -128,7 +124,7 @@ fun Grade(
 
     SelectTermBottomSheet(
         termSelectedCode = uiState.termCode,
-        termList = uiState.termIndex,
+        termList = uiState.termList,
         isBottomSheetShow = isBottomSheetShow,
         onClick = {
             viewModel.changeTermCode(it)

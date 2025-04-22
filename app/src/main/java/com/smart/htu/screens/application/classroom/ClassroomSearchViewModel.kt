@@ -37,7 +37,6 @@ data class ClassroomUiState(
 @HiltViewModel
 class ClassroomSearchViewModel @Inject constructor(
     private val jwcNetworkRepo: JWCNetworkRepo,
-    private val networkRepo: NetworkRepo,
     private val dataStoreRepo: DataStoreRepo
 ) : ViewModel() {
 

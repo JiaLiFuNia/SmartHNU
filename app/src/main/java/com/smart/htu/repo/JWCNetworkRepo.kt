@@ -8,7 +8,7 @@ import com.smart.htu.api.module.ClassroomOccupationEntity
 import com.smart.htu.api.module.CourseGrade
 import com.smart.htu.api.module.LoginJWCEntity
 import com.smart.htu.api.module.LoginPost
-import com.smart.htu.api.module.OverallTerm
+import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.SelectEntity
 import com.smart.htu.api.module.TEEntity
 import com.smart.htu.api.module.TermIndex
@@ -102,7 +102,7 @@ class JWCNetworkRepo @Inject constructor(
     }
 
     // 教材选订
-    suspend fun getTextbookService(termCode: OverallTerm): TextbookEntity? {
+    suspend fun getTextbookService(termCode: GlobalTerm): TextbookEntity? {
         val call = jwcService.getTextbook(termCode)
         val res = call.awaitResponse().body()
         return when (res?.code) {
@@ -119,7 +119,7 @@ class JWCNetworkRepo @Inject constructor(
     }
 
     // 教师评价
-    suspend fun getTeacherListService(termCode: OverallTerm): TEEntity? {
+    suspend fun getTeacherListService(termCode: GlobalTerm): TEEntity? {
         val call = jwcService.teacherEvaluation(termCode)
         val res = call.awaitResponse().body()
         return when (res?.code) {
@@ -159,7 +159,7 @@ class JWCNetworkRepo @Inject constructor(
     }
 
     // 成绩查询
-    suspend fun getCourseGradeService(termCode: OverallTerm): CourseGrade? {
+    suspend fun getCourseGradeService(termCode: GlobalTerm): CourseGrade? {
         val call = jwcService.grade(termCode)
         val res = call.awaitResponse().body()
         return when (res?.code) {
@@ -172,27 +172,6 @@ class JWCNetworkRepo @Inject constructor(
             }
 
             else -> null
-        }
-    }
-
-    // 学期
-    suspend fun getTermIndexService(termCode: OverallTerm): Result<TermIndex> {
-        try {
-            val res = jwcService.getTermIndex(termCode)
-            return when (res.code) {
-                200 -> Result.success(res)
-                401 -> {
-                    if (reLogin())
-                        getTermIndexService(termCode)
-                    else
-                        Result.failure(Exception("401"))
-                }
-
-                else -> Result.failure(Exception("false"))
-            }
-        } catch (e: Exception) {
-            Log.e("TAG666", "${e.message}")
-            return Result.failure(e)
         }
     }
 
@@ -243,8 +222,9 @@ class JWCNetworkRepo @Inject constructor(
         }
     }
 
-    private suspend fun reLogin(): Boolean {
+    suspend fun reLogin(): Boolean {
         val password = passwordRepo.getPassword(JWC_PASSWORD) ?: ""
+        // val studentId = dataStoreRepo.observeStudentId().first()
         val res = jwcLogin(studentIdStateFlow.value, password)
         Log.i("TAG666 relogin", res.toString())
         res.onSuccess {

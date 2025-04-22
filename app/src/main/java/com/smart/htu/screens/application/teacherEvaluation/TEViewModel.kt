@@ -3,7 +3,7 @@ package com.smart.htu.screens.application.teacherEvaluation
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.smart.htu.api.module.OverallTerm
+import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.SingleTerm
 import com.smart.htu.api.module.TEEntity
@@ -11,6 +11,7 @@ import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_IS_TOKEN_VALID
 import com.smart.htu.repo.JWCNetworkRepo
+import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.utils.Term.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +28,7 @@ import javax.inject.Inject
 
 data class TEUiState(
     val termCode: String,
-    val termIndex: List<SingleTerm> = emptyList(),
+    val termList: List<SingleTerm> = emptyList(),
     val evaluationInfo: ResultWithStatus<TEEntity> = ResultWithStatus(),
     val isTokenValid: Boolean = DEFAULT_IS_TOKEN_VALID,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
@@ -36,7 +37,8 @@ data class TEUiState(
 @HiltViewModel
 class TEViewModel @Inject constructor(
     private val jwcNetworkRepo: JWCNetworkRepo,
-    private val dataStoreRepo: DataStoreRepo
+    private val dataStoreRepo: DataStoreRepo,
+    private val sharedDataRepository: SharedDataRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -64,12 +66,12 @@ class TEViewModel @Inject constructor(
                 dataStoreRepo.observeTokenValid().first()
             }
         )
-    private val termCodeStateFlow = dataStoreRepo.observeOverallTermCode()
+    private val termCodeStateFlow = dataStoreRepo.observeGlobalTermCode()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
-                dataStoreRepo.observeOverallTermCode().first()
+                dataStoreRepo.observeGlobalTermCode().first()
             }
         )
 
@@ -90,14 +92,21 @@ class TEViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            getTermIndex()
+            sharedDataRepository.termIndex
+                .collect { termIndex ->
+                    _uiState.update {
+                        it.copy(termList = termIndex?.termList ?: emptyList())
+                    }
+                }
+        }
+        viewModelScope.launch {
             getTeacherListService(_uiState.value.termCode)
         }
     }
 
-    suspend fun getTeacherListService(termCode: String) {
+    fun getTeacherListService(termCode: String) = viewModelScope.launch {
         try {
-            val teacherList = jwcNetworkRepo.getTeacherListService(OverallTerm(termCode))
+            val teacherList = jwcNetworkRepo.getTeacherListService(GlobalTerm(termCode))
             _uiState.update { uiState ->
                 uiState.copy(evaluationInfo = ResultWithStatus(teacherList))
             }
@@ -106,13 +115,9 @@ class TEViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getTermIndex() {
-        val res = jwcNetworkRepo.getTermIndexService(OverallTerm())
-        Log.i("TAG666", "getTermIndex: $res")
-        res.onSuccess {
-            _uiState.update { uiState ->
-                uiState.copy(termIndex = it.termList)
-            }
+    fun refreshTermIndex() {
+        viewModelScope.launch {
+            sharedDataRepository.getTermIndex()
         }
     }
 

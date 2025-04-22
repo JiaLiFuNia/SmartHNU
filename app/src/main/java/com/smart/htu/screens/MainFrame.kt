@@ -92,7 +92,7 @@ fun MainFrame(
             title = R.string.main,
             selectedIcon = R.drawable.baseline_home_24,
             unselectedIcon = R.drawable.outline_home_24,
-            badge = (mainUiState.config?.notice?.filter {
+            badge = (mainUiState.giteeConfig?.notice?.filter {
                 !mainUiState.hadReadIdList.contains(it.id)
             }?.size ?: 0) + if (settingUiState.updateState) 1 else 0
         ),

@@ -87,7 +87,7 @@ fun MessageScreen(
     val onRefresh: () -> Unit = {
         scope.launch {
             pullToRefreshState.completeRefreshing {
-                viewModel.getNoticeByGiteeService()
+                viewModel.refreshGiteeConfig()
             }
         }
     }

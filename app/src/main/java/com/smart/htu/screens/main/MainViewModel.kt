@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.Course
 import com.smart.htu.api.module.GiteeEntity
 import com.smart.htu.api.module.NewsItemEntity
-import com.smart.htu.api.module.OverallTerm
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.WeatherNowData
 import com.smart.htu.repo.DataStoreRepo
@@ -14,6 +13,8 @@ import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.NetworkRepo
+import com.smart.htu.repo.SharedDataRepoImpl
+import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.screens.application.entity.SmallCardContent
 import com.smart.htu.screens.news.entity.NewsCategoryEntity
 import com.smart.htu.screens.news.entity.NewsType
@@ -31,22 +32,23 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class AppUiState(
-    val toDayCourseList: ResultWithStatus<List<Course>> = ResultWithStatus(),
-    val nowWeather: ResultWithStatus<WeatherNowData> = ResultWithStatus(),
+    val todayCourseList: ResultWithStatus<List<Course>> = ResultWithStatus(),
+    val currentWeather: ResultWithStatus<WeatherNowData> = ResultWithStatus(),
+    val newsList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val username: String = DEFAULT_USERNAME,
     val isLogSuccess: Boolean = false,
-    val config: GiteeEntity? = null,
     val hadReadIdList: List<Int> = emptyList(),
-    val appListIsCommonList: List<SmallCardContent> = INIT_COMMON_APP_LIST,
-    val newsList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus()
+    val giteeConfig: GiteeEntity? = null,
+    val appListIsCommonList: List<SmallCardContent> = INIT_COMMON_APP_LIST
 )
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val dataStoreRepo: DataStoreRepo,
     private val networkRepo: NetworkRepo,
-    private val jwcNetworkRepo: JWCNetworkRepo
+    private val jwcNetworkRepo: JWCNetworkRepo,
+    private val sharedDataRepository: SharedDataRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AppUiState())
@@ -80,13 +82,13 @@ class MainViewModel @Inject constructor(
     private val loginState = dataStoreRepo.observeLoginState().stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
-        0
+        runBlocking { dataStoreRepo.observeLoginState().first() }
     )
 
     private val appListIsCommonListStateFlow = dataStoreRepo.observeSmallCard().stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
-        INIT_COMMON_APP_LIST
+        runBlocking { dataStoreRepo.observeSmallCard().first() }
     )
 
     init {
@@ -117,11 +119,27 @@ class MainViewModel @Inject constructor(
                 _uiState.update { it.copy(hadReadIdList = value) }
             }
         }
-        getGiteeConfigService()
-        getTermIndex()
+        viewModelScope.launch {
+            sharedDataRepository.getGiteeConfig()
+            sharedDataRepository.getTermIndex()
+        }
+        viewModelScope.launch {
+            sharedDataRepository.giteeConfig
+                .collect { config ->
+                    _uiState.update {
+                        it.copy(giteeConfig = config)
+                    }
+                }
+        }
         getNewsList()
         getNowWeather()
         getTodayCourse()
+    }
+
+    fun refreshGiteeConfig() {
+        viewModelScope.launch {
+            sharedDataRepository.getGiteeConfig()
+        }
     }
 
     fun getNewsList() = viewModelScope.launch {
@@ -147,7 +165,7 @@ class MainViewModel @Inject constructor(
             val res = networkRepo.getWeatherService()
             Log.i("TAG666", "getNowWeather: $res")
             _uiState.update {
-                it.copy(nowWeather = ResultWithStatus(res))
+                it.copy(currentWeather = ResultWithStatus(res))
             }
         } catch (e: Exception) {
             Log.i("TAG666", "getNowWeather: $e")
@@ -159,31 +177,10 @@ class MainViewModel @Inject constructor(
             val res = jwcNetworkRepo.getTodayCourseService()
             Log.i("TAG666", "getTodayCourse: $res")
             _uiState.update { uiState ->
-                uiState.copy(toDayCourseList = ResultWithStatus(res?.courseList?.sortedBy { it.sortNumber }))
+                uiState.copy(todayCourseList = ResultWithStatus(res?.courseList?.sortedBy { it.sortNumber }))
             }
         } catch (e: Exception) {
             Log.i("TAG666", "getTodayCourse: $e")
-        }
-    }
-
-    private fun getTermIndex() = viewModelScope.launch {
-        val res = jwcNetworkRepo.getTermIndexService(OverallTerm())
-        res.onSuccess {
-            setOverallTerm(term = it.termCode)
-        }
-    }
-
-    fun getGiteeConfigService() = viewModelScope.launch {
-        val giteeConfig = networkRepo.getGiteeConfig()
-        giteeConfig.onSuccess { res ->
-            _uiState.update { it.copy(config = res) }
-            dataStoreRepo.setOverallTermCode(res.termCode)
-        }
-    }
-
-    private suspend fun setOverallTerm(term: String) {
-        viewModelScope.launch {
-            dataStoreRepo.setOverallTermCode(term)
         }
     }
 

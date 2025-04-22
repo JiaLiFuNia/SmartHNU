@@ -156,7 +156,7 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[IS_TOKEN_VALID] = valid }
     }
 
-    override suspend fun setOverallTermCode(term: String) {
+    override suspend fun setGlobalTermCode(term: String) {
         context.dataStore.edit { it[TERM] = term }
     }
 
@@ -277,7 +277,7 @@ class DataStoreRepo @Inject constructor(
         return context.dataStore.data.map { it[IS_TOKEN_VALID] ?: DEFAULT_IS_TOKEN_VALID }
     }
 
-    override fun observeOverallTermCode(): Flow<String> {
+    override fun observeGlobalTermCode(): Flow<String> {
         return context.dataStore.data.map { it[TERM] ?: Term.getCurrentTerm() }
     }
 }

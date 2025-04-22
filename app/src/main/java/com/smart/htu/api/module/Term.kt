@@ -2,7 +2,7 @@ package com.smart.htu.api.module
 
 import com.google.gson.annotations.SerializedName
 
-data class OverallTerm(
+data class GlobalTerm(
     @SerializedName("xnxqdm") val termCode: String? = null,
 )
 

@@ -3,10 +3,8 @@ package com.smart.htu.screens.application.textbook
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -27,7 +25,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,7 +36,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.smart.htu.App.Companion.context
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseTextbook
@@ -53,9 +49,6 @@ import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.screens.application.grade.SelectTermBottomSheet
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Term.termConverter
-import com.smart.htu.utils.sendToast
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.LazyColumn
 import top.yukonga.miuix.kmp.basic.Surface
@@ -72,15 +65,11 @@ fun Textbook(
     val uiState by viewModel.uiState.collectAsState()
     val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
 
-    val isBottomSheetShow = remember {
-        mutableStateOf(false)
-    }
+    val isBottomSheetShow = remember { mutableStateOf(false) }
 
-    val coroutineScope = rememberCoroutineScope()
     val onRefresh: () -> Unit = {
-        coroutineScope.launch {
-            viewModel.getTextbook(uiState.termCode)
-        }
+        viewModel.refreshTermList()
+        viewModel.getTextbook(uiState.termCode)
     }
 
     ScaffoldWithHazeLazyColumn(
@@ -138,7 +127,7 @@ fun Textbook(
 
     SelectTermBottomSheet(
         termSelectedCode = uiState.termCode,
-        termList = uiState.termIndex,
+        termList = uiState.termList,
         isBottomSheetShow = isBottomSheetShow,
         onClick = {
             viewModel.changeTermCode(it)

@@ -1,6 +1,5 @@
 package com.smart.htu.screens.application.airCondition
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,7 +36,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.textButtonPrimaryColors
 import kotlinx.coroutines.launch
@@ -177,12 +175,12 @@ fun AirConditionSetting(
                         TextField(
                             label = "shiroJID",
                             value = uiState.userLoginCookie?.shiroJID ?: "",
-                            onValueChange = { viewModel.changeUserShiroJid(it) }
+                            onValueChange = { viewModel.changeUserCookieSY(shiroJID = it) }
                         )
                         TextField(
                             label = "ymId",
                             value = uiState.userLoginCookie?.ymId ?: "",
-                            onValueChange = { viewModel.changeUserYmId(it) }
+                            onValueChange = { viewModel.changeUserCookieSY(ymId = it) }
                         )
                     }
                 }
@@ -193,7 +191,6 @@ fun AirConditionSetting(
                     text = "测试",
                     onClick = {
                         scope.launch {
-                            viewModel.saveUserCookie()
                             viewModel.getAirConditionConfig()
                         }
                     },

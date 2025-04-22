@@ -200,8 +200,10 @@ fun NewsScreen(
                         Text(
                             text = stringResource(id = item),
                             modifier = Modifier.padding(8.dp),
-                            fontSize = if (index == selectedTabIndex.value) 16.sp else 15.sp,
-                            fontWeight = if (index == selectedTabIndex.value) FontWeight.Bold else FontWeight.Medium
+                            fontSize = if (index == selectedTabIndex.value) 17.sp else 15.sp,
+                            fontWeight = if (index == selectedTabIndex.value) FontWeight.Bold else FontWeight.Medium,
+                            color = if (index == selectedTabIndex.value) MiuixTheme.colorScheme.onSurface
+                            else MiuixTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
                     }
                 }

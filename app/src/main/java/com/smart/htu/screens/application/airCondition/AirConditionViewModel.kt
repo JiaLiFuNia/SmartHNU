@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.smart.htu.MainActivity
 import com.smart.htu.api.module.AreaData
 import com.smart.htu.api.module.BillDetail
 import com.smart.htu.api.module.BillRecords
@@ -13,6 +12,8 @@ import com.smart.htu.api.module.GiteeEntity
 import com.smart.htu.api.module.LoginCookie
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.NetworkRepo
+import com.smart.htu.repo.SharedDataRepoImpl
+import com.smart.htu.repo.SharedDataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,7 +28,7 @@ import javax.inject.Inject
 
 data class AirConditionUiState(
     val blurEffect: Boolean = true,
-    val remoteLoginCookie: LoginCookie? = LoginCookie(shiroJID = "", ymId = ""),
+    val remoteLoginCookie: LoginCookie? = LoginCookie("", ""),
     val userLoginCookie: LoginCookie? = LoginCookie("", ""),
     val customConfig: AreaData? = null,
     val buildingCode: String = "",
@@ -44,6 +45,7 @@ data class AirConditionUiState(
 @HiltViewModel
 class AirConditionViewModel @Inject constructor(
     private val networkRepo: NetworkRepo,
+    private val sharedDataRepository: SharedDataRepository,
     private val dataStoreRepo: DataStoreRepo
 ) : ViewModel() {
 
@@ -92,7 +94,9 @@ class AirConditionViewModel @Inject constructor(
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            LoginCookie("", "")
+            runBlocking {
+                LoginCookie("", "")
+            }
         )
 
     init {
@@ -122,7 +126,13 @@ class AirConditionViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            getGiteeConfigService()
+            sharedDataRepository.giteeConfig
+                .collect { config ->
+                    _uiState.update { it.copy(config = config) }
+                    changeRemoteLoginCookie(config?.airConditionCookie ?: LoginCookie("", ""))
+                }
+        }
+        viewModelScope.launch {
             getAirConditionConfig()
             if (_uiState.value.buildingCode.isNotEmpty() && _uiState.value.roomCode.isNotEmpty()) {
                 getBillDetailService()
@@ -133,10 +143,10 @@ class AirConditionViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getGiteeConfigService() {
-        val res = networkRepo.getGiteeConfig()
-        res.onSuccess {
-            changeRemoteLoginCookie(res.getOrNull()?.airConditionCookie ?: LoginCookie("", ""))
+    // 刷新AirCondition配置
+    fun refreshGiteeConfig() {
+        viewModelScope.launch {
+            sharedDataRepository.getGiteeConfig()
         }
     }
 
@@ -161,6 +171,7 @@ class AirConditionViewModel @Inject constructor(
         Log.i("TAG666 air", res.getOrNull().toString())
     }
 
+    // 当前电量
     suspend fun getBillDetailService() {
         val (shiroJID, ymId) = when (_uiState.value.setCookieType) {
             0 -> _uiState.value.remoteLoginCookie?.let { it.shiroJID to it.ymId } ?: ("" to "")
@@ -184,6 +195,7 @@ class AirConditionViewModel @Inject constructor(
         }
     }
 
+    // 用电记录
     suspend fun getBillRecords() {
         val (shiroJID, ymId) = when (_uiState.value.setCookieType) {
             0 -> _uiState.value.remoteLoginCookie?.let { it.shiroJID to it.ymId } ?: ("" to "")
@@ -208,6 +220,7 @@ class AirConditionViewModel @Inject constructor(
         }
     }
 
+    // 充值记录
     suspend fun getBuyRecords() {
         val (shiroJID, ymId) = when (_uiState.value.setCookieType) {
             0 -> _uiState.value.remoteLoginCookie?.let { it.shiroJID to it.ymId } ?: ("" to "")
@@ -235,30 +248,19 @@ class AirConditionViewModel @Inject constructor(
         _uiState.update { it.copy(remoteLoginCookie = loginCookie) }
     }
 
-    fun changeUserShiroJid(text: String) {
-        _uiState.update {
-            it.copy(
-                userLoginCookie = LoginCookie(
-                    shiroJID = text,
-                    ymId = _uiState.value.userLoginCookie?.ymId ?: ""
-                )
-            )
-        }
-    }
-
-    fun changeUserYmId(text: String) {
-        _uiState.update {
-            it.copy(
-                userLoginCookie = LoginCookie(
-                    shiroJID = _uiState.value.userLoginCookie?.shiroJID ?: "",
-                    ymId = text
-                )
-            )
-        }
-    }
-
-    fun saveUserCookie() {
+    fun changeUserCookieSY(
+        shiroJID: String = _uiState.value.userLoginCookie?.shiroJID ?: "",
+        ymId: String = _uiState.value.userLoginCookie?.ymId ?: ""
+    ) {
         viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    userLoginCookie = LoginCookie(
+                        shiroJID = shiroJID,
+                        ymId = ymId
+                    )
+                )
+            }
             dataStoreRepo.saveAirConditionUserCookie(_uiState.value.userLoginCookie!!)
         }
     }

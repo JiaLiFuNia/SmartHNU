@@ -28,7 +28,7 @@ interface DataStoreService {
     suspend fun changeLoginJWCState(state: Int)
     suspend fun saveNoticeReadId(id: List<Int>)
     suspend fun setTokenValid(valid: Boolean)
-    suspend fun setOverallTermCode(term: String)
+    suspend fun setGlobalTermCode(term: String)
 
     fun observeThemeMode(): Flow<Int>
     fun observeDarkTheme(): Flow<Int>
@@ -49,6 +49,6 @@ interface DataStoreService {
     fun observeLoginJWCState(): Flow<Int>
     fun observeNoticeReadIdList(): Flow<List<Int>>
     fun observeTokenValid(): Flow<Boolean>
-    fun observeOverallTermCode(): Flow<String>
+    fun observeGlobalTermCode(): Flow<String>
 
 }

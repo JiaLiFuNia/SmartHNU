@@ -80,10 +80,9 @@ fun TextbookSelect(
 
     val coroutineScope = rememberCoroutineScope()
     val onRefresh: () -> Unit = {
-        coroutineScope.launch {
-            viewModel.getSelectableTextbookService(courseTaskCode, termCode)
-            viewModel.getSelectedTextbookService(courseTaskCode, termCode)
-        }
+        viewModel.refreshTermList()
+        viewModel.getSelectableTextbookService(courseTaskCode, termCode)
+        viewModel.getSelectedTextbookService(courseTaskCode, termCode)
     }
 
     LaunchedEffect(courseTaskCode, termCode) {

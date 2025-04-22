@@ -4,14 +4,15 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.GradeData
-import com.smart.htu.api.module.OverallTerm
+import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.SingleTerm
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_IS_TOKEN_VALID
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN
 import com.smart.htu.repo.JWCNetworkRepo
+import com.smart.htu.repo.SharedDataRepoImpl
+import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.utils.Term.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +29,7 @@ import javax.inject.Inject
 data class GradeUiState(
     val courseGrade: ResultWithStatus<List<GradeData>> = ResultWithStatus(),
     val termCode: String,
-    val termIndex: List<SingleTerm> = emptyList(),
+    val termList: List<SingleTerm> = emptyList(),
     val isTokenValid: Boolean = DEFAULT_IS_TOKEN_VALID,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
@@ -36,7 +37,8 @@ data class GradeUiState(
 @HiltViewModel
 class GradeViewModel @Inject constructor(
     private val jwcNetworkRepo: JWCNetworkRepo,
-    private val dataStoreRepo: DataStoreRepo
+    private val dataStoreRepo: DataStoreRepo,
+    private val sharedDataRepository: SharedDataRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -64,16 +66,6 @@ class GradeViewModel @Inject constructor(
             }
         )
 
-
-    private val termCodeStateFlow = dataStoreRepo.observeOverallTermCode()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            runBlocking {
-                dataStoreRepo.observeOverallTermCode().first()
-            }
-        )
-
     init {
         viewModelScope.launch {
             blurStateFlow.collect { value ->
@@ -86,36 +78,34 @@ class GradeViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            termCodeStateFlow.collect { value ->
-                _uiState.update { it.copy(termCode = value) }
-            }
+            sharedDataRepository.termIndex
+                .collect { termIndex ->
+                    _uiState.update {
+                        it.copy(termList = termIndex?.termList ?: emptyList())
+                    }
+                }
         }
         viewModelScope.launch {
             getCourseGrade()
-            getTermIndex()
         }
     }
 
-    suspend fun getCourseGrade() {
+    fun refreshTermList() {
+        viewModelScope.launch {
+            sharedDataRepository.getTermIndex()
+        }
+    }
+
+    fun getCourseGrade() = viewModelScope.launch {
         try {
             val res = jwcNetworkRepo.getCourseGradeService(
-                OverallTerm(_uiState.value.termCode)
+                GlobalTerm(_uiState.value.termCode)
             )
             _uiState.update { uiState ->
                 uiState.copy(courseGrade = ResultWithStatus(res?.gradeData))
             }
         } catch (e: Exception) {
             Log.i("TAG666", "getCourseGrade: $e")
-        }
-    }
-
-    private suspend fun getTermIndex() {
-        val res = jwcNetworkRepo.getTermIndexService(OverallTerm())
-        Log.i("TAG666", "getTermIndex: $res")
-        res.onSuccess {
-            _uiState.update { uiState ->
-                uiState.copy(termIndex = it.termList)
-            }
         }
     }
 

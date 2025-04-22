@@ -116,6 +116,7 @@ fun AirCondition(
     val onRefresh: () -> Unit = {
         scope.launch {
             pullToRefreshState.completeRefreshing {
+                viewModel.refreshGiteeConfig()
                 viewModel.getAirConditionConfig()
                 viewModel.getBillDetailService()
                 viewModel.getBillRecords()
