@@ -13,7 +13,6 @@ import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.NetworkRepo
-import com.smart.htu.repo.SharedDataRepoImpl
 import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.screens.application.entity.SmallCardContent
 import com.smart.htu.screens.news.entity.NewsCategoryEntity
@@ -132,7 +131,7 @@ class MainViewModel @Inject constructor(
                 }
         }
         getNewsList()
-        getNowWeather()
+        getCurrentWeather()
         getTodayCourse()
     }
 
@@ -160,7 +159,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getNowWeather() = viewModelScope.launch {
+    fun getCurrentWeather() = viewModelScope.launch {
         try {
             val res = networkRepo.getWeatherService()
             Log.i("TAG666", "getNowWeather: $res")

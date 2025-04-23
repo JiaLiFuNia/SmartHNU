@@ -2,6 +2,7 @@ package com.smart.htu.di
 
 import com.smart.htu.api.network.GiteeService
 import com.smart.htu.api.network.JWCService
+import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.SharedDataRepoImpl
 import com.smart.htu.repo.SharedDataRepository
@@ -9,7 +10,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import jakarta.inject.Singleton
+import javax.inject.Singleton
 
 
 @Module
@@ -21,9 +22,10 @@ object SharedDataModule {
     fun provideSharedRepository(
         jwcService: JWCService,
         giteeService: GiteeService,
-        jwcNetworkRepo: JWCNetworkRepo
+        jwcNetworkRepo: JWCNetworkRepo,
+        dataStoreRepo: DataStoreRepo
     ): SharedDataRepository {
-        return SharedDataRepoImpl(jwcService, giteeService, jwcNetworkRepo)
+        return SharedDataRepoImpl(jwcService, giteeService, jwcNetworkRepo, dataStoreRepo)
     }
 
 }

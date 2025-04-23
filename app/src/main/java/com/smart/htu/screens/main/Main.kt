@@ -85,7 +85,6 @@ fun Main(
     airConditionViewModel: AirConditionViewModel,
     loginViewModel: LoginViewModel,
     navController: NavController,
-    navigateToApplication: () -> Unit,
     contentPadding: PaddingValues,
     themeMode: Int
 ) {
@@ -99,7 +98,7 @@ fun Main(
     val onRefresh: () -> Unit = {
         coroutineScope.launch {
             pullToRefreshState.completeRefreshing {
-                mainViewModel.getNowWeather()
+                mainViewModel.getCurrentWeather()
                 mainViewModel.refreshGiteeConfig()
                 mainViewModel.getNewsList()
                 if (loginUiState.loginJWCState == 1)
@@ -148,7 +147,6 @@ fun Main(
                 CommonAppsCard(
                     uiState = uiState,
                     navController = navController,
-                    navigateToApplication = navigateToApplication,
                     applicationViewModel = applicationViewModel,
                     loginUiState = loginUiState,
                     themeMode = themeMode
@@ -177,6 +175,7 @@ fun NewsCard(
         themeMode = themeMode,
         modifier = Modifier,
         title = "学术预告",
+        actionText = stringResource(id = R.string.all),
         leadingIconPainting = R.drawable.ic_outline_article,
         content = {
             Box(
@@ -424,12 +423,12 @@ fun TodayCourseCard(
 fun CommonAppsCard(
     uiState: AppUiState,
     navController: NavController,
-    navigateToApplication: () -> Unit,
     applicationViewModel: ApplicationViewModel,
     loginUiState: LoginUiState,
     themeMode: Int
 ) {
-    val lazyVerticalGridHeight by remember { derivedStateOf { ((ceil(uiState.appListIsCommonList.size / 5.0)) * 70).toInt() + 16 } }
+    val rowCount = remember { derivedStateOf { ceil(uiState.appListIsCommonList.size / 5.0) } }
+    val lazyVerticalGridHeight by remember { derivedStateOf { rowCount.value * 70 + (rowCount.value - 1) * 12 } }
     LargeCardDisplay(
         themeMode = themeMode,
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface
@@ -437,6 +436,7 @@ fun CommonAppsCard(
         modifier = Modifier,
         title = stringResource(id = R.string.common_applications),
         leadingIconPainting = R.drawable.app_registration_24px,
+        actionText = "编辑",
         content = {
             if (uiState.appListIsCommonList.isEmpty())
                 EmptyContent(
@@ -451,6 +451,7 @@ fun CommonAppsCard(
                     modifier = Modifier
                         .height(lazyVerticalGridHeight.dp),
                     contentPadding = PaddingValues(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                     userScrollEnabled = false
                 ) {
                     items(uiState.appListIsCommonList) { app ->
@@ -461,9 +462,6 @@ fun CommonAppsCard(
                             SmallCardDisplay(
                                 enabled = (loginUiState.isGuest && app.guestEnable) || loginUiState.isLogSuccess,
                                 content = app,
-                                onLongClick = {
-                                    applicationViewModel.changeCommonAppListState(app, false)
-                                },
                                 onCLick = {
                                     navController.navigateWithAuthCheck(
                                         isGuest = loginUiState.isGuest && app.guestEnable,
@@ -479,7 +477,7 @@ fun CommonAppsCard(
                 }
         },
         navigateTo = {
-            navigateToApplication()
+            navController.navigate(Destinations.ApplicationEdit.route)
         }
     )
 }

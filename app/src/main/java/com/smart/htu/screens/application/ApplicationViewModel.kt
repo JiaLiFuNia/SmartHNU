@@ -32,7 +32,7 @@ class ApplicationViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(
         ApplicationUiState(
-            appList = ALL_APP_LIST,
+            appList = ALL_APP_LIST.sortedBy { it.category },
             appListIsCommonList = INIT_COMMON_APP_LIST
         )
     )

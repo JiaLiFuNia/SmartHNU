@@ -13,6 +13,7 @@ import androidx.navigation.navArgument
 import com.smart.htu.component.WebView
 import com.smart.htu.component.animation.animatedComposable
 import com.smart.htu.screens.application.Application
+import com.smart.htu.screens.application.ApplicationEdit
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.airCondition.AirCondition
 import com.smart.htu.screens.application.airCondition.AirConditionSetting
@@ -114,6 +115,9 @@ fun NavHostScreen() {
                 navController = navController,
                 viewModel = settingViewModel
             )
+        }
+        animatedComposable(Destinations.ApplicationEdit.route) {
+            ApplicationEdit(navController = navController, viewModel = applicationViewModel)
         }
         animatedComposable(Destinations.ClassroomSearch.route) {
             ClassroomSearchScreen(navController = navController, themeMode = uiState.themeMode)
@@ -220,7 +224,13 @@ fun NavController.navigateWithAuthCheck(
     if (logState || isGuest) {
         when (routeType) {
             RouteType.URL -> {
-                this.navigate("${Destinations.WebView.route}/${Uri.encode(route)}/${context.getString(label)}")
+                this.navigate(
+                    "${Destinations.WebView.route}/${Uri.encode(route)}/${
+                        context.getString(
+                            label
+                        )
+                    }"
+                )
             }
 
             RouteType.SCREEN -> {

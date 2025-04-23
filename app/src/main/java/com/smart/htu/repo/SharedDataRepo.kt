@@ -9,6 +9,7 @@ import com.smart.htu.api.network.JWCService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
+import javax.inject.Singleton
 
 interface SharedDataRepository {
     val giteeConfig: StateFlow<GiteeEntity?>
@@ -18,6 +19,7 @@ interface SharedDataRepository {
     suspend fun getTermIndex(termCode: GlobalTerm = GlobalTerm()): Result<TermIndex>
 }
 
+@Singleton
 class SharedDataRepoImpl @Inject constructor(
     private val jwcService: JWCService,
     private val giteeService: GiteeService,
@@ -36,6 +38,7 @@ class SharedDataRepoImpl @Inject constructor(
             val config = giteeService.getGiteeConfig()
             giteeConfig.value = config
             dataStoreRepo.setGlobalTermCode(config.termCode)
+            Log.i("TAG666 gitee", "获取配置成功")
             return Result.success(config)
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
@@ -48,6 +51,7 @@ class SharedDataRepoImpl @Inject constructor(
     override suspend fun getTermIndex(termCode: GlobalTerm): Result<TermIndex> {
         try {
             val res = jwcService.getTermIndex(termCode)
+            Log.i("TAG666 shared", "获取学期成功")
             return when (res.code) {
                 200 -> {
                     termIndex.value = res

@@ -75,7 +75,7 @@ object ParseNewsUtil {
         if (path.path.isEmpty() || path.element.isEmpty()) return ""
         val elements = element.select(path.path)
         return if (path.label == "top") {
-            Log.i("TAG666 selectElement", elements.toString())
+            // Log.i("TAG666 selectElement", elements.toString())
             if (path.element in elements.toString()) "top" else ""
         } else {
             if (path.element == "text") {

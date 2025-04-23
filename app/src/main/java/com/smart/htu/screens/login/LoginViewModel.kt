@@ -202,7 +202,7 @@ class LoginViewModel @Inject constructor(
         }
         viewModelScope.launch {
             getStudentInfo()
-            if (_uiState.value.token != DEFAULT_TOKEN) {
+            if (_uiState.value.token != DEFAULT_TOKEN && _uiState.value.studentID.isNotEmpty() && _uiState.value.jwcPassword != DEFAULT_PASSWORD) {
                 checkJWCToken()
             }
         }

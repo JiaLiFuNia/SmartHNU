@@ -42,24 +42,14 @@ fun SmallMediumCardDisplay(
     themeMode: Int,
     content: SmallCardContent,
     modifier: Modifier,
-    onLongClick: (() -> Unit)? = null,
     onCLick: () -> Unit,
     isCommon: Boolean
 ) {
-    var showDropDownMenu by remember {
-        mutableStateOf(false)
-    }
     Surface(
         onClick = {
             onCLick()
         },
         modifier = Modifier
-            .combinedClickable(
-                onLongClick = { showDropDownMenu = true },
-                onClick = {
-                    onCLick()
-                }
-            )
             .semantics { role = Role.Button }
             .fillMaxWidth()
             .animateContentSize(),
@@ -105,27 +95,5 @@ fun SmallMediumCardDisplay(
                 containerColor = Color.Transparent
             )
         )
-        DropdownMenu(
-            expanded = showDropDownMenu,
-            onDismissRequest = { showDropDownMenu = false },
-            shape = RoundedCornerShape(15.dp),
-        ) {
-            DropdownMenuItem(
-                enabled = isCommon,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.Add,
-                        contentDescription = "add"
-                    )
-                },
-                text = { Text(text = "添加到主页") },
-                onClick = {
-                    if (onLongClick != null) {
-                        onLongClick()
-                    }
-                    showDropDownMenu = false
-                }
-            )
-        }
     }
 }

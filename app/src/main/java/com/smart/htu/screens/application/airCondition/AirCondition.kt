@@ -186,7 +186,6 @@ fun AirCondition(
                 modifier = Modifier.fillMaxSize()
             ) {
                 item {
-                    Log.e("TAG666 airLog", isShowSuggestChip.value.toString())
                     SuggestChip(
                         onClick = {
                             navController.navigate(Destinations.AirConditionSetting.route)

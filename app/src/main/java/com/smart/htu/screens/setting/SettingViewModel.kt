@@ -6,6 +6,7 @@ import com.smart.htu.component.SelectionItem
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_THEME_MODE
+import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.utils.Term.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +32,8 @@ data class SettingUiState(
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
-    private val dataStoreRepo: DataStoreRepo
+    private val dataStoreRepo: DataStoreRepo,
+    private val sharedDataRepository: SharedDataRepository
 ) : ViewModel() {
 
     private val languageMap = mapOf(
@@ -77,13 +79,6 @@ class SettingViewModel @Inject constructor(
             }
         )
 
-    private val termCodeStateFlow = dataStoreRepo.observeOverallTermCode()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            getCurrentTerm()
-        )
-
     init {
         viewModelScope.launch {
             themeModeStateFlow.collect { value ->
@@ -101,9 +96,12 @@ class SettingViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            termCodeStateFlow.collect { value ->
-                _uiState.update { it.copy(termCode = value) }
-            }
+            sharedDataRepository.termIndex
+                .collect { termIndex ->
+                    _uiState.update {
+                        it.copy(termCode = termIndex?.termCode ?: getCurrentTerm())
+                    }
+                }
         }
     }
 

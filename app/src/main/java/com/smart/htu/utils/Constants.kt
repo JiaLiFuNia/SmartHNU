@@ -42,7 +42,7 @@ class Constants {
                 label = R.string.i_hnu,
                 routeType = RouteType.APP,
                 route = "com.autewifi.sd.enroll",
-                category = SmallCardCategory.CAMPUS
+                category = SmallCardCategory.QUICK_APP
             ),
             SmallCardContent(
                 guestEnable = false,
@@ -92,7 +92,7 @@ class Constants {
                 label = R.string.shower_water,
                 routeType = RouteType.ALIPAY,
                 route = SHOWER_ALIPAY_URL,
-                category = SmallCardCategory.CAMPUS
+                category = SmallCardCategory.QUICK_APP
             ),
             SmallCardContent(
                 guestEnable = true,
@@ -102,7 +102,7 @@ class Constants {
                 label = R.string.water_washer,
                 routeType = RouteType.ALIPAY,
                 route = HOT_WATER_WASHER_ALIPAY_URL,
-                category = SmallCardCategory.CAMPUS
+                category = SmallCardCategory.QUICK_APP
             ),
             SmallCardContent(
                 guestEnable = false,

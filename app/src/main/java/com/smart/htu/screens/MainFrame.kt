@@ -257,9 +257,6 @@ fun MainFrame(
                         0 -> Main(
                             navController = navController,
                             mainViewModel = mainViewModel,
-                            navigateToApplication = {
-                                onSelectedItemIndex(1)
-                            },
                             loginViewModel = loginViewModel,
                             applicationViewModel = applicationViewModel,
                             airConditionViewModel = airConditionViewModel,

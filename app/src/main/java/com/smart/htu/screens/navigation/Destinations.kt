@@ -8,6 +8,7 @@ sealed class Destinations(
     data object News : Destinations("news")
     data object Person : Destinations("person")
     data object Application : Destinations("application")
+    data object ApplicationEdit : Destinations("application_edit")
     data object Message : Destinations("message")
     data object Setting : Destinations("setting")
     data object About : Destinations("about")

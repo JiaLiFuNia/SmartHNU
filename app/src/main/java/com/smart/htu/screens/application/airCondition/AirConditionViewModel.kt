@@ -12,7 +12,6 @@ import com.smart.htu.api.module.GiteeEntity
 import com.smart.htu.api.module.LoginCookie
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.NetworkRepo
-import com.smart.htu.repo.SharedDataRepoImpl
 import com.smart.htu.repo.SharedDataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -129,15 +128,17 @@ class AirConditionViewModel @Inject constructor(
             sharedDataRepository.giteeConfig
                 .collect { config ->
                     _uiState.update { it.copy(config = config) }
-                    changeRemoteLoginCookie(config?.airConditionCookie ?: LoginCookie("", ""))
+                    changeRemoteLoginCookie(config?.airConditionCookie ?: LoginCookie())
                 }
         }
         viewModelScope.launch {
-            getAirConditionConfig()
-            if (_uiState.value.buildingCode.isNotEmpty() && _uiState.value.roomCode.isNotEmpty()) {
-                getBillDetailService()
-                getBillRecords()
-                getBuyRecords()
+            if (getCookieByType() != LoginCookie()) {
+                getAirConditionConfig()
+                if (_uiState.value.buildingCode.isNotEmpty() && _uiState.value.roomCode.isNotEmpty()) {
+                    getBillDetailService()
+                    getBillRecords()
+                    getBuyRecords()
+                }
             }
             changeLoadingState(false)
         }
@@ -152,39 +153,29 @@ class AirConditionViewModel @Inject constructor(
 
     // 用于获取 areaId
     suspend fun getAirConditionConfig() {
-        val (shiroJID, ymId) = when (_uiState.value.setCookieType) {
-            0 -> _uiState.value.remoteLoginCookie?.let { it.shiroJID to it.ymId } ?: ("" to "")
-
-            1 -> _uiState.value.userLoginCookie?.let { it.shiroJID to it.ymId } ?: ("" to "")
-            else -> ("" to "")
-        }
-        val res = networkRepo.getAirConditionAreaService("shiroJID=$shiroJID", ymId)
+        val cookie = getCookieByType()
+        val res = networkRepo.getAirConditionAreaService("shiroJID=${cookie.shiroJID}", cookie.ymId)
         res.onSuccess {
             _uiState.update { it.copy(customConfig = res.getOrNull()?.rows?.first()) }
             changeCookieValidState(true)
-            showSnackbar("已配置有效 Cookie")
+            showSnackBar("已配置有效 Cookie")
         }
         res.onFailure {
             changeCookieValidState(false)
-            showSnackbar("请重新配置 Cookie")
+            showSnackBar("请重新配置 Cookie")
         }
         Log.i("TAG666 air", res.getOrNull().toString())
     }
 
     // 当前电量
     suspend fun getBillDetailService() {
-        val (shiroJID, ymId) = when (_uiState.value.setCookieType) {
-            0 -> _uiState.value.remoteLoginCookie?.let { it.shiroJID to it.ymId } ?: ("" to "")
-
-            1 -> _uiState.value.userLoginCookie?.let { it.shiroJID to it.ymId } ?: ("" to "")
-            else -> ("" to "")
-        }
+        val cookie = getCookieByType()
         val buildingCode = _uiState.value.buildingCode.takeLast(2)
         val floorCode = buildingCode + _uiState.value.roomCode.take(2)
         val roomCode = buildingCode + _uiState.value.roomCode
         val billData = networkRepo.getAirConditionBillService(
-            shiroJID = "shiroJID=$shiroJID",
-            ymId = ymId,
+            shiroJID = "shiroJID=${cookie.shiroJID}",
+            ymId = cookie.ymId,
             areaId = _uiState.value.customConfig?.id ?: "",
             buildingCode = buildingCode,
             floorCode = floorCode,
@@ -197,18 +188,13 @@ class AirConditionViewModel @Inject constructor(
 
     // 用电记录
     suspend fun getBillRecords() {
-        val (shiroJID, ymId) = when (_uiState.value.setCookieType) {
-            0 -> _uiState.value.remoteLoginCookie?.let { it.shiroJID to it.ymId } ?: ("" to "")
-
-            1 -> _uiState.value.userLoginCookie?.let { it.shiroJID to it.ymId } ?: ("" to "")
-            else -> ("" to "")
-        }
+        val cookie = getCookieByType()
         val buildingCode = _uiState.value.buildingCode.takeLast(2)
         val floorCode = buildingCode + _uiState.value.roomCode.take(2)
         val roomCode = buildingCode + _uiState.value.roomCode
         val billRecords = networkRepo.getAirConditionBillRecords(
-            shiroJID = "shiroJID=$shiroJID",
-            ymId = ymId,
+            shiroJID = "shiroJID=${cookie.shiroJID}",
+            ymId = cookie.ymId,
             areaId = _uiState.value.customConfig?.id ?: "",
             buildingCode = buildingCode,
             floorCode = floorCode,
@@ -222,18 +208,13 @@ class AirConditionViewModel @Inject constructor(
 
     // 充值记录
     suspend fun getBuyRecords() {
-        val (shiroJID, ymId) = when (_uiState.value.setCookieType) {
-            0 -> _uiState.value.remoteLoginCookie?.let { it.shiroJID to it.ymId } ?: ("" to "")
-
-            1 -> _uiState.value.userLoginCookie?.let { it.shiroJID to it.ymId } ?: ("" to "")
-            else -> ("" to "")
-        }
+        val cookie = getCookieByType()
         val buildingCode = _uiState.value.buildingCode.takeLast(2)
         val floorCode = buildingCode + _uiState.value.roomCode.take(2)
         val roomCode = buildingCode + _uiState.value.roomCode
         val buyRecords = networkRepo.getAirConditionBuyRecords(
-            shiroJID = "shiroJID=$shiroJID",
-            ymId = ymId,
+            shiroJID = "shiroJID=${cookie.shiroJID}",
+            ymId = cookie.ymId,
             areaId = _uiState.value.customConfig?.id ?: "",
             buildingCode = buildingCode,
             floorCode = floorCode,
@@ -275,7 +256,7 @@ class AirConditionViewModel @Inject constructor(
             }
             dataStoreRepo.changeBuildingId(buildingId)
             dataStoreRepo.changeRoomId(roomId)
-            showSnackbar("配置保存成功")
+            showSnackBar("配置保存成功")
         }
     }
 
@@ -295,9 +276,17 @@ class AirConditionViewModel @Inject constructor(
         _uiState.update { it.copy(isCookieValid = state) }
     }
 
-    fun showSnackbar(message: String, actionLabel: String? = null) {
+    fun showSnackBar(message: String, actionLabel: String? = null) {
         viewModelScope.launch {
             snackBarHostState.showSnackbar(message, actionLabel)
+        }
+    }
+
+    fun getCookieByType(): LoginCookie {
+        return when (_uiState.value.setCookieType) {
+            0 -> _uiState.value.remoteLoginCookie ?: LoginCookie("", "")
+            1 -> _uiState.value.userLoginCookie ?: LoginCookie("", "")
+            else -> LoginCookie("", "")
         }
     }
 }

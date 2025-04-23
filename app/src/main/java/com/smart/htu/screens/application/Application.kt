@@ -10,14 +10,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -26,12 +19,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import androidx.window.core.layout.WindowWidthSizeClass
-import com.smart.htu.R
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.SmallMediumCardDisplay
@@ -39,11 +29,8 @@ import com.smart.htu.screens.application.entity.SmallCardCategory
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateWithAuthCheck
 import com.smart.htu.screens.navigation.Destinations
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import top.yukonga.miuix.kmp.basic.SmallTitle
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
@@ -61,11 +48,10 @@ fun Application(
     val visibility = remember {
         derivedStateOf { mutableStateOf(!loginUiState.isLogSuccess) }
     }
-    val hazeState = remember { HazeState() }
     val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
     LazyVerticalGrid(
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         columns = GridCells.Fixed(if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 2),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -84,17 +70,6 @@ fun Application(
             }
         }
 
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            SuggestChip(
-                onClick = { },
-                onActionClick = { },
-                text = "点击反馈提交你的需求",
-                type = SuggestChipType.INFO,
-                visibility = mutableStateOf(true),
-                icon = Icons.Outlined.Info
-            )
-        }
-
         SmallCardCategory.entries.forEach { item ->
             val appList = uiState.appList.filter { app ->
                 app.category == item
@@ -111,9 +86,6 @@ fun Application(
                     enabled = (loginUiState.isGuest && app.guestEnable) || loginUiState.isLogSuccess,
                     content = app,
                     modifier = Modifier,
-                    onLongClick = {
-                        viewModel.changeCommonAppListState(app)
-                    },
                     onCLick = {
                         navController.navigateWithAuthCheck(
                             isGuest = loginUiState.isGuest && app.guestEnable,

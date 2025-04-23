@@ -37,6 +37,7 @@ fun LargeCardDisplay(
     themeMode: Int,
     onClick: (() -> Unit)? = null,
     navigateTo: (() -> Unit)? = null,
+    actionText: String? = null,
     modifier: Modifier,
     title: String,
     @DrawableRes leadingIconPainting: Int,
@@ -70,7 +71,7 @@ fun LargeCardDisplay(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = stringResource(id = R.string.all),
+                        text = actionText.toString(),
                         fontSize = 15.sp,
                         color = Color.Gray,
                         textAlign = TextAlign.Center

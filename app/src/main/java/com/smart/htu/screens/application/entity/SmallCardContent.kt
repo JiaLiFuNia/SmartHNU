@@ -16,14 +16,15 @@ data class SmallCardContent(
 )
 
 enum class SmallCardCategory(val category: String) {
+    QUICK_APP("快捷应用"),
     CAMPUS("校园"),
     ACADEMIC_AFFAIRS("教务"),
     OTHERS("其他")
 }
 
 enum class RouteType {
-    URL,
-    SCREEN,
-    ALIPAY,
-    APP
+    URL, // 网页
+    SCREEN, // 页面
+    ALIPAY, // 支付宝
+    APP // 应用
 }

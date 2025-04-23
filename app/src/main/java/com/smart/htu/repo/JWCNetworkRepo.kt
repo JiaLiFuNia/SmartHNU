@@ -28,7 +28,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
 import retrofit2.awaitResponse
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class JWCNetworkRepo @Inject constructor(
     @ApplicationContext private val context: Context,
     private val jwcService: JWCService,

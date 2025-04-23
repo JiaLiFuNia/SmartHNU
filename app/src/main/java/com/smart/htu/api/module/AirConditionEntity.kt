@@ -7,8 +7,8 @@ import java.time.format.DateTimeFormatter
 
 @Serializable
 data class LoginCookie(
-    val shiroJID: String,
-    val ymId: String
+    val shiroJID: String = "",
+    val ymId: String = ""
 )
 
 data class Area(
