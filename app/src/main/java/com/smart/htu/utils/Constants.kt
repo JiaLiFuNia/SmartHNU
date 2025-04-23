@@ -135,6 +135,14 @@ class Constants {
                 routeType = RouteType.URL,
                 route = "https://chat.htu.edu.cn/",
                 category = SmallCardCategory.OTHERS
+            ),
+            SmallCardContent(
+                guestEnable = false,
+                icon = R.drawable.sports_handball_24px,
+                label = R.string.physical_examination,
+                routeType = null,
+                route = "",
+                category = SmallCardCategory.CAMPUS
             )
         )
         val INIT_COMMON_APP_LIST = listOf(
