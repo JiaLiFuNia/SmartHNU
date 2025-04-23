@@ -105,4 +105,5 @@
     <string name="banner_img">图片速览</string>
     <string name="research">学术预告</string>
     <string name="math_lectures">数院学术预告</string>
+    <string name="physical_examination">体测</string>
 </resources>

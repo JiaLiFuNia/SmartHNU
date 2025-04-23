@@ -428,7 +428,7 @@ fun CommonAppsCard(
     themeMode: Int
 ) {
     val rowCount = remember { derivedStateOf { ceil(uiState.appListIsCommonList.size / 5.0) } }
-    val lazyVerticalGridHeight by remember { derivedStateOf { rowCount.value * 70 + (rowCount.value - 1) * 12 } }
+    val lazyVerticalGridHeight by remember { derivedStateOf { rowCount.value * 70 + (rowCount.value - 1) * 4 + 16 } }
     LargeCardDisplay(
         themeMode = themeMode,
         containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface

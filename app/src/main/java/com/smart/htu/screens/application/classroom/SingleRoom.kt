@@ -21,7 +21,6 @@ import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
 @Composable
 fun SingleRoom(
-    themeMode: Int,
     label: String,
     state: Boolean,
     onClick: () -> Unit,
@@ -32,8 +31,8 @@ fun SingleRoom(
         modifier = modifier
             .height(50.dp),
         color = when(state) {
-            true -> if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.primaryContainer
-            false -> if (themeMode == 0) MiuixTheme.colorScheme.disabledSecondaryVariant  else MaterialTheme.colorScheme.surfaceContainer
+            true -> MiuixTheme.colorScheme.surface
+            false -> MiuixTheme.colorScheme.disabledSecondaryVariant
         },
         onClick = {
             onClick()

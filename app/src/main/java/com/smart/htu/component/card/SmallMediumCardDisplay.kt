@@ -4,20 +4,28 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,34 +38,41 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.smart.htu.R
+import com.smart.htu.component.textButtonPrimaryColors
+import com.smart.htu.screens.application.entity.RouteType
 import com.smart.htu.screens.application.entity.SmallCardContent
+import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissDialog
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
 @Composable
 fun SmallMediumCardDisplay(
     enabled: Boolean,
-    themeMode: Int,
     content: SmallCardContent,
     modifier: Modifier,
-    onCLick: () -> Unit,
-    isCommon: Boolean
+    onCLick: () -> Unit
 ) {
+    val showDialog = remember { mutableStateOf(false) }
     Surface(
         onClick = {
-            onCLick()
+            if (content.routeType == RouteType.ALIPAY) {
+                showDialog.value = true
+            } else {
+                onCLick()
+            }
         },
-        modifier = Modifier
+        modifier = modifier
             .semantics { role = Role.Button }
             .fillMaxWidth()
             .animateContentSize(),
         shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
-        color = if (enabled) if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
-        else if (themeMode == 0) MiuixTheme.colorScheme.disabledSecondaryVariant else MaterialTheme.colorScheme.surfaceVariant.copy(
-            0.5f
-        )
+        color = if (enabled) MiuixTheme.colorScheme.surface
+        else MiuixTheme.colorScheme.disabledSecondaryVariant
     ) {
         ListItem(
             leadingContent = {
@@ -95,5 +110,50 @@ fun SmallMediumCardDisplay(
                 containerColor = Color.Transparent
             )
         )
+    }
+
+    JumpToAlipayDialog(
+        showDialog = showDialog,
+        onConfirmClick = {
+            onCLick()
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun JumpToAlipayDialog(
+    showDialog: MutableState<Boolean>,
+    onConfirmClick: () -> Unit
+) {
+    SuperDialog(
+        title = "提示",
+        summary = "是否跳转到支付宝小程序？",
+        show = showDialog,
+        onDismissRequest = {
+            dismissDialog(showDialog)
+        }
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            top.yukonga.miuix.kmp.basic.TextButton(
+                text = stringResource(id = R.string.cancel),
+                onClick = {
+                    dismissDialog(showDialog)
+                },
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(Modifier.width(20.dp))
+            top.yukonga.miuix.kmp.basic.TextButton(
+                text = stringResource(id = R.string.confirm),
+                onClick = {
+                    onConfirmClick()
+                    dismissDialog(showDialog)
+                },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.textButtonPrimaryColors()
+            )
+        }
     }
 }
