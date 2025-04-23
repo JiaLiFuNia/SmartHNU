@@ -29,6 +29,7 @@ import javax.inject.Inject
 data class GradeUiState(
     val courseGrade: ResultWithStatus<List<GradeData>> = ResultWithStatus(),
     val termCode: String,
+    val globalTermCode: String,
     val termList: List<SingleTerm> = emptyList(),
     val isTokenValid: Boolean = DEFAULT_IS_TOKEN_VALID,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
@@ -43,7 +44,8 @@ class GradeViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(
         GradeUiState(
-            termCode = getCurrentTerm()
+            termCode = getCurrentTerm(),
+            globalTermCode = getCurrentTerm(),
         )
     )
     val uiState: StateFlow<GradeUiState> = _uiState.asStateFlow()
@@ -81,7 +83,11 @@ class GradeViewModel @Inject constructor(
             sharedDataRepository.termIndex
                 .collect { termIndex ->
                     _uiState.update {
-                        it.copy(termList = termIndex?.termList ?: emptyList())
+                        it.copy(
+                            termList = termIndex?.termList ?: emptyList(),
+                            globalTermCode = termIndex?.termCode ?: getCurrentTerm(),
+                            termCode = termIndex?.termCode ?: getCurrentTerm(),
+                        )
                     }
                 }
         }

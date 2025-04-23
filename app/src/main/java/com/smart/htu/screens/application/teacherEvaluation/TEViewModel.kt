@@ -28,6 +28,7 @@ import javax.inject.Inject
 
 data class TEUiState(
     val termCode: String,
+    val globalTermCode: String,
     val termList: List<SingleTerm> = emptyList(),
     val evaluationInfo: ResultWithStatus<TEEntity> = ResultWithStatus(),
     val isTokenValid: Boolean = DEFAULT_IS_TOKEN_VALID,
@@ -43,7 +44,8 @@ class TEViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(
         TEUiState(
-            termCode = getCurrentTerm()
+            termCode = getCurrentTerm(),
+            globalTermCode = getCurrentTerm(),
         )
     )
     val uiState: StateFlow<TEUiState> = _uiState.asStateFlow()
@@ -95,7 +97,11 @@ class TEViewModel @Inject constructor(
             sharedDataRepository.termIndex
                 .collect { termIndex ->
                     _uiState.update {
-                        it.copy(termList = termIndex?.termList ?: emptyList())
+                        it.copy(
+                            termList = termIndex?.termList ?: emptyList(),
+                            globalTermCode = termIndex?.termCode ?: getCurrentTerm(),
+                            termCode = termIndex?.termCode ?: getCurrentTerm(),
+                        )
                     }
                 }
         }

@@ -29,6 +29,7 @@ import javax.inject.Inject
 
 data class TextbookUiState(
     val termCode: String,
+    val globalTermCode: String,
     val termList: List<SingleTerm> = emptyList(),
     val courseTaskCode: String = "",
     val courseList: ResultWithStatus<TextbookEntity> = ResultWithStatus(),
@@ -47,7 +48,8 @@ class TextbookViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(
         TextbookUiState(
-            termCode = getCurrentTerm()
+            termCode = getCurrentTerm(),
+            globalTermCode = getCurrentTerm(),
         )
     )
     val uiState: StateFlow<TextbookUiState> = _uiState.asStateFlow()
@@ -100,7 +102,11 @@ class TextbookViewModel @Inject constructor(
             sharedDataRepository.termIndex
                 .collect { termIndex ->
                     _uiState.update {
-                        it.copy(termList = termIndex?.termList ?: emptyList())
+                        it.copy(
+                            termList = termIndex?.termList ?: emptyList(),
+                            globalTermCode = termIndex?.termCode ?: getCurrentTerm(),
+                            termCode = termIndex?.termCode ?: getCurrentTerm(),
+                        )
                     }
                 }
         }
@@ -132,7 +138,8 @@ class TextbookViewModel @Inject constructor(
     ) = viewModelScope.launch {
         try {
             val res = jwcNetworkRepo.getSelectableTextbookService(
-                termCode, courseTaskCode
+                termCode = termCode,
+                courseTaskCode = courseTaskCode
             )
             _uiState.update {
                 it.copy(selectableList = ResultWithStatus(res?.selectableList))
@@ -148,8 +155,8 @@ class TextbookViewModel @Inject constructor(
     ) = viewModelScope.launch {
         try {
             val res = jwcNetworkRepo.getSelectedTextbookService(
-                termCode,
-                courseTaskCode
+                termCode = termCode,
+                courseTaskCode = courseTaskCode
             )
             _uiState.update {
                 it.copy(selectedList = ResultWithStatus(res?.selectedList))
