@@ -82,7 +82,6 @@ fun Application(
             }
             items(appList) { app ->
                 SmallMediumCardDisplay(
-                    themeMode = themeMode,
                     enabled = (loginUiState.isGuest && app.guestEnable) || loginUiState.isLogSuccess,
                     content = app,
                     modifier = Modifier,
@@ -94,8 +93,7 @@ fun Application(
                             logState = loginUiState.isLogSuccess,
                             label = app.label
                         )
-                    },
-                    isCommon = !uiState.appListIsCommonList.contains(app)
+                    }
                 )
             }
         }

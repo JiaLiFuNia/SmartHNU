@@ -64,12 +64,14 @@ fun TeacherEvaluation(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    val scope = rememberCoroutineScope()
+    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
     val isBottomSheetShow = remember {
         mutableStateOf(false)
     }
     val onRefresh: () -> Unit = {
-        viewModel.getTeacherListService(uiState.termCode)
         viewModel.refreshTermIndex()
+        viewModel.getTeacherListService(uiState.termCode)
     }
 
     ScaffoldWithHazeLazyColumn(
@@ -91,7 +93,7 @@ fun TeacherEvaluation(
                 )
             }
         },
-        refreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState(),
+        refreshState = pullToRefreshState,
         onRefresh = { onRefresh() },
         itemSpacePadding = 12.dp
     ) {
@@ -131,12 +133,17 @@ fun TeacherEvaluation(
     }
 
     SelectTermBottomSheet(
+        globalTermCode = uiState.globalTermCode,
         termSelectedCode = uiState.termCode,
         termList = uiState.termList,
         isBottomSheetShow = isBottomSheetShow,
         onClick = {
-            viewModel.changeTermCode(it)
-            onRefresh()
+            scope.launch {
+                viewModel.changeTermCode(it)
+                pullToRefreshState.completeRefreshing {
+                    onRefresh()
+                }
+            }
         }
     )
 

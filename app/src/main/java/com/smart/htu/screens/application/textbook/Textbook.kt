@@ -25,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +50,7 @@ import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.screens.application.grade.SelectTermBottomSheet
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Term.termConverter
+import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.LazyColumn
 import top.yukonga.miuix.kmp.basic.Surface
@@ -64,7 +66,7 @@ fun Textbook(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
-
+    val scope = rememberCoroutineScope()
     val isBottomSheetShow = remember { mutableStateOf(false) }
 
     val onRefresh: () -> Unit = {
@@ -126,12 +128,17 @@ fun Textbook(
     }
 
     SelectTermBottomSheet(
+        globalTermCode = uiState.globalTermCode,
         termSelectedCode = uiState.termCode,
         termList = uiState.termList,
         isBottomSheetShow = isBottomSheetShow,
         onClick = {
-            viewModel.changeTermCode(it)
-            onRefresh()
+            scope.launch {
+                viewModel.changeTermCode(it)
+                pullToRefreshState.completeRefreshing {
+                    onRefresh()
+                }
+            }
         }
     )
 }
