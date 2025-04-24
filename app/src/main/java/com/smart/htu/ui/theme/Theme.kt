@@ -109,7 +109,7 @@ fun SmartHNUTheme(
         else -> isSystemInDarkTheme()
     }
     val colorScheme = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+        uiState.themeMode == 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
@@ -119,21 +119,21 @@ fun SmartHNUTheme(
     }
     val miuixSchemeColor = when (darkTheme) {
         false -> top.yukonga.miuix.kmp.theme.lightColorScheme(
-            disabledPrimaryButton = lightScheme.primaryContainer.copy(0.5f),
-            disabledOnPrimaryButton = lightScheme.primary.copy(0.5f),
-            primary = lightScheme.primary,
-            primaryContainer = lightScheme.primaryContainer,
-            tertiaryContainer = lightScheme.secondaryContainer,
-            onTertiaryContainer = lightScheme.primary
+            disabledPrimaryButton = colorScheme.primaryContainer.copy(0.5f),
+            disabledOnPrimaryButton = colorScheme.primary.copy(0.5f),
+            primary = colorScheme.primary,
+            primaryContainer = colorScheme.primaryContainer,
+            tertiaryContainer = colorScheme.secondaryContainer,
+            onTertiaryContainer = colorScheme.primary
         )
 
         true -> top.yukonga.miuix.kmp.theme.darkColorScheme(
-            disabledPrimaryButton = darkScheme.primaryContainer.copy(0.5f),
-            disabledOnPrimaryButton = darkScheme.primary.copy(0.5f),
-            primary = darkScheme.primary,
-            primaryContainer = lightScheme.primaryContainer,
-            tertiaryContainer = darkScheme.secondaryContainer,
-            onTertiaryContainer = darkScheme.primary
+            disabledPrimaryButton = colorScheme.primaryContainer.copy(0.5f),
+            disabledOnPrimaryButton = colorScheme.primary.copy(0.5f),
+            primary = colorScheme.primary,
+            primaryContainer = colorScheme.primaryContainer,
+            tertiaryContainer = colorScheme.secondaryContainer,
+            onTertiaryContainer = colorScheme.primary
         )
     }
 

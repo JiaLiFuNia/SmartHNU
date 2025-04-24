@@ -7,7 +7,6 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -21,12 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -39,17 +33,14 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -86,7 +77,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -105,10 +95,7 @@ import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
-import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.PullToRefresh
-import top.yukonga.miuix.kmp.basic.SearchBar
-import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
@@ -118,7 +105,6 @@ import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 )
 @Composable
 fun LibrarySearchScreen(
-    themeMode: Int,
     navController: NavController,
     viewModel: LibrarySearchViewModel = hiltViewModel()
 ) {
@@ -162,14 +148,8 @@ fun LibrarySearchScreen(
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
-                        0 -> MiuixTheme.colorScheme.background
-                        else -> colorScheme.surface
-                    },
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
-                        0 -> MiuixTheme.colorScheme.background
-                        else -> colorScheme.surfaceContainer
-                    }
+                    containerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background
                 ),
                 title = {
                     Text(text = "图书查询")
@@ -269,7 +249,7 @@ fun LibrarySearchScreen(
                         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                             uiState.searchHistoryList.forEachIndexed { index, resultText ->
                                 ListItem(
-                                    headlineContent = { Text(resultText) },
+                                    headlineContent = { Text(text = resultText) },
                                     leadingContent = {
                                         Icon(
                                             painter = painterResource(id = R.drawable.outline_history_24),
@@ -367,7 +347,6 @@ fun LibrarySearchScreen(
                     item {
                         Spacer(modifier = Modifier.height(10.dp))
                         RentBooksList(
-                            themeMode = themeMode,
                             uiState = uiState,
                             viewModel = viewModel,
                             onClick = {
@@ -404,7 +383,11 @@ fun BookRentDetailBottomSheet(
         ) {
             if (uiState.isLoading) {
                 item {
-                    CircularProgressIndicator(modifier = Modifier.height(100.dp).fillMaxWidth())
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .height(100.dp)
+                            .fillMaxWidth()
+                    )
                 }
             } else {
                 stickyHeader {
@@ -421,13 +404,11 @@ fun BookRentDetailBottomSheet(
 
 @Composable
 fun RentBooksList(
-    themeMode: Int,
     uiState: LibrarySearchUiState,
     viewModel: LibrarySearchViewModel,
     onClick: () -> Unit = {}
 ) {
     LargeCardDisplay(
-        themeMode = themeMode,
         modifier = Modifier,
         title = "待借清单(${uiState.rentList.size}/5)",
         leadingIconPainting = R.drawable.book_4_24px
@@ -468,7 +449,7 @@ fun RentBooksList(
                                 text = it.bookName,
                                 style = MiuixTheme.textStyles.body2,
                                 maxLines = 1,
-                                textAlign = TextAlign.Start,
+                                textAlign = TextAlign.Left,
                                 modifier = Modifier
                                     .basicMarquee(
                                         repeatDelayMillis = 2_000,
@@ -477,7 +458,7 @@ fun RentBooksList(
                             )
                             Text(
                                 text = it.publisher,
-                                style = MiuixTheme.textStyles.footnote1.copy(color = Color.Gray),
+                                style = MiuixTheme.textStyles.footnote1.copy(color = MiuixTheme.colorScheme.onSurfaceVariantSummary),
                                 maxLines = 1,
                                 textAlign = TextAlign.Start,
                                 overflow = TextOverflow.Ellipsis,
@@ -537,6 +518,7 @@ fun LibrarySingleBook(
                     text = content.title,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
+                    color = MiuixTheme.colorScheme.onBackground,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -544,18 +526,21 @@ fun LibrarySingleBook(
                     text = content.publisher,
                     maxLines = 1,
                     fontSize = 16.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = content.publishPlace,
                     maxLines = 1,
                     fontSize = 16.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = content.publishYear,
                     maxLines = 1,
                     fontSize = 16.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                     overflow = TextOverflow.Ellipsis
                 )
             }
@@ -564,7 +549,7 @@ fun LibrarySingleBook(
                     imageVector = if (state) Icons.Filled.Favorite
                     else Icons.Outlined.FavoriteBorder,
                     contentDescription = "like",
-                    tint = colorScheme.primary
+                    tint = MiuixTheme.colorScheme.primary,
                 )
             }
         }
@@ -593,7 +578,10 @@ fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
             ) {
                 Text(
                     text = content.bookName,
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MiuixTheme.colorScheme.onBackground
+                    ),
                     maxLines = 2,
                     textAlign = TextAlign.Start,
                     modifier = Modifier.fillMaxWidth(),
@@ -614,7 +602,8 @@ fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.content_copy_24px),
-                    contentDescription = "copy"
+                    contentDescription = "copy",
+                    tint = MiuixTheme.colorScheme.onBackground,
                 )
             }
         }
@@ -638,6 +627,7 @@ fun LibrarySingleBookDetail(content: LibraryBookDetail) {
                     text = content.bookPosition,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
+                    color = MiuixTheme.colorScheme.onBackground,
                     modifier = Modifier.padding(10.dp)
                 )
             else
@@ -650,7 +640,8 @@ fun LibrarySingleBookDetail(content: LibraryBookDetail) {
                     if (content.library == "" && content.bookPosition == "")
                         Text(
                             text = content.description,
-                            fontSize = 16.sp
+                            fontSize = 16.sp,
+                            color = MiuixTheme.colorScheme.onBackground
                         )
                     else {
                         Column(
@@ -660,10 +651,12 @@ fun LibrarySingleBookDetail(content: LibraryBookDetail) {
                             Text(
                                 text = content.bookPosition,
                                 fontSize = 20.sp,
+                                color = MiuixTheme.colorScheme.onBackground,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = content.library,
+                                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                                 fontSize = 16.sp
                             )
                         }
@@ -671,7 +664,8 @@ fun LibrarySingleBookDetail(content: LibraryBookDetail) {
                             text = content.description,
                             maxLines = 1,
                             fontSize = 16.sp,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
+                            color = MiuixTheme.colorScheme.onBackground
                         )
                     }
                 }
@@ -690,12 +684,16 @@ fun SingleMessage(label: String, content: String) {
             text = label,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(0.3f),
-            style = MaterialTheme.typography.bodyLarge
+            style = MaterialTheme.typography.bodyLarge.copy(
+                color = MiuixTheme.colorScheme.onBackground
+            )
         )
         Text(
             text = content,
             modifier = Modifier.weight(0.8f),
-            style = MaterialTheme.typography.bodyLarge
+            style = MaterialTheme.typography.bodyLarge.copy(
+                color = MiuixTheme.colorScheme.onSurfaceVariantSummary
+            )
         )
     }
 }

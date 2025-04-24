@@ -106,6 +106,7 @@ class TEViewModel @Inject constructor(
                 }
         }
         viewModelScope.launch {
+            refreshTermIndex()
             getTeacherListService(_uiState.value.termCode)
         }
     }

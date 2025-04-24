@@ -56,7 +56,6 @@ import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun Grade(
-    themeMode: Int,
     viewModel: GradeViewModel = hiltViewModel(),
     navController: NavController
 ) {
@@ -72,7 +71,6 @@ fun Grade(
     }
 
     ScaffoldWithHazeLazyColumn(
-        themeMode = themeMode,
         isMediumTopAppBar = true,
         scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
         blurEnabledState = uiState.blurEffect,
@@ -116,7 +114,7 @@ fun Grade(
                         }
                     } else {
                         itemsIndexed(uiState.courseGrade.data) { _, course ->
-                            SingleCourseGrade(themeMode, course)
+                            SingleCourseGrade(course)
                         }
                     }
                 }
@@ -144,7 +142,6 @@ fun Grade(
 
 @Composable
 fun SingleCourseGrade(
-    themeMode: Int,
     course: GradeData
 ) {
     Surface(
@@ -155,7 +152,7 @@ fun SingleCourseGrade(
             .fillMaxWidth()
             .animateContentSize(),
         shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
-        color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant,
+        color = MiuixTheme.colorScheme.surface
     ) {
         ListItem(
             colors = ListItemDefaults.colors(containerColor = Color.Transparent),

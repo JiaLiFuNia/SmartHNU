@@ -35,7 +35,6 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.smart.htu.R
 import com.smart.htu.component.BlockButton
 import com.smart.htu.component.SettingItemCard
 import com.smart.htu.component.svgVector.DrawableVectors
@@ -124,7 +123,7 @@ fun DynamicColorSettingScreen(
                     }
                 }
                 when (selectedIndex) {
-                    0 -> SettingItemCard(modifier = Modifier, themeMode = 1) {
+                    0 -> SettingItemCard(modifier = Modifier) {
                         /*PreferenceSwitch(
                             iconRes = R.drawable.outline_colorize_24,
                             title = "动态颜色",
@@ -136,7 +135,7 @@ fun DynamicColorSettingScreen(
                         )*/
                         }
 
-                    1 -> SettingItemCard(modifier = Modifier.fillMaxWidth(), themeMode = 1) {
+                    1 -> SettingItemCard(modifier = Modifier.fillMaxWidth()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()

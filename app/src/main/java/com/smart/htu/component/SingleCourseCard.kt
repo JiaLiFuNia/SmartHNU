@@ -70,7 +70,9 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth(),
                     softWrap = false,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = MiuixTheme.colorScheme.onBackground
+                    )
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

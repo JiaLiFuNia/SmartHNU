@@ -88,6 +88,6 @@ fun BasicBottomSheet(
 fun ButtonDefaults.textButtonPrimaryColors() = textButtonColors(
     color = MiuixTheme.colorScheme.primaryContainer,
     disabledColor = MiuixTheme.colorScheme.disabledPrimaryButton,
-    textColor = primaryLight,
+    textColor = MiuixTheme.colorScheme.primary,
     disabledTextColor = MiuixTheme.colorScheme.disabledOnPrimaryButton
 )

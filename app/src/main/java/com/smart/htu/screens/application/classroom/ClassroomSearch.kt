@@ -89,7 +89,6 @@ import java.time.LocalDate
 )
 @Composable
 fun ClassroomSearchScreen(
-    themeMode: Int,
     navController: NavController,
     viewModel: ClassroomSearchViewModel = hiltViewModel()
 ) {
@@ -133,14 +132,8 @@ fun ClassroomSearchScreen(
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
-                        0 -> MiuixTheme.colorScheme.background
-                        else -> colorScheme.surface
-                    },
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
-                        0 -> MiuixTheme.colorScheme.background
-                        else -> colorScheme.surfaceContainer
-                    }
+                    containerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background
                 ),
                 title = {
                     Text(
@@ -241,7 +234,8 @@ fun ClassroomSearchScreen(
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.help_24px),
-                                contentDescription = "help"
+                                contentDescription = "help",
+                                tint = MiuixTheme.colorScheme.onBackground
                             )
                         }
                     }
@@ -447,7 +441,9 @@ fun TipDialog(
                             text = if (it == 0) "空闲教室" else "非空闲教室",
                             modifier = Modifier.fillMaxWidth(),
                             textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                color = MiuixTheme.colorScheme.onBackground
+                            )
                         )
                     }
                 }

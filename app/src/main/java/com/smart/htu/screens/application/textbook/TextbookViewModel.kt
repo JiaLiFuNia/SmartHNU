@@ -111,6 +111,7 @@ class TextbookViewModel @Inject constructor(
                 }
         }
         viewModelScope.launch {
+            refreshTermList()
             getTextbook(_uiState.value.termCode)
         }
     }

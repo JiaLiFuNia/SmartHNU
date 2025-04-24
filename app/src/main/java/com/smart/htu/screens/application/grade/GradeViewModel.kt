@@ -92,6 +92,7 @@ class GradeViewModel @Inject constructor(
                 }
         }
         viewModelScope.launch {
+            refreshTermList()
             getCourseGrade()
         }
     }

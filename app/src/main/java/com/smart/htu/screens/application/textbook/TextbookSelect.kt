@@ -69,7 +69,6 @@ import java.nio.file.WatchEvent
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextbookSelect(
-    themeMode: Int,
     viewModel: TextbookViewModel = hiltViewModel(),
     navController: NavController,
     courseTaskCode: String,
@@ -96,7 +95,6 @@ fun TextbookSelect(
 
     ScaffoldWithHazeLazyColumn(
         snackBarHost = { SnackbarHost(hostState = viewModel.snackBarHostState) },
-        themeMode = themeMode,
         isMediumTopAppBar = true,
         scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
         blurEnabledState = uiState.blurEffect,

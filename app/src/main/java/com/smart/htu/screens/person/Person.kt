@@ -64,7 +64,6 @@ import top.yukonga.miuix.kmp.basic.TextButton
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonScreen(
-    themeMode: Int,
     navController: NavController,
     viewModel: LoginViewModel,
     contentPadding: PaddingValues
@@ -114,7 +113,6 @@ fun PersonScreen(
             }
             item {
                 LargeCardDisplay(
-                    themeMode = themeMode,
                     modifier = Modifier,
                     title = "我的信息",
                     leadingIconPainting = R.drawable.person_search_24px
@@ -190,7 +188,6 @@ fun PersonScreen(
             }
             item {
                 LargeCardDisplay(
-                    themeMode = themeMode,
                     modifier = Modifier,
                     title = "账号管理",
                     leadingIconPainting = R.drawable.circle_admin

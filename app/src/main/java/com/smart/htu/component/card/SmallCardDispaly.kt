@@ -17,6 +17,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,6 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.smart.htu.screens.application.entity.RouteType
 import com.smart.htu.screens.application.entity.SmallCardContent
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -36,12 +39,19 @@ fun SmallCardDisplay(
     content: SmallCardContent,
     onCLick: () -> Unit,
 ) {
+    val showDialog = remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
             .width(70.dp)
             .height(70.dp)
             .clip(RoundedCornerShape(10.dp)),
-        onClick = onCLick,
+        onClick = {
+            if (content.routeType == RouteType.ALIPAY) {
+                showDialog.value = true
+            } else {
+                onCLick()
+            }
+        },
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
         )
@@ -80,4 +90,10 @@ fun SmallCardDisplay(
             )
         }
     }
+    JumpToAlipayDialog(
+        showDialog = showDialog,
+        onConfirmClick = {
+            onCLick()
+        }
+    )
 }

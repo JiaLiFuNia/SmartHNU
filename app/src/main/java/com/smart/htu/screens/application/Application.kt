@@ -36,7 +36,6 @@ import top.yukonga.miuix.kmp.basic.SmallTitle
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun Application(
-    themeMode: Int,
     contentPadding: PaddingValues,
     navController: NavController,
     viewModel: ApplicationViewModel,

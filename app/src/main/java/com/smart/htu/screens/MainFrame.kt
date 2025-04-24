@@ -5,7 +5,6 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Email
@@ -17,7 +16,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -35,7 +33,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.animation.SlideTransition
@@ -53,7 +50,6 @@ import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.person.PersonScreen
 import com.smart.htu.screens.setting.SettingViewModel
 import com.smart.htu.utils.DoubleBackToExitApp
-import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 data class Screen(
@@ -85,7 +81,6 @@ fun MainFrame(
     val settingUiState = settingViewModel.uiState.collectAsState().value
     val savableStateHolder = rememberSaveableStateHolder()
     val (selectedItemIndex, onSelectedItemIndex) = rememberSaveable { mutableIntStateOf(0) }
-    val themeMode = settingUiState.themeMode // 0 黑白 1 动态 2 师大青
 
     val navigationItem = listOf(
         BottomNavigationItem(
@@ -258,14 +253,11 @@ fun MainFrame(
                             navController = navController,
                             mainViewModel = mainViewModel,
                             loginViewModel = loginViewModel,
-                            applicationViewModel = applicationViewModel,
                             airConditionViewModel = airConditionViewModel,
-                            contentPadding = it,
-                            themeMode = themeMode
+                            contentPadding = it
                         )
 
                         1 -> Application(
-                            themeMode = themeMode,
                             navController = navController,
                             viewModel = applicationViewModel,
                             loginViewModel = loginViewModel,
@@ -281,7 +273,6 @@ fun MainFrame(
                         3 -> PersonScreen(
                             navController = navController,
                             viewModel = loginViewModel,
-                            themeMode = themeMode,
                             contentPadding = it
                         )
                     }

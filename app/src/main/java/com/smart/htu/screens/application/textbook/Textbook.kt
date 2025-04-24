@@ -60,7 +60,6 @@ import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Textbook(
-    themeMode: Int,
     viewModel: TextbookViewModel = hiltViewModel(),
     navController: NavController
 ) {
@@ -76,7 +75,6 @@ fun Textbook(
 
     ScaffoldWithHazeLazyColumn(
         snackBarHost = { SnackbarHost(hostState = snackBarHostState) },
-        themeMode = themeMode,
         isMediumTopAppBar = true,
         scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
         blurEnabledState = uiState.blurEffect,
@@ -119,7 +117,7 @@ fun Textbook(
                         }
                     } else {
                         items(uiState.courseList.data?.courseTextbookList ?: emptyList()) {
-                            SingleCourseTextbook(uiState.termCode, it, navController, themeMode)
+                            SingleCourseTextbook(uiState.termCode, it, navController)
                         }
                     }
                 }
@@ -147,8 +145,7 @@ fun Textbook(
 fun SingleCourseTextbook(
     termCode: String,
     course: CourseTextbook,
-    navController: NavController,
-    themeMode: Int
+    navController: NavController
 ) {
     Surface(
         onClick = {
@@ -159,7 +156,7 @@ fun SingleCourseTextbook(
             .semantics { role = Role.Button }
             .fillMaxWidth(),
         shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
-        color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant,
+        color = MiuixTheme.colorScheme.surface
     ) {
         ListItem(
             colors = ListItemDefaults.colors(containerColor = Color.Transparent),

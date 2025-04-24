@@ -40,7 +40,7 @@ fun EditQQNumberDialog(
     var customizedQQNumber by remember { mutableStateOf("") }
     val qqPattern = remember { Regex("^[1-9]\\d{4,10}$") }
     var isError by remember { mutableStateOf(false) }
-    var errorColor = Color.Red.copy(0.3f)
+    var errorColor = MaterialTheme.colorScheme.error
     SuperDialog(
         show = showDialog,
         title = "修改头像",

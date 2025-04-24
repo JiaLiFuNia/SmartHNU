@@ -67,7 +67,6 @@ import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissPopup
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WebView(
-    themeMode: Int,
     navController: NavController,
     url: String,
     headers: Map<String, String> = emptyMap(),
@@ -133,18 +132,12 @@ fun WebView(
         }
     }
     top.yukonga.miuix.kmp.basic.Scaffold(
-        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background,
+        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = when (themeMode) {
-                        0 -> MiuixTheme.colorScheme.background
-                        else -> MaterialTheme.colorScheme.surface
-                    },
-                    scrolledContainerColor = when (themeMode) {
-                        0 -> MiuixTheme.colorScheme.background
-                        else -> MaterialTheme.colorScheme.surfaceContainer
-                    }
+                    containerColor = MiuixTheme.colorScheme.background,
+                    scrolledContainerColor =MiuixTheme.colorScheme.background
                 ),
                 title = {
                     Text(

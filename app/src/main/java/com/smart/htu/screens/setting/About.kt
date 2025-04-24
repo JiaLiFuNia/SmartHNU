@@ -57,7 +57,6 @@ import java.util.concurrent.TimeUnit
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun About(
-    themeMode: Int,
     navController: NavController,
     viewModel: SettingViewModel
 ) {

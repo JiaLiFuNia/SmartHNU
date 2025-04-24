@@ -31,7 +31,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScaffoldWithHazeLazyColumn(
-    themeMode: Int,
     scrollBehavior: TopAppBarScrollBehavior,
     blurEnabledState: Boolean,
     title: @Composable () -> Unit,
@@ -46,7 +45,7 @@ fun ScaffoldWithHazeLazyColumn(
 ) {
     val scope = rememberCoroutineScope()
     top.yukonga.miuix.kmp.basic.Scaffold(
-        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else colorScheme.background,
+        containerColor = MiuixTheme.colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = {
             if (snackBarHost != null) {
@@ -58,14 +57,8 @@ fun ScaffoldWithHazeLazyColumn(
                 MediumTopAppBar(
                     scrollBehavior = scrollBehavior,
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = if (blurEnabledState) Color.Transparent else when (themeMode) {
-                            0 -> MiuixTheme.colorScheme.background
-                            else -> colorScheme.surface
-                        },
-                        scrolledContainerColor = if (blurEnabledState) Color.Transparent else when (themeMode) {
-                            0 -> MiuixTheme.colorScheme.background
-                            else -> colorScheme.surfaceContainer
-                        },
+                        containerColor = if (blurEnabledState) Color.Transparent else MiuixTheme.colorScheme.background,
+                        scrolledContainerColor = if (blurEnabledState) Color.Transparent else MiuixTheme.colorScheme.background,
                     ),
                     title = { title() },
                     actions = { actions() },
@@ -75,14 +68,8 @@ fun ScaffoldWithHazeLazyColumn(
                 TopAppBar(
                     scrollBehavior = scrollBehavior,
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = if (blurEnabledState) Color.Transparent else when (themeMode) {
-                            0 -> MiuixTheme.colorScheme.background
-                            else -> colorScheme.surface
-                        },
-                        scrolledContainerColor = if (blurEnabledState) Color.Transparent else when (themeMode) {
-                            0 -> MiuixTheme.colorScheme.background
-                            else -> colorScheme.surfaceContainer
-                        },
+                        containerColor = if (blurEnabledState) Color.Transparent else MiuixTheme.colorScheme.background,
+                        scrolledContainerColor = if (blurEnabledState) Color.Transparent else MiuixTheme.colorScheme.background,
                     ),
                     title = { title() },
                     actions = { actions() },

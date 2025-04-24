@@ -81,12 +81,10 @@ import kotlin.math.ceil
 @Composable
 fun Main(
     mainViewModel: MainViewModel,
-    applicationViewModel: ApplicationViewModel,
     airConditionViewModel: AirConditionViewModel,
     loginViewModel: LoginViewModel,
     navController: NavController,
-    contentPadding: PaddingValues,
-    themeMode: Int
+    contentPadding: PaddingValues
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
     val loginUiState by loginViewModel.uiState.collectAsState()
@@ -136,26 +134,23 @@ fun Main(
                 // Spacer(modifier = Modifier.height(20.dp))
             }
             item {
-                FocusCard(themeMode, navController, loginUiState, airConditionUiState, uiState)
+                FocusCard(navController, loginUiState, airConditionUiState, uiState)
                 // Spacer(modifier = Modifier.height(20.dp))
             }
             item {
-                TodayCourseCard(uiState.todayCourseList, themeMode, loginUiState)
+                TodayCourseCard(uiState.todayCourseList, loginUiState)
                 // Spacer(modifier = Modifier.height(20.dp))
             }
             item {
                 CommonAppsCard(
                     uiState = uiState,
                     navController = navController,
-                    applicationViewModel = applicationViewModel,
-                    loginUiState = loginUiState,
-                    themeMode = themeMode
+                    loginUiState = loginUiState
                 )
                 // Spacer(modifier = Modifier.height(20.dp))
             }
             item {
                 NewsCard(
-                    themeMode = themeMode,
                     navController = navController,
                     newsListStatus = uiState.newsList
                 )
@@ -167,12 +162,10 @@ fun Main(
 
 @Composable
 fun NewsCard(
-    themeMode: Int,
     navController: NavController,
     newsListStatus: ResultWithStatus<List<NewsItemEntity>>
 ) {
     LargeCardDisplay(
-        themeMode = themeMode,
         modifier = Modifier,
         title = "学术预告",
         actionText = stringResource(id = R.string.all),
@@ -218,14 +211,12 @@ fun NewsCard(
             }
         },
         navigateTo = {},
-        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface
-        else MaterialTheme.colorScheme.surfaceVariant
+        containerColor = MiuixTheme.colorScheme.surface
     )
 }
 
 @Composable
 fun FocusCard(
-    themeMode: Int,
     navController: NavController,
     loginUiState: LoginUiState,
     airConditionUiState: AirConditionUiState,
@@ -233,12 +224,10 @@ fun FocusCard(
 ) {
     val context = LocalContext.current
     LargeCardDisplay(
-        themeMode = themeMode,
         modifier = Modifier,
         title = "聚焦",
         leadingIconPainting = R.drawable.center_focus_weak_24px,
-        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface
-        else MaterialTheme.colorScheme.surfaceVariant
+        containerColor = MiuixTheme.colorScheme.surface
     ) {
         Column {
             Row {
@@ -255,7 +244,7 @@ fun FocusCard(
                     trailingContent = {
                     },
                     title = today.format(formatter),
-                    content = "第 3 周 $dayOfWeek",
+                    content = "第 - 周 $dayOfWeek",
                     onClick = { startCalendar() },
                     modifier = Modifier.weight(0.5f)
                 )
@@ -364,13 +353,10 @@ fun FocusCardItem(
 @Composable
 fun TodayCourseCard(
     todayCourseResult: ResultWithStatus<List<Course>>,
-    themeMode: Int,
     loginUiState: LoginUiState
 ) {
     LargeCardDisplay(
-        themeMode = themeMode,
-        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface
-        else MaterialTheme.colorScheme.surfaceVariant,
+        containerColor = MiuixTheme.colorScheme.surface,
         modifier = Modifier,
         title = stringResource(id = R.string.today_course),
         leadingIconPainting = R.drawable.today_24px,
@@ -423,16 +409,12 @@ fun TodayCourseCard(
 fun CommonAppsCard(
     uiState: AppUiState,
     navController: NavController,
-    applicationViewModel: ApplicationViewModel,
-    loginUiState: LoginUiState,
-    themeMode: Int
+    loginUiState: LoginUiState
 ) {
     val rowCount = remember { derivedStateOf { ceil(uiState.appListIsCommonList.size / 5.0) } }
     val lazyVerticalGridHeight by remember { derivedStateOf { rowCount.value * 70 + (rowCount.value - 1) * 4 + 16 } }
     LargeCardDisplay(
-        themeMode = themeMode,
-        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.surface
-        else MaterialTheme.colorScheme.surfaceVariant,
+        containerColor = MiuixTheme.colorScheme.surface,
         modifier = Modifier,
         title = stringResource(id = R.string.common_applications),
         leadingIconPainting = R.drawable.app_registration_24px,

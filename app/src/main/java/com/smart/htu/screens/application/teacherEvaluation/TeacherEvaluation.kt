@@ -58,7 +58,6 @@ import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TeacherEvaluation(
-    themeMode: Int,
     viewModel: TEViewModel = hiltViewModel(),
     navController: NavController
 ) {
@@ -75,7 +74,6 @@ fun TeacherEvaluation(
     }
 
     ScaffoldWithHazeLazyColumn(
-        themeMode = themeMode,
         isMediumTopAppBar = true,
         scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
         blurEnabledState = uiState.blurEffect,
@@ -125,7 +123,7 @@ fun TeacherEvaluation(
                             )
                     }
                     items(uiState.evaluationInfo.data?.evaluationInfoList ?: emptyList()) {
-                        SingleTeacher(it, themeMode)
+                        SingleTeacher(it)
                     }
                 }
             }
@@ -151,8 +149,7 @@ fun TeacherEvaluation(
 
 @Composable
 fun SingleTeacher(
-    teacher: EvaluationInfo,
-    themeMode: Int
+    teacher: EvaluationInfo
 ) {
     Surface(
         onClick = {
@@ -161,7 +158,7 @@ fun SingleTeacher(
             .semantics { role = androidx.compose.ui.semantics.Role.Button }
             .fillMaxWidth(),
         shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
-        color = if (themeMode == 0) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant,
+        color = MiuixTheme.colorScheme.surface
     ) {
         ListItem(
             colors = ListItemDefaults.colors(containerColor = Color.Transparent),

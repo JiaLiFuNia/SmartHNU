@@ -43,18 +43,15 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
-import top.yukonga.miuix.kmp.basic.SwitchDefaults
 import top.yukonga.miuix.kmp.extra.DropDownMode
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDropdown
-import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun SettingScreen(
-    themeMode: Int,
     navController: NavController,
     viewModel: SettingViewModel
 ) {
@@ -62,20 +59,14 @@ fun SettingScreen(
     val hazeState = remember { HazeState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     top.yukonga.miuix.kmp.basic.Scaffold(
-        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background,
+        containerColor = MiuixTheme.colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
-                        0 -> MiuixTheme.colorScheme.background
-                        else -> MaterialTheme.colorScheme.surface
-                    },
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
-                        0 -> MiuixTheme.colorScheme.background
-                        else -> MaterialTheme.colorScheme.surfaceContainer
-                    }
+                    containerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background
                 ),
                 title = { Text(text = stringResource(id = R.string.setting)) },
                 navigationIcon = {
@@ -111,7 +102,6 @@ fun SettingScreen(
             item {
                 SettingItemCard(
                     label = "开发",
-                    themeMode = themeMode,
                     modifier = Modifier
                 ) {
                     SuperArrow(
@@ -146,8 +136,7 @@ fun SettingScreen(
             item {
                 SettingItemCard(
                     label = "教务",
-                    modifier = Modifier,
-                    themeMode = themeMode
+                    modifier = Modifier
                 ) {
                     val termString = Term.termConverter(uiState.termCode).split("-")
                     SuperArrow(
@@ -161,10 +150,13 @@ fun SettingScreen(
             item {
                 SettingItemCard(
                     label = stringResource(id = R.string.display_color),
-                    modifier = Modifier,
-                    themeMode = themeMode
+                    modifier = Modifier
                 ) {
-                    /*SuperDropdown(
+                    val themeModes = mapOf(
+                        0 to "动态",
+                        1 to "师大"
+                    )
+                    SuperDropdown(
                         title = stringResource(id = R.string.theme_color),
                         summary = stringResource(id = R.string.theme_color_description),
                         items = themeModes.values.toList(),
@@ -174,7 +166,7 @@ fun SettingScreen(
                             viewModel.changeDynamicTheme(mode)
                             if (mode == 0) viewModel.changeBlurState(false)
                         },
-                    )*/
+                    )
                     /*SuperSwitch(
                         title = "实时模糊",
                         checked = uiState.blurEffect,
@@ -210,8 +202,7 @@ fun SettingScreen(
             item {
                 SettingItemCard(
                     label = stringResource(id = R.string.screen_style),
-                    modifier = Modifier,
-                    themeMode = themeMode
+                    modifier = Modifier
                 ) {
                     SuperArrow(
                         title = stringResource(id = R.string.main_screen),
@@ -236,8 +227,7 @@ fun SettingScreen(
             item {
                 SettingItemCard(
                     label = stringResource(id = R.string.about),
-                    modifier = Modifier,
-                    themeMode = themeMode
+                    modifier = Modifier
                 ) {
                     SuperArrow(
                         title = stringResource(id = R.string.about_app),

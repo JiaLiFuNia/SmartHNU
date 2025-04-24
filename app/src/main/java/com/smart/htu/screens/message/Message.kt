@@ -75,7 +75,6 @@ import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun MessageScreen(
-    themeMode: Int,
     navController: NavHostController,
     viewModel: MessageViewModel
 ) {
@@ -93,20 +92,14 @@ fun MessageScreen(
     }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     top.yukonga.miuix.kmp.basic.Scaffold(
-        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else colorScheme.background,
+        containerColor = MiuixTheme.colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
-                        0 -> MiuixTheme.colorScheme.background
-                        else -> colorScheme.surface
-                    },
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
-                        0 -> MiuixTheme.colorScheme.background
-                        else -> colorScheme.surfaceContainer
-                    }
+                    containerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background
                 ),
                 title = { Text(text = stringResource(id = R.string.message_center)) },
                 navigationIcon = {
@@ -143,7 +136,6 @@ fun MessageScreen(
             ) {
                 item {
                     NoticeList(
-                        themeMode = themeMode,
                         modifier = Modifier.fillMaxSize(),
                         list = uiState.noticeList,
                         uiState = uiState,
@@ -158,7 +150,6 @@ fun MessageScreen(
 
 @Composable
 fun LazyItemScope.NoticeList(
-    themeMode: Int,
     modifier: Modifier,
     list: List<Notice>,
     uiState: MessageUiState,
@@ -172,7 +163,6 @@ fun LazyItemScope.NoticeList(
         ) {
             list.sortedByDescending { it.id }.forEach { notice ->
                 SingleMessage(
-                    themeMode = themeMode,
                     readState = notice.id in uiState.hadReadIdList,
                     hadRead = {
                         viewModel.addHadReadList(notice.id)
@@ -191,7 +181,6 @@ fun LazyItemScope.NoticeList(
 
 @Composable
 fun SingleMessage(
-    themeMode: Int,
     readState: Boolean,
     hadRead: () -> Unit,
     notice: Notice,
@@ -206,7 +195,7 @@ fun SingleMessage(
             .fillMaxWidth()
             .animateContentSize(),
         shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
-        color = if (themeMode == 0) MiuixTheme.colorScheme.surface else colorScheme.surfaceVariant,
+        color = MiuixTheme.colorScheme.surface,
     ) {
         Column(
             modifier = Modifier

@@ -88,7 +88,6 @@ import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AirCondition(
-    themeMode: Int,
     navController: NavController,
     viewModel: AirConditionViewModel = hiltViewModel()
 ) {
@@ -126,20 +125,14 @@ fun AirCondition(
     }
 
     top.yukonga.miuix.kmp.basic.Scaffold(
-        containerColor = if (themeMode == 0) MiuixTheme.colorScheme.background else MaterialTheme.colorScheme.background,
+        containerColor = MiuixTheme.colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
-                        0 -> MiuixTheme.colorScheme.background
-                        else -> MaterialTheme.colorScheme.surface
-                    },
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else when (themeMode) {
-                        0 -> MiuixTheme.colorScheme.background
-                        else -> MaterialTheme.colorScheme.surfaceContainer
-                    }
+                    containerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background
                 ),
                 title = { Text(text = "空调电费") },
                 navigationIcon = {

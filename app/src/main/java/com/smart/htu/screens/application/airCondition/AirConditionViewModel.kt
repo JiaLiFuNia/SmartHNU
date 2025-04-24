@@ -53,7 +53,7 @@ class AirConditionViewModel @Inject constructor(
 
     val snackBarHostState = SnackbarHostState()
 
-    private val _blurStateFlow = dataStoreRepo.observerBlurState()
+    private val blurStateFlow = dataStoreRepo.observerBlurState()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -62,7 +62,7 @@ class AirConditionViewModel @Inject constructor(
             }
         )
 
-    private val _buildingIdStateFlow = dataStoreRepo.observeBuildingId()
+    private val buildingIdStateFlow = dataStoreRepo.observeBuildingId()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -71,7 +71,7 @@ class AirConditionViewModel @Inject constructor(
             }
         )
 
-    private val _roomIdStateFlow = dataStoreRepo.observeRoomId()
+    private val roomIdStateFlow = dataStoreRepo.observeRoomId()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -80,7 +80,7 @@ class AirConditionViewModel @Inject constructor(
             }
         )
 
-    private val _cookieTypeStateFlow = dataStoreRepo.observeAirConditionCookieType()
+    private val cookieTypeStateFlow = dataStoreRepo.observeAirConditionCookieType()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -89,7 +89,7 @@ class AirConditionViewModel @Inject constructor(
             }
         )
 
-    private val _userCookieStateFlow = dataStoreRepo.observeAirConditionUserCookie()
+    private val userCookieStateFlow = dataStoreRepo.observeAirConditionUserCookie()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -100,27 +100,27 @@ class AirConditionViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            _blurStateFlow.collect { value ->
+            blurStateFlow.collect { value ->
                 _uiState.update { it.copy(blurEffect = value) }
             }
         }
         viewModelScope.launch {
-            _buildingIdStateFlow.collect { value ->
+            buildingIdStateFlow.collect { value ->
                 _uiState.update { it.copy(buildingCode = value) }
             }
         }
         viewModelScope.launch {
-            _roomIdStateFlow.collect { value ->
+            roomIdStateFlow.collect { value ->
                 _uiState.update { it.copy(roomCode = value) }
             }
         }
         viewModelScope.launch {
-            _cookieTypeStateFlow.collect { value ->
+            cookieTypeStateFlow.collect { value ->
                 _uiState.update { it.copy(setCookieType = value) }
             }
         }
         viewModelScope.launch {
-            _userCookieStateFlow.collect { value ->
+            userCookieStateFlow.collect { value ->
                 _uiState.update { it.copy(userLoginCookie = value) }
             }
         }
