@@ -11,13 +11,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.smart.htu.R
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissDialog
 
 @Composable
@@ -32,7 +37,10 @@ fun EditQQNumberDialog(
     showDialog: MutableState<Boolean>,
     onConfirmRequests: (String) -> Unit
 ) {
-    val (customizedQQNumber, onChangeQQNumber) = remember { mutableStateOf("") }
+    var customizedQQNumber by remember { mutableStateOf("") }
+    val qqPattern = remember { Regex("^[1-9]\\d{4,10}$") }
+    var isError by remember { mutableStateOf(false) }
+    var errorColor = Color.Red.copy(0.3f)
     SuperDialog(
         show = showDialog,
         title = "修改头像",
@@ -47,7 +55,10 @@ fun EditQQNumberDialog(
         ) {
             top.yukonga.miuix.kmp.basic.TextField(
                 value = customizedQQNumber,
-                onValueChange = { onChangeQQNumber(it) },
+                onValueChange = {
+                    customizedQQNumber = it
+                    isError = !qqPattern.matches(customizedQQNumber)
+                },
                 label = "QQ 号码",
                 useLabelAsPlaceholder = true,
                 leadingIcon = {
@@ -57,9 +68,28 @@ fun EditQQNumberDialog(
                         modifier = Modifier.padding(horizontal = 12.dp)
                     )
                 },
+                trailingIcon = {
+                    if (isError)
+                        Icon(
+                            painter = painterResource(id = R.drawable.warning_24px),
+                            contentDescription = "warning",
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(end = 12.dp)
+                        )
+                },
+                labelColor = if (isError) errorColor else MiuixTheme.colorScheme.onSecondaryContainer,
+                singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             )
+            if (isError) {
+                Text(
+                    text = "QQ 号码不合法",
+                    color = errorColor,
+                    style = MiuixTheme.textStyles.body2,
+                    modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                )
+            }
             /*TextField(
                 value = customizedQQNumber,
                 onValueChange = {

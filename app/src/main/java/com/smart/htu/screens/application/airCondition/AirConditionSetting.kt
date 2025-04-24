@@ -30,6 +30,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -100,6 +101,7 @@ fun AirConditionSetting(
                     text = "宿舍楼和房间",
                     insideMargin = PaddingValues(12.dp, 8.dp)
                 )
+                var errorColor = MaterialTheme.colorScheme.error
                 val buildingIdPattern = Regex("^[西|东]\\d{2}$")
                 val roomIdPattern = Regex("^\\d{4}$")
                 val (buildingIdError, onBuildingError) = remember { mutableStateOf(false) }
@@ -121,7 +123,8 @@ fun AirConditionSetting(
                                 tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(end = 12.dp)
                             )
-                    }
+                    },
+                    labelColor = if (buildingIdError) errorColor else MiuixTheme.colorScheme.onSecondaryContainer,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
@@ -142,7 +145,8 @@ fun AirConditionSetting(
                                 tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(end = 12.dp)
                             )
-                    }
+                    },
+                    labelColor = if (roomIdError) errorColor else MiuixTheme.colorScheme.onSecondaryContainer,
                 )
             }
             item {
