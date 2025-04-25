@@ -79,7 +79,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.compose.material.material.icons.core)
+    implementation(libs.androidx.material.icons.core)
     // implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.appcompat)
@@ -122,7 +122,7 @@ dependencies {
 
     // webview
     implementation(libs.androidx.webkit)
-    implementation(libs.compose.webview)
+    implementation(libs.webview)
 
     // json
     implementation(libs.kotlinx.serialization.json)

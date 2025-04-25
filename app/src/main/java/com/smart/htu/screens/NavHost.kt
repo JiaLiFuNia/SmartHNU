@@ -10,9 +10,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.smart.htu.component.WebView
+import com.smart.htu.component.WebViewContent
 import com.smart.htu.component.animation.animatedComposable
-import com.smart.htu.screens.application.Application
 import com.smart.htu.screens.application.ApplicationEdit
 import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.airCondition.AirCondition
@@ -31,10 +30,8 @@ import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.message.MessageScreen
 import com.smart.htu.screens.message.MessageViewModel
 import com.smart.htu.screens.navigation.Destinations
-import com.smart.htu.screens.news.NewsScreen
 import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.person.AccountManage
-import com.smart.htu.screens.person.PersonScreen
 import com.smart.htu.screens.setting.About
 import com.smart.htu.screens.setting.AppSettingScreen
 import com.smart.htu.screens.setting.DynamicColorSettingScreen
@@ -56,7 +53,6 @@ fun NavHostScreen() {
     val messageViewModel: MessageViewModel = hiltViewModel()
     val airConditionViewModel: AirConditionViewModel = hiltViewModel()
     val navController = rememberNavController()
-    val uiState = settingViewModel.uiState.collectAsState().value
     NavHost(
         navController = navController,
         startDestination = Destinations.App.route
@@ -131,10 +127,10 @@ fun NavHostScreen() {
                 }
             )
         ) { webview ->
-            WebView(
+            WebViewContent(
                 navController = navController,
                 url = Uri.decode(webview.arguments?.getString("url") ?: ""),
-                initTitle = webview.arguments?.getString("title") ?: ""
+                title = webview.arguments?.getString("title") ?: ""
             )
         }
         animatedComposable(Destinations.Appreciate.route) {
@@ -168,19 +164,13 @@ fun NavHostScreen() {
             )
         }
         animatedComposable(Destinations.Grade.route) {
-            Grade(
-                navController = navController
-            )
+            Grade(navController = navController)
         }
         animatedComposable(Destinations.TeacherEvaluation.route) {
-            TeacherEvaluation(
-                navController = navController
-            )
+            TeacherEvaluation(navController = navController)
         }
         animatedComposable(Destinations.Textbook.route) {
-            Textbook(
-                navController = navController
-            )
+            Textbook(navController = navController)
         }
         animatedComposable(
             route = "${Destinations.TextbookSelect.route}/{courseTaskCode}/{termCode}",
@@ -214,13 +204,7 @@ fun NavController.navigateWithAuthCheck(
     if (logState || isGuest) {
         when (routeType) {
             RouteType.URL -> {
-                this.navigate(
-                    "${Destinations.WebView.route}/${Uri.encode(route)}/${
-                        context.getString(
-                            label
-                        )
-                    }"
-                )
+                this.navigateToWebView(url = route ?: "", label = context.getString(label))
             }
 
             RouteType.SCREEN -> {

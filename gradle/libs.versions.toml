@@ -5,7 +5,7 @@ ksp = "2.0.21-1.0.27"
 aboutlibraries = "12.0.0"
 accompanistSystemuicontroller = "0.36.0"
 adaptiveNavigationAndroid = "1.1.0"
-composeWebviewMultiplatform = "1.9.40"
+webview = "0.33.6"
 gson = "2.11.0"
 scalars = "2.9.0"
 coreSplashscreen = "1.0.1"
@@ -15,7 +15,9 @@ haze = "1.5.3"
 hiltAndroid = "2.56.1"
 hiltNavigationCompose = "1.2.0"
 konfettiComposeVersion = "2.0.5"
-material = "1.7.8"
+material = "1.8.0"
+material3 = "1.4.0-alpha13"
+materialIconsCore = "1.7.8"
 jsoup = "1.18.1"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -34,34 +36,23 @@ appcompat = "1.7.0"
 retrofit = "2.11.0"
 webkit = "1.13.0"
 vico = "2.0.1"
-material3 = "1.4.0-alpha12"
 
 [libraries]
 aboutlibraries = { module = "com.mikepenz:aboutlibraries", version.ref = "aboutlibraries" }
 aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutlibraries" }
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibraries" }
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
-androidx-compose-material-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "material" }
+androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "materialIconsCore" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material" }
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
-coil-base = { group = "io.coil-kt", name = "coil-base", version.ref = "coil" }
-coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 
 androidx-adaptive-navigation-android = { module = "androidx.compose.material3.adaptive:adaptive-navigation-android", version.ref = "adaptiveNavigationAndroid" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite", version.ref = "material3AdaptiveNavigationSuite" }
-compose-webview = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "composeWebviewMultiplatform" }
-konfetti = { module = "nl.dionsegijn:konfetti-compose", version.ref = "konfettiComposeVersion" }
-eddsa = { module = "net.i2p.crypto:eddsa", version.ref = "eddsa" }
-haze = { module = "dev.chrisbanes.haze:haze-materials", version.ref = "haze" }
-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
-hilt-android-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }
-jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
-junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
@@ -76,6 +67,16 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+coil-base = { group = "io.coil-kt", name = "coil-base", version.ref = "coil" }
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+webview = { module = "io.github.kevinnzou:compose-webview", version.ref = "webview" }
+konfetti = { module = "nl.dionsegijn:konfetti-compose", version.ref = "konfettiComposeVersion" }
+eddsa = { module = "net.i2p.crypto:eddsa", version.ref = "eddsa" }
+haze = { module = "dev.chrisbanes.haze:haze-materials", version.ref = "haze" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
+hilt-android-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
 
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 
