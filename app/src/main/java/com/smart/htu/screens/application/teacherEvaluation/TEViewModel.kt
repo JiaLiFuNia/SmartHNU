@@ -9,7 +9,7 @@ import com.smart.htu.api.module.SingleTerm
 import com.smart.htu.api.module.TEEntity
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_IS_TOKEN_VALID
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN_EFFECTIVENESS
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.utils.Term.getCurrentTerm
@@ -31,7 +31,7 @@ data class TEUiState(
     val globalTermCode: String,
     val termList: List<SingleTerm> = emptyList(),
     val evaluationInfo: ResultWithStatus<TEEntity> = ResultWithStatus(),
-    val isTokenValid: Boolean = DEFAULT_IS_TOKEN_VALID,
+    val isTokenValid: Boolean = DEFAULT_TOKEN_EFFECTIVENESS,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
 

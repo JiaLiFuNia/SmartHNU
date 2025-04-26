@@ -9,14 +9,14 @@ import com.smart.htu.di.NetworkCookieJar
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BUILDING_ID
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_IS_TOKEN_VALID
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_MESSAGE
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_PASSWORD
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_PERSON_MESSAGE
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_QQ_NUMBER
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_ROOM_ID
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_STUDENT_ID
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN_EFFECTIVENESS
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.NetworkRepo
@@ -47,10 +47,10 @@ data class LoginUiState(
     val studentID: String = DEFAULT_STUDENT_ID,
     val password: String = DEFAULT_PASSWORD,
     val jwcPassword: String = DEFAULT_PASSWORD,
-    val uneditableMessage: PersonalMessage = DEFAULT_MESSAGE,
+    val uneditableMessage: PersonalMessage = DEFAULT_PERSON_MESSAGE,
     val cookies: List<Cookie> = emptyList(),
     val token: String = DEFAULT_TOKEN,
-    val isTokenValid: Boolean = DEFAULT_IS_TOKEN_VALID,
+    val isTokenValid: Boolean = DEFAULT_TOKEN_EFFECTIVENESS,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
 
@@ -75,12 +75,12 @@ class LoginViewModel @Inject constructor(
             }
         )
 
-    private val qqNumberStateFlow = dataStoreRepo.observePersonalMessage()
+    private val qqNumberStateFlow = dataStoreRepo.observeQQNumber()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
-                dataStoreRepo.observePersonalMessage().first()
+                dataStoreRepo.observeQQNumber().first()
             }
         )
 
@@ -148,7 +148,11 @@ class LoginViewModel @Inject constructor(
         )
 
     init {
-        _uiState.update { it.copy(password = passwordRepo.getPassword(PASSWORD) ?: "") }
+        _uiState.update {
+            it.copy(
+                password = passwordRepo.getPassword(PASSWORD) ?: ""
+            )
+        }
         _uiState.update {
             it.copy(
                 jwcPassword = passwordRepo.getPassword(JWC_PASSWORD) ?: ""
@@ -211,7 +215,7 @@ class LoginViewModel @Inject constructor(
     fun login() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            if (_uiState.value.loginState != 1) authLogin() // 统一认证登录
+            // if (_uiState.value.loginState != 1) authLogin() // 统一认证登录
             if (_uiState.value.loginJWCState != 1) jwcLogin() // 智慧教务
             _uiState.update { it.copy(isLoading = false) }
         }
@@ -225,13 +229,13 @@ class LoginViewModel @Inject constructor(
                 password = _uiState.value.password
             )
             logState.onSuccess {
-                changLoginState(1)
+                changLoginAuthState(1)
                 getStudentInfo()
                 dataStoreRepo.saveStudentId(_uiState.value.studentID)
                 passwordRepo.savePassword(_uiState.value.password, PASSWORD)
             }
             logState.onFailure {
-                changLoginState(-1)
+                changLoginAuthState(-1)
                 MainActivity.snackBarHostState.showSnackbar(it.message ?: "统一认证登录失败")
             }
         } catch (_: Exception) {
@@ -287,11 +291,11 @@ class LoginViewModel @Inject constructor(
             val res = networkRepo.getStudentInfo()
             // Log.i("TAG666 longViewModel", res.toString())
             changeUsername(res?.username ?: DEFAULT_USERNAME)
-            changLoginState(1)
+            changLoginAuthState(1)
             _uiState.update { it.copy(uneditableMessage = res!!) }
         } catch (e: Exception) {
             Log.i("TAG666 viewModel", "Failed to get student info $e")
-            changLoginState(if (_uiState.value.loginState == 1) 2 else 0)
+            changLoginAuthState(if (_uiState.value.loginState == 1) 2 else 0)
         }
     }
 
@@ -302,7 +306,7 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private fun changLoginState(state: Int) {
+    private fun changLoginAuthState(state: Int) {
         viewModelScope.launch {
             dataStoreRepo.changeLoginState(state)
             _uiState.update { it.copy(loginState = state) }
@@ -325,7 +329,7 @@ class LoginViewModel @Inject constructor(
 
     fun editQQNumber(customQQNumber: String) {
         viewModelScope.launch {
-            dataStoreRepo.changPersonalMessage(customQQNumber)
+            dataStoreRepo.changeQQNumber(customQQNumber)
             _uiState.update { it.copy(qqNumber = customQQNumber) }
         }
     }
@@ -366,7 +370,7 @@ class LoginViewModel @Inject constructor(
 
     fun logout() = viewModelScope.launch {
         clearCookies()
-        changLoginState(DEFAULT_LOGIN_STATE)
+        changLoginAuthState(DEFAULT_LOGIN_STATE)
         changeLoginJWCState(DEFAULT_LOGIN_STATE)
         changeUsername(DEFAULT_USERNAME)
         editQQNumber(DEFAULT_QQ_NUMBER)

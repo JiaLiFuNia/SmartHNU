@@ -45,7 +45,7 @@ fun Application(
     val loginUiState by loginViewModel.uiState.collectAsState()
 
     val visibility = remember {
-        derivedStateOf { mutableStateOf(!loginUiState.isLogSuccess) }
+        derivedStateOf { mutableStateOf(loginUiState.loginJWCState != 1) }
     }
     val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
@@ -81,7 +81,7 @@ fun Application(
             }
             items(appList) { app ->
                 SmallMediumCardDisplay(
-                    enabled = (loginUiState.isGuest && app.guestEnable) || loginUiState.isLogSuccess,
+                    enabled = (loginUiState.isGuest && app.guestEnable) || loginUiState.loginJWCState == 1,
                     content = app,
                     modifier = Modifier,
                     onCLick = {
@@ -89,7 +89,7 @@ fun Application(
                             isGuest = loginUiState.isGuest && app.guestEnable,
                             route = app.route,
                             routeType = app.routeType,
-                            logState = loginUiState.isLogSuccess,
+                            logState = loginUiState.loginJWCState == 1,
                             label = app.label
                         )
                     }

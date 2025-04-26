@@ -56,7 +56,6 @@ import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.component.card.SmallCardDisplay
-import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.airCondition.AirConditionUiState
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.application.entity.RouteType
@@ -106,7 +105,7 @@ fun Main(
     }
 
     val loginState = remember {
-        derivedStateOf { mutableStateOf(!loginUiState.isLogSuccess) }
+        derivedStateOf { mutableStateOf(loginUiState.loginJWCState != 1) }
     }
 
     top.yukonga.miuix.kmp.basic.PullToRefresh(
@@ -293,7 +292,7 @@ fun FocusCard(
                             isGuest = false,
                             route = Destinations.AirCondition.route,
                             routeType = RouteType.SCREEN,
-                            logState = loginUiState.isLogSuccess,
+                            logState = loginUiState.loginJWCState == 1,
                             label = R.string.dorm_air_conditioner
                         )
                     },
@@ -442,14 +441,14 @@ fun CommonAppsCard(
                             contentAlignment = Alignment.Center
                         ) {
                             SmallCardDisplay(
-                                enabled = (loginUiState.isGuest && app.guestEnable) || loginUiState.isLogSuccess,
+                                enabled = (loginUiState.isGuest && app.guestEnable) || loginUiState.loginJWCState == 1,
                                 content = app,
                                 onCLick = {
                                     navController.navigateWithAuthCheck(
                                         isGuest = loginUiState.isGuest && app.guestEnable,
                                         routeType = app.routeType,
                                         route = app.route,
-                                        logState = loginUiState.isLogSuccess,
+                                        logState = loginUiState.loginJWCState == 1,
                                         label = app.label
                                     )
                                 }

@@ -14,13 +14,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerScope
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -37,7 +33,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -60,12 +55,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
+import com.smart.htu.component.EmptyContent
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.HENAN_NORMAL_UNIVERSITY
@@ -96,15 +92,12 @@ fun LoginScreen(
     val isPressed by interactionSource.collectIsPressedAsState()
     displayPassword = isPressed
 
-    LaunchedEffect(uiState.loginState, uiState.loginJWCState) {
-        if (uiState.loginState + uiState.loginJWCState == 2) {
+    LaunchedEffect(uiState.loginJWCState) {
+        if (uiState.loginJWCState == 1) {
             navController.popBackStack()
         }
     }
 
-    val scope = rememberCoroutineScope()
-    val loginPagerState = rememberPagerState(pageCount = { 2 })
-    val listState = rememberLazyListState()
     top.yukonga.miuix.kmp.basic.Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
         topBar = {
@@ -119,13 +112,11 @@ fun LoginScreen(
                 actions = {
                     IconButton(
                         onClick = {
-                            // startLaunchAPK("com.autewifi.sd.enroll")
-                            navController.popBackStack()
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Close,
-                            contentDescription = "close"
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = "info"
                         )
                     }
                 }
@@ -136,16 +127,15 @@ fun LoginScreen(
         }
     ) {
         LazyColumn(
-            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it),
-            contentPadding = PaddingValues(32.dp),
+            contentPadding = PaddingValues(horizontal = 32.dp),
             userScrollEnabled = false
         ) {
             item {
                 top.yukonga.miuix.kmp.basic.Card(
-                    modifier = Modifier.padding(top = 56.dp, bottom = 28.dp),
+                    modifier = Modifier.padding(top = 40.dp, bottom = 32.dp),
                     color = Color.Transparent
                 ) {
                     Image(
@@ -156,46 +146,22 @@ fun LoginScreen(
                 }
             }
             item {
-                HorizontalPager(
-                    state = loginPagerState
-                ) {
-                    when (it) {
-                        0 -> {
-                            LoginTextField(
-                                viewModel = viewModel,
-                                uiState = uiState,
-                                title = "智慧教务登录",
-                                firstLabel = "学号",
-                                secondLabel = "智慧教务密码",
-                                onFirstValueChange = {
-                                    viewModel.changeStudentID(it)
-                                },
-                                onSecondValueChange = {
-                                    viewModel.changeJWCPassword(it)
-                                }
-                            )
-                        }
-
-                        1 -> {
-                            LoginTextField(
-                                viewModel = viewModel,
-                                uiState = uiState,
-                                title = "统一认证登录",
-                                firstLabel = "学号",
-                                secondLabel = "统一认证密码",
-                                onFirstValueChange = {
-                                    viewModel.changeStudentID(it)
-                                },
-                                onSecondValueChange = {
-                                    viewModel.changePassword(it)
-                                }
-                            )
-                        }
+                LoginTextField(
+                    viewModel = viewModel,
+                    uiState = uiState,
+                    title = "智慧教务登录",
+                    firstLabel = "学号",
+                    secondLabel = "智慧教务密码",
+                    onFirstValueChange = {
+                        viewModel.changeStudentID(it)
+                    },
+                    onSecondValueChange = {
+                        viewModel.changeJWCPassword(it)
                     }
-                }
+                )
             }
             item {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
                 TextWithProgressIndicatorButton(
                     text = if (uiState.isLoading) "正在登录..." else "登录",
                     onClick = {
@@ -234,47 +200,36 @@ fun LoginScreen(
                 }
             }
             item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.Bottom,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = AnnotatedString(
-                            text = "河南师范大学  |  i 师大",
-                            annotations = listOf(
-                                AnnotatedString.Range(
-                                    item = LinkAnnotation.Clickable(
-                                        tag = "web",
-                                        linkInteractionListener = LinkInteractionListener {
-                                            navController.navigateToWebView(
-                                                url = HENAN_NORMAL_UNIVERSITY,
-                                                label = "河南师范大学"
-                                            )
-                                        }
-                                    ),
-                                    start = 0,
-                                    end = 6
+                EmptyContent(
+                    annotatedText = AnnotatedString(
+                        text = "河南师范大学  |  i 师大",
+                        annotations = listOf(
+                            AnnotatedString.Range(
+                                item = LinkAnnotation.Clickable(
+                                    tag = "web",
+                                    linkInteractionListener = LinkInteractionListener {
+                                        navController.navigateToWebView(
+                                            url = HENAN_NORMAL_UNIVERSITY,
+                                            label = "河南师范大学"
+                                        )
+                                    }
                                 ),
-                                AnnotatedString.Range(
-                                    item = LinkAnnotation.Clickable(
-                                        tag = "hnu",
-                                        linkInteractionListener = LinkInteractionListener {
-                                            startLaunchAPK("com.autewifi.sd.enroll")
-                                        }
-                                    ),
-                                    start = 9,
-                                    end = 13
-                                )
+                                start = 0,
+                                end = 6
+                            ),
+                            AnnotatedString.Range(
+                                item = LinkAnnotation.Clickable(
+                                    tag = "hnu",
+                                    linkInteractionListener = LinkInteractionListener {
+                                        startLaunchAPK("com.autewifi.sd.enroll")
+                                    }
+                                ),
+                                start = 11,
+                                end = 15
                             )
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
                     )
-                }
+                )
             }
         }
         /* {
@@ -504,7 +459,7 @@ fun LoginScreen(
 }
 
 @Composable
-fun PagerScope.LoginTextField(
+fun LoginTextField(
     viewModel: LoginViewModel,
     uiState: LoginUiState,
     title: String,
@@ -525,7 +480,7 @@ fun PagerScope.LoginTextField(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         TextField(
             value = uiState.studentID,
             onValueChange = {
@@ -580,7 +535,6 @@ fun TextWithProgressIndicatorButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     cornerRadius: Dp = ButtonDefaults.CornerRadius,
-    minWidth: Dp = ButtonDefaults.MinWidth,
     minHeight: Dp = ButtonDefaults.MinHeight,
     insideMargin: PaddingValues = ButtonDefaults.InsideMargin,
 ) {
@@ -595,7 +549,8 @@ fun TextWithProgressIndicatorButton(
     ) {
         Row(
             modifier = Modifier
-                .defaultMinSize(minWidth = minWidth, minHeight = minHeight)
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = minHeight)
                 .padding(insideMargin),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
@@ -603,9 +558,23 @@ fun TextWithProgressIndicatorButton(
             if (!enabled) InfiniteProgressIndicator(size = 16.dp)
             Spacer(modifier = Modifier.width(4.dp))
             Text(
+                textAlign = TextAlign.Center,
                 text = text,
                 color = if (enabled) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.disabledOnPrimaryButton
             )
         }
     }
+}
+
+@Preview
+@Composable
+fun LoginScreenPreview() {
+    TextWithProgressIndicatorButton(
+        text = "正在登录...",
+        onClick = {
+        },
+        enabled = false,
+        modifier = Modifier
+            .fillMaxWidth()
+    )
 }

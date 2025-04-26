@@ -57,14 +57,15 @@ android {
         compose = true
     }
     packaging {
-        applicationVariants.all {
-            outputs.all {
-                (this as BaseVariantOutputImpl).outputFileName =
-                    "SmartHNU-v${versionName}($versionCode)-$name.apk"
-            }
-        }
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+    applicationVariants.configureEach {
+        outputs.configureEach {
+            if (this is BaseVariantOutputImpl) {
+                outputFileName = "SmartHNU_v${versionName}_${versionCode}_${buildType.name}.apk"
+            }
         }
     }
 }

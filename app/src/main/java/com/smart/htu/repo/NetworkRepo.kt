@@ -5,19 +5,17 @@ import com.smart.htu.api.module.Area
 import com.smart.htu.api.module.BillDetail
 import com.smart.htu.api.module.BillRecords
 import com.smart.htu.api.module.BuyRecords
-import com.smart.htu.api.module.GiteeEntity
 import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.PersonalMessage
 import com.smart.htu.api.module.WeatherNowData
 import com.smart.htu.api.network.AirConditionService
 import com.smart.htu.api.network.AuthLoginService
 import com.smart.htu.api.network.EHallService
-import com.smart.htu.api.network.GiteeService
 import com.smart.htu.api.network.LibraryService
 import com.smart.htu.api.network.NewsService
 import com.smart.htu.api.network.WeatherService
 import com.smart.htu.di.NetworkCookieJar
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_MESSAGE
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_PERSON_MESSAGE
 import com.smart.htu.screens.application.librarySearch.LibraryBookDetail
 import com.smart.htu.screens.application.librarySearch.LibraryBookListEntity
 import com.smart.htu.screens.news.entity.NewsCategoryEntity
@@ -26,9 +24,6 @@ import com.smart.htu.utils.ParseNewsUtil.parseNewsHTML
 import com.smart.htu.utils.parseLibraryBookDetail
 import com.smart.htu.utils.parseLibrarySearchResult
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import retrofit2.awaitResponse
@@ -224,7 +219,7 @@ class NetworkRepo @Inject constructor(
                     Log.i("TAG666", res.body()?.data.toString())
                     res.body()?.data?.first()
                 } else {
-                    DEFAULT_MESSAGE
+                    DEFAULT_PERSON_MESSAGE
                 }
             } catch (e: Exception) {
                 Log.i("TAG666 message", "${e.message}")

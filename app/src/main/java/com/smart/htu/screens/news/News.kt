@@ -1,5 +1,6 @@
 package com.smart.htu.screens.news
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,7 +34,6 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarDefaults.inputFieldColors
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
@@ -78,6 +78,7 @@ import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
+@SuppressLint("Range")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun NewsScreen(
@@ -87,7 +88,6 @@ fun NewsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val hazeState = remember { HazeState() }
-    TopAppBarDefaults.pinnedScrollBehavior()
 
     val tabItems = uiState.newsOptionItems.map { it.label.label }
     val newsPagerState = rememberPagerState(

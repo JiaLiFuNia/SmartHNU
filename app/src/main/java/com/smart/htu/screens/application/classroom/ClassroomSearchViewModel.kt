@@ -7,10 +7,9 @@ import com.smart.htu.api.module.BuildingEntity
 import com.smart.htu.api.module.ClassroomOccupationEntity
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_IS_TOKEN_VALID
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN_EFFECTIVENESS
 import com.smart.htu.repo.JWCNetworkRepo
-import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.utils.Constants.Companion.BUILDING_LIST
 import com.smart.htu.utils.getCurrentDates
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,7 +29,7 @@ data class ClassroomUiState(
     val buildingsOccupation: Map<Int, ClassroomOccupationEntity> = emptyMap(),
     val isLoading: Boolean = true,
     val token: String = DEFAULT_TOKEN,
-    val isTokenValid: Boolean = DEFAULT_IS_TOKEN_VALID,
+    val isTokenValid: Boolean = DEFAULT_TOKEN_EFFECTIVENESS,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
 

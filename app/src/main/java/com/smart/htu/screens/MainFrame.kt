@@ -105,7 +105,7 @@ fun MainFrame(
             badge = 0
         ),
         BottomNavigationItem(
-            enabled = loginUiState.isLogSuccess,
+            enabled = loginUiState.isLogSuccess || loginUiState.loginJWCState == 1,
             title = R.string.my,
             selectedIcon = R.drawable.ic_filled_person,
             unselectedIcon = R.drawable.ic_outline_person,
@@ -308,8 +308,8 @@ fun MainFrame(
     )
 
     val (showLoginDialog, onShowLoginDialog) = remember { mutableStateOf(false) }
-    LaunchedEffect(key1 = loginUiState.isLogSuccess, key2 = loginUiState.isGuest) {
-        onShowLoginDialog(!(loginUiState.isLogSuccess || loginUiState.isGuest))
+    LaunchedEffect(key1 = loginUiState.loginJWCState, key2 = loginUiState.isGuest) {
+        onShowLoginDialog(!(loginUiState.loginJWCState == 1 || loginUiState.isGuest))
     }
     LoginDialog(
         showDialog = showLoginDialog,

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,13 +17,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun LazyItemScope.EmptyContent(
-    text: String,
+    text: String? = null,
+    annotatedText: AnnotatedString? = null,
     image: ImageVector? = null
 ) {
     Box(
@@ -48,13 +49,22 @@ fun LazyItemScope.EmptyContent(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
             }
-            Text(
-                text = text,
-                textAlign = TextAlign.Center,
-                style = MiuixTheme.textStyles.subtitle.copy(
-                    color = Color.Gray
+            if (text != null)
+                Text(
+                    text = text,
+                    textAlign = TextAlign.Center,
+                    style = MiuixTheme.textStyles.subtitle.copy(
+                        color = Color.Gray
+                    )
                 )
-            )
+            else if (annotatedText != null)
+                Text(
+                    text = annotatedText,
+                    textAlign = TextAlign.Center,
+                    style = MiuixTheme.textStyles.subtitle.copy(
+                        color = Color.Gray
+                    ),
+                )
         }
 
     }

@@ -24,7 +24,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -70,7 +69,6 @@ fun PersonScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
     val scope = rememberCoroutineScope()
     val onRefresh: () -> Unit = {

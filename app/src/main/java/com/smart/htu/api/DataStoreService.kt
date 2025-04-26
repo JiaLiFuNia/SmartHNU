@@ -13,7 +13,7 @@ interface DataStoreService {
     suspend fun changeDarkTheme(isDarkTheme: Int)
     suspend fun changeBlurState(state: Boolean)
     suspend fun saveSmallCard(cardList: List<SmallCardContent>)
-    suspend fun changPersonalMessage(message: String)
+    suspend fun changeQQNumber(message: String)
     suspend fun changeUsername(name: String)
     suspend fun changeLoginState(state: Int)
     suspend fun saveCookies(cookies: List<Cookie>)
@@ -34,7 +34,7 @@ interface DataStoreService {
     fun observeDarkTheme(): Flow<Int>
     fun observerBlurState(): Flow<Boolean>
     fun observeSmallCard(): Flow<List<SmallCardContent>>
-    fun observePersonalMessage(): Flow<String>
+    fun observeQQNumber(): Flow<String>
     fun observeUsername(): Flow<String>
     fun observeLoginState(): Flow<Int>
     fun observeCookies(): Flow<List<Cookie>>

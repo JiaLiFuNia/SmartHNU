@@ -34,7 +34,7 @@ class DataStoreRepo @Inject constructor(
 ) : DataStoreService {
 
     companion object {
-        val EDITABLE_PERSONAL_MESSAGE = stringPreferencesKey("EDITABLE_PERSONAL_MESSAGE")
+        val QQ_NUMBER = stringPreferencesKey("QQ_NUMBER")
         val USERNAME = stringPreferencesKey("USERNAME")
         val LOGIN_STATE = intPreferencesKey("LOGIN_STATE")
         val LOGIN_JWC_STATE = intPreferencesKey("LOGIN_JWC_STATE")
@@ -49,30 +49,30 @@ class DataStoreRepo @Inject constructor(
         val STUDENT_ID = stringPreferencesKey("STUDENT_ID")
         val BUILDING_ID = stringPreferencesKey("BUILDING_ID")
         val ROOM_ID = stringPreferencesKey("ROOM_ID")
-        val TERM = stringPreferencesKey("TERM")
+        val GLOBAL_TERM = stringPreferencesKey("GLOBAL_TERM")
         val NOTICE_READ_ID_LIST = stringPreferencesKey("NOTICE_READ_ID_LIST")
         val AIR_CONDITION_COOKIE_TYPE = intPreferencesKey("AIR_CONDITION_COOKIE_TYPE")
         val AIR_CONDITION_USER_COOKIE = stringPreferencesKey("AIR_CONDITION_USER_COOKIE")
         val BOOK_SEARCH_HISTORY_LIST = stringPreferencesKey("BOOK_SEARCH_HISTORY_LIST")
 
-        const val DEFAULT_VALUE_COOKIES = "[]"
+        const val DEFAULT_COOKIES = "[]"
         const val DEFAULT_MESSAGE_READ_ID = "[]"
         const val DEFAULT_THEME_MODE = 0
         const val DEFAULT_BLUR_EFFECT = false
-        const val DEFAULT_IS_TOKEN_VALID = true
+        const val DEFAULT_TOKEN_EFFECTIVENESS = true
+        const val DEFAULT_TOKEN = ""
         const val DEFAULT_LOGIN_STATE = 0
         const val DEFAULT_DARK_THEME = 0
         const val DEFAULT_QQ_NUMBER = ""
-        const val DEFAULT_PASSWORD = ""
         const val DEFAULT_USERNAME = "未登录"
+        const val DEFAULT_PASSWORD = ""
         const val DEFAULT_STUDENT_ID = ""
         const val DEFAULT_BUILDING_ID = ""
         const val DEFAULT_ROOM_ID = ""
-        const val DEFAULT_TOKEN = ""
         const val DEFAULT_BOOK_SEARCH_HISTORY_LIST = "[]"
         const val DEFAULT_AIR_CONDITION_USER_COOKIE = ""
         const val DEFAULT_AIR_CONDITION_COOKIE_TYPE = 0
-        val DEFAULT_MESSAGE = PersonalMessage(
+        val DEFAULT_PERSON_MESSAGE = PersonalMessage(
             username = DEFAULT_USERNAME,
             academic = "-",
             studentId = "-",
@@ -80,8 +80,8 @@ class DataStoreRepo @Inject constructor(
         )
     }
 
-    override suspend fun changeThemeMode(mode: Int) {
-        context.dataStore.edit { it[THEME_MODE] = mode }
+    override suspend fun changeThemeMode(themeMode: Int) {
+        context.dataStore.edit { it[THEME_MODE] = themeMode }
     }
 
     override suspend fun changeDarkTheme(isDarkTheme: Int) {
@@ -92,8 +92,8 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[COMMON_APP_LIST] = Json.encodeToString(cardList) }
     }
 
-    override suspend fun changPersonalMessage(message: String) {
-        context.dataStore.edit { it[EDITABLE_PERSONAL_MESSAGE] = message }
+    override suspend fun changeQQNumber(message: String) {
+        context.dataStore.edit { it[QQ_NUMBER] = message }
     }
 
     override suspend fun changeUsername(name: String) {
@@ -157,7 +157,7 @@ class DataStoreRepo @Inject constructor(
     }
 
     override suspend fun setGlobalTermCode(term: String) {
-        context.dataStore.edit { it[TERM] = term }
+        context.dataStore.edit { it[GLOBAL_TERM] = term }
     }
 
 
@@ -180,8 +180,8 @@ class DataStoreRepo @Inject constructor(
             }
     }
 
-    override fun observePersonalMessage(): Flow<String> {
-        return context.dataStore.data.map { it[EDITABLE_PERSONAL_MESSAGE] ?: "" }
+    override fun observeQQNumber(): Flow<String> {
+        return context.dataStore.data.map { it[QQ_NUMBER] ?: "" }
     }
 
     override fun observeUsername(): Flow<String> {
@@ -194,8 +194,8 @@ class DataStoreRepo @Inject constructor(
 
     override fun observeCookies(): Flow<List<Cookie>> {
         return context.dataStore.data.map {
-            val json = it[SSO_TICKET] ?: DEFAULT_VALUE_COOKIES
-            if (json == DEFAULT_VALUE_COOKIES) {
+            val json = it[SSO_TICKET] ?: DEFAULT_COOKIES
+            if (json == DEFAULT_COOKIES) {
                 emptyList()
             } else {
                 val typeOfT = object : TypeToken<List<Cookie>>() {}.type
@@ -274,10 +274,10 @@ class DataStoreRepo @Inject constructor(
     }
 
     override fun observeTokenValid(): Flow<Boolean> {
-        return context.dataStore.data.map { it[IS_TOKEN_VALID] ?: DEFAULT_IS_TOKEN_VALID }
+        return context.dataStore.data.map { it[IS_TOKEN_VALID] ?: DEFAULT_TOKEN_EFFECTIVENESS }
     }
 
     override fun observeGlobalTermCode(): Flow<String> {
-        return context.dataStore.data.map { it[TERM] ?: Term.getCurrentTerm() }
+        return context.dataStore.data.map { it[GLOBAL_TERM] ?: Term.getCurrentTerm() }
     }
 }
