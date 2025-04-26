@@ -6,12 +6,11 @@ import com.smart.htu.R
 import com.smart.htu.api.module.BuildingEntity
 import com.smart.htu.api.module.ClassroomOccupationEntity
 import com.smart.htu.api.module.CourseGrade
+import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.LoginJWCEntity
 import com.smart.htu.api.module.LoginPost
-import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.SelectEntity
 import com.smart.htu.api.module.TEEntity
-import com.smart.htu.api.module.TermIndex
 import com.smart.htu.api.module.TextbookEntity
 import com.smart.htu.api.module.TextbookSelectPost
 import com.smart.htu.api.module.TodayCourseResponse
@@ -183,6 +182,9 @@ class JWCNetworkRepo @Inject constructor(
         password: String
     ): Result<LoginJWCEntity> {
         try {
+            if (username == "" || password == "") {
+                return Result.failure(Exception("用户名或密码不能为空"))
+            }
             val publicKey = RSAUtil.getPublicKeyFromRaw(context, R.raw.public_key)
             val passwordEncrypt = publicKey?.let { RSAUtil.encryptText(password, it) }
             val logState = jwcService.login(LoginPost(username, passwordEncrypt ?: ""))

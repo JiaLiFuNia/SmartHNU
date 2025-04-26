@@ -55,7 +55,7 @@ fun LargeCardDisplay(
                 Spacer(modifier = Modifier.width(5.dp))
                 Text(text = title, style = MiuixTheme.textStyles.main)
             }
-            if (navigateTo != null)
+            if (navigateTo != null && actionText != null)
                 Row(
                     modifier = Modifier
                         .clickable { navigateTo() },
@@ -63,7 +63,7 @@ fun LargeCardDisplay(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = actionText.toString(),
+                        text = actionText,
                         fontSize = 15.sp,
                         color = Color.Gray,
                         textAlign = TextAlign.Center

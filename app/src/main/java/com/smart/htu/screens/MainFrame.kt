@@ -7,6 +7,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
@@ -178,7 +179,24 @@ fun MainFrame(
                     }
                 )
 
-                2 -> null
+                2 -> TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
+                    title = { Text(text = stringResource(R.string.news)) },
+                    actions = {
+                        IconButton(onClick = {}) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.award_star_24px),
+                                contentDescription = "star"
+                            )
+                        }
+                        IconButton(onClick = { /*TODO*/ }) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "search"
+                            )
+                        }
+                    }
+                )
 
                 3 -> TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),

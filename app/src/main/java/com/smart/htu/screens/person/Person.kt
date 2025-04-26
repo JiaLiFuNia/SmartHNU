@@ -46,13 +46,13 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.smart.htu.R
-import com.smart.htu.component.EditQQNumberDialog
 import com.smart.htu.component.PreferencesCard
 import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.login.LogoutDialog
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.utils.Constants.Companion.HENAN_NORMAL_UNIVERSITY
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.startWebUrl
 import kotlinx.coroutines.delay
@@ -104,7 +104,7 @@ fun PersonScreen(
                     leadingIcon = R.drawable.hnu,
                     onClick = {
                         navController.navigateToWebView(
-                            "https://www.htu.edu.cn/",
+                            HENAN_NORMAL_UNIVERSITY,
                             "河南师范大学"
                         )
                     }

@@ -5,27 +5,27 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerScope
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -37,40 +37,51 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.autofill.AutofillNode
 import androidx.compose.ui.autofill.ContentType
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.LinkInteractionListener
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
-import com.smart.htu.component.textButtonPrimaryColors
+import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.utils.Constants.Companion.HENAN_NORMAL_UNIVERSITY
 import com.smart.htu.utils.Constants.Companion.RETRIEVE_PASSWORD
 import com.smart.htu.utils.startLaunchAPK
-import com.smart.htu.utils.startWebUrl
-import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
+import top.yukonga.miuix.kmp.basic.LazyColumn
+import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.TextField
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Rename
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LoginScreen(
     navController: NavController,
@@ -91,6 +102,9 @@ fun LoginScreen(
         }
     }
 
+    val scope = rememberCoroutineScope()
+    val loginPagerState = rememberPagerState(pageCount = { 2 })
+    val listState = rememberLazyListState()
     top.yukonga.miuix.kmp.basic.Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
         topBar = {
@@ -103,25 +117,167 @@ fun LoginScreen(
                     Text(text = "师韵 登录")
                 },
                 actions = {
-                    TextButton(onClick = { startLaunchAPK("com.autewifi.sd.enroll") }) {
-                        Text(text = "i 师大")
+                    IconButton(
+                        onClick = {
+                            // startLaunchAPK("com.autewifi.sd.enroll")
+                            navController.popBackStack()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Close,
+                            contentDescription = "close"
+                        )
                     }
                 }
             )
         },
         snackbarHost = {
             SnackbarHost(hostState = snackBarHostState)
-        },
-    ) { innerPadding ->
-        val scrollState = rememberScrollState()
-        Column(
+        }
+    ) {
+        LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(scrollState),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(it),
+            contentPadding = PaddingValues(32.dp),
+            userScrollEnabled = false
         ) {
+            item {
+                top.yukonga.miuix.kmp.basic.Card(
+                    modifier = Modifier.padding(top = 56.dp, bottom = 28.dp),
+                    color = Color.Transparent
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.school_logo),
+                        contentDescription = "logo",
+                        colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary)
+                    )
+                }
+            }
+            item {
+                HorizontalPager(
+                    state = loginPagerState
+                ) {
+                    when (it) {
+                        0 -> {
+                            LoginTextField(
+                                viewModel = viewModel,
+                                uiState = uiState,
+                                title = "智慧教务登录",
+                                firstLabel = "学号",
+                                secondLabel = "智慧教务密码",
+                                onFirstValueChange = {
+                                    viewModel.changeStudentID(it)
+                                },
+                                onSecondValueChange = {
+                                    viewModel.changeJWCPassword(it)
+                                }
+                            )
+                        }
+
+                        1 -> {
+                            LoginTextField(
+                                viewModel = viewModel,
+                                uiState = uiState,
+                                title = "统一认证登录",
+                                firstLabel = "学号",
+                                secondLabel = "统一认证密码",
+                                onFirstValueChange = {
+                                    viewModel.changeStudentID(it)
+                                },
+                                onSecondValueChange = {
+                                    viewModel.changePassword(it)
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                TextWithProgressIndicatorButton(
+                    text = if (uiState.isLoading) "正在登录..." else "登录",
+                    onClick = {
+                        if (uiState.studentID == "admin")
+                            navController.navigate(Destinations.AccountManage.route)
+                        else {
+                            focusManager.clearFocus()
+                            autofillManager?.commit()
+                            viewModel.login()
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    enabled = !uiState.isLoading
+                )
+            }
+            item {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    TextButton(
+                        onClick = {
+                            navController.navigateToWebView(
+                                url = RETRIEVE_PASSWORD,
+                                label = "忘记密码"
+                            )
+                        }
+                    ) {
+                        Text(text = "忘记密码?")
+                    }
+                    TextButton(onClick = { navController.popBackStack() }) {
+                        Text(text = "暂不登录")
+                    }
+                }
+            }
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.Bottom,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = AnnotatedString(
+                            text = "河南师范大学  |  i 师大",
+                            annotations = listOf(
+                                AnnotatedString.Range(
+                                    item = LinkAnnotation.Clickable(
+                                        tag = "web",
+                                        linkInteractionListener = LinkInteractionListener {
+                                            navController.navigateToWebView(
+                                                url = HENAN_NORMAL_UNIVERSITY,
+                                                label = "河南师范大学"
+                                            )
+                                        }
+                                    ),
+                                    start = 0,
+                                    end = 6
+                                ),
+                                AnnotatedString.Range(
+                                    item = LinkAnnotation.Clickable(
+                                        tag = "hnu",
+                                        linkInteractionListener = LinkInteractionListener {
+                                            startLaunchAPK("com.autewifi.sd.enroll")
+                                        }
+                                    ),
+                                    start = 9,
+                                    end = 13
+                                )
+                            )
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
+            }
+        }
+        /* {
             Spacer(modifier = Modifier.height(12.dp))
             Card(
                 modifier = Modifier
@@ -342,6 +498,113 @@ fun LoginScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 36.dp)
+            )
+        }*/
+    }
+}
+
+@Composable
+fun PagerScope.LoginTextField(
+    viewModel: LoginViewModel,
+    uiState: LoginUiState,
+    title: String,
+    firstLabel: String = "学号",
+    secondLabel: String,
+    onFirstValueChange: (String) -> Unit,
+    onSecondValueChange: (String) -> Unit,
+) {
+    var passwordVisible by remember { mutableStateOf(false) }
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge.copy(color = MiuixTheme.colorScheme.primary),
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        TextField(
+            value = uiState.studentID,
+            onValueChange = {
+                onFirstValueChange(it)
+            },
+            label = firstLabel,
+            useLabelAsPlaceholder = true,
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { contentType = ContentType.Username },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Next
+            )
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        TextField(
+            value = uiState.jwcPassword,
+            onValueChange = {
+                onSecondValueChange(it)
+            },
+            label = secondLabel,
+            useLabelAsPlaceholder = true,
+            singleLine = true,
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            trailingIcon = {
+                IconButton(
+                    onClick = { passwordVisible = !passwordVisible },
+                    modifier = Modifier.padding(end = 12.dp)
+                ) {
+                    Icon(
+                        imageVector = MiuixIcons.Useful.Rename,
+                        tint = if (passwordVisible) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.onSecondaryContainer,
+                        contentDescription = if (passwordVisible) "隐藏密码" else "显示密码"
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { contentType = ContentType.Password },
+        )
+    }
+}
+
+
+@Composable
+fun TextWithProgressIndicatorButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    cornerRadius: Dp = ButtonDefaults.CornerRadius,
+    minWidth: Dp = ButtonDefaults.MinWidth,
+    minHeight: Dp = ButtonDefaults.MinHeight,
+    insideMargin: PaddingValues = ButtonDefaults.InsideMargin,
+) {
+    Surface(
+        onClick = {
+            onClick()
+        },
+        enabled = enabled,
+        modifier = modifier.semantics { role = Role.Button },
+        shape = SmoothRoundedCornerShape(cornerRadius),
+        color = if (enabled) MiuixTheme.colorScheme.primaryContainer else MiuixTheme.colorScheme.disabledPrimaryButton
+    ) {
+        Row(
+            modifier = Modifier
+                .defaultMinSize(minWidth = minWidth, minHeight = minHeight)
+                .padding(insideMargin),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (!enabled) InfiniteProgressIndicator(size = 16.dp)
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = text,
+                color = if (enabled) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.disabledOnPrimaryButton
             )
         }
     }

@@ -47,7 +47,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarDefaults.inputFieldColors
@@ -60,6 +59,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -118,6 +119,7 @@ fun LibrarySearchScreen(
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val lazyListState = rememberLazyListState()
+    val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
     val scope = rememberCoroutineScope()
 
     val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
@@ -173,7 +175,7 @@ fun LibrarySearchScreen(
         floatingActionButton = {
             AnimatedVisibility(
                 modifier = Modifier,
-                visible = lazyListState.firstVisibleItemIndex != 0,
+                visible = !fabVisible,
                 enter = slideInVertically(initialOffsetY = { it * 2 }),
                 exit = slideOutVertically(targetOffsetY = { it * 2 }),
             ) {

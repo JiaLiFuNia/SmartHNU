@@ -1,9 +1,7 @@
 package com.smart.htu.screens
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -111,7 +109,10 @@ fun NavHostScreen() {
             )
         }
         animatedComposable(Destinations.ApplicationEdit.route) {
-            ApplicationEdit(navController = navController, viewModel = applicationViewModel)
+            ApplicationEdit(
+                navController = navController,
+                viewModel = applicationViewModel
+            )
         }
         animatedComposable(Destinations.ClassroomSearch.route) {
             ClassroomSearchScreen(navController = navController)
@@ -200,7 +201,7 @@ fun NavController.navigateWithAuthCheck(
     logState: Boolean,
     loginRoute: String = Destinations.Login.route
 ) {
-    Log.i("TAG nav", "$route $routeType $logState")
+    // Log.i("TAG nav", "$route $routeType $logState")
     if (logState || isGuest) {
         when (routeType) {
             RouteType.URL -> {
