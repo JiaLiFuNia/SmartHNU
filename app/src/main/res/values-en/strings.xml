@@ -110,4 +110,8 @@
     <string name="school_card">校园卡</string>
     <string name="academic_affairs_system">教务系统</string>
     <string name="smart_work">智慧学工</string>
+    <string name="htu_helper">师小帮</string>
+    <string name="campus_helper">校园百事通</string>
+    <string name="open_source_license">开源许可证</string>
+    <string name="mr_zhe_da">浙大先生</string>
 </resources>
