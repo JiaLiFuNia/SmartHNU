@@ -185,11 +185,11 @@ fun MainFrame(
                     actions = {
                         IconButton(onClick = {}) {
                             Icon(
-                                painter = painterResource(id = R.drawable.award_star_24px),
+                                painter = painterResource(id = R.drawable.star_24px),
                                 contentDescription = "star"
                             )
                         }
-                        IconButton(onClick = { /*TODO*/ }) {
+                        IconButton(onClick = { navController.navigate(Destinations.NewsSearch.route) }) {
                             Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = "search"

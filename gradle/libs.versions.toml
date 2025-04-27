@@ -1,5 +1,8 @@
 [versions]
 agp = "8.9.2"
+bcprovJdk18on = "1.80"
+eddsa = "0.3.0"
+jjwtApi = "0.12.6"
 kotlin = "2.1.20"
 ksp = "2.1.20-2.0.0"
 aboutlibraries = "12.0.0"
@@ -10,11 +13,10 @@ gson = "2.11.0"
 scalars = "2.9.0"
 coreSplashscreen = "1.0.1"
 datastorePreferences = "1.1.4"
-eddsa = "0.3.0"
 haze = "1.5.3"
 hiltAndroid = "2.56.1"
 hiltNavigationCompose = "1.2.0"
-konfettiComposeVersion = "2.0.5"
+konfetti = "2.0.5"
 material = "1.8.0"
 material3 = "1.4.0-alpha13"
 materialIconsCore = "1.7.8"
@@ -23,7 +25,7 @@ coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
-kotlinxCoroutinesAndroid = "1.10.1"
+coroutines = "1.10.1"
 serialization = "1.8.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
@@ -66,29 +68,30 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "material" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 coil-base = { group = "io.coil-kt", name = "coil-base", version.ref = "coil" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 webview = { module = "io.github.kevinnzou:compose-webview", version.ref = "webview" }
-konfetti = { module = "nl.dionsegijn:konfetti-compose", version.ref = "konfettiComposeVersion" }
-eddsa = { module = "net.i2p.crypto:eddsa", version.ref = "eddsa" }
+konfetti = { module = "nl.dionsegijn:konfetti-compose", version.ref = "konfetti" }
 haze = { module = "dev.chrisbanes.haze:haze-materials", version.ref = "haze" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 
-kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
-
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
-
 miuix = { module = "top.yukonga.miuix.kmp:miuix-android", version.ref = "miuixAndroid" }
 
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "scalars" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "gson" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 
 vico = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
+
+eddsa = { module = "net.i2p.crypto:eddsa", version.ref = "eddsa" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

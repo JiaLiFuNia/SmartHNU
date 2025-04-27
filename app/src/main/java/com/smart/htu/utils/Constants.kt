@@ -14,6 +14,8 @@ class Constants {
             "https://authserver2.htu.edu.cn/retrieve-password/passwordMobile/index.html"
         const val ACADEMIC_URL = "https://jwc.htu.edu.cn/"
         const val ACADEMIC_APP_URL = "https://jwc.htu.edu.cn/app/"
+        const val SECOND_CLASS_URL = "http://dekt.htu.edu.cn/"
+        const val EHALL_APP_BASE_URL = "https://ehall2.htu.edu.cn/appShow?appId="
         const val SHOWER_ALIPAY_URL =
             "alipays://platformapi/startapp?appId=20000067&url=https://ur.alipay.com/_3Zz793BHBpUQsAf6r8hLXZ"
         const val HOT_WATER_WASHER_ALIPAY_URL =
@@ -108,8 +110,8 @@ class Constants {
                 guestEnable = false,
                 icon = R.drawable.format_paint_24px,
                 label = R.string.second_class,
-                routeType = null,
-                route = "",
+                routeType = RouteType.URL,
+                route = SECOND_CLASS_URL,
                 category = SmallCardCategory.OTHERS
             ),
             SmallCardContent(
@@ -138,10 +140,26 @@ class Constants {
             ),
             SmallCardContent(
                 guestEnable = false,
-                icon = R.drawable.sports_handball_24px,
-                label = R.string.physical_examination,
-                routeType = null,
-                route = "",
+                icon = R.drawable.credit_card_24px,
+                label = R.string.school_card,
+                routeType = RouteType.URL,
+                route = EHALL_APP_BASE_URL + "6548421524823376",
+                category = SmallCardCategory.CAMPUS
+            ),
+            SmallCardContent(
+                guestEnable = false,
+                icon = R.drawable.school_24px,
+                label = R.string.academic_affairs_system,
+                routeType = RouteType.URL,
+                route = EHALL_APP_BASE_URL + "6468237463782079",
+                category = SmallCardCategory.ACADEMIC_AFFAIRS
+            ),
+            SmallCardContent(
+                guestEnable = false,
+                icon = R.drawable.id_card_24px,
+                label = R.string.smart_work,
+                routeType = RouteType.URL,
+                route = EHALL_APP_BASE_URL + "6689155909292538",
                 category = SmallCardCategory.CAMPUS
             )
         )
@@ -150,7 +168,6 @@ class Constants {
             ALL_APP_LIST[2],
             ALL_APP_LIST[3]
         )
-
     }
 
 

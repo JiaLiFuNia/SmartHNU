@@ -28,6 +28,7 @@ import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.message.MessageScreen
 import com.smart.htu.screens.message.MessageViewModel
 import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.news.NewsSearch
 import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.person.AccountManage
 import com.smart.htu.screens.setting.About
@@ -189,6 +190,9 @@ fun NavHostScreen() {
                 courseTaskCode = it.arguments?.getString("courseTaskCode") ?: "",
                 termCode = it.arguments?.getString("termCode") ?: ""
             )
+        }
+        animatedComposable(Destinations.NewsSearch.route) {
+            NewsSearch(navController = navController)
         }
     }
 }

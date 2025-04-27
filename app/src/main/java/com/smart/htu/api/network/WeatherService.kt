@@ -1,7 +1,7 @@
 package com.smart.htu.api.network
 
 import com.smart.htu.api.module.WeatherResponse
-import com.smart.htu.utils.GenerateQWeather
+import com.smart.htu.utils.GenerateQWeatherJWT
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -13,7 +13,7 @@ interface WeatherService {
     @GET("weather/now")
     fun getWeather(
         @Query("location") locationID : String = "113.91,35.33",
-        @Header("Authorization") authorization : String = GenerateQWeather.getQWeatherAuth()
+        @Header("Authorization") authorization : String = GenerateQWeatherJWT.getQWeatherJWT()
     ) : Call<WeatherResponse>
 
 }

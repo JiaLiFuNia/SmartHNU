@@ -1,5 +1,8 @@
 package com.smart.htu.screens.application.librarySearch
 
+import androidx.annotation.Keep
+
+@Keep
 data class LibraryBookListEntity(
     val title: String,
     val description: String,
@@ -19,6 +22,7 @@ data class LibraryBookListEntity(
     val id = matchResult?.groupValues?.get(1) ?: ""
 }
 
+@Keep
 data class LibraryBookDetail(
     val library: String, // 书库
     val bookPosition: String, // 分类号
@@ -41,7 +45,7 @@ data class LibraryBookDetail(
     val publishYear = publishYearMatch?.groupValues?.get(1) ?: ""
 }
 
-
+@Keep
 data class RentBookEntity(
     val imageUrl: String,
     val bookName: String,

@@ -5,5 +5,10 @@
         <domain includeSubdomains="true">ehall2.htu.edu.cn</domain>
         <domain includeSubdomains="true">libmsg.htu.cn</domain>
         <domain includeSubdomains="true">img3.doubanio.com</domain>
+        <domain includeSubdomains="true">dekt.htu.edu.cn</domain>
+        <domain includeSubdomains="true">ydxg.htu.edu.cn</domain>
+        <domain includeSubdomains="true">htu.g8n.cn</domain>
+        <domain includeSubdomains="true">c.d8n.cn</domain>
+        <domain includeSubdomains="true">hm.baidu.com</domain>
     </domain-config>
 </network-security-config>

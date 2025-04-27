@@ -253,6 +253,7 @@ class LoginViewModel @Inject constructor(
                 changeLoginJWCState(1)
                 setTokenValid(true)
                 setJWCLogToken(it.user?.token ?: DEFAULT_TOKEN)
+                changeUsername(it.user?.username ?: DEFAULT_USERNAME)
                 passwordRepo.savePassword(_uiState.value.jwcPassword, JWC_PASSWORD)
             }
             logState.onFailure {

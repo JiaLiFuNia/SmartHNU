@@ -80,8 +80,8 @@ class DataStoreRepo @Inject constructor(
         )
     }
 
-    override suspend fun changeThemeMode(themeMode: Int) {
-        context.dataStore.edit { it[THEME_MODE] = themeMode }
+    override suspend fun changeThemeMode(enabled: Int) {
+        context.dataStore.edit { it[THEME_MODE] = enabled }
     }
 
     override suspend fun changeDarkTheme(isDarkTheme: Int) {

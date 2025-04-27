@@ -6,6 +6,7 @@ sealed class Destinations(
     data object App : Destinations("main")
     data object Login : Destinations("login")
     data object News : Destinations("news")
+    data object NewsSearch : Destinations("news_search")
     data object Person : Destinations("person")
     data object Application : Destinations("application")
     data object ApplicationEdit : Destinations("application_edit")

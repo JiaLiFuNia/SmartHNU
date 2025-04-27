@@ -18,21 +18,12 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 35
-        versionCode = 202504251
+        versionCode = 202504271
         versionName = "3.0.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
-        }
-    }
-
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
-            isUniversalApk = true
         }
     }
 
@@ -59,12 +50,16 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/versions/9/OSGI-INF/MANIFEST.MF"
         }
     }
-    applicationVariants.configureEach {
+
+    android.applicationVariants.configureEach {
+        val variant = this
         outputs.configureEach {
             if (this is BaseVariantOutputImpl) {
-                outputFileName = "SmartHNU_v${versionName}_${versionCode}_${buildType.name}.apk"
+                outputFileName =
+                    "SmartHNU_v${variant.versionName}(${variant.versionCode})_${variant.buildType.name}.apk"
             }
         }
     }
@@ -149,4 +144,5 @@ dependencies {
 
     // JWT
     implementation(libs.eddsa)
+
 }

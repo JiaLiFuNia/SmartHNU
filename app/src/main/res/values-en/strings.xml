@@ -107,4 +107,7 @@
     <string name="research">学术预告</string>
     <string name="math_lectures">数院学术预告</string>
     <string name="physical_examination">体测</string>
+    <string name="school_card">校园卡</string>
+    <string name="academic_affairs_system">教务系统</string>
+    <string name="smart_work">智慧学工</string>
 </resources>
