@@ -9,6 +9,9 @@ import com.smart.htu.screens.navigation.Destinations
 
 class Constants {
     companion object {
+        const val GITHUB_PERSON_URL = "https://github.com/JiaLiFuNia"
+        const val GITHUB_PROJECT_URL = "https://github.com/JiaLiFuNia/SmartHNU"
+        const val GITHUB_PROJECT_URL_CN = "https://gitee.com/JiaLiFuNia/SmartHNU"
         const val HENAN_NORMAL_UNIVERSITY = "https://www.htu.edu.cn/"
         const val RETRIEVE_PASSWORD =
             "https://authserver2.htu.edu.cn/retrieve-password/passwordMobile/index.html"
@@ -136,7 +139,7 @@ class Constants {
                 label = R.string.deep_seek,
                 routeType = RouteType.URL,
                 route = "https://chat.htu.edu.cn/",
-                category = SmallCardCategory.OTHERS
+                category = SmallCardCategory.AI
             ),
             SmallCardContent(
                 guestEnable = false,
@@ -161,6 +164,30 @@ class Constants {
                 routeType = RouteType.URL,
                 route = EHALL_APP_BASE_URL + "6689155909292538",
                 category = SmallCardCategory.CAMPUS
+            ),
+            SmallCardContent(
+                guestEnable = false,
+                icon = R.drawable.psychology_alt_24px,
+                label = R.string.htu_helper,
+                routeType = RouteType.URL,
+                route = EHALL_APP_BASE_URL + "6897367798017479",
+                category = SmallCardCategory.AI
+            ),
+            SmallCardContent(
+                guestEnable = false,
+                icon = R.drawable.support_agent_24px,
+                label = R.string.campus_helper,
+                routeType = RouteType.URL,
+                route = EHALL_APP_BASE_URL + "6225347137673201",
+                category = SmallCardCategory.AI
+            ),
+            SmallCardContent(
+                guestEnable = false,
+                icon = R.drawable.zju_logo,
+                label = R.string.mr_zhe_da,
+                routeType = RouteType.URL,
+                route = EHALL_APP_BASE_URL + "7416844941162412",
+                category = SmallCardCategory.AI
             )
         )
         val INIT_COMMON_APP_LIST = listOf(
