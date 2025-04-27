@@ -135,8 +135,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     // About Screen
-    implementation(libs.aboutlibraries.core)
-    implementation(libs.aboutlibraries)
     implementation(libs.aboutlibraries.compose.m3)
 
     // vico

@@ -22,7 +22,7 @@
 
 # 保存混淆映射
 -printmapping mapping.txt
-
+-dontwarn sun.security.x509.X509Key
 -ignorewarnings
 
 -keep class java.security.** { *; }
