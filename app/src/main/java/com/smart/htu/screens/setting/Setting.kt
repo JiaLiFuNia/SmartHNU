@@ -13,7 +13,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -36,6 +35,8 @@ import com.smart.htu.component.SettingItemCard
 import com.smart.htu.screens.main.entity.DarkMode
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.APPVersion
+import com.smart.htu.utils.Constants.Companion.GITHUB_PERSON_URL
+import com.smart.htu.utils.Constants.Companion.GITHUB_PROJECT_URL
 import com.smart.htu.utils.Term
 import com.smart.htu.utils.startWebUrl
 import dev.chrisbanes.haze.HazeState
@@ -122,13 +123,13 @@ fun SettingScreen(
                         title = stringResource(id = R.string.developer_name),
                         summary = stringResource(id = R.string.developer_description),
                         onClick = {
-                            startWebUrl("https://github.com/JiaLiFuNia")
+                            startWebUrl(GITHUB_PERSON_URL)
                         }
                     )
                     SuperArrow(
                         title = stringResource(id = R.string.participate),
                         onClick = {
-                            startWebUrl("https://github.com/JiaLiFuNia")
+                            startWebUrl(GITHUB_PROJECT_URL)
                         }
                     )
                 }
@@ -199,7 +200,7 @@ fun SettingScreen(
                     )*/
                 }
             }
-            item {
+            /*item {
                 SettingItemCard(
                     label = stringResource(id = R.string.screen_style),
                     modifier = Modifier
@@ -223,7 +224,7 @@ fun SettingScreen(
                         }
                     )
                 }
-            }
+            }*/
             item {
                 SettingItemCard(
                     label = stringResource(id = R.string.about),
@@ -243,8 +244,7 @@ fun SettingScreen(
                         }
                     )
                     SuperArrow(
-                        title = stringResource(id = R.string.appreciate),
-                        summary = stringResource(id = R.string.appreciate_description),
+                        title = stringResource(id = R.string.open_source_license),
                         onClick = {
                             navController.navigate(Destinations.Appreciate.route)
                         }

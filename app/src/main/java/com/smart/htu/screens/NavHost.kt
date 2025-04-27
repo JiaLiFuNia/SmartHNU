@@ -136,7 +136,7 @@ fun NavHostScreen() {
             )
         }
         animatedComposable(Destinations.Appreciate.route) {
-            Licence(navController = navController, viewModel = settingViewModel)
+            Licence(navController = navController)
         }
         animatedComposable(Destinations.LibrarySearch.route) {
             LibrarySearchScreen(navController = navController)

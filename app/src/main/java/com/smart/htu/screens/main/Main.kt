@@ -421,9 +421,9 @@ fun CommonAppsCard(
         content = {
             if (uiState.appListIsCommonList.isEmpty())
                 EmptyContent(
-                    text = "前往应用页面添加常用应用",
+                    text = "点击右上角编辑以添加常用应用",
                     modifier = Modifier
-                        .height(80.dp)
+                        .height(86.dp)
                         .fillMaxWidth()
                 )
             else
