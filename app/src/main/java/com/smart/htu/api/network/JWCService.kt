@@ -3,9 +3,10 @@ package com.smart.htu.api.network
 import com.smart.htu.api.module.BuildingEntity
 import com.smart.htu.api.module.ClassroomOccupationEntity
 import com.smart.htu.api.module.CourseGrade
+import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.LoginJWCEntity
 import com.smart.htu.api.module.LoginPost
-import com.smart.htu.api.module.GlobalTerm
+import com.smart.htu.api.module.PersonalMessageRes
 import com.smart.htu.api.module.SelectEntity
 import com.smart.htu.api.module.TEEntity
 import com.smart.htu.api.module.TermIndex
@@ -49,5 +50,8 @@ interface JWCService {
 
     @POST("dev-api/appapi/appqxkb/datagrkb")
     fun getTodayCourse(@Body body: TodayCoursePost = TodayCoursePost()): Call<TodayCourseResponse>
+
+    @POST("dev-api/appapi/Studentxjkp/index")
+    fun getPersonalMessage(@Body body: Any = Object()): Call<PersonalMessageRes>
 
 }

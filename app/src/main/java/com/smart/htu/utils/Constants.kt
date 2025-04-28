@@ -197,7 +197,7 @@ class Constants {
                 icon = R.drawable.captive_portal_24px,
                 label = R.string.one_stop_service,
                 routeType = RouteType.URL,
-                route = AUTH_BASE_URL + "authserver/login?service=http%3A%2F%2Fehall2.htu.edu.cn%2Flogin%3Fservice%3Dhttp",
+                route = "http://ehall2.htu.edu.cn/login?service=http://ehall2.htu.edu.cn/ywtb-mobile/index.html",
                 category = SmallCardCategory.CAMPUS
             )
         )

@@ -6,7 +6,6 @@ import com.smart.htu.api.module.BillDetail
 import com.smart.htu.api.module.BillRecords
 import com.smart.htu.api.module.BuyRecords
 import com.smart.htu.api.module.NewsItemEntity
-import com.smart.htu.api.module.PersonalMessage
 import com.smart.htu.api.module.WeatherNowData
 import com.smart.htu.api.network.AirConditionService
 import com.smart.htu.api.network.AuthLoginService
@@ -15,7 +14,6 @@ import com.smart.htu.api.network.LibraryService
 import com.smart.htu.api.network.NewsService
 import com.smart.htu.api.network.WeatherService
 import com.smart.htu.di.NetworkCookieJar
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_PERSON_MESSAGE
 import com.smart.htu.screens.application.librarySearch.LibraryBookDetail
 import com.smart.htu.screens.application.librarySearch.LibraryBookListEntity
 import com.smart.htu.screens.news.entity.NewsCategoryEntity
@@ -207,24 +205,6 @@ class NetworkRepo @Inject constructor(
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
             return emptyList()
-        }
-    }
-
-    // 获取个人信息
-    suspend fun getStudentInfo(): PersonalMessage? {
-        return withContext(Dispatchers.IO) {
-            try {
-                val res = eHallService.getStudentInfo()
-                if (res.code() == 200) {
-                    Log.i("TAG666", res.body()?.data.toString())
-                    res.body()?.data?.first()
-                } else {
-                    DEFAULT_PERSON_MESSAGE
-                }
-            } catch (e: Exception) {
-                Log.i("TAG666 message", "${e.message}")
-                throw IOException("error")
-            }
         }
     }
 

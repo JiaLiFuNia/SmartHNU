@@ -9,6 +9,7 @@ import com.smart.htu.api.module.CourseGrade
 import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.LoginJWCEntity
 import com.smart.htu.api.module.LoginPost
+import com.smart.htu.api.module.PersonalMessageRes
 import com.smart.htu.api.module.SelectEntity
 import com.smart.htu.api.module.TEEntity
 import com.smart.htu.api.module.TextbookEntity
@@ -47,6 +48,22 @@ class JWCNetworkRepo @Inject constructor(
                 dataStoreRepo.observeStudentId().first()
             }
         )
+
+    suspend fun getPersonalMessageService(): PersonalMessageRes? {
+        val call = jwcService.getPersonalMessage()
+        val res = call.awaitResponse().body()
+        return when (res?.code) {
+            200 -> res
+            401 -> {
+                if (reLogin())
+                    return getPersonalMessageService()
+                else
+                    null
+            }
+
+            else -> null
+        }
+    }
 
     suspend fun getTodayCourseService(): TodayCourseResponse? {
         val call = jwcService.getTodayCourse()

@@ -4,14 +4,14 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.MainActivity
-import com.smart.htu.api.module.PersonalMessage
+import com.smart.htu.api.module.PersonalMessageEntity
+import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.di.NetworkCookieJar
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BUILDING_ID
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_PASSWORD
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_PERSON_MESSAGE
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_QQ_NUMBER
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_ROOM_ID
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_STUDENT_ID
@@ -47,7 +47,7 @@ data class LoginUiState(
     val studentID: String = DEFAULT_STUDENT_ID,
     val password: String = DEFAULT_PASSWORD,
     val jwcPassword: String = DEFAULT_PASSWORD,
-    val uneditableMessage: PersonalMessage = DEFAULT_PERSON_MESSAGE,
+    val personalMessage: ResultWithStatus<PersonalMessageEntity> = ResultWithStatus(),
     val cookies: List<Cookie> = emptyList(),
     val token: String = DEFAULT_TOKEN,
     val isTokenValid: Boolean = DEFAULT_TOKEN_EFFECTIVENESS,
@@ -205,10 +205,10 @@ class LoginViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            getStudentInfo()
             if (_uiState.value.token != DEFAULT_TOKEN && _uiState.value.studentID.isNotEmpty() && _uiState.value.jwcPassword != DEFAULT_PASSWORD) {
                 checkJWCToken()
             }
+            if (_uiState.value.isTokenValid) getPersonalMessage()
         }
     }
 
@@ -230,7 +230,7 @@ class LoginViewModel @Inject constructor(
             )
             logState.onSuccess {
                 changLoginAuthState(1)
-                getStudentInfo()
+                getPersonalMessage()
                 dataStoreRepo.saveStudentId(_uiState.value.studentID)
                 passwordRepo.savePassword(_uiState.value.password, PASSWORD)
             }
@@ -287,24 +287,20 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    suspend fun getStudentInfo() {
+    suspend fun getPersonalMessage() {
         try {
-            val res = networkRepo.getStudentInfo()
+            val res = jwcNetworkRepo.getPersonalMessageService()
             // Log.i("TAG666 longViewModel", res.toString())
-            changeUsername(res?.username ?: DEFAULT_USERNAME)
-            changLoginAuthState(1)
-            _uiState.update { it.copy(uneditableMessage = res!!) }
+            if (res?.code == 200) changeUsername(res.personalMessage?.username ?: DEFAULT_USERNAME)
+            _uiState.update { it.copy(personalMessage = ResultWithStatus(res?.personalMessage)) }
         } catch (e: Exception) {
             Log.i("TAG666 viewModel", "Failed to get student info $e")
-            changLoginAuthState(if (_uiState.value.loginState == 1) 2 else 0)
         }
     }
 
-    fun guest() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isGuest = true) }
-            changeUsername("HNUer")
-        }
+    fun guest() = viewModelScope.launch {
+        _uiState.update { it.copy(isGuest = true) }
+        changeUsername("HNUer")
     }
 
     private fun changLoginAuthState(state: Int) {

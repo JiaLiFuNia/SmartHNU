@@ -1,6 +1,7 @@
 package com.smart.htu.component
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Bitmap
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -21,12 +22,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -40,11 +43,12 @@ import com.kevinnzou.web.LoadingState
 import com.kevinnzou.web.WebView
 import com.kevinnzou.web.rememberWebViewNavigator
 import com.kevinnzou.web.rememberWebViewState
+import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.utils.copyContent
-import com.smart.htu.utils.sendToast
 import com.smart.htu.utils.setDefaultSettings
 import com.smart.htu.utils.startWebUrl
+import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
@@ -64,6 +68,8 @@ fun WebViewContent(
 ) {
     val state = rememberWebViewState(url = url, additionalHttpHeaders = headers)
     val navigator = rememberWebViewNavigator()
+    val scope = rememberCoroutineScope()
+    val snackBarHostState = remember { snackBarHostState }
     val (currentUrl, onCurrentUrl) = remember { mutableStateOf(url) }
     var showDropDownMenu = remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -148,10 +154,30 @@ fun WebViewContent(
                     ) {
                         ListPopupColumn {
                             DropdownMenuItem(
+                                text = { Text(text = "分享") },
+                                onClick = {
+                                    Intent(Intent.ACTION_SEND).also {
+                                        it.putExtra(Intent.EXTRA_TEXT, url)
+                                        it.type = "text/plain"
+                                        if (it.resolveActivity(context.packageManager) != null) {
+                                            context.startActivity(it)
+                                        }
+                                    }
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.share_24px),
+                                        contentDescription = "share"
+                                    )
+                                }
+                            )
+                            DropdownMenuItem(
                                 text = { Text(text = "复制链接") },
                                 onClick = {
-                                    copyContent(currentUrl)
-                                    sendToast(context, "已复制")
+                                    scope.launch {
+                                        copyContent(currentUrl)
+                                        snackBarHostState.showSnackbar("已复制到剪贴板")
+                                    }
                                 },
                                 leadingIcon = {
                                     Icon(
@@ -210,6 +236,9 @@ fun WebViewContent(
             if (content != null) {
                 content()
             }
+        },
+        snackbarHost = {
+            SnackbarHost(snackBarHostState)
         },
         modifier = Modifier.fillMaxSize()
     ) { paddingValues ->

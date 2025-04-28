@@ -12,7 +12,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.smart.htu.api.DataStoreService
 import com.smart.htu.api.module.LoginCookie
-import com.smart.htu.api.module.PersonalMessage
+import com.smart.htu.api.module.PersonalMessageEntity
 import com.smart.htu.screens.application.entity.SmallCardContent
 import com.smart.htu.screens.application.librarySearch.RentBookEntity
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
@@ -72,7 +72,7 @@ class DataStoreRepo @Inject constructor(
         const val DEFAULT_BOOK_SEARCH_HISTORY_LIST = "[]"
         const val DEFAULT_AIR_CONDITION_USER_COOKIE = ""
         const val DEFAULT_AIR_CONDITION_COOKIE_TYPE = 0
-        val DEFAULT_PERSON_MESSAGE = PersonalMessage(
+        val DEFAULT_PERSON_MESSAGE = PersonalMessageEntity(
             username = DEFAULT_USERNAME,
             academic = "-",
             studentId = "-",

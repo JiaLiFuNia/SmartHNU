@@ -1,25 +1,16 @@
 package com.smart.htu.screens.person
 
-
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -30,7 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -38,23 +28,18 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
-import com.smart.htu.component.PreferencesCard
 import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.login.LogoutDialog
-import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
-import com.smart.htu.utils.Constants.Companion.HENAN_NORMAL_UNIVERSITY
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
-import com.smart.htu.utils.startWebUrl
-import kotlinx.coroutines.delay
+import com.smart.htu.utils.copyContent
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.LazyColumn
@@ -74,8 +59,7 @@ fun PersonScreen(
     val onRefresh: () -> Unit = {
         scope.launch {
             pullToRefreshState.completeRefreshing {
-                delay(5000)
-                viewModel.getStudentInfo()
+                viewModel.getPersonalMessage()
             }
         }
     }
@@ -96,7 +80,7 @@ fun PersonScreen(
                 .fillMaxSize()
         ) {
             item {
-                PreferencesCard(
+                /*PreferencesCard(
                     headlineText = "河南师范大学",
                     supportingText = "省属重点大学、省特色骨干大学建设高校",
                     leadingIcon = R.drawable.hnu,
@@ -107,7 +91,7 @@ fun PersonScreen(
                         )
                     }
                 )
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(20.dp))*/
             }
             item {
                 LargeCardDisplay(
@@ -148,38 +132,39 @@ fun PersonScreen(
                     )
                     PersonalMessage(
                         label = stringResource(id = R.string.username),
-                        trailingText = uiState.uneditableMessage.username ?: ""
+                        trailingText = uiState.personalMessage.data?.username
                     )
                     PersonalMessage(
                         label = stringResource(id = R.string.birthday),
-                        trailingText = uiState.uneditableMessage.birthday
+                        trailingText = uiState.personalMessage.data?.birthday
                     )
                     PersonalMessage(
                         label = stringResource(id = R.string.student_id),
-                        trailingText = uiState.uneditableMessage.studentId ?: ""
+                        trailingText = uiState.personalMessage.data?.studentId
                     )
                     PersonalMessage(
                         label = stringResource(id = R.string.class_name),
-                        trailingText = uiState.uneditableMessage.className ?: ""
+                        trailingText = uiState.personalMessage.data?.className
                     )
                     PersonalMessage(
                         label = stringResource(id = R.string.academic),
-                        trailingText = uiState.uneditableMessage.academic ?: ""
+                        trailingText = uiState.personalMessage.data?.academic
+                    )
+                    PersonalMessage(
+                        label = stringResource(R.string.campus_name),
+                        trailingText = uiState.personalMessage.data?.campusName
                     )
                     PersonalMessage(
                         label = stringResource(id = R.string.political_outlook),
-                        trailingText = uiState.uneditableMessage.politicalProfile ?: "",
+                        trailingText = uiState.personalMessage.data?.politicalProfile
                     )
                     PersonalMessage(
                         label = stringResource(id = R.string.phone),
-                        trailingText = uiState.uneditableMessage.phoneNumber ?: ""
+                        trailingText = uiState.personalMessage.data?.phoneNumber
                     )
                     PersonalMessage(
                         label = stringResource(id = R.string.email),
-                        trailingText = uiState.uneditableMessage.emailNumber,
-                        onClick = {
-                            startWebUrl("mailto:${uiState.uneditableMessage.emailNumber}")
-                        }
+                        trailingText = uiState.personalMessage.data?.emailNumber
                     )
                 }
                 Spacer(modifier = Modifier.height(20.dp))
@@ -263,6 +248,7 @@ fun PersonalMessage(
     trailingText: String? = null,
     onClick: (() -> Unit)? = null
 ) {
+    val scope = rememberCoroutineScope()
     ListItem(
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         headlineContent = {
@@ -286,78 +272,14 @@ fun PersonalMessage(
         modifier = Modifier.clickable {
             if (onClick != null) {
                 onClick()
+            } else {
+                if (trailingText != null) {
+                    scope.launch {
+                        copyContent(trailingText)
+                        snackBarHostState.showSnackbar("已复制到剪贴板")
+                    }
+                }
             }
         }
     )
-}
-
-@Composable
-fun PersonalStateMessage(label: String, state: Int, onClick: () -> Unit = {}) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .fillMaxWidth()
-    ) {
-        Text(
-            text = label,
-            color = Color.Gray,
-            modifier = Modifier
-                .weight(0.5f)
-                .fillMaxWidth(),
-            textAlign = TextAlign.Start
-        )
-        Text(
-            text = when (state) {
-                0 -> "未登录"
-                1 -> "已登录"
-                2 -> "登录过期"
-                else -> "未知状态"
-            },
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(0.6f),
-            textAlign = TextAlign.Start
-        )
-        Row(
-            modifier = Modifier.weight(0.20f),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            if (state != 1) {
-                Row(
-                    modifier = Modifier
-                        .weight(0.15f)
-                        .clickable { onClick() },
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "去登录",
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = "icon",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .clip(CircleShape)
-                        .background(
-                            when (state) {
-                                // 0 -> MaterialTheme.colorScheme.error
-                                1 -> MaterialTheme.colorScheme.primary
-                                // 2 -> MaterialTheme.colorScheme.primaryContainer
-                                else -> MaterialTheme.colorScheme.onPrimary
-                            }
-                        )
-                )
-            }
-        }
-
-    }
 }

@@ -2,7 +2,6 @@ package com.smart.htu.screens.setting
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.smart.htu.component.SelectionItem
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_THEME_MODE
@@ -24,7 +23,6 @@ data class SettingUiState(
     val themeMode: Int = DEFAULT_THEME_MODE,
     val isDarkTheme: Int = 0,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
-    val languageList: List<SelectionItem<String>>,
     val selectedLanguageIndex: Int = 0,
     val updateState: Boolean = true,
     val termCode: String
@@ -43,10 +41,7 @@ class SettingViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(
         SettingUiState(
-            termCode = getCurrentTerm(),
-            languageList = languageMap.map {
-                SelectionItem(it.key, it.value)
-            }
+            termCode = getCurrentTerm()
         )
     )
 
