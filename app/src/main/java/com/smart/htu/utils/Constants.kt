@@ -12,13 +12,16 @@ class Constants {
         const val GITHUB_PERSON_URL = "https://github.com/JiaLiFuNia"
         const val GITHUB_PROJECT_URL = "https://github.com/JiaLiFuNia/SmartHNU"
         const val GITHUB_PROJECT_URL_CN = "https://gitee.com/JiaLiFuNia/SmartHNU"
+
+        const val AUTH_BASE_URL = "https://authserver2.htu.edu.cn/"
+        const val RETRIEVE_PASSWORD = AUTH_BASE_URL + "retrieve-password/passwordMobile/index.html"
+        const val EHALL_APP_BASE_URL = "https://ehall2.htu.edu.cn/appShow?appId="
+
         const val HENAN_NORMAL_UNIVERSITY = "https://www.htu.edu.cn/"
-        const val RETRIEVE_PASSWORD =
-            "https://authserver2.htu.edu.cn/retrieve-password/passwordMobile/index.html"
         const val ACADEMIC_URL = "https://jwc.htu.edu.cn/"
         const val ACADEMIC_APP_URL = "https://jwc.htu.edu.cn/app/"
         const val SECOND_CLASS_URL = "http://dekt.htu.edu.cn/"
-        const val EHALL_APP_BASE_URL = "https://ehall2.htu.edu.cn/appShow?appId="
+
         const val SHOWER_ALIPAY_URL =
             "alipays://platformapi/startapp?appId=20000067&url=https://ur.alipay.com/_3Zz793BHBpUQsAf6r8hLXZ"
         const val HOT_WATER_WASHER_ALIPAY_URL =
@@ -170,7 +173,7 @@ class Constants {
                 icon = R.drawable.psychology_alt_24px,
                 label = R.string.htu_helper,
                 routeType = RouteType.URL,
-                route = EHALL_APP_BASE_URL + "6897367798017479",
+                route = AUTH_BASE_URL + "authserver/login?service=https://ai.htu.edu.cn/api/cas",
                 category = SmallCardCategory.AI
             ),
             SmallCardContent(
@@ -187,6 +190,14 @@ class Constants {
                 label = R.string.mr_zhe_da,
                 routeType = RouteType.URL,
                 route = EHALL_APP_BASE_URL + "7416844941162412",
+                category = SmallCardCategory.AI
+            ),
+            SmallCardContent(
+                guestEnable = false,
+                icon = R.drawable.captive_portal_24px,
+                label = R.string.one_stop_service,
+                routeType = RouteType.URL,
+                route = AUTH_BASE_URL + "authserver/login?service=http%3A%2F%2Fehall2.htu.edu.cn%2Flogin%3Fservice%3Dhttp",
                 category = SmallCardCategory.AI
             )
         )

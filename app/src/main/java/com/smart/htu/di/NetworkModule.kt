@@ -42,10 +42,11 @@ object NetworkModule {
 
     object ApiConstants {
         const val HTU_BASE_URL = "https://www.htu.edu.cn/"
-        const val AUTH_SERVER_BASE_URL = "https://authserver2.htu.edu.cn/"
         const val JWC_BASE_URL = "https://jwc.htu.edu.cn/"
-        const val E_HALL_BASE_URL = "https://ehall2.htu.edu.cn/"
+        const val AUTH_BASE_URL = "https://authserver2.htu.edu.cn/"
+        const val EHALL_BASE_URL = "https://ehall2.htu.edu.cn/"
         const val LIBRARY_BASE_URL = "http://libmsg.htu.cn/"
+
         const val AIR_CONDITION_BASE_URL = "https://application.xiaofubao.com/"
         const val GITEE_BASE_URL = "https://gitee.com/"
         const val WEATHER_BASE_URL = "https://devapi.qweather.com/v7/"
@@ -79,7 +80,7 @@ object NetworkModule {
         okHttpClient: OkHttpClient
     ): AuthLoginService {
         val retrofit = Retrofit.Builder()
-            .baseUrl(ApiConstants.AUTH_SERVER_BASE_URL)
+            .baseUrl(ApiConstants.AUTH_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
@@ -94,7 +95,7 @@ object NetworkModule {
         okHttpClient: OkHttpClient
     ): EHallService {
         val retrofit = Retrofit.Builder()
-            .baseUrl(ApiConstants.E_HALL_BASE_URL)
+            .baseUrl(ApiConstants.EHALL_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
