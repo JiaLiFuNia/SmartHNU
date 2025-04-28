@@ -198,7 +198,7 @@ class Constants {
                 label = R.string.one_stop_service,
                 routeType = RouteType.URL,
                 route = AUTH_BASE_URL + "authserver/login?service=http%3A%2F%2Fehall2.htu.edu.cn%2Flogin%3Fservice%3Dhttp",
-                category = SmallCardCategory.AI
+                category = SmallCardCategory.CAMPUS
             )
         )
         val INIT_COMMON_APP_LIST = listOf(
