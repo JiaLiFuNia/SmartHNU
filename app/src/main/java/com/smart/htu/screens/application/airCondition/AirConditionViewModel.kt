@@ -132,6 +132,7 @@ class AirConditionViewModel @Inject constructor(
                 }
         }
         viewModelScope.launch {
+            Log.i("TAG666 airCookie", getCookieByType().toString())
             if (getCookieByType() != LoginCookie()) {
                 getAirConditionConfig()
                 if (_uiState.value.buildingCode.isNotEmpty() && _uiState.value.roomCode.isNotEmpty()) {

@@ -29,7 +29,7 @@ fun ColumnChart(
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(xData, yData) {
         modelProducer.runTransaction {
             columnSeries { series(yData.value) }
             extras { it[BottomAxisLabelKey] = xData.value }

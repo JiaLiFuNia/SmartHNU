@@ -13,11 +13,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,7 +31,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,6 +50,7 @@ import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
+import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissPopup
 
@@ -141,9 +139,12 @@ fun WebViewContent(
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
 
                     }
-                    IconButton(onClick = { showDropDownMenu.value = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "more")
-                    }
+                    val dropdownOptions = listOf(
+                        "分享",
+                        "复制链接",
+                        stringResource(id = R.string.open_outside),
+                        stringResource(id = R.string.forward)
+                    )
                     ListPopup(
                         show = showDropDownMenu,
                         popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
@@ -153,61 +154,47 @@ fun WebViewContent(
                         }
                     ) {
                         ListPopupColumn {
-                            DropdownMenuItem(
-                                text = { Text(text = "分享") },
-                                onClick = {
-                                    Intent(Intent.ACTION_SEND).also {
-                                        it.putExtra(Intent.EXTRA_TEXT, url)
-                                        it.type = "text/plain"
-                                        if (it.resolveActivity(context.packageManager) != null) {
-                                            context.startActivity(it)
+                            dropdownOptions.forEachIndexed { index, item ->
+                                DropdownImpl(
+                                    text = item,
+                                    isSelected = false,
+                                    optionSize = dropdownOptions.size,
+                                    onSelectedIndexChange = {
+                                        dismissPopup(showDropDownMenu)
+                                        when (index) {
+                                            0 -> {
+                                                Intent(Intent.ACTION_SEND).also {
+                                                    it.putExtra(Intent.EXTRA_TEXT, url)
+                                                    it.type = "text/plain"
+                                                    if (it.resolveActivity(context.packageManager) != null) {
+                                                        context.startActivity(it)
+                                                    }
+                                                }
+                                            }
+
+                                            1 -> {
+                                                scope.launch {
+                                                    copyContent(currentUrl)
+                                                    snackBarHostState.showSnackbar("已复制到剪贴板")
+                                                }
+                                            }
+
+                                            2 -> {
+                                                startWebUrl(url)
+                                            }
+
+                                            3 -> {
+                                                if (navigator.canGoForward) navigator.navigateForward()
+                                            }
                                         }
-                                    }
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.share_24px),
-                                        contentDescription = "share"
-                                    )
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(text = "复制链接") },
-                                onClick = {
-                                    scope.launch {
-                                        copyContent(currentUrl)
-                                        snackBarHostState.showSnackbar("已复制到剪贴板")
-                                    }
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.content_copy_24px),
-                                        contentDescription = "copy"
-                                    )
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(text = stringResource(id = R.string.open_outside)) },
-                                onClick = { startWebUrl(url) },
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.public_24px),
-                                        contentDescription = "outside"
-                                    )
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(text = stringResource(id = R.string.forward)) },
-                                onClick = { if (navigator.canGoForward) navigator.navigateForward() },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.AutoMirrored.Filled.ArrowForward,
-                                        contentDescription = "forward"
-                                    )
-                                },
-                                enabled = navigator.canGoForward
-                            )
+                                    },
+                                    index = index
+                                )
+                            }
                         }
+                    }
+                    IconButton(onClick = { showDropDownMenu.value = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "more")
                     }
                 },
                 navigationIcon = {

@@ -30,7 +30,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -108,11 +107,12 @@ fun AirConditionSetting(
                 val (roomIdError, onRoomError) = remember { mutableStateOf(false) }
                 TextField(
                     value = buildingId,
-                    label = "宿舍楼",
+                    label = "宿舍楼(如：西01)",
                     onValueChange = {
                         buildingId = it
                         onBuildingError(!buildingIdPattern.matches(it))
                     },
+                    useLabelAsPlaceholder = true,
                     singleLine = true,
                     maxLines = 1,
                     trailingIcon = {
@@ -129,11 +129,12 @@ fun AirConditionSetting(
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = roomId,
-                    label = "房间",
+                    label = "房间(如：0123，01楼23房间)",
                     onValueChange = {
                         roomId = it
                         onRoomError(!roomIdPattern.matches(it) || roomId.length != 4)
                     },
+                    useLabelAsPlaceholder = true,
                     singleLine = true,
                     maxLines = 1,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

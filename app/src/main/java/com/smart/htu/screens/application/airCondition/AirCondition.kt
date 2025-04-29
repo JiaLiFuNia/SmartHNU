@@ -1,8 +1,6 @@
 package com.smart.htu.screens.application.airCondition
 
 import android.annotation.SuppressLint
-import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,20 +31,17 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,9 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
-import com.smart.htu.component.BasicBottomSheet
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
@@ -72,12 +65,7 @@ import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
-import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.SmallTitle
-import top.yukonga.miuix.kmp.basic.TextField
-import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissDialog
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
 @OptIn(
@@ -95,22 +83,15 @@ fun AirCondition(
     val hazeState = remember { HazeState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
-    val isShowSuggestChip = remember {
-        mutableStateOf((uiState.roomCode.isEmpty() || uiState.buildingCode.isEmpty() || !uiState.isCookieValid))
+    val isShowSuggestChip by remember {
+        derivedStateOf { mutableStateOf(uiState.roomCode.isEmpty() || uiState.buildingCode.isEmpty() || !uiState.isCookieValid) }
     }
     val snackBarHostState = viewModel.snackBarHostState
 
     val tabItem = listOf("用电情况", "缴费情况")
     val pagerState = rememberPagerState { tabItem.size }
-    val (selectTabIndex, onSelectTabIndex) = remember { mutableIntStateOf(0) }
+    val selectTabIndex by remember { derivedStateOf { pagerState.currentPage } }
 
-    LaunchedEffect(pagerState.currentPage) {
-        onSelectTabIndex(pagerState.currentPage)
-    }
-
-    LaunchedEffect(selectTabIndex) {
-        pagerState.animateScrollToPage(selectTabIndex)
-    }
     val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
     val onRefresh: () -> Unit = {
         scope.launch {
@@ -211,16 +192,14 @@ fun AirCondition(
                             headlineContent = {
                                 Text(
                                     text = (uiState.billData?.data?.displayRoomName
-                                        ?: if (uiState.isLoadingBillRecords) "加载中..." else "加载失败").replace(
-                                        "河南师范大学",
-                                        ""
-                                    )
+                                        ?: if (uiState.isLoadingBillRecords) "加载中..." else "加载失败")
+                                        .replace("河南师范大学", "")
                                 )
                             },
                             supportingContent = {
                                 Text(
                                     text = uiState.billData?.data?.surplusList?.first()?.roomStatus
-                                        ?: "正常用电"
+                                        ?: "未知状态"
                                 )
                             },
                             trailingContent = {
@@ -241,7 +220,9 @@ fun AirCondition(
                         tabs = tabItem,
                         selectedTabIndex = selectTabIndex,
                         onTabSelected = {
-                            onSelectTabIndex(it)
+                            scope.launch {
+                                pagerState.animateScrollToPage(it)
+                            }
                         }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
