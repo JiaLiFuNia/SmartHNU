@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
@@ -65,7 +68,7 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "${message.teachingEnvironment}-${message.courseName}",
+                    text = message.courseName,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth(),
@@ -79,36 +82,54 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        text = message.teacherNames.ifEmpty { "暂无" },
-                        modifier = Modifier.weight(2 / 10f),
-                        textAlign = TextAlign.Start,
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(
-                                0.7f
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start,
+                        modifier = Modifier.weight(0.5f)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.schedule_24px),
+                            contentDescription = "time",
+                            modifier = Modifier
+                                .size(22.dp)
+                                .padding(end = 4.dp),
+                            tint = MiuixTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "${message.startTime}-${message.endTime}".ifEmpty { "暂无" },
+                            modifier = Modifier.weight(4 / 10f),
+                            textAlign = TextAlign.Start,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = MaterialTheme.colorScheme.onSurface.copy(
+                                    0.7f
+                                )
                             )
                         )
-                    )
-                    Text(
-                        text = "${message.startTime}-${message.endTime}".ifEmpty { "暂无" },
-                        modifier = Modifier.weight(4 / 10f),
-                        textAlign = TextAlign.Start,
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(
-                                0.7f
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start,
+                        modifier = Modifier.weight(0.5f)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.location_on_24px),
+                            contentDescription = "time",
+                            modifier = Modifier
+                                .size(22.dp)
+                                .padding(end = 4.dp),
+                            tint = MiuixTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = message.classroomName.ifEmpty { "暂无" },
+                            modifier = Modifier.weight(4 / 10f),
+                            textAlign = TextAlign.Start,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = MaterialTheme.colorScheme.onSurface.copy(
+                                    0.7f
+                                )
                             )
                         )
-                    )
-                    Text(
-                        text = message.classroomName.ifEmpty { "暂无" },
-                        modifier = Modifier.weight(4 / 10f),
-                        textAlign = TextAlign.Start,
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(
-                                0.7f
-                            )
-                        )
-                    )
+                    }
                 }
             }
         }
@@ -141,7 +162,7 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
                 SingleInfo(
                     label = "节次",
                     content = message.classTimeCodeDetailed,
-                    leadingIcon = R.drawable.nest_clock_farsight_analog_24px
+                    leadingIcon = R.drawable.schedule_24px
                 )
             )
         )

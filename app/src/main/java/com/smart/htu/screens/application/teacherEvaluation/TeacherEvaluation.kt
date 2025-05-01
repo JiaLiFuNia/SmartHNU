@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -19,14 +20,12 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,10 +49,10 @@ import com.smart.htu.screens.application.grade.SelectTermBottomSheet
 import com.smart.htu.utils.Term.termConverter
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
-import top.yukonga.miuix.kmp.basic.LazyColumn
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -69,8 +68,12 @@ fun TeacherEvaluation(
         mutableStateOf(false)
     }
     val onRefresh: () -> Unit = {
-        viewModel.refreshTermIndex()
-        viewModel.getTeacherListService(uiState.termCode)
+        scope.launch {
+            pullToRefreshState.completeRefreshing {
+                viewModel.refreshTermIndex()
+                viewModel.getTeacherListService(uiState.termCode)
+            }
+        }
     }
 
     ScaffoldWithHazeLazyColumn(
@@ -92,14 +95,15 @@ fun TeacherEvaluation(
             }
         },
         refreshState = pullToRefreshState,
-        onRefresh = { onRefresh() },
-        itemSpacePadding = 12.dp
+        onRefresh = { onRefresh() }
     ) {
         LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .fillMaxSize()
+                .overScrollVertical(),
+            overscrollEffect = null
         ) {
             when (uiState.evaluationInfo.status == Status.LOADING || !uiState.isTokenValid) {
                 true ->

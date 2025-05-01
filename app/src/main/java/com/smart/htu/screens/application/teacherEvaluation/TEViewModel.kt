@@ -122,10 +122,8 @@ class TEViewModel @Inject constructor(
         }
     }
 
-    fun refreshTermIndex() {
-        viewModelScope.launch {
-            sharedDataRepository.getTermIndex()
-        }
+    suspend fun refreshTermIndex() {
+        sharedDataRepository.getTermIndex()
     }
 
     fun changeTermCode(termCode: String) {

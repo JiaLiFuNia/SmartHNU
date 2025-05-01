@@ -113,6 +113,8 @@ fun MainFrame(
         )
     )
 
+    val isShowPrivateMessage = remember { mutableStateOf(true) }
+
     top.yukonga.miuix.kmp.basic.Scaffold(
         modifier = Modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackBarHostState) },
@@ -202,6 +204,16 @@ fun MainFrame(
                     colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
                     title = { Text(text = stringResource(R.string.my)) },
                     actions = {
+                        IconButton(
+                            onClick = {
+                                isShowPrivateMessage.value = !isShowPrivateMessage.value
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = if (isShowPrivateMessage.value) R.drawable.visibility_24px else R.drawable.visibility_off_24px),
+                                contentDescription = "eye"
+                            )
+                        }
                         IconButton(onClick = { navController.navigate(Destinations.AccountManage.route) }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.key_24px),
@@ -291,7 +303,8 @@ fun MainFrame(
                         3 -> PersonScreen(
                             navController = navController,
                             viewModel = loginViewModel,
-                            contentPadding = it
+                            contentPadding = it,
+                            isShowPrivateMessage = isShowPrivateMessage
                         )
                     }
                 }

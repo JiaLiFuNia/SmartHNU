@@ -116,4 +116,5 @@
     <string name="mr_zhe_da">浙大先生</string>
     <string name="one_stop_service">一网通办</string>
     <string name="campus_name">校区</string>
+    <string name="clear_cache">清除缓存</string>
 </resources>

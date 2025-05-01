@@ -1,7 +1,6 @@
 package com.smart.htu.screens
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -9,7 +8,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.smart.htu.screens.webview.WebViewContent
 import com.smart.htu.component.animation.animatedComposable
 import com.smart.htu.screens.application.ApplicationEdit
 import com.smart.htu.screens.application.ApplicationViewModel
@@ -34,10 +32,9 @@ import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.person.AccountManage
 import com.smart.htu.screens.setting.About
 import com.smart.htu.screens.setting.License
-import com.smart.htu.screens.setting.LicenseDetail
 import com.smart.htu.screens.setting.SettingScreen
 import com.smart.htu.screens.setting.SettingViewModel
-import com.smart.htu.screens.webview.WebViewViewModel
+import com.smart.htu.screens.webview.WebViewContent
 import com.smart.htu.utils.startAppUrl
 import com.smart.htu.utils.startLaunchAPK
 
@@ -50,7 +47,6 @@ fun NavHostScreen() {
     val newsViewModel: NewsViewModel = hiltViewModel()
     val messageViewModel: MessageViewModel = hiltViewModel()
     val airConditionViewModel: AirConditionViewModel = hiltViewModel()
-    val webViewViewModel: WebViewViewModel = hiltViewModel()
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -115,27 +111,6 @@ fun NavHostScreen() {
         }
         animatedComposable(Destinations.License.route) {
             License(navController = navController)
-        }
-        animatedComposable(
-            route = Destinations.LicenseDetail.route + "/{name}/{website}/{license}",
-            arguments = listOf(
-                navArgument(name = "name") {
-                    type = NavType.StringType
-                },
-                navArgument(name = "website") {
-                    type = NavType.StringType
-                },
-                navArgument(name = "license") {
-                    type = NavType.StringType
-                }
-            )
-        ) {
-            LicenseDetail(
-                navController = navController,
-                name = it.arguments?.getString("name") ?: "",
-                website = it.arguments?.getString("website"),
-                license = it.arguments?.getString("license") ?: ""
-            )
         }
         animatedComposable(Destinations.LibrarySearch.route) {
             LibrarySearchScreen(navController = navController)

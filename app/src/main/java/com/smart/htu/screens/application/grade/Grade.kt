@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -48,10 +49,10 @@ import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.utils.Term.termConverter
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
-import top.yukonga.miuix.kmp.basic.LazyColumn
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -66,8 +67,12 @@ fun Grade(
     val scope = rememberCoroutineScope()
     val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
     val onRefresh: () -> Unit = {
-        viewModel.refreshTermList()
-        viewModel.getCourseGrade()
+        scope.launch {
+            pullToRefreshState.completeRefreshing {
+                viewModel.refreshTermList()
+                viewModel.getCourseGrade()
+            }
+        }
     }
 
     ScaffoldWithHazeLazyColumn(
@@ -89,14 +94,15 @@ fun Grade(
             }
         },
         refreshState = pullToRefreshState,
-        onRefresh = { onRefresh() },
-        itemSpacePadding = 12.dp
+        onRefresh = { onRefresh() }
     ) {
         LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .fillMaxWidth()
+                .overScrollVertical(),
+            overscrollEffect = null
         ) {
             when (uiState.courseGrade.status == Status.LOADING || !uiState.isTokenValid) {
                 true ->

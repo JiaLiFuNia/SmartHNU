@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -89,16 +90,12 @@ fun SettingScreen(
             )
         }
     ) {
-        top.yukonga.miuix.kmp.basic.LazyColumn(
+        LazyColumn(
             modifier = Modifier
+                .padding(it)
                 .hazeSource(state = hazeState)
                 .fillMaxSize(),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                top = it.calculateTopPadding(),
-                bottom = it.calculateBottomPadding() + 16.dp
-            )
+            contentPadding = PaddingValues(16.dp, 12.dp)
         ) {
             item {
                 SettingItemCard(
@@ -248,6 +245,21 @@ fun SettingScreen(
                         onClick = {
                             navController.navigate(Destinations.License.route)
                         }
+                    )
+                }
+            }
+            item {
+                SettingItemCard(
+                    label = stringResource(id = R.string.other),
+                    modifier = Modifier
+                ) {
+                    SuperArrow(
+                        title = stringResource(R.string.clear_cache),
+                        summary = "清除应用缓存的图片",
+                        onClick = {
+                            viewModel.clearCache()
+                        },
+                        rightText = uiState.cacheSize
                     )
                 }
             }

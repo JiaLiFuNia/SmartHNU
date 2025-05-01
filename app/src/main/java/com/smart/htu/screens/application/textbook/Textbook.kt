@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -52,10 +53,10 @@ import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Term.termConverter
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
-import top.yukonga.miuix.kmp.basic.LazyColumn
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,8 +70,12 @@ fun Textbook(
     val isBottomSheetShow = remember { mutableStateOf(false) }
 
     val onRefresh: () -> Unit = {
-        viewModel.refreshTermList()
-        viewModel.getTextbook(uiState.termCode)
+        scope.launch {
+            pullToRefreshState.completeRefreshing {
+                viewModel.refreshTermList()
+                viewModel.getTextbook(uiState.termCode)
+            }
+        }
     }
 
     ScaffoldWithHazeLazyColumn(
@@ -96,10 +101,12 @@ fun Textbook(
         onRefresh = { onRefresh() }
     ) {
         LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .fillMaxSize()
+                .overScrollVertical(),
+            overscrollEffect = null
         ) {
             when (uiState.courseList.status == Status.LOADING || !uiState.isTokenValid) {
                 true ->

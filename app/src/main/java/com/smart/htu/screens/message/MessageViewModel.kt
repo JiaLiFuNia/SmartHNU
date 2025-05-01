@@ -68,14 +68,20 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-    fun addHadReadList(id: Int) = viewModelScope.launch {
-        _uiState.update { it.copy(hadReadIdList = it.hadReadIdList + id) }
-        dataStoreRepo.addReadNoticeId(_uiState.value.hadReadIdList)
+    fun readAllNotice() = viewModelScope.launch {
+        _uiState.value.noticeList.forEach {
+            addReadNoticeId(it.id)
+        }
     }
 
-    fun refreshGiteeConfig() {
-        viewModelScope.launch {
-            sharedDataRepository.getGiteeConfig()
+    fun addReadNoticeId(id: Int) = viewModelScope.launch {
+        if (!_uiState.value.hadReadIdList.contains(id)) {
+            _uiState.update { it.copy(hadReadIdList = it.hadReadIdList + id) }
+            dataStoreRepo.addReadNoticeId(_uiState.value.hadReadIdList)
         }
+    }
+
+    suspend fun refreshGiteeConfig() {
+        sharedDataRepository.getGiteeConfig()
     }
 }

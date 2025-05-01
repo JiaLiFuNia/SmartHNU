@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -35,7 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -67,6 +67,7 @@ import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -96,11 +97,7 @@ fun AirCondition(
     val onRefresh: () -> Unit = {
         scope.launch {
             pullToRefreshState.completeRefreshing {
-                viewModel.refreshGiteeConfig()
-                viewModel.getAirConditionConfig()
-                viewModel.getBillDetailService()
-                viewModel.getBillRecords()
-                viewModel.getBuyRecords()
+                viewModel.refreshConfig()
             }
         }
     }
@@ -155,9 +152,12 @@ fun AirCondition(
                 .fillMaxSize()
                 .padding(it)
         ) {
-            top.yukonga.miuix.kmp.basic.LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                modifier = Modifier.fillMaxSize()
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp, 12.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .overScrollVertical(),
+                overscrollEffect = null
             ) {
                 item {
                     SuggestChip(
@@ -255,45 +255,34 @@ fun AirCondition(
                             ) {
                                 when (page) {
                                     0 -> {
-                                        val xData1 = remember {
-                                            mutableStateOf(uiState.billRecords?.rows?.map {
-                                                it.dateTimeDouble
-                                            } ?: listOf("0.0"))
-                                        }
-                                        val yData1 = remember {
-                                            mutableStateOf(uiState.billRecords?.rows?.map {
-                                                it.used.toDouble()
-                                            } ?: listOf(0.0))
-                                        }
+                                        val xData1 = uiState.billRecords?.rows?.map {
+                                            it.dateTimeDouble
+                                        } ?: listOf("0.0")
+                                        val yData1 = uiState.billRecords?.rows?.map {
+                                            it.used.toDouble()
+                                        } ?: listOf(0.0)
                                         AirConditionChart(
                                             xData = xData1,
                                             yData = yData1
                                         )
-                                        // Spacer(modifier = Modifier.height(4.dp))
                                         uiState.billRecords?.rows?.forEach {
                                             SingleMessage(it.datetime, "${it.used} 度")
-                                            // Spacer(modifier = Modifier.height(4.dp))
                                         }
                                     }
 
                                     1 -> {
-                                        val xData2 = remember {
-                                            mutableStateOf(uiState.buyRecords?.rows?.map {
-                                                it.dateTimeDouble
-                                            } ?: listOf("0.0"))
-                                        }
-                                        val yData2 = remember {
-                                            mutableStateOf(uiState.buyRecords?.rows?.map {
-                                                it.money.toDouble()
-                                            } ?: listOf(0.0))
-                                        }
+                                        val xData2 = uiState.buyRecords?.rows?.map {
+                                            it.dateTimeDouble
+                                        } ?: listOf("0.0")
+                                        val yData2 = uiState.buyRecords?.rows?.map {
+                                            it.money.toDouble()
+                                        } ?: listOf(0.0)
                                         AirConditionChart(
                                             xData = xData2,
                                             yData = yData2
                                         )
                                         uiState.buyRecords?.rows?.forEach {
                                             SingleMessage(it.dateTime, "${it.money} 元")
-                                            // Spacer(modifier = Modifier.height(4.dp))
                                         }
                                     }
                                 }
@@ -308,8 +297,8 @@ fun AirCondition(
 
 @Composable
 fun AirConditionChart(
-    xData: MutableState<List<String>>,
-    yData: MutableState<List<Double>>,
+    xData: List<String>,
+    yData: List<Double>,
 ) {
     top.yukonga.miuix.kmp.basic.Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -322,8 +311,8 @@ fun AirConditionChart(
                 .padding(8.dp)
         ) {
             ColumnChart(
-                xData = xData,
-                yData = yData
+                xData = remember(xData) { mutableStateOf(xData) },
+                yData = remember(yData) { mutableStateOf(yData) }
             )
         }
     }

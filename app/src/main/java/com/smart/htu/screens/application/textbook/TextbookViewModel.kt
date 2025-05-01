@@ -116,10 +116,8 @@ class TextbookViewModel @Inject constructor(
         }
     }
 
-    fun refreshTermList() {
-        viewModelScope.launch {
-            sharedDataRepository.getTermIndex()
-        }
+    suspend fun refreshTermList() {
+        sharedDataRepository.getTermIndex()
     }
 
     fun getTextbook(termCode: String) = viewModelScope.launch {

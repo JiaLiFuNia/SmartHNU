@@ -132,23 +132,22 @@ class AirConditionViewModel @Inject constructor(
                 }
         }
         viewModelScope.launch {
-            Log.i("TAG666 airCookie", getCookieByType().toString())
-            if (getCookieByType() != LoginCookie()) {
-                getAirConditionConfig()
-                if (_uiState.value.buildingCode.isNotEmpty() && _uiState.value.roomCode.isNotEmpty()) {
-                    getBillDetailService()
-                    getBillRecords()
-                    getBuyRecords()
-                }
-            }
+            refreshConfig()
             changeLoadingState(false)
         }
     }
 
-    // 刷新AirCondition配置
-    fun refreshGiteeConfig() {
-        viewModelScope.launch {
-            sharedDataRepository.getGiteeConfig()
+    // 刷新配置
+    suspend fun refreshConfig() {
+        sharedDataRepository.getGiteeConfig()
+        Log.i("TAG666 airCookie", getCookieByType().toString())
+        if (getCookieByType() != LoginCookie()) {
+            getAirConditionConfig()
+            if (_uiState.value.buildingCode.isNotEmpty() && _uiState.value.roomCode.isNotEmpty()) {
+                getBillDetailService()
+                getBillRecords()
+                getBuyRecords()
+            }
         }
     }
 
@@ -265,6 +264,7 @@ class AirConditionViewModel @Inject constructor(
             }
             dataStoreRepo.changeBuildingId(buildingId)
             dataStoreRepo.changeRoomId(roomId)
+            refreshConfig()
             showSnackBar("配置保存成功")
         }
     }

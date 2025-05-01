@@ -96,13 +96,11 @@ class GradeViewModel @Inject constructor(
         }
     }
 
-    fun refreshTermList() {
-        viewModelScope.launch {
-            sharedDataRepository.getTermIndex()
-        }
+    suspend fun refreshTermList() {
+        sharedDataRepository.getTermIndex()
     }
 
-    fun getCourseGrade() = viewModelScope.launch {
+    suspend fun getCourseGrade() {
         try {
             val res = jwcNetworkRepo.getCourseGradeService(
                 GlobalTerm(_uiState.value.termCode)

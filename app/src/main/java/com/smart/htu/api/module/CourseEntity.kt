@@ -41,3 +41,17 @@ data class Course(
         get() = sortString.toInt()
 }
 
+data class CourseSchedulePost(
+    val zc: String = "",
+    val jc: String = ""
+)
+
+data class CourseScheduleEntity(
+    @SerializedName("msg") val message: String,
+    @SerializedName("code") val code: Int,
+    @SerializedName("maxzc") val totalWeeks: String,
+    @SerializedName("zc") val week: String,
+    @SerializedName("curDay") val weekday: String,
+    @SerializedName("xnxqdm") val termCode: String,
+    @SerializedName("kbList") val kbList: String,
+)

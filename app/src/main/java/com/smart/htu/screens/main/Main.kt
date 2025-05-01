@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -69,6 +70,7 @@ import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.startCalendar
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
@@ -116,10 +118,13 @@ fun Main(
             .fillMaxSize()
             .padding(contentPadding)
     ) {
-        top.yukonga.miuix.kmp.basic.LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp, 12.dp),
+            modifier = Modifier
+                .overScrollVertical()
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            overscrollEffect = null
         ) {
             if (loginState.value.value) item {
                 SuggestChip(
@@ -130,15 +135,12 @@ fun Main(
                     visibility = loginState.value,
                     icon = Icons.AutoMirrored.Filled.ArrowForward
                 )
-                // Spacer(modifier = Modifier.height(20.dp))
             }
             item {
                 FocusCard(navController, loginUiState, airConditionUiState, uiState)
-                // Spacer(modifier = Modifier.height(20.dp))
             }
             item {
                 TodayCourseCard(uiState.todayCourseList, loginUiState)
-                // Spacer(modifier = Modifier.height(20.dp))
             }
             item {
                 CommonAppsCard(
@@ -146,7 +148,6 @@ fun Main(
                     navController = navController,
                     loginUiState = loginUiState
                 )
-                // Spacer(modifier = Modifier.height(20.dp))
             }
             item {
                 NewsCard(
@@ -243,7 +244,7 @@ fun FocusCard(
                     trailingContent = {
                     },
                     title = today.format(formatter),
-                    content = "第 - 周 $dayOfWeek",
+                    content = "第 ${mainUiState.courseSchedule.data?.week ?: "-"} 周 $dayOfWeek",
                     onClick = { startCalendar() },
                     modifier = Modifier.weight(0.5f)
                 )

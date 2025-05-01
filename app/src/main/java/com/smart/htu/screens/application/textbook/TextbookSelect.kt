@@ -1,7 +1,6 @@
 package com.smart.htu.screens.application.textbook
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -10,14 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerScope
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,10 +21,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -40,15 +32,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.smart.htu.App.Companion.context
-import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.Status
@@ -60,11 +49,9 @@ import com.smart.htu.component.svgVector.DrawableVectors
 import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.utils.copyContent
-import com.smart.htu.utils.sendToast
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
-import top.yukonga.miuix.kmp.basic.LazyColumn
-import java.nio.file.WatchEvent
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,9 +66,13 @@ fun TextbookSelect(
 
     val coroutineScope = rememberCoroutineScope()
     val onRefresh: () -> Unit = {
-        viewModel.refreshTermList()
-        viewModel.getSelectableTextbookService(courseTaskCode, termCode)
-        viewModel.getSelectedTextbookService(courseTaskCode, termCode)
+        coroutineScope.launch {
+            pullToRefreshState.completeRefreshing {
+                viewModel.refreshTermList()
+                viewModel.getSelectableTextbookService(courseTaskCode, termCode)
+                viewModel.getSelectedTextbookService(courseTaskCode, termCode)
+            }
+        }
     }
 
     LaunchedEffect(courseTaskCode, termCode) {
@@ -142,10 +133,12 @@ fun PagerScope.SelectTextbook(
     viewModel: TextbookViewModel
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier
             .fillMaxSize()
+            .overScrollVertical(),
+        overscrollEffect = null
     ) {
         if (textbook.status == Status.LOADING) {
             item {

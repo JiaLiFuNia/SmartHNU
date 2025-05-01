@@ -99,6 +99,7 @@ import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -126,7 +127,7 @@ fun LibrarySearchScreen(
     val onRefresh: () -> Unit = {
         scope.launch {
             pullToRefreshState.completeRefreshing {
-                delay(2000)
+                delay(500)
             }
         }
     }
@@ -199,11 +200,13 @@ fun LibrarySearchScreen(
                 .padding(it)
         ) {
             LazyColumn(
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(16.dp, 12.dp),
                 state = lazyListState,
                 modifier = Modifier
                     .hazeSource(state = hazeState)
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .overScrollVertical(),
+                overscrollEffect = null,
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 item {

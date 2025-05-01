@@ -33,7 +33,7 @@ fun LargeCardDisplay(
     modifier: Modifier,
     title: String,
     @DrawableRes leadingIconPainting: Int,
-    containerColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+    containerColor: Color = MiuixTheme.colorScheme.surface,
     content: @Composable () -> Unit
 ) {
     Column(
@@ -79,14 +79,14 @@ fun LargeCardDisplay(
         if (onClick != null) {
             top.yukonga.miuix.kmp.basic.Card(
                 modifier = modifier.fillMaxWidth(),
-                color = MiuixTheme.colorScheme.surface
+                color = containerColor
             ) {
                 content()
             }
         } else {
             top.yukonga.miuix.kmp.basic.Card(
                 modifier = modifier.fillMaxWidth(),
-                color = MiuixTheme.colorScheme.surface
+                color = containerColor
             ) {
                 content()
             }

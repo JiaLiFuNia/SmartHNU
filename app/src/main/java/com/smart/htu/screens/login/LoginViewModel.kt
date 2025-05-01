@@ -230,7 +230,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             if (_uiState.value.loginJWCState != 1) jwcLogin() // 智慧教务
-            if (_uiState.value.loginState != 1) authLogin() // 统一认证登录
+            // if (_uiState.value.loginState != 1) authLogin() // 统一认证登录
             _uiState.update { it.copy(isLoading = false) }
         }
     }
@@ -276,6 +276,7 @@ class LoginViewModel @Inject constructor(
             logState.onSuccess {
                 changeLoginJWCState(1)
                 setTokenValid(true)
+                getPersonalMessage()
                 setJWCLogToken(it.user?.token ?: DEFAULT_TOKEN)
                 changeUsername(it.user?.username ?: DEFAULT_USERNAME)
                 dataStoreRepo.saveStudentId(_uiState.value.studentID)

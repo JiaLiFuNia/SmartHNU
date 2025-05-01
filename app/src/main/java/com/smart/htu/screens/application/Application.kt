@@ -50,7 +50,7 @@ fun Application(
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
     LazyVerticalGrid(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         columns = GridCells.Fixed(if (windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)) 2 else 4),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),

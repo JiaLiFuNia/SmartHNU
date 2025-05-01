@@ -78,6 +78,7 @@ import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissDialog
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
 
 @SuppressLint("UnrememberedMutableState")
@@ -176,10 +177,12 @@ fun ClassroomSearchScreen(
             modifier = Modifier.padding(it)
         ) {
             LazyColumn(
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 modifier = Modifier
                     .hazeSource(state = hazeState)
                     .fillMaxSize()
+                    .overScrollVertical(),
+                overscrollEffect = null
             ) {
                 item {
                     SmallTitle(

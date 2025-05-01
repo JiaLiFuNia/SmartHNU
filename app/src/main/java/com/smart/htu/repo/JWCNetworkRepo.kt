@@ -6,6 +6,8 @@ import com.smart.htu.R
 import com.smart.htu.api.module.BuildingEntity
 import com.smart.htu.api.module.ClassroomOccupationEntity
 import com.smart.htu.api.module.CourseGrade
+import com.smart.htu.api.module.CourseScheduleEntity
+import com.smart.htu.api.module.CourseSchedulePost
 import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.LoginJWCEntity
 import com.smart.htu.api.module.LoginPost
@@ -48,6 +50,26 @@ class JWCNetworkRepo @Inject constructor(
                 dataStoreRepo.observeStudentId().first()
             }
         )
+
+    suspend fun getCourseScheduleService(
+        week: String = "",
+        section: String = ""
+    ): CourseScheduleEntity? {
+        val call = jwcService.getCourseSchedule(CourseSchedulePost(week, section))
+        val res = call.awaitResponse().body()
+        return when (res?.code) {
+            200 -> res
+            401 -> {
+                if (reLogin())
+                    return getCourseScheduleService(week, section)
+                else
+                    null
+            }
+
+            else -> null
+        }
+    }
+
 
     suspend fun getPersonalMessageService(): PersonalMessageRes? {
         val call = jwcService.getPersonalMessage()

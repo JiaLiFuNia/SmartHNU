@@ -2,12 +2,18 @@ package com.smart.htu.screens.setting
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import coil.annotation.ExperimentalCoilApi
+import coil.imageLoader
+import com.smart.htu.App.Companion.context
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_THEME_MODE
 import com.smart.htu.repo.SharedDataRepository
+import com.smart.htu.utils.CoilUtil.formatFileSize
+import com.smart.htu.utils.CoilUtil.getDirectorySize
 import com.smart.htu.utils.Term.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +23,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import java.io.File
 import javax.inject.Inject
 
 data class SettingUiState(
@@ -25,7 +33,8 @@ data class SettingUiState(
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val selectedLanguageIndex: Int = 0,
     val updateState: Boolean = true,
-    val termCode: String
+    val termCode: String,
+    val cacheSize: String = "计算中..."
 )
 
 @HiltViewModel
@@ -98,6 +107,7 @@ class SettingViewModel @Inject constructor(
                     }
                 }
         }
+        calculateCacheSize()
     }
 
     fun changeDynamicTheme(mode: Int) {
@@ -118,6 +128,40 @@ class SettingViewModel @Inject constructor(
         }
     }
 
+    fun calculateCacheSize() {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    val coilCacheDir = File(context.cacheDir, "image_cache")
+                    val size = if (coilCacheDir.exists() && coilCacheDir.isDirectory) {
+                        getDirectorySize(coilCacheDir)
+                    } else {
+                        0L
+                    }
+                    _uiState.update { it.copy(cacheSize = formatFileSize(size)) }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    _uiState.update { it.copy(cacheSize = "计算失败") }
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalCoilApi::class)
+    fun clearCache() {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    val imageLoader = context.imageLoader
+                    imageLoader.memoryCache?.clear()
+                    imageLoader.diskCache?.clear()
+                    calculateCacheSize()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
     /*fun changeLanguage(index: Int, context: Context) {
         viewModelScope.launch {
             val selectedLanguage = _uiState.value.languageList[index].value

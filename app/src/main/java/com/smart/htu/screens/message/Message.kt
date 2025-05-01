@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -21,23 +22,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -56,7 +49,6 @@ import com.smart.htu.api.module.NoticeType
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.svgVector.DrawableVectors
 import com.smart.htu.component.svgVector.drawablevectors.emptyData
-import com.smart.htu.component.svgVector.drawablevectors.emptyList
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.startWebUrl
@@ -71,6 +63,7 @@ import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
@@ -111,6 +104,18 @@ fun MessageScreen(
                         )
                     }
                 },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            viewModel.readAllNotice()
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.checklist_rtl_24px),
+                            contentDescription = "check"
+                        )
+                    }
+                },
                 modifier = Modifier.hazeEffect(
                     state = hazeState,
                     style = HazeMaterials.regular()
@@ -129,10 +134,12 @@ fun MessageScreen(
                 .fillMaxSize()
                 .padding(it)
         ) {
-            top.yukonga.miuix.kmp.basic.LazyColumn(
-                contentPadding = PaddingValues(16.dp),
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp, 12.dp),
                 modifier = Modifier
                     .hazeSource(state = hazeState)
+                    .overScrollVertical(),
+                overscrollEffect = null
             ) {
                 item {
                     NoticeList(
@@ -165,7 +172,7 @@ fun LazyItemScope.NoticeList(
                 SingleMessage(
                     readState = notice.id in uiState.hadReadIdList,
                     hadRead = {
-                        viewModel.addHadReadList(notice.id)
+                        viewModel.addReadNoticeId(notice.id)
                     },
                     notice = notice,
                     navController = navController

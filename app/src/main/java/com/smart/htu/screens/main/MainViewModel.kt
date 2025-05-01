@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.Course
+import com.smart.htu.api.module.CourseScheduleEntity
 import com.smart.htu.api.module.GiteeEntity
 import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.ResultWithStatus
@@ -34,6 +35,7 @@ data class AppUiState(
     val todayCourseList: ResultWithStatus<List<Course>> = ResultWithStatus(),
     val currentWeather: ResultWithStatus<WeatherNowData> = ResultWithStatus(),
     val newsList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
+    val courseSchedule: ResultWithStatus<CourseScheduleEntity> = ResultWithStatus(),
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val username: String = DEFAULT_USERNAME,
     val isLogSuccess: Boolean = false,
@@ -133,11 +135,20 @@ class MainViewModel @Inject constructor(
         getNewsList()
         getCurrentWeather()
         getTodayCourse()
+        getCurrentWeek()
     }
 
-    fun refreshGiteeConfig() {
-        viewModelScope.launch {
-            sharedDataRepository.getGiteeConfig()
+    suspend fun refreshGiteeConfig() {
+        sharedDataRepository.getGiteeConfig()
+    }
+
+    fun getCurrentWeek(week: String = "", section: String = "") = viewModelScope.launch {
+        try {
+            val res = jwcNetworkRepo.getCourseScheduleService(week, section)
+            Log.i("TAG666", "getCurrentWeek: $res")
+            _uiState.update { it.copy(courseSchedule = ResultWithStatus(res)) }
+        } catch (e: Exception) {
+            Log.i("TAG666", "getCurrentWeek: $e")
         }
     }
 

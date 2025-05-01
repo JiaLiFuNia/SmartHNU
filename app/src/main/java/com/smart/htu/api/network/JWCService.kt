@@ -3,6 +3,8 @@ package com.smart.htu.api.network
 import com.smart.htu.api.module.BuildingEntity
 import com.smart.htu.api.module.ClassroomOccupationEntity
 import com.smart.htu.api.module.CourseGrade
+import com.smart.htu.api.module.CourseScheduleEntity
+import com.smart.htu.api.module.CourseSchedulePost
 import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.LoginJWCEntity
 import com.smart.htu.api.module.LoginPost
@@ -53,5 +55,8 @@ interface JWCService {
 
     @POST("dev-api/appapi/Studentxjkp/index")
     fun getPersonalMessage(@Body body: Any = Object()): Call<PersonalMessageRes>
+
+    @POST("dev-api/appapi/Studentkb/index")
+    fun getCourseSchedule(@Body body: CourseSchedulePost): Call<CourseScheduleEntity>
 
 }

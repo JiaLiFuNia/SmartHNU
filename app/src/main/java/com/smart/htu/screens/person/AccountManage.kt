@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Info
@@ -31,10 +32,10 @@ import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.screens.login.LoginViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.basic.LazyColumn
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,10 +69,12 @@ fun AccountManage(
         onRefresh = { onRefresh() }
     ) {
         LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            contentPadding = PaddingValues(16.dp, 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .fillMaxSize()
+                .overScrollVertical(),
+            overscrollEffect = null
         ) {
             item {
                 SuggestChip(
@@ -87,7 +90,7 @@ fun AccountManage(
                 LargeCardDisplay(
                     modifier = Modifier,
                     title = "河南师大智慧教务",
-                    containerColor = MiuixTheme.colorScheme.surface,
+                    containerColor = MiuixTheme.colorScheme.background,
                     leadingIconPainting = R.drawable.circle_admin
                 ) {
                     TextField(
@@ -103,8 +106,8 @@ fun AccountManage(
             item {
                 LargeCardDisplay(
                     modifier = Modifier,
-                    title = "统一认证登录",
-                    containerColor = MiuixTheme.colorScheme.surface,
+                    title = "统一认证登录（i 师大）",
+                    containerColor = MiuixTheme.colorScheme.background,
                     leadingIconPainting = R.drawable.circle_admin
                 ) {
                     Column(

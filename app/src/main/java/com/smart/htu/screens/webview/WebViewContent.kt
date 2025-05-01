@@ -3,8 +3,6 @@ package com.smart.htu.screens.webview
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
-import android.util.Log
-import android.webkit.CookieManager
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Arrangement
@@ -27,8 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -38,7 +34,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.kevinnzou.web.AccompanistWebViewClient
 import com.kevinnzou.web.LoadingState
@@ -68,7 +63,6 @@ fun WebViewContent(
     title: String,
     navController: NavController,
     headers: Map<String, String> = emptyMap(),
-    webViewViewModel: WebViewViewModel = hiltViewModel(),
     content: (@Composable () -> Unit)? = null
 ) {
     val state = rememberWebViewState(url = url, additionalHttpHeaders = headers)
@@ -79,7 +73,7 @@ fun WebViewContent(
     var showDropDownMenu = remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    val cookies = webViewViewModel.cookies.collectAsState().value
+    // val cookies = webViewViewModel.cookies.collectAsState().value
     val webClient = remember {
         object : AccompanistWebViewClient() {
             override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {

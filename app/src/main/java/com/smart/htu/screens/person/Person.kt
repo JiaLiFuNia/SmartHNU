@@ -1,5 +1,6 @@
 package com.smart.htu.screens.person
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ListItem
@@ -16,12 +18,14 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -42,15 +46,16 @@ import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.copyContent
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
-import top.yukonga.miuix.kmp.basic.LazyColumn
 import top.yukonga.miuix.kmp.basic.TextButton
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonScreen(
     navController: NavController,
     viewModel: LoginViewModel,
-    contentPadding: PaddingValues
+    contentPadding: PaddingValues,
+    isShowPrivateMessage: MutableState<Boolean>
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -75,24 +80,12 @@ fun PersonScreen(
             .padding(contentPadding)
     ) {
         LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
             modifier = Modifier
                 .fillMaxSize()
+                .overScrollVertical(),
+            overscrollEffect = null
         ) {
-            item {
-                /*PreferencesCard(
-                    headlineText = "河南师范大学",
-                    supportingText = "省属重点大学、省特色骨干大学建设高校",
-                    leadingIcon = R.drawable.hnu,
-                    onClick = {
-                        navController.navigateToWebView(
-                            HENAN_NORMAL_UNIVERSITY,
-                            "河南师范大学"
-                        )
-                    }
-                )
-                Spacer(modifier = Modifier.height(20.dp))*/
-            }
             item {
                 LargeCardDisplay(
                     modifier = Modifier,
@@ -136,35 +129,43 @@ fun PersonScreen(
                     )
                     PersonalMessage(
                         label = stringResource(id = R.string.birthday),
-                        trailingText = uiState.personalMessage.data?.birthday
+                        trailingText = uiState.personalMessage.data?.birthday,
+                        isShowPrivateMessage = isShowPrivateMessage.value
                     )
                     PersonalMessage(
                         label = stringResource(id = R.string.student_id),
-                        trailingText = uiState.personalMessage.data?.studentId
+                        trailingText = uiState.personalMessage.data?.studentId,
+                        isShowPrivateMessage = isShowPrivateMessage.value
                     )
                     PersonalMessage(
                         label = stringResource(id = R.string.class_name),
-                        trailingText = uiState.personalMessage.data?.className
+                        trailingText = uiState.personalMessage.data?.className,
+                        isShowPrivateMessage = isShowPrivateMessage.value
                     )
                     PersonalMessage(
                         label = stringResource(id = R.string.academic),
-                        trailingText = uiState.personalMessage.data?.academic
+                        trailingText = uiState.personalMessage.data?.academic,
+                        isShowPrivateMessage = isShowPrivateMessage.value
                     )
                     PersonalMessage(
                         label = stringResource(R.string.campus_name),
-                        trailingText = uiState.personalMessage.data?.campusName
+                        trailingText = uiState.personalMessage.data?.campusName,
+                        isShowPrivateMessage = isShowPrivateMessage.value
                     )
                     PersonalMessage(
                         label = stringResource(id = R.string.political_outlook),
-                        trailingText = uiState.personalMessage.data?.politicalProfile
+                        trailingText = uiState.personalMessage.data?.politicalProfile,
+                        isShowPrivateMessage = isShowPrivateMessage.value
                     )
                     PersonalMessage(
                         label = stringResource(id = R.string.phone),
-                        trailingText = uiState.personalMessage.data?.phoneNumber
+                        trailingText = uiState.personalMessage.data?.phoneNumber,
+                        isShowPrivateMessage = isShowPrivateMessage.value
                     )
                     PersonalMessage(
                         label = stringResource(id = R.string.email),
-                        trailingText = uiState.personalMessage.data?.emailNumber
+                        trailingText = uiState.personalMessage.data?.emailNumber,
+                        isShowPrivateMessage = isShowPrivateMessage.value
                     )
                 }
                 Spacer(modifier = Modifier.height(20.dp))
@@ -246,8 +247,13 @@ fun PersonalMessage(
     label: String,
     content: (@Composable () -> Unit)? = null,
     trailingText: String? = null,
+    isShowPrivateMessage: Boolean = true,
     onClick: (() -> Unit)? = null
 ) {
+    val blurSize by animateDpAsState(
+        targetValue = if (!isShowPrivateMessage) 10.dp else 0.dp,
+        label = ""
+    )
     val scope = rememberCoroutineScope()
     ListItem(
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -266,6 +272,11 @@ fun PersonalMessage(
                     text = trailingText,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    modifier = if (!isShowPrivateMessage) {
+                        Modifier.blur(radius = blurSize)
+                    } else {
+                        Modifier
+                    }
                 )
             }
         },
@@ -275,8 +286,12 @@ fun PersonalMessage(
             } else {
                 if (trailingText != null) {
                     scope.launch {
-                        copyContent(trailingText)
-                        snackBarHostState.showSnackbar("已复制到剪贴板")
+                        if (isShowPrivateMessage) {
+                            copyContent(trailingText)
+                            snackBarHostState.showSnackbar("已复制到剪贴板")
+                        } else {
+                            snackBarHostState.showSnackbar("已开启隐私保护模式，禁止复制信息")
+                        }
                     }
                 }
             }
