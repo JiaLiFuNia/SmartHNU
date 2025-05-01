@@ -3,8 +3,8 @@ package com.smart.htu.utils
 import com.smart.htu.R
 import com.smart.htu.api.module.BuildingEntity
 import com.smart.htu.screens.application.entity.RouteType
-import com.smart.htu.screens.application.entity.SmallCardCategory
-import com.smart.htu.screens.application.entity.SmallCardContent
+import com.smart.htu.screens.application.entity.ApplicationCategory
+import com.smart.htu.screens.application.entity.ApplicationEntity
 import com.smart.htu.screens.navigation.Destinations
 
 class Constants {
@@ -43,56 +43,56 @@ class Constants {
         )
 
         val ALL_APP_LIST = listOf(
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = true,
                 icon = R.drawable.hnu,
                 trailingIcon = R.drawable.i_hnu_logo,
                 label = R.string.i_hnu,
                 routeType = RouteType.APP,
                 route = "com.autewifi.sd.enroll",
-                category = SmallCardCategory.QUICK_APP
+                category = ApplicationCategory.QUICK_APP
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = false,
                 label = R.string.dorm_air_conditioner,
                 icon = R.drawable.bolt_24px,
                 routeType = RouteType.SCREEN,
                 route = Destinations.AirCondition.route,
-                category = SmallCardCategory.CAMPUS
+                category = ApplicationCategory.CAMPUS
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = false,
                 label = R.string.classroom_search,
                 icon = R.drawable.apartment_24px,
                 routeType = RouteType.SCREEN,
                 route = Destinations.ClassroomSearch.route,
-                category = SmallCardCategory.ACADEMIC_AFFAIRS
+                category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = true,
                 label = R.string.book_search,
                 icon = R.drawable.book_4_24px,
                 routeType = RouteType.SCREEN,
                 route = Destinations.LibrarySearch.route,
-                category = SmallCardCategory.OTHERS
+                category = ApplicationCategory.OTHERS
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.finance_24px,
                 label = R.string.course_grade,
                 routeType = RouteType.SCREEN,
                 route = Destinations.Grade.route,
-                category = SmallCardCategory.ACADEMIC_AFFAIRS
+                category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = true,
                 icon = R.drawable.near_me_24px,
                 label = R.string.live_service,
                 routeType = null,
                 route = "",
-                category = SmallCardCategory.CAMPUS
+                category = ApplicationCategory.CAMPUS
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = true,
                 icon = R.drawable.bathtub_24px,
                 trailingIcon = R.drawable.circle_alipay,
@@ -100,9 +100,9 @@ class Constants {
                 label = R.string.shower_water,
                 routeType = RouteType.ALIPAY,
                 route = SHOWER_ALIPAY_URL,
-                category = SmallCardCategory.QUICK_APP
+                category = ApplicationCategory.QUICK_APP
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = true,
                 icon = R.drawable.water_voc_24px,
                 trailingIcon = R.drawable.circle_alipay,
@@ -110,95 +110,95 @@ class Constants {
                 label = R.string.water_washer,
                 routeType = RouteType.ALIPAY,
                 route = HOT_WATER_WASHER_ALIPAY_URL,
-                category = SmallCardCategory.QUICK_APP
+                category = ApplicationCategory.QUICK_APP
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.format_paint_24px,
                 label = R.string.second_class,
                 routeType = RouteType.URL,
                 route = SECOND_CLASS_URL,
-                category = SmallCardCategory.OTHERS
+                category = ApplicationCategory.OTHERS
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.book_4_24px,
                 label = R.string.textbook_select,
                 routeType = RouteType.SCREEN,
                 route = "textbook",
-                category = SmallCardCategory.ACADEMIC_AFFAIRS
+                category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.person_check_24px,
                 label = R.string.teacher_evaluation,
                 routeType = RouteType.SCREEN,
                 route = Destinations.TeacherEvaluation.route,
-                category = SmallCardCategory.ACADEMIC_AFFAIRS
+                category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.deep_seek,
                 label = R.string.deep_seek,
                 routeType = RouteType.URL,
                 route = "https://chat.htu.edu.cn/",
-                category = SmallCardCategory.AI
+                category = ApplicationCategory.AI
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.credit_card_24px,
                 label = R.string.school_card,
                 routeType = RouteType.URL,
                 route = EHALL_APP_BASE_URL + "6548421524823376",
-                category = SmallCardCategory.CAMPUS
+                category = ApplicationCategory.CAMPUS
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.school_24px,
                 label = R.string.academic_affairs_system,
                 routeType = RouteType.URL,
                 route = EHALL_APP_BASE_URL + "6468237463782079",
-                category = SmallCardCategory.ACADEMIC_AFFAIRS
+                category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.id_card_24px,
                 label = R.string.smart_work,
                 routeType = RouteType.URL,
                 route = EHALL_APP_BASE_URL + "6689155909292538",
-                category = SmallCardCategory.CAMPUS
+                category = ApplicationCategory.CAMPUS
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.psychology_alt_24px,
                 label = R.string.htu_helper,
                 routeType = RouteType.URL,
                 route = AUTH_BASE_URL + "authserver/login?service=https://ai.htu.edu.cn/api/cas",
-                category = SmallCardCategory.AI
+                category = ApplicationCategory.AI
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.support_agent_24px,
                 label = R.string.campus_helper,
                 routeType = RouteType.URL,
                 route = EHALL_APP_BASE_URL + "6225347137673201",
-                category = SmallCardCategory.AI
+                category = ApplicationCategory.AI
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.zju_logo,
                 label = R.string.mr_zhe_da,
                 routeType = RouteType.URL,
                 route = EHALL_APP_BASE_URL + "7416844941162412",
-                category = SmallCardCategory.AI
+                category = ApplicationCategory.AI
             ),
-            SmallCardContent(
+            ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.captive_portal_24px,
                 label = R.string.one_stop_service,
                 routeType = RouteType.URL,
                 route = "http://ehall2.htu.edu.cn/login?service=http://ehall2.htu.edu.cn/ywtb-mobile/index.html",
-                category = SmallCardCategory.CAMPUS
+                category = ApplicationCategory.CAMPUS
             )
         )
         val INIT_COMMON_APP_LIST = listOf(

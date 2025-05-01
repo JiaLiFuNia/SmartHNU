@@ -5,8 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.Notice
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
-import com.smart.htu.repo.NetworkRepo
-import com.smart.htu.repo.SharedDataRepoImpl
 import com.smart.htu.repo.SharedDataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,11 +40,11 @@ class MessageViewModel @Inject constructor(
             runBlocking { dataStoreRepo.observerBlurState().first() }
         )
 
-    private val _hadReadIdListStateFlow = dataStoreRepo.observeNoticeReadIdList()
+    private val _hadReadIdListStateFlow = dataStoreRepo.observeReadNoticeIdList()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            runBlocking { dataStoreRepo.observeNoticeReadIdList().first() }
+            runBlocking { dataStoreRepo.observeReadNoticeIdList().first() }
         )
 
     init {
@@ -72,7 +70,7 @@ class MessageViewModel @Inject constructor(
 
     fun addHadReadList(id: Int) = viewModelScope.launch {
         _uiState.update { it.copy(hadReadIdList = it.hadReadIdList + id) }
-        dataStoreRepo.saveNoticeReadId(_uiState.value.hadReadIdList)
+        dataStoreRepo.addReadNoticeId(_uiState.value.hadReadIdList)
     }
 
     fun refreshGiteeConfig() {

@@ -2,6 +2,7 @@ package com.smart.htu.di
 
 import android.util.Log
 import com.smart.htu.api.network.AirConditionService
+import com.smart.htu.api.network.AppLoginService
 import com.smart.htu.api.network.AuthLoginService
 import com.smart.htu.api.network.EHallService
 import com.smart.htu.api.network.GiteeService
@@ -44,6 +45,7 @@ object NetworkModule {
         const val HTU_BASE_URL = "https://www.htu.edu.cn/"
         const val JWC_BASE_URL = "https://jwc.htu.edu.cn/"
         const val AUTH_BASE_URL = "https://authserver2.htu.edu.cn/"
+        const val APP_BASE_URL = "http://app.htu.edu.cn/appapi/"
         const val EHALL_BASE_URL = "https://ehall2.htu.edu.cn/"
         const val LIBRARY_BASE_URL = "http://libmsg.htu.cn/"
 
@@ -68,6 +70,18 @@ object NetworkModule {
         return OkHttpClient.Builder()
             .followRedirects(true)
             .cookieJar(cookieJar)
+            .addInterceptor { chain ->
+                val request = chain.request()
+                val response = chain.proceed(request)
+                if (response.isRedirect) {
+                    val redirectUrl = response.header("Location") ?: ""
+                    Log.i("TAG666", "重定向到: $redirectUrl")
+                    if (redirectUrl.contains("mobile_code=")) {
+                        Log.i("TAG666", "mobile_code: $redirectUrl")
+                    }
+                }
+                response
+            }
             .connectTimeout(30L, TimeUnit.SECONDS)
             .readTimeout(30L, TimeUnit.SECONDS)
             .writeTimeout(30L, TimeUnit.SECONDS)
@@ -88,6 +102,16 @@ object NetworkModule {
         return retrofit.create(AuthLoginService::class.java)
     }
 
+    @Provides
+    @Singleton
+    fun provideAppLoginService(
+    ): AppLoginService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(ApiConstants.APP_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(AppLoginService::class.java)
+    }
 
     @Provides
     @Singleton
@@ -199,6 +223,15 @@ class NetworkCookieJar @Inject constructor(
             } catch (e: Exception) {
                 Log.e("NetworkCookieJar", "Error initializing cookies: ${e.message}")
             }
+        }
+    }
+
+    fun loadAllCookies(): List<Cookie> {
+        return try {
+            cookieManager.cookieStore.cookies.mapNotNull { it.toOkHttpCookie() }
+        } catch (e: Exception) {
+            Log.e("NetworkCookieJar", "Error loading all cookies: ${e.message}")
+            emptyList()
         }
     }
 

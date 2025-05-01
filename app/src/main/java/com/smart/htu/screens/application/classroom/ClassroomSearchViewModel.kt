@@ -8,7 +8,7 @@ import com.smart.htu.api.module.ClassroomOccupationEntity
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN_EFFECTIVENESS
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN_VALIDITY
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.utils.Constants.Companion.BUILDING_LIST
 import com.smart.htu.utils.getCurrentDates
@@ -29,7 +29,7 @@ data class ClassroomUiState(
     val buildingsOccupation: Map<Int, ClassroomOccupationEntity> = emptyMap(),
     val isLoading: Boolean = true,
     val token: String = DEFAULT_TOKEN,
-    val isTokenValid: Boolean = DEFAULT_TOKEN_EFFECTIVENESS,
+    val isTokenValid: Boolean = DEFAULT_TOKEN_VALIDITY,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
 
@@ -63,12 +63,12 @@ class ClassroomSearchViewModel @Inject constructor(
             }
         )
 
-    private val tokenValidStateFlow = dataStoreRepo.observeTokenValid()
+    private val tokenValidStateFlow = dataStoreRepo.observeTokenValidity()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
-                dataStoreRepo.observeTokenValid().first()
+                dataStoreRepo.observeTokenValidity().first()
             }
         )
 
@@ -123,7 +123,7 @@ class ClassroomSearchViewModel @Inject constructor(
 
     private fun setTokenValid(valid: Boolean) {
         viewModelScope.launch {
-            dataStoreRepo.setTokenValid(valid)
+            dataStoreRepo.setTokenValidity(valid)
             _uiState.update { it.copy(isTokenValid = valid) }
         }
     }

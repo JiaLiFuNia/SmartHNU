@@ -299,7 +299,7 @@ fun MainFrame(
         }
     }
 
-    // val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+    // val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
     DoubleBackToExitApp(
         onExit = {

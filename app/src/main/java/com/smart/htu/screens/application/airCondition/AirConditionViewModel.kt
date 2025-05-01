@@ -157,7 +157,9 @@ class AirConditionViewModel @Inject constructor(
         val cookie = getCookieByType()
         val res = networkRepo.getAirConditionAreaService("shiroJID=${cookie.shiroJID}", cookie.ymId)
         res.onSuccess {
-            _uiState.update { it.copy(customConfig = res.getOrNull()?.rows?.first()) }
+            _uiState.update { uiState ->
+                uiState.copy(customConfig = it.rows?.first())
+            }
             changeCookieValidState(true)
             showSnackBar("已配置有效 Cookie")
         }
@@ -183,7 +185,9 @@ class AirConditionViewModel @Inject constructor(
             roomCode = roomCode
         )
         billData.onSuccess {
-            _uiState.update { it.copy(billData = billData.getOrNull()) }
+            _uiState.update { uiState ->
+                uiState.copy(billData = it)
+            }
         }
     }
 
@@ -203,7 +207,9 @@ class AirConditionViewModel @Inject constructor(
             mdType = _uiState.value.billData?.data?.surplusList?.first()?.mdtype ?: ""
         )
         billRecords.onSuccess {
-            _uiState.update { it.copy(billRecords = billRecords.getOrNull()) }
+            _uiState.update { uiState ->
+                uiState.copy(billRecords = it)
+            }
         }
     }
 
@@ -222,7 +228,9 @@ class AirConditionViewModel @Inject constructor(
             roomCode = roomCode
         )
         buyRecords.onSuccess {
-            _uiState.update { it.copy(buyRecords = buyRecords.getOrNull()) }
+            _uiState.update { uiState ->
+                uiState.copy(buyRecords = it)
+            }
         }
     }
 

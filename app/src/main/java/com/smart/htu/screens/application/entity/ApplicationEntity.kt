@@ -4,7 +4,7 @@ import androidx.annotation.DrawableRes
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SmallCardContent(
+data class ApplicationEntity(
     val guestEnable: Boolean = true,
     val label: Int,
     val description: String? = null,
@@ -12,10 +12,10 @@ data class SmallCardContent(
     @DrawableRes val trailingIcon: Int? = null,
     val routeType: RouteType?,
     val route: String?,
-    val category: SmallCardCategory
+    val category: ApplicationCategory
 )
 
-enum class SmallCardCategory(val category: String) {
+enum class ApplicationCategory(val category: String) {
     AI("师大 AI"),
     QUICK_APP("快捷应用"),
     CAMPUS("校园"),

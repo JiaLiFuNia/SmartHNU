@@ -14,7 +14,7 @@ import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.SharedDataRepository
-import com.smart.htu.screens.application.entity.SmallCardContent
+import com.smart.htu.screens.application.entity.ApplicationEntity
 import com.smart.htu.screens.news.entity.NewsCategoryEntity
 import com.smart.htu.screens.news.entity.NewsType
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
@@ -39,7 +39,7 @@ data class AppUiState(
     val isLogSuccess: Boolean = false,
     val hadReadIdList: List<Int> = emptyList(),
     val giteeConfig: GiteeEntity? = null,
-    val appListIsCommonList: List<SmallCardContent> = INIT_COMMON_APP_LIST
+    val appListIsCommonList: List<ApplicationEntity> = INIT_COMMON_APP_LIST
 )
 
 @HiltViewModel
@@ -71,11 +71,11 @@ class MainViewModel @Inject constructor(
             }
         )
 
-    private val hadReadIdListStateFlow = dataStoreRepo.observeNoticeReadIdList()
+    private val hadReadIdListStateFlow = dataStoreRepo.observeReadNoticeIdList()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            runBlocking { dataStoreRepo.observeNoticeReadIdList().first() }
+            runBlocking { dataStoreRepo.observeReadNoticeIdList().first() }
         )
 
     private val loginState = dataStoreRepo.observeLoginState().stateIn(
@@ -84,10 +84,10 @@ class MainViewModel @Inject constructor(
         runBlocking { dataStoreRepo.observeLoginState().first() }
     )
 
-    private val appListIsCommonListStateFlow = dataStoreRepo.observeSmallCard().stateIn(
+    private val appListIsCommonListStateFlow = dataStoreRepo.observeCommonAppList().stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
-        runBlocking { dataStoreRepo.observeSmallCard().first() }
+        runBlocking { dataStoreRepo.observeCommonAppList().first() }
     )
 
     init {

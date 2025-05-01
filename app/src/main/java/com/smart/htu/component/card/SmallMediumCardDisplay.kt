@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.smart.htu.R
 import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.screens.application.entity.RouteType
-import com.smart.htu.screens.application.entity.SmallCardContent
+import com.smart.htu.screens.application.entity.ApplicationEntity
 import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Surface
@@ -53,7 +53,7 @@ import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 @Composable
 fun SmallMediumCardDisplay(
     enabled: Boolean,
-    content: SmallCardContent,
+    content: ApplicationEntity,
     modifier: Modifier,
     onCLick: () -> Unit
 ) {

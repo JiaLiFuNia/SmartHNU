@@ -1,6 +1,7 @@
 package com.smart.htu.screens
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -8,7 +9,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.smart.htu.component.WebViewContent
+import com.smart.htu.screens.webview.WebViewContent
 import com.smart.htu.component.animation.animatedComposable
 import com.smart.htu.screens.application.ApplicationEdit
 import com.smart.htu.screens.application.ApplicationViewModel
@@ -32,13 +33,11 @@ import com.smart.htu.screens.news.NewsSearch
 import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.person.AccountManage
 import com.smart.htu.screens.setting.About
-import com.smart.htu.screens.setting.AppSettingScreen
-import com.smart.htu.screens.setting.DynamicColorSettingScreen
-import com.smart.htu.screens.setting.Licence
-import com.smart.htu.screens.setting.MainSettingScreen
-import com.smart.htu.screens.setting.NewsSettingScreen
+import com.smart.htu.screens.setting.License
+import com.smart.htu.screens.setting.LicenseDetail
 import com.smart.htu.screens.setting.SettingScreen
 import com.smart.htu.screens.setting.SettingViewModel
+import com.smart.htu.screens.webview.WebViewViewModel
 import com.smart.htu.utils.startAppUrl
 import com.smart.htu.utils.startLaunchAPK
 
@@ -51,6 +50,7 @@ fun NavHostScreen() {
     val newsViewModel: NewsViewModel = hiltViewModel()
     val messageViewModel: MessageViewModel = hiltViewModel()
     val airConditionViewModel: AirConditionViewModel = hiltViewModel()
+    val webViewViewModel: WebViewViewModel = hiltViewModel()
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -85,30 +85,6 @@ fun NavHostScreen() {
                 viewModel = settingViewModel
             )
         }
-        animatedComposable(Destinations.DynamicColorSetting.route) {
-            DynamicColorSettingScreen(
-                navController = navController,
-                viewModel = settingViewModel
-            )
-        }
-        animatedComposable(Destinations.MainSetting.route) {
-            MainSettingScreen(
-                navController = navController,
-                viewModel = settingViewModel
-            )
-        }
-        animatedComposable(Destinations.AppSetting.route) {
-            AppSettingScreen(
-                navController = navController,
-                viewModel = settingViewModel
-            )
-        }
-        animatedComposable(Destinations.NewsSetting.route) {
-            NewsSettingScreen(
-                navController = navController,
-                viewModel = settingViewModel
-            )
-        }
         animatedComposable(Destinations.ApplicationEdit.route) {
             ApplicationEdit(
                 navController = navController,
@@ -129,14 +105,37 @@ fun NavHostScreen() {
                 }
             )
         ) { webview ->
+            val url = Uri.decode(webview.arguments?.getString("url") ?: "")
+            // webViewViewModel.loadCookiesForUrl(url)
             WebViewContent(
                 navController = navController,
-                url = Uri.decode(webview.arguments?.getString("url") ?: ""),
+                url = url,
                 title = webview.arguments?.getString("title") ?: ""
             )
         }
-        animatedComposable(Destinations.Appreciate.route) {
-            Licence(navController = navController)
+        animatedComposable(Destinations.License.route) {
+            License(navController = navController)
+        }
+        animatedComposable(
+            route = Destinations.LicenseDetail.route + "/{name}/{website}/{license}",
+            arguments = listOf(
+                navArgument(name = "name") {
+                    type = NavType.StringType
+                },
+                navArgument(name = "website") {
+                    type = NavType.StringType
+                },
+                navArgument(name = "license") {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            LicenseDetail(
+                navController = navController,
+                name = it.arguments?.getString("name") ?: "",
+                website = it.arguments?.getString("website"),
+                license = it.arguments?.getString("license") ?: ""
+            )
         }
         animatedComposable(Destinations.LibrarySearch.route) {
             LibrarySearchScreen(navController = navController)
@@ -209,7 +208,10 @@ fun NavController.navigateWithAuthCheck(
     if (logState || isGuest) {
         when (routeType) {
             RouteType.URL -> {
-                this.navigateToWebView(url = route ?: "", label = context.getString(label))
+                this.navigateToWebView(
+                    url = route ?: "",
+                    label = context.getString(label)
+                )
             }
 
             RouteType.SCREEN -> {

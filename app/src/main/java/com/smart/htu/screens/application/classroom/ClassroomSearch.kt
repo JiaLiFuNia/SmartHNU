@@ -29,7 +29,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -123,7 +122,7 @@ fun ClassroomSearchScreen(
         viewModel.getClassroomOccupation(selectedDate, selectedRoomIndex)
     }
 
-    val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.minWidthDp
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     top.yukonga.miuix.kmp.basic.Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
@@ -190,7 +189,7 @@ fun ClassroomSearchScreen(
                     LazyVerticalGridCustom(
                         modifier = Modifier.fillMaxSize(),
                         list = uiState.buildingsList,
-                        columnSize = if (windowWidthClass == WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) 4 else 3
+                        columnSize = if (windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)) 3 else 4
                     ) { index, building ->
                         FilterChip(
                             selected = index == selectedRoomIndex,
@@ -208,7 +207,7 @@ fun ClassroomSearchScreen(
                     LazyVerticalGridCustom(
                         modifier = Modifier.fillMaxSize(),
                         list = COURSE_PERIOD.keys.toList(),
-                        columnSize = if (windowWidthClass == WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) 5 else 3
+                        columnSize = if (windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)) 3 else 5
                     ) { currentIndex, timeLabel ->
                         FilterChip(
                             selected = currentIndex == selectedTimeIndex,
@@ -292,7 +291,11 @@ fun ClassroomSearchScreen(
                                 LazyVerticalGridCustom(
                                     modifier = Modifier.fillMaxSize(),
                                     list = currentRoomList,
-                                    columnSize = if (windowWidthClass == WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) 4 else 3,
+                                    columnSize =
+                                        if (windowSizeClass.isHeightAtLeastBreakpoint(
+                                                WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
+                                            )
+                                        ) 3 else 4,
                                     ifEqualWeight = true
                                 ) { _, room ->
                                     SingleRoom(
@@ -416,7 +419,9 @@ fun TipDialog(
             ) {
                 repeat(2) {
                     Column(
-                        modifier = Modifier.fillMaxWidth().weight(0.5f)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(0.5f)
                     ) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),

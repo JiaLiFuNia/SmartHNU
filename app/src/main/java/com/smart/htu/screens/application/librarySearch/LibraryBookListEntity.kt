@@ -46,7 +46,7 @@ data class LibraryBookDetail(
 }
 
 @Keep
-data class RentBookEntity(
+data class BorrowedBookEntity(
     val imageUrl: String,
     val bookName: String,
     val publisher: String,

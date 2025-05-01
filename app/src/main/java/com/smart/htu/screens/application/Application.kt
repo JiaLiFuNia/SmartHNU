@@ -21,11 +21,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.window.core.layout.WindowWidthSizeClass
+import androidx.window.core.layout.WindowSizeClass
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.SmallMediumCardDisplay
-import com.smart.htu.screens.application.entity.SmallCardCategory
+import com.smart.htu.screens.application.entity.ApplicationCategory
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateWithAuthCheck
 import com.smart.htu.screens.navigation.Destinations
@@ -47,11 +47,11 @@ fun Application(
     val visibility = remember {
         derivedStateOf { mutableStateOf(loginUiState.loginJWCState != 1) }
     }
-    val windowWidthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
     LazyVerticalGrid(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        columns = GridCells.Fixed(if (windowWidthClass == WindowWidthSizeClass.EXPANDED) 4 else 2),
+        columns = GridCells.Fixed(if (windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)) 2 else 4),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.padding(contentPadding),
@@ -69,7 +69,7 @@ fun Application(
             }
         }
 
-        SmallCardCategory.entries.forEach { item ->
+        ApplicationCategory.entries.forEach { item ->
             val appList = uiState.appList.filter { app ->
                 app.category == item
             }

@@ -1,10 +1,11 @@
 package com.smart.htu.screens.application
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
-import com.smart.htu.screens.application.entity.SmallCardContent
+import com.smart.htu.screens.application.entity.ApplicationEntity
 import com.smart.htu.utils.Constants.Companion.ALL_APP_LIST
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,8 +21,8 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class ApplicationUiState(
-    val appList: List<SmallCardContent>,
-    val appListIsCommonList: List<SmallCardContent>,
+    val appList: List<ApplicationEntity>,
+    val appListIsCommonList: List<ApplicationEntity>,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
 
@@ -38,12 +39,12 @@ class ApplicationViewModel @Inject constructor(
     )
     val uiState: StateFlow<ApplicationUiState> = _uiState.asStateFlow()
 
-    private val _appListIsCommonListStateFlow = dataStoreRepo.observeSmallCard()
+    private val _appListIsCommonListStateFlow = dataStoreRepo.observeCommonAppList()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
-                dataStoreRepo.observeSmallCard().first()
+                dataStoreRepo.observeCommonAppList().first()
             }
         )
 
@@ -67,14 +68,14 @@ class ApplicationViewModel @Inject constructor(
         }
     }
 
-    fun changeCommonAppListState(app: SmallCardContent, add: Boolean = true) {
+    fun changeCommonAppListState(app: ApplicationEntity, add: Boolean = true) {
         viewModelScope.launch {
             val currentListState = _uiState.value.appListIsCommonList.toMutableList()
             if (add)
                 currentListState.apply { add(app) }
             else
                 currentListState.apply { remove(app) }
-            dataStoreRepo.saveSmallCard(currentListState)
+            dataStoreRepo.setCommonApp(currentListState)
             _uiState.update { it.copy(appListIsCommonList = currentListState) }
         }
     }

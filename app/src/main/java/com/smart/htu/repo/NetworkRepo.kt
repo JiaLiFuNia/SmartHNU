@@ -1,6 +1,7 @@
 package com.smart.htu.repo
 
 import android.util.Log
+import com.smart.htu.api.module.AppToken
 import com.smart.htu.api.module.Area
 import com.smart.htu.api.module.BillDetail
 import com.smart.htu.api.module.BillRecords
@@ -8,6 +9,7 @@ import com.smart.htu.api.module.BuyRecords
 import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.WeatherNowData
 import com.smart.htu.api.network.AirConditionService
+import com.smart.htu.api.network.AppLoginService
 import com.smart.htu.api.network.AuthLoginService
 import com.smart.htu.api.network.EHallService
 import com.smart.htu.api.network.LibraryService
@@ -23,19 +25,23 @@ import com.smart.htu.utils.parseLibraryBookDetail
 import com.smart.htu.utils.parseLibrarySearchResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.ResponseBody
 import org.jsoup.Jsoup
+import retrofit2.Response
 import retrofit2.awaitResponse
 import java.io.IOException
 import javax.inject.Inject
 
 class NetworkRepo @Inject constructor(
     private val authServerService: AuthLoginService,
+    private val appLoginService: AppLoginService,
     private val eHallService: EHallService,
     private val libraryService: LibraryService,
     private val airConditionService: AirConditionService,
     private val weatherService: WeatherService,
     private val newsService: NewsService,
-    private val networkCookieJar: NetworkCookieJar
+    private val networkCookieJar: NetworkCookieJar,
+    private val dataStoreRepo: DataStoreRepo
 ) {
 
     // 获取新闻
@@ -235,12 +241,19 @@ class NetworkRepo @Inject constructor(
             val response = authServerService.authLogin(
                 username = studentId,
                 password = AESUtils.encryptPassword(password, pwdEncryptSalt),
-                captcha = captcha ?: "",
-                execution = execution
+                execution = execution,
+                captcha = captcha ?: ""
             )
             val loggedPage = Jsoup.parse(response.body()?.string() ?: "")
             val errorTip = loggedPage.getElementById("showErrorTip")?.text() ?: ""
             Log.i("TAG666", "errorTip: $errorTip")
+            // 获取 mobile_code
+            val mobileCode = extractMobileCode(response)
+            if (mobileCode.isNotEmpty()) {
+                Log.i("TAG666", "获取到 mobile_code: $mobileCode")
+                dataStoreRepo.saveMobileCode(mobileCode)
+            }
+            getAppTokenService(mobileCode)
             return when (response.code()) {
                 401 -> Result.failure(Exception("状态码：${response.code()} $errorTip"))
                 200 -> {
@@ -259,11 +272,33 @@ class NetworkRepo @Inject constructor(
         }
     }
 
+    suspend fun getAppTokenService(mobileCode: String): Result<AppToken?> {
+        try {
+            val appToken = appLoginService.appLogin(mobileCode)
+            return when (appToken.code) {
+                200 -> Result.success(appToken.data)
+                else -> Result.failure(Exception(appToken.message))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666 log", "${e.message}")
+            return Result.failure(Exception(e.message))
+        }
+    }
+
     private var pwdEncryptSalt: String = ""
     private var execution: String = ""
     private fun parseLoginPage(html: String) {
         val document = Jsoup.parse(html)
         pwdEncryptSalt = document.getElementById("pwdEncryptSalt")?.attr("value") ?: ""
         execution = document.getElementById("execution")?.attr("value") ?: ""
+    }
+
+    private fun extractMobileCode(response: Response<ResponseBody>): String {
+        // 从重定向的 URL 中获取 mobile_code
+        val redirectUrl = response.raw().request.url.toString()
+        Log.i("TAG666", "重定向 URL: $redirectUrl")
+        val regex = "mobile_code=([^&#]+)".toRegex()
+        val matchResult = regex.find(redirectUrl)
+        return matchResult?.groupValues?.getOrNull(1) ?: ""
     }
 }

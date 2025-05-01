@@ -135,7 +135,7 @@ fun LoginScreen(
         ) {
             item {
                 top.yukonga.miuix.kmp.basic.Card(
-                    modifier = Modifier.padding(top = 40.dp, bottom = 32.dp),
+                    modifier = Modifier.padding(top = 40.dp, bottom = 36.dp),
                     color = Color.Transparent
                 ) {
                     Image(
@@ -157,6 +157,7 @@ fun LoginScreen(
                     },
                     onSecondValueChange = {
                         viewModel.changeJWCPassword(it)
+                        viewModel.changePassword(it)
                     }
                 )
             }

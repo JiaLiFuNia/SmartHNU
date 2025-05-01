@@ -4,16 +4,17 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import com.smart.htu.App.Companion.context
+import androidx.core.net.toUri
 
 // 打开日历
 fun startCalendar() {
     try {
         val calendarIntent = Intent(Intent.ACTION_VIEW).apply {
-            data = Uri.parse("content://com.android.calendar/time")
+            data = "content://com.android.calendar/time".toUri()
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
         context.startActivity(calendarIntent)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         sendToast(context, "无法启动应用")
     }
 }
@@ -21,10 +22,10 @@ fun startCalendar() {
 // 传入网页URL打开
 fun startWebUrl(url: String) {
     try {
-        val it = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        val it = Intent(Intent.ACTION_VIEW, url.toUri())
         it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(it)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         sendToast(context, "启动浏览器失败")
     }
 }
@@ -44,10 +45,10 @@ fun startLaunchAPK(packageName: String, appName: String = "应用") {
 //传入应用URL打开
 fun startAppUrl(url: String) {
     try {
-        val intent = Intent(Intent.ACTION_DEFAULT, Uri.parse(url))
+        val intent = Intent(Intent.ACTION_DEFAULT, url.toUri())
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(intent)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         sendToast(context, "打开支付宝失败")
     }
 }

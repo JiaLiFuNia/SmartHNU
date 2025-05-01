@@ -11,7 +11,7 @@ import com.smart.htu.api.module.Textbook
 import com.smart.htu.api.module.TextbookEntity
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN_EFFECTIVENESS
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN_VALIDITY
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.utils.Term.getCurrentTerm
@@ -35,7 +35,7 @@ data class TextbookUiState(
     val courseList: ResultWithStatus<TextbookEntity> = ResultWithStatus(),
     val selectableList: ResultWithStatus<List<Textbook>> = ResultWithStatus(),
     val selectedList: ResultWithStatus<List<Textbook>> = ResultWithStatus(),
-    val isTokenValid: Boolean = DEFAULT_TOKEN_EFFECTIVENESS,
+    val isTokenValid: Boolean = DEFAULT_TOKEN_VALIDITY,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
 
@@ -65,12 +65,12 @@ class TextbookViewModel @Inject constructor(
             }
         )
 
-    private val tokenValidStateFlow = dataStoreRepo.observeTokenValid()
+    private val tokenValidStateFlow = dataStoreRepo.observeTokenValidity()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
-                dataStoreRepo.observeTokenValid().first()
+                dataStoreRepo.observeTokenValidity().first()
             }
         )
     private val termCodeStateFlow = dataStoreRepo.observeGlobalTermCode()

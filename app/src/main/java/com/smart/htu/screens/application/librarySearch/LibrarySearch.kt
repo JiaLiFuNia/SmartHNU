@@ -299,7 +299,7 @@ fun LibrarySearchScreen(
                                     },
                                     onFavorite = {
                                         viewModel.addRentBookList(
-                                            RentBookEntity(
+                                            BorrowedBookEntity(
                                                 bookName = item.title,
                                                 publisher = item.publisher,
                                                 id = item.id,
@@ -320,7 +320,7 @@ fun LibrarySearchScreen(
                                                 )
                                             when (result) {
                                                 SnackbarResult.ActionPerformed -> viewModel.addRentBookList(
-                                                    RentBookEntity(
+                                                    BorrowedBookEntity(
                                                         bookName = item.title,
                                                         publisher = item.publisher,
                                                         id = item.id,

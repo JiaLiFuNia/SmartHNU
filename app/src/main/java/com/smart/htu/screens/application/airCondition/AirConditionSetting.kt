@@ -1,6 +1,10 @@
 package com.smart.htu.screens.application.airCondition
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -156,37 +160,46 @@ fun AirConditionSetting(
                     insideMargin = PaddingValues(12.dp, 8.dp)
                 )
                 val dropdownOptions = listOf("云端", "自定义")
-                Card {
-                    SuperDropdown(
-                        title = "Cookie 来源",
-                        summary = "云端 Cookie 由开发者提供，自定义 Cookie 需用户自行抓包获取",
-                        items = dropdownOptions,
-                        selectedIndex = uiState.setCookieType,
-                        mode = DropDownMode.AlwaysOnRight,
-                        onSelectedIndexChange = {
-                            viewModel.changeCookieType(it)
-                        }
-                    )
-                }
-            }
-            item {
-                AnimatedVisibility(visible = uiState.setCookieType == 1) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Card {
+                        SuperDropdown(
+                            title = "Cookie 来源",
+                            summary = "云端 Cookie 由开发者提供，自定义 Cookie 需用户自行抓包获取",
+                            items = dropdownOptions,
+                            selectedIndex = uiState.setCookieType,
+                            mode = DropDownMode.AlwaysOnRight,
+                            onSelectedIndexChange = {
+                                viewModel.changeCookieType(it)
+                            }
+                        )
+                    }
+                    AnimatedVisibility(
+                        enter = fadeIn() + slideInVertically(),
+                        exit = fadeOut() + slideOutVertically(),
+                        visible = uiState.setCookieType == 1
                     ) {
-                        TextField(
-                            label = "shiroJID",
-                            value = uiState.userLoginCookie?.shiroJID ?: "",
-                            onValueChange = { viewModel.changeUserCookieSY(shiroJID = it) }
-                        )
-                        TextField(
-                            label = "ymId",
-                            value = uiState.userLoginCookie?.ymId ?: "",
-                            onValueChange = { viewModel.changeUserCookieSY(ymId = it) }
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            TextField(
+                                label = "shiroJID",
+                                value = uiState.userLoginCookie?.shiroJID ?: "",
+                                onValueChange = { viewModel.changeUserCookieSY(shiroJID = it) }
+                            )
+                            TextField(
+                                label = "ymId",
+                                value = uiState.userLoginCookie?.ymId ?: "",
+                                onValueChange = { viewModel.changeUserCookieSY(ymId = it) }
+                            )
+                        }
                     }
                 }
             }

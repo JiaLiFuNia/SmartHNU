@@ -208,12 +208,12 @@ class JWCNetworkRepo @Inject constructor(
             Log.i("TAG666 jwclogin", logState.toString())
             return when (logState.code) {
                 200 -> {
-                    dataStoreRepo.setTokenValid(true)
+                    dataStoreRepo.setTokenValidity(true)
                     Result.success(logState)
                 }
 
                 401 -> {
-                    dataStoreRepo.setTokenValid(false)
+                    dataStoreRepo.setTokenValidity(false)
                     Result.failure(Exception("智慧教务登录失败"))
                 }
 

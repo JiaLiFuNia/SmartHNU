@@ -30,13 +30,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.smart.htu.screens.application.entity.RouteType
-import com.smart.htu.screens.application.entity.SmallCardContent
+import com.smart.htu.screens.application.entity.ApplicationEntity
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SmallCardDisplay(
     enabled: Boolean,
-    content: SmallCardContent,
+    content: ApplicationEntity,
     onCLick: () -> Unit,
 ) {
     val showDialog = remember { mutableStateOf(false) }

@@ -1,8 +1,10 @@
-package com.smart.htu.component
+package com.smart.htu.screens.webview
 
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
+import android.util.Log
+import android.webkit.CookieManager
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +27,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,6 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.kevinnzou.web.AccompanistWebViewClient
 import com.kevinnzou.web.LoadingState
@@ -50,6 +55,7 @@ import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
+import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissPopup
@@ -62,6 +68,7 @@ fun WebViewContent(
     title: String,
     navController: NavController,
     headers: Map<String, String> = emptyMap(),
+    webViewViewModel: WebViewViewModel = hiltViewModel(),
     content: (@Composable () -> Unit)? = null
 ) {
     val state = rememberWebViewState(url = url, additionalHttpHeaders = headers)
@@ -71,6 +78,8 @@ fun WebViewContent(
     val (currentUrl, onCurrentUrl) = remember { mutableStateOf(url) }
     var showDropDownMenu = remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    val cookies = webViewViewModel.cookies.collectAsState().value
     val webClient = remember {
         object : AccompanistWebViewClient() {
             override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
@@ -117,7 +126,7 @@ fun WebViewContent(
             }
         }
     }
-    top.yukonga.miuix.kmp.basic.Scaffold(
+    Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
         topBar = {
             TopAppBar(
@@ -255,6 +264,20 @@ fun WebViewContent(
                 navigator = navigator,
                 onCreated = { webView ->
                     webView.setDefaultSettings()
+
+                    /*Log.i("TAG666", "cookies: $cookies")
+                    if (cookies.isNotEmpty()) {
+                        val cookieManager = CookieManager.getInstance()
+                        cookieManager.setAcceptCookie(true)
+                        cookieManager.setAcceptThirdPartyCookies(webView, true)
+
+                        cookies.forEach { (key, value) ->
+                            val cookieString = "$key=$value"
+                            Log.d("TAG666 WebViewCookie", "Setting cookie: $cookieString for $url")
+                            cookieManager.setCookie(url, cookieString)
+                        }
+                        cookieManager.flush()
+                    }*/
 
                     headers["user-agent"]?.let {
                         webView.settings.userAgentString = it

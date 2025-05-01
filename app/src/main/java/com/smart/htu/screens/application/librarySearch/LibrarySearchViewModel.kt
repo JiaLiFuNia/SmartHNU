@@ -29,7 +29,7 @@ data class LibrarySearchUiState(
     val searchResult: List<LibraryBookListEntity> = emptyList(),
     val searchHistoryList: List<String> = emptyList(),
     val singleBookDetail: List<LibraryBookDetail> = emptyList(),
-    val rentList: List<RentBookEntity> = emptyList()
+    val rentList: List<BorrowedBookEntity> = emptyList()
 )
 
 @HiltViewModel
@@ -41,12 +41,12 @@ class LibrarySearchViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(LibrarySearchUiState())
     val uiState: StateFlow<LibrarySearchUiState> = _uiState.asStateFlow()
 
-    private val rentBookList = dataStoreRepo.observeRentBookList()
+    private val rentBookList = dataStoreRepo.observeWaitingBorrowedBookList()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
-                dataStoreRepo.observeRentBookList().first()
+                dataStoreRepo.observeWaitingBorrowedBookList().first()
             }
     )
 
@@ -86,7 +86,7 @@ class LibrarySearchViewModel @Inject constructor(
         }
     }
 
-    fun addRentBookList(book: RentBookEntity) {
+    fun addRentBookList(book: BorrowedBookEntity) {
         viewModelScope.launch {
             val currentRentList = _uiState.value.rentList.toMutableList()
             if (currentRentList.contains(book))
@@ -94,7 +94,7 @@ class LibrarySearchViewModel @Inject constructor(
             else
                 if (uiState.value.rentList.size <= 4)
                     currentRentList.apply { add(book) }
-            dataStoreRepo.addRentBookList(currentRentList)
+            dataStoreRepo.addWaitingBorrowedBookList(currentRentList)
             _uiState.update { it.copy(rentList = currentRentList) }
         }
     }

@@ -246,7 +246,7 @@ fun SettingScreen(
                     SuperArrow(
                         title = stringResource(id = R.string.open_source_license),
                         onClick = {
-                            navController.navigate(Destinations.Appreciate.route)
+                            navController.navigate(Destinations.License.route)
                         }
                     )
                 }

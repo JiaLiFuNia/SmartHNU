@@ -1,8 +1,8 @@
 package com.smart.htu.api
 
 import com.smart.htu.api.module.LoginCookie
-import com.smart.htu.screens.application.entity.SmallCardContent
-import com.smart.htu.screens.application.librarySearch.RentBookEntity
+import com.smart.htu.screens.application.entity.ApplicationEntity
+import com.smart.htu.screens.application.librarySearch.BorrowedBookEntity
 import kotlinx.coroutines.flow.Flow
 import okhttp3.Cookie
 
@@ -12,12 +12,13 @@ interface DataStoreService {
     suspend fun changeThemeMode(enabled: Int)
     suspend fun changeDarkTheme(isDarkTheme: Int)
     suspend fun changeBlurState(state: Boolean)
-    suspend fun saveSmallCard(cardList: List<SmallCardContent>)
-    suspend fun changeQQNumber(message: String)
+    suspend fun setCommonApp(appList: List<ApplicationEntity>)
+    suspend fun changeQQNumber(qqNumber: String)
     suspend fun changeUsername(name: String)
     suspend fun changeLoginState(state: Int)
+    suspend fun changeLoginJWCState(state: Int)
     suspend fun saveCookies(cookies: List<Cookie>)
-    suspend fun addRentBookList(list: List<RentBookEntity>)
+    suspend fun addWaitingBorrowedBookList(waitingBorrowedBookList: List<BorrowedBookEntity>)
     suspend fun saveStudentId(id: String)
     suspend fun changeBuildingId(id: String)
     suspend fun changeRoomId(room: String)
@@ -25,20 +26,20 @@ interface DataStoreService {
     suspend fun saveAirConditionUserCookie(cookie: LoginCookie)
     suspend fun changeBookSearchHistoryList(list: List<String>)
     suspend fun setJWCToken(token: String)
-    suspend fun changeLoginJWCState(state: Int)
-    suspend fun saveNoticeReadId(id: List<Int>)
-    suspend fun setTokenValid(valid: Boolean)
+    suspend fun addReadNoticeId(id: List<Int>)
+    suspend fun setTokenValidity(valid: Boolean)
     suspend fun setGlobalTermCode(term: String)
+    suspend fun saveMobileCode(mobileCode: String)
 
     fun observeThemeMode(): Flow<Int>
     fun observeDarkTheme(): Flow<Int>
     fun observerBlurState(): Flow<Boolean>
-    fun observeSmallCard(): Flow<List<SmallCardContent>>
+    fun observeCommonAppList(): Flow<List<ApplicationEntity>>
     fun observeQQNumber(): Flow<String>
     fun observeUsername(): Flow<String>
     fun observeLoginState(): Flow<Int>
     fun observeCookies(): Flow<List<Cookie>>
-    fun observeRentBookList(): Flow<List<RentBookEntity>>
+    fun observeWaitingBorrowedBookList(): Flow<List<BorrowedBookEntity>>
     fun observeStudentId(): Flow<String>
     fun observeBuildingId(): Flow<String>
     fun observeRoomId(): Flow<String>
@@ -47,8 +48,9 @@ interface DataStoreService {
     fun observeBookSearchHistoryList(): Flow<List<String>>
     fun observeJWCToken(): Flow<String>
     fun observeLoginJWCState(): Flow<Int>
-    fun observeNoticeReadIdList(): Flow<List<Int>>
-    fun observeTokenValid(): Flow<Boolean>
+    fun observeReadNoticeIdList(): Flow<List<Int>>
+    fun observeTokenValidity(): Flow<Boolean>
     fun observeGlobalTermCode(): Flow<String>
+    fun observeMobileCode(): Flow<String>
 
 }
