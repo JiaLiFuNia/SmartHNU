@@ -9,7 +9,7 @@ data class PersonalMessageRes(
 )
 
 data class PersonalMessageEntity(
-    @SerializedName("bjbh") val studentId: String? = "0000000000", // 学号
+    @SerializedName("account") val studentId: String? = "0000000000", // 学号
     @SerializedName("yxmc") val academic: String? = "--", // 学院
     @SerializedName("xqmc") val campusName: String? = "--", // 校区名称
     @SerializedName("csrq") val birthday: String? = "2000-01-01", // 出生日期
