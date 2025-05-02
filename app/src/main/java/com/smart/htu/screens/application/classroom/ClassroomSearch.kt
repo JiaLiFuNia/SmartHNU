@@ -62,7 +62,7 @@ import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.utils.Constants.Companion.COURSE_PERIOD
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
-import com.smart.htu.utils.checkTimeInterval
+import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
 import com.smart.htu.utils.getCurrentDates
 import com.smart.htu.utils.timeStamp2DateStr
 import dev.chrisbanes.haze.HazeState

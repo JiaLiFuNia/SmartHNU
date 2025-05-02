@@ -18,6 +18,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -120,7 +121,7 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
                             tint = MiuixTheme.colorScheme.primary
                         )
                         Text(
-                            text = message.classroomName.ifEmpty { "暂无" },
+                            text = message.classroomName ?: "暂无",
                             modifier = Modifier.weight(4 / 10f),
                             textAlign = TextAlign.Start,
                             style = MaterialTheme.typography.bodyLarge.copy(
@@ -134,10 +135,21 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
             }
         }
     }
+    CourseDetailDialog(message, isBottomSheetShow)
+}
 
+@Composable
+fun CourseDetailDialog(
+    message: Course,
+    isBottomSheetShow: MutableState<Boolean>
+) {
     BasicBottomSheet(
         showDialog = isBottomSheetShow,
-        title = "${message.courseName} ${message.projectName}",
+        title = message.courseName + if (message.classroomName.isNullOrEmpty()) {
+            " - ${message.projectName}"
+        } else {
+            ""
+        },
         summary = "上课时间：${message.startTime} - ${message.endTime}",
         insideMargin = DpSize(16.dp, 24.dp)
     ) {
@@ -146,12 +158,12 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
             message = listOf(
                 SingleInfo(
                     label = "教师",
-                    content = message.teacherNames.ifEmpty { "暂无" },
+                    content = message.teacherName.ifEmpty { "暂无" },
                     leadingIcon = R.drawable.ic_outline_person
                 ),
                 SingleInfo(
                     label = "教室",
-                    content = message.classroomName.ifEmpty { "暂无" },
+                    content = message.classroomName ?: "暂无",
                     leadingIcon = R.drawable.apartment_24px
                 ),
                 SingleInfo(
@@ -163,6 +175,16 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
                     label = "节次",
                     content = message.classTimeCodeDetailed,
                     leadingIcon = R.drawable.schedule_24px
+                ),
+                SingleInfo(
+                    label = "人数",
+                    content = message.totalStudents.toString(),
+                    leadingIcon = R.drawable.groups_24px
+                ),
+                SingleInfo(
+                    label = "上课班级",
+                    content = message.className,
+                    leadingIcon = R.drawable.co_present_24px
                 )
             )
         )

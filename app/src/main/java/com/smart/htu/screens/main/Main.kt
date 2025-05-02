@@ -140,7 +140,7 @@ fun Main(
                 FocusCard(navController, loginUiState, airConditionUiState, uiState)
             }
             item {
-                TodayCourseCard(uiState.todayCourseList, loginUiState)
+                TodayCourseCard(uiState.todayCourseList, loginUiState, navController)
             }
             item {
                 CommonAppsCard(
@@ -168,7 +168,6 @@ fun NewsCard(
     LargeCardDisplay(
         modifier = Modifier,
         title = "学术预告",
-        actionText = stringResource(id = R.string.all),
         leadingIconPainting = R.drawable.ic_outline_article,
         content = {
             Box(
@@ -353,12 +352,17 @@ fun FocusCardItem(
 @Composable
 fun TodayCourseCard(
     todayCourseResult: ResultWithStatus<List<Course>>,
-    loginUiState: LoginUiState
+    loginUiState: LoginUiState,
+    navController: NavController
 ) {
     LargeCardDisplay(
         containerColor = MiuixTheme.colorScheme.surface,
         modifier = Modifier,
         title = stringResource(id = R.string.today_course),
+        actionText = "课程表",
+        navigateTo = {
+            navController.navigate(Destinations.CourseTable.route)
+        },
         leadingIconPainting = R.drawable.today_24px,
         content = {
             when (todayCourseResult.status) {
