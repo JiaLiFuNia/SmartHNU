@@ -145,10 +145,10 @@ class MainViewModel @Inject constructor(
     fun getCurrentWeek(week: String = "", section: String = "") = viewModelScope.launch {
         try {
             val res = jwcNetworkRepo.getCourseScheduleService(week, section)
-            Log.i("TAG666", "getCurrentWeek: $res")
             _uiState.update { it.copy(courseSchedule = ResultWithStatus(res)) }
+            Log.i("TAG666 main", "getCurrentWeek: $res")
         } catch (e: Exception) {
-            Log.i("TAG666", "getCurrentWeek: $e")
+            Log.i("TAG666 main", "getCurrentWeek: $e")
         }
     }
 

@@ -2,9 +2,9 @@ package com.smart.htu.utils
 
 import com.smart.htu.R
 import com.smart.htu.api.module.BuildingEntity
-import com.smart.htu.screens.application.entity.RouteType
 import com.smart.htu.screens.application.entity.ApplicationCategory
 import com.smart.htu.screens.application.entity.ApplicationEntity
+import com.smart.htu.screens.application.entity.RouteType
 import com.smart.htu.screens.navigation.Destinations
 
 class Constants {
@@ -199,12 +199,21 @@ class Constants {
                 routeType = RouteType.URL,
                 route = "http://ehall2.htu.edu.cn/login?service=http://ehall2.htu.edu.cn/ywtb-mobile/index.html",
                 category = ApplicationCategory.CAMPUS
+            ),
+            ApplicationEntity(
+                guestEnable = false,
+                icon = R.drawable.calendar_month_24px,
+                label = R.string.course_table,
+                routeType = RouteType.SCREEN,
+                route = Destinations.CourseTable.route,
+                category = ApplicationCategory.ACADEMIC_AFFAIRS
             )
         )
         val INIT_COMMON_APP_LIST = listOf(
             ALL_APP_LIST[1],
             ALL_APP_LIST[2],
-            ALL_APP_LIST[3]
+            ALL_APP_LIST[3],
+            ALL_APP_LIST[4],
         )
     }
 
