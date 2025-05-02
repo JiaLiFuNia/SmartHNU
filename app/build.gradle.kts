@@ -18,7 +18,7 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 35
-        versionCode = 202505012
+        versionCode = 202505022
         versionName = "3.0.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

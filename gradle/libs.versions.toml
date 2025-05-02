@@ -81,9 +81,10 @@ miuix = { module = "top.yukonga.miuix.kmp:miuix-android", version.ref = "miuix" 
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "scalars" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "gson" }
-kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
-
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+converter-kotlinx-serialization = { module = "com.squareup.retrofit2:converter-kotlinx-serialization", version.ref = "gson" }
+
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 
 vico = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
 
