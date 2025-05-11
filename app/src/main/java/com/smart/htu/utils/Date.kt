@@ -46,18 +46,26 @@ fun convertDateToDouble(dateString: String, pattern: String): String {
  * @return 格式化后的日期字符串
  */
 fun formatDateToFriendly(dateString: String): String {
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    val date = LocalDate.parse(dateString, formatter)
-    val today = LocalDate.now()
+    val dateRegex = """(\d{4}-\d{2}-\d{2})""".toRegex()
+    val matchResult = dateRegex.find(dateString)
+    val extractedDate = matchResult?.value ?: return dateString
 
-    val daysDiff = ChronoUnit.DAYS.between(date, today)
+    try {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val date = LocalDate.parse(extractedDate, formatter)
+        val today = LocalDate.now()
 
-    return when {
-        daysDiff == 0L -> "今天"
-        daysDiff == 1L -> "昨天"
-        daysDiff == 2L -> "前天"
-        daysDiff in 3L..5L -> "${daysDiff}天前"
-        date.year == today.year -> "${date.monthValue}月${date.dayOfMonth}日"
-        else -> "${date.year}年${date.monthValue}月${date.dayOfMonth}日"
+        val daysDiff = ChronoUnit.DAYS.between(date, today)
+
+        return when {
+            daysDiff == 0L -> "今天"
+            daysDiff == 1L -> "昨天"
+            daysDiff == 2L -> "前天"
+            daysDiff in 3L..5L -> "${daysDiff}天前"
+            date.year == today.year -> "${date.monthValue}月${date.dayOfMonth}日"
+            else -> "${date.year}年${date.monthValue}月${date.dayOfMonth}日"
+        }
+    } catch (e: Exception) {
+        return dateString
     }
 }
