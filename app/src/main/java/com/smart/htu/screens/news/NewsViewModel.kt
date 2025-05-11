@@ -1,5 +1,6 @@
 package com.smart.htu.screens.news
 
+import android.util.Base64
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,14 +23,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
-
 data class NewsUiState(
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val newsOptionItems: List<NewsCategoryEntity> = emptyList(),
     val bannerPicList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
-    val newsList: List<ResultWithStatus<List<NewsItemEntity>>> = List(newsOptionItems.size) { ResultWithStatus() }
+    val newsList: List<ResultWithStatus<List<NewsItemEntity>>> = List(newsOptionItems.size) { ResultWithStatus() },
+    val searchList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
 )
-
 
 @HiltViewModel
 class NewsViewModel @Inject constructor(
@@ -86,6 +86,19 @@ class NewsViewModel @Inject constructor(
         }
         viewModelScope.launch {
             getBannerImgList()
+        }
+    }
+
+    suspend fun searchNews(keyword: String, page: Int = 1) {
+        try {
+            val searchKeys =
+                """[{"field":"pageIndex","value":${page}},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$keyword"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
+            val searchKeyEncode = Base64.encodeToString(searchKeys.toByteArray(), 0)
+            val res = networkRepo.searchNewsService(searchKeyEncode)
+            Log.i("TAG666", "searchNews: $res")
+            _uiState.update { it.copy(searchList = ResultWithStatus(res)) }
+        } catch (e: Exception) {
+            Log.i("TAG666", "searchNews: $e")
         }
     }
 

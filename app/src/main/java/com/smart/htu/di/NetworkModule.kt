@@ -189,6 +189,7 @@ object NetworkModule {
     fun provideNewsService(): NewsService {
         val retrofit = Retrofit.Builder()
             .baseUrl(ApiConstants.HTU_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(NewsService::class.java)
     }

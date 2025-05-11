@@ -1,16 +1,24 @@
 package com.smart.htu.screens.news
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MediumTopAppBar
@@ -21,13 +29,22 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.smart.htu.App.Companion.context
+import com.smart.htu.R
+import com.smart.htu.api.module.Status
+import com.smart.htu.component.CircularProgressIndicator
+import com.smart.htu.screens.navigateToWebView
+import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -41,7 +58,8 @@ fun NewsSearch(
     val uiState by viewModel.uiState.collectAsState()
 
     val textFieldState = rememberTextFieldState()
-
+    val lazyListState = rememberLazyListState()
+    val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
@@ -67,10 +85,28 @@ fun NewsSearch(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            AnimatedVisibility(
+                modifier = Modifier,
+                visible = !fabVisible,
+                enter = slideInVertically(initialOffsetY = { it * 2 }),
+                exit = slideOutVertically(targetOffsetY = { it * 2 }),
+            ) {
+                FloatingActionButton(
+                    onClick = { scope.launch { lazyListState.scrollToItem(0) } }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_arrow_upward_24),
+                        contentDescription = "up"
+                    )
+                }
+            }
         }
     ) {
         LazyColumn(
-            contentPadding = PaddingValues(16.dp, 8.dp),
+            state = lazyListState,
+            contentPadding = PaddingValues(16.dp, 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .fillMaxSize()
@@ -79,24 +115,53 @@ fun NewsSearch(
             overscrollEffect = null
         ) {
             stickyHeader {
-                SearchBarDefaults.InputField(
-                    modifier = Modifier.fillMaxWidth(),
-                    state = textFieldState,
-                    onSearch = { },
-                    expanded = false,
-                    onExpandedChange = { },
-                    placeholder = { Text("搜索新闻、公告和通知...") },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Outlined.Search,
-                            contentDescription = "search"
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MiuixTheme.colorScheme.background)
+                ) {
+                    SearchBarDefaults.InputField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        state = textFieldState,
+                        onSearch = {
+                            scope.launch {
+                                viewModel.searchNews(it)
+                            }
+                        },
+                        expanded = false,
+                        onExpandedChange = { },
+                        placeholder = { Text("搜索新闻、公告和通知...") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Search,
+                                contentDescription = "search"
+                            )
+                        },
+                        colors = inputFieldColors(
+                            focusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh,
+                            unfocusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh
                         )
-                    },
-                    colors = inputFieldColors(
-                        focusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh,
-                        unfocusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh
                     )
-                )
+                }
+            }
+            if (uiState.searchList.status == Status.LOADING)
+                item {
+                    CircularProgressIndicator()
+                }
+            else {
+                items(uiState.searchList.data ?: emptyList()) {
+                    NewsItem(
+                        news = it,
+                        onClick = {
+                            navController.navigateToWebView(
+                                url = it.url,
+                                label = context.getString(it.label.label)
+                            )
+                        }
+                    )
+                }
             }
         }
     }

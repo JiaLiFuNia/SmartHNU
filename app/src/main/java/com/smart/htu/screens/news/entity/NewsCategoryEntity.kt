@@ -23,5 +23,6 @@ enum class NewsType(@StringRes val label: Int) {
     TEACHING_NEWS(R.string.teaching_news),
     TEACHING_NOTICE(R.string.teaching_notice),
     TEACHING_ANNOUNCEMENT(R.string.teaching_announcement),
-    EXAMINATION_NOTICE(R.string.examination_notice)
+    EXAMINATION_NOTICE(R.string.examination_notice),
+    SEARCH(R.string.news_search),
 }

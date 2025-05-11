@@ -44,6 +44,20 @@ class NetworkRepo @Inject constructor(
     private val dataStoreRepo: DataStoreRepo
 ) {
 
+    // 搜索新闻
+    suspend fun searchNewsService(searchInfo: String): List<NewsItemEntity> {
+        try {
+            val res = newsService.searchService(
+                searchInfo = searchInfo
+            )
+            Log.e("TAG666", "searchNewsService ${res.body()?.dataList}")
+            return res.body()?.dataList ?: emptyList()
+        } catch (e: Exception) {
+            Log.e("TAG666", "searchNewsService $e")
+            return emptyList()
+        }
+    }
+
     // 获取新闻
     suspend fun getNewsService(
         newsOptionItems: NewsCategoryEntity,

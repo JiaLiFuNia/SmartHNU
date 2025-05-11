@@ -178,7 +178,7 @@ fun MainFrame(
                     colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
                     title = { Text(text = stringResource(R.string.news)) },
                     actions = {
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = { navController.navigate(Destinations.NewsStar.route) }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.star_24px),
                                 contentDescription = "star"

@@ -43,6 +43,14 @@ object ParseNewsUtil {
         SingleParseRule("img_url", "", "") // img_url
     )
 
+    private val SEARCH_PARSE_RULE = ParseRule(
+        SingleParseRule("all", "div.result_item", ""),
+        SingleParseRule("title", "h3.item_title a", "text"), // title
+        SingleParseRule("url", "h3.item_title a", "href"), // url
+        SingleParseRule("time", "span.item_metas:nth-of-type(2)", "text"),// time
+        SingleParseRule("img_url", "div.item_picture img", "src") // img_url
+    )
+
     fun parseNewsHTML(html: String, label: NewsType): List<NewsItemEntity> {
         // Log.i("TAG666 parseHtml", html)
         val resultList = mutableListOf<NewsItemEntity>()
@@ -50,11 +58,11 @@ object ParseNewsUtil {
             NewsType.NOTICE, NewsType.RESEARCH -> NOTICE_PARSE_RULE
             NewsType.MATH_NEWS, NewsType.MATH_NOTICE, NewsType.MATH_LECTURES -> MATH_PARSE_RULE
             NewsType.TEACHING_NEWS, NewsType.TEACHING_NOTICE, NewsType.TEACHING_ANNOUNCEMENT, NewsType.EXAMINATION_NOTICE -> TEACHING_PARSE_RULE
+            NewsType.SEARCH -> SEARCH_PARSE_RULE
             else -> PARSE_RULE
         }
         val document = Jsoup.parse(html)
         val newsListSize = document.select(rules.elementPath.path)
-        // Log.i("TAG666 parseHtmlList", newsListSize.toString() + newsListSize.size)
         newsListSize.forEach {
             val newsListElement = NewsItemEntity(
                 label = label,
@@ -70,7 +78,6 @@ object ParseNewsUtil {
     }
 
     private fun selectElement(element: Element, path: SingleParseRule): String {
-        // Log.i("TAG666 selectElement", element.toString() + path.element)
         if (path.path.isEmpty() || path.element.isEmpty()) return ""
         val elements = element.select(path.path)
         return if (path.label == "top") {
@@ -79,8 +86,9 @@ object ParseNewsUtil {
         } else {
             if (path.element == "text") {
                 elements.text()
-            } else
+            } else {
                 elements.attr(path.element)
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 package com.smart.htu.screens.news
 
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -270,7 +271,11 @@ fun NewsItem(news: NewsItemEntity, maxLines: Int = 2, onClick: () -> Unit) {
                             .width(90.dp)
                             .aspectRatio(16 / 10f)
                             .clip(RoundedCornerShape(8.dp)),
-                        placeholder = painterResource(id = R.drawable.image_placeholder)
+                        placeholder = painterResource(id = R.drawable.image_placeholder),
+                        error = painterResource(id = R.drawable.image_placeholder),
+                        onError = {
+                            Log.e("TAG666", "Error ${it.result.throwable.message}")
+                        }
                     )
                 }
             }
