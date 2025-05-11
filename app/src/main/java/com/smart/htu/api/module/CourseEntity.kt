@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
+import java.time.LocalDate
 import java.time.LocalTime
 
 data class TodayCoursePost(
@@ -22,6 +23,8 @@ data class Course(
     @SerializedName("ps") private val sortString: String, // 排序
     @SerializedName("qssj") private val startTimeString: String, // 开始时间
     @SerializedName("jssj") private val endTimeString: String, // 结束时间
+    @SerializedName("qsrq") private val startDateString: String, // 起始日期
+    @SerializedName("jsrq") private val endDateString: String, // 结束日期
     @SerializedName("khfsmc") val assessmentMethod: String, // 考核方式
     @SerializedName("jxbrs") val totalStudents: Int, // 上课人数
     @SerializedName("jxhjmc") val teachingEnvironment: String, // 理论 实验
@@ -35,9 +38,9 @@ data class Course(
     @SerializedName("xmmc") val projectName: String? = null, // 项目名称
     @SerializedName("jcdm2") val classTimeCodeDetailed: String, // 节次代码2
     @SerializedName("szxqmc") val campus: String? = null, // 所在校区
-    @SerializedName("xq") val weekday: String, // 星期（1~7表示周一至周日）
+    @SerializedName("xq") val weekdayString: String, // 星期（1~7）
     @SerializedName("xnxqmc") val termString: String, // 学年学期名称
-    @SerializedName("zc") val week: String, // 周次
+    @SerializedName("zc") val weekString: String, // 周次（表示在第几周的课）
 ) {
     val startTime: LocalTime
         get() = LocalTime.parse(startTimeString)
@@ -45,27 +48,40 @@ data class Course(
     val endTime: LocalTime
         get() = LocalTime.parse(endTimeString)
 
+    val startDate: LocalDate
+        get() = LocalDate.parse(startDateString)
+
+    val endDate: LocalDate
+        get() = LocalDate.parse(endDateString)
+
     val sortNumber: Int
         get() = sortString.toInt()
 
     val sectionList: List<Int>
         get() = classTimeCodeDetailed.split(",").map { it.toInt() }
+
+    val weekday: Int
+        get() = weekdayString.toIntOrNull() ?: 1
+
+    val week: Int
+        get() = weekString.toIntOrNull() ?: 1
 }
 
 data class CourseSchedulePost(
-    val zc: String = "", // 周次
+    val zc: String = "", // 周次（第几周 或者 all）
     val jc: String = ""  // 节次
 )
 
 data class CourseScheduleEntity(
     @SerializedName("msg") val message: String,
     @SerializedName("code") val code: Int,
-    @SerializedName("zc") val week: String,
+    @SerializedName("zc") private val weekString: String,
     @SerializedName("minzc") val minWeek: String,
     @SerializedName("maxzc") val maxWeek: String,
-    @SerializedName("curDay") val todayWeekday: String,
+    @SerializedName("curDay") private val weekday: String,
     @SerializedName("xnxqdm") val termCode: String,
-    @SerializedName("kbList") val courseTableString: String,
+    @SerializedName("kbList") private val courseTableString: String,
+    @SerializedName("rq") private val dateString: String,
 ) {
     val courseTable: CourseTable
         get() = try {
@@ -76,6 +92,18 @@ data class CourseScheduleEntity(
             Log.e("TAG666 CourseEntity", "解析课程表失败: ${e.message}")
             ArrayList()
         }
+
+    // 周次
+    val week: Int
+        get() = weekString.toIntOrNull() ?: 0
+
+    // 若是本周的则为今天的日期，若非本周返回周一的日期
+    val date: LocalDate
+        get() = LocalDate.parse(dateString)
+
+    // 今天周几，若非本周返回0
+    val todayWeekday: Int
+        get() = weekday.toIntOrNull() ?: 0
 }
 
 typealias CourseTable = ArrayList<Map<String, List<Course>>>

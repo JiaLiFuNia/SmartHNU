@@ -1,9 +1,11 @@
 package com.smart.htu.screens.application.grade
 
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -60,7 +63,7 @@ fun Grade(
     viewModel: GradeViewModel = hiltViewModel(),
     navController: NavController
 ) {
-    val uiState = viewModel.uiState.collectAsState().value
+    val uiState by viewModel.uiState.collectAsState()
     val isBottomSheetShow = remember {
         mutableStateOf(false)
     }
@@ -68,6 +71,7 @@ fun Grade(
     val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
     val onRefresh: () -> Unit = {
         scope.launch {
+            Log.i("TAG666", pullToRefreshState.refreshState.toString())
             pullToRefreshState.completeRefreshing {
                 viewModel.refreshTermList()
                 viewModel.getCourseGrade()
@@ -100,7 +104,7 @@ fun Grade(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .overScrollVertical(),
             overscrollEffect = null
         ) {
@@ -119,7 +123,7 @@ fun Grade(
                             )
                         }
                     } else {
-                        itemsIndexed(uiState.courseGrade.data) { _, course ->
+                        itemsIndexed(uiState.courseGrade.data ?: emptyList()) { _, course ->
                             SingleCourseGrade(course)
                         }
                     }
@@ -136,9 +140,7 @@ fun Grade(
         onClick = {
             scope.launch {
                 viewModel.changeTermCode(it)
-                pullToRefreshState.completeRefreshing {
-                    onRefresh()
-                }
+                viewModel.getCourseGrade()
             }
         }
     )

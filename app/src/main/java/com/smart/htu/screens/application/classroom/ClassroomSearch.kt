@@ -41,6 +41,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -77,7 +78,6 @@ import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissDialog
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
 
@@ -92,7 +92,7 @@ fun ClassroomSearchScreen(
     navController: NavController,
     viewModel: ClassroomSearchViewModel = hiltViewModel()
 ) {
-    val uiState = viewModel.uiState.collectAsState().value
+    val uiState by viewModel.uiState.collectAsState()
     val hazeState = remember { HazeState() }
 
     val (selectedRoomIndex, onSelectedRoomIndex) = rememberSaveable { mutableIntStateOf(0) }
@@ -321,7 +321,7 @@ fun ClassroomSearchScreen(
     if (showDatePicker) {
         DatePickerDialog(
             colors = DatePickerDefaults.colors(
-                containerColor = MiuixTheme.colorScheme.surface
+                containerColor = MiuixTheme.colorScheme.background
             ),
             onDismissRequest = {
                 onShowDatePicker(false)
@@ -351,7 +351,7 @@ fun ClassroomSearchScreen(
         ) {
             DatePicker(
                 state = datePickerState,
-                colors = DatePickerDefaults.colors(containerColor = MiuixTheme.colorScheme.surface)
+                colors = DatePickerDefaults.colors(containerColor = MiuixTheme.colorScheme.background)
             )
         }
     }
@@ -402,13 +402,13 @@ fun <T> LazyVerticalGridCustom(
 
 @Composable
 fun TipDialog(
-    show: MutableState<Boolean>
+    showDialog: MutableState<Boolean>
 ) {
     SuperDialog(
-        show = show,
+        show = showDialog,
         title = "说明",
         onDismissRequest = {
-            dismissDialog(show)
+            showDialog.value = false
         }
     ) {
         Column(
@@ -460,7 +460,7 @@ fun TipDialog(
             top.yukonga.miuix.kmp.basic.TextButton(
                 text = "我知道了",
                 onClick = {
-                    dismissDialog(show)
+                    showDialog.value = false
                 },
                 colors = ButtonDefaults.textButtonPrimaryColors(),
                 modifier = Modifier

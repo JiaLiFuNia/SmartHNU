@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
+import top.yukonga.miuix.kmp.basic.PullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -26,7 +27,7 @@ fun ScaffoldWithHazeLazyColumn(
     navigationIcon: @Composable () -> Unit,
     snackBarHost: (@Composable () -> Unit)? = null,
     isMediumTopAppBar: Boolean = false,
-    refreshState: top.yukonga.miuix.kmp.basic.PullToRefreshState,
+    refreshState: PullToRefreshState,
     onRefresh: () -> Unit,
     content: @Composable ColumnScope.() -> Unit
 ) {

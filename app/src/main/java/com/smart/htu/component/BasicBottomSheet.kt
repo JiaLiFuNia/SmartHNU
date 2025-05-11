@@ -1,16 +1,13 @@
 package com.smart.htu.component
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
@@ -18,17 +15,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.smart.htu.R
-import com.smart.htu.ui.theme.onPrimaryLight
-import com.smart.htu.ui.theme.primaryLight
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.extra.SuperDialogDefaults
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissDialog
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BasicBottomSheet(
     showDialog: MutableState<Boolean>,
@@ -44,13 +37,12 @@ fun BasicBottomSheet(
         show = showDialog,
         insideMargin = insideMargin,
         onDismissRequest = {
-            dismissDialog(showDialog)
+            showDialog.value = false
         }
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp),
+                .fillMaxWidth(),
         ) {
             Card(modifier = Modifier) {
                 content()
@@ -64,7 +56,7 @@ fun BasicBottomSheet(
                     TextButton(
                         text = stringResource(id = R.string.cancel),
                         onClick = {
-                            dismissDialog(showDialog)
+                            showDialog.value = false
                         },
                         modifier = Modifier.weight(1f)
                     )
@@ -73,7 +65,7 @@ fun BasicBottomSheet(
                         text = stringResource(id = R.string.confirm),
                         onClick = {
                             onConfirmClick()
-                            dismissDialog(showDialog)
+                            showDialog.value = false
                         },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.textButtonPrimaryColors()

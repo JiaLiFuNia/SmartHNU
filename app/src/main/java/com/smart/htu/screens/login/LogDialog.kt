@@ -27,7 +27,6 @@ import com.smart.htu.component.textButtonPrimaryColors
 import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.extra.SuperDialog
-import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissDialog
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -43,7 +42,7 @@ fun LogoutDialog(
         summary = stringResource(id = R.string.confirm_logout),
         show = showDialog,
         onDismissRequest = {
-            dismissDialog(showDialog)
+            showDialog.value = false
         }
     ) {
         LaunchedEffect(showDialog) {
@@ -63,7 +62,7 @@ fun LogoutDialog(
             top.yukonga.miuix.kmp.basic.TextButton(
                 text = stringResource(id = R.string.cancel),
                 onClick = {
-                    dismissDialog(showDialog)
+                    showDialog.value = false
                 },
                 modifier = Modifier.weight(1f)
             )
@@ -73,7 +72,7 @@ fun LogoutDialog(
                 text = stringResource(id = R.string.confirm) + if (isConfirmEnabled) "" else " ($countdown)",
                 onClick = {
                     onConfirmClick()
-                    dismissDialog(showDialog)
+                    showDialog.value = false
                 },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.textButtonPrimaryColors()
@@ -116,4 +115,41 @@ fun LoginDialog(
                 }
             }
         )
+}
+
+@Composable
+fun LoginInfoDialog(
+    showDialog: MutableState<Boolean>,
+    onDismissRequests: () -> Unit
+) {
+    SuperDialog(
+        title = "提示",
+        show = showDialog,
+        summary = "智慧教务密码与教务系统(https://jwc.htu.edu.cn)密码一致",
+        onDismissRequest = {
+            showDialog.value = false
+        }
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            top.yukonga.miuix.kmp.basic.TextButton(
+                text = "真忘了",
+                onClick = {
+                    onDismissRequests()
+                    showDialog.value = false
+                },
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(Modifier.width(20.dp))
+            top.yukonga.miuix.kmp.basic.TextButton(
+                text = "我知道了",
+                onClick = {
+                    showDialog.value = false
+                },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.textButtonPrimaryColors()
+            )
+        }
+    }
 }

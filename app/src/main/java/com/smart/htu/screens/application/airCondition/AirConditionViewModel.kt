@@ -8,7 +8,6 @@ import com.smart.htu.api.module.AreaData
 import com.smart.htu.api.module.BillDetail
 import com.smart.htu.api.module.BillRecords
 import com.smart.htu.api.module.BuyRecords
-import com.smart.htu.api.module.GiteeEntity
 import com.smart.htu.api.module.LoginCookie
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.NetworkRepo
@@ -34,7 +33,6 @@ data class AirConditionUiState(
     val roomCode: String = "",
     val setCookieType: Int = 0,
     val billData: BillDetail? = null,
-    val config: GiteeEntity? = null,
     val billRecords: BillRecords? = null,
     val buyRecords: BuyRecords? = null,
     val isLoadingBillRecords: Boolean = true,
@@ -125,9 +123,8 @@ class AirConditionViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            sharedDataRepository.giteeConfig
+            sharedDataRepository.notice
                 .collect { config ->
-                    _uiState.update { it.copy(config = config) }
                     changeRemoteLoginCookie(config?.airConditionCookie ?: LoginCookie())
                 }
         }
@@ -139,7 +136,7 @@ class AirConditionViewModel @Inject constructor(
 
     // 刷新配置
     suspend fun refreshConfig() {
-        sharedDataRepository.getGiteeConfig()
+        sharedDataRepository.getNotice()
         Log.i("TAG666 airCookie", getCookieByType().toString())
         if (getCookieByType() != LoginCookie()) {
             getAirConditionConfig()

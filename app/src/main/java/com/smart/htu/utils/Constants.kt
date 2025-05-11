@@ -22,6 +22,8 @@ class Constants {
         const val ACADEMIC_APP_URL = "https://jwc.htu.edu.cn/app/"
         const val SECOND_CLASS_URL = "http://dekt.htu.edu.cn/"
 
+        const val SMH_URL = "https://smh.xubohan04.tk/"
+
         const val SHOWER_ALIPAY_URL =
             "alipays://platformapi/startapp?appId=20000067&url=https://ur.alipay.com/_3Zz793BHBpUQsAf6r8hLXZ"
         const val HOT_WATER_WASHER_ALIPAY_URL =

@@ -13,6 +13,7 @@ data class BuildingEntity(
 @Serializable
 data class ClassroomOccupationEntity(
     val code: Int,
+    val msg: String,
     @SerializedName("jszylist") val busyRoomList: List<BusyRoom>,
     @SerializedName("jxcdxxList") val allRoomList: List<AllRoom>,
     @SerializedName("jzwmc") val buildingName: String,

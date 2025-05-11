@@ -57,10 +57,10 @@ object CourseTimeRange {
         }
         if (timeIndex == -1) {
             if (currentTime.isBefore(result.first().first)) {
-                return 1
+                return 0
             }
             if (currentTime.isAfter(result.last().second)) {
-                return 1
+                return 0
             }
             for (i in 0 until result.size - 1) {
                 val currentEnd = result[i].second

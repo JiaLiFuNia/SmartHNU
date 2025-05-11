@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -159,22 +160,23 @@ fun AirCondition(
                     .overScrollVertical(),
                 overscrollEffect = null
             ) {
-                item {
-                    SuggestChip(
-                        onClick = {
-                            navController.navigate(Destinations.AirConditionSetting.route)
-                        },
-                        onActionClick = {
-                        },
-                        text = "请设置你的宿舍楼，房间号和 Cookie",
-                        type = SuggestChipType.ERROR,
-                        icon = Icons.Outlined.Info,
-                        visibility = isShowSuggestChip,
-                        modifier = Modifier
-                    )
-                    if (isShowSuggestChip.value)
+                if (isShowSuggestChip.value) {
+                    item {
+                        SuggestChip(
+                            onClick = {
+                                navController.navigate(Destinations.AirConditionSetting.route)
+                            },
+                            onActionClick = {
+                            },
+                            text = "请设置你的宿舍楼，房间号和 Cookie",
+                            type = SuggestChipType.ERROR,
+                            icon = Icons.Outlined.Info,
+                            modifier = Modifier
+                        )
                         Spacer(modifier = Modifier.height(12.dp))
+                    }
                 }
+
                 item {
                     top.yukonga.miuix.kmp.basic.Surface(
                         modifier = Modifier.fillMaxWidth(),
@@ -231,7 +233,7 @@ fun AirCondition(
                     if (uiState.isLoadingBillRecords) {
                         CircularProgressIndicator()
                     } else {
-                        androidx.compose.foundation.pager.HorizontalPager(
+                        HorizontalPager(
                             modifier = Modifier
                                 .windowInsetsPadding(
                                     WindowInsets.displayCutout.only(

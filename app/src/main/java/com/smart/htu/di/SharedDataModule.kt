@@ -1,9 +1,8 @@
 package com.smart.htu.di
 
-import com.smart.htu.api.network.GiteeService
+import com.smart.htu.api.network.AppService
 import com.smart.htu.api.network.JWCService
 import com.smart.htu.repo.DataStoreRepo
-import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.SharedDataRepoImpl
 import com.smart.htu.repo.SharedDataRepository
 import dagger.Module
@@ -21,11 +20,10 @@ object SharedDataModule {
     @Singleton
     fun provideSharedRepository(
         jwcService: JWCService,
-        giteeService: GiteeService,
-        jwcNetworkRepo: JWCNetworkRepo,
+        appService: AppService,
         dataStoreRepo: DataStoreRepo
     ): SharedDataRepository {
-        return SharedDataRepoImpl(jwcService, giteeService, jwcNetworkRepo, dataStoreRepo)
+        return SharedDataRepoImpl(jwcService, appService, dataStoreRepo)
     }
 
 }

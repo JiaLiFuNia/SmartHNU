@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -56,17 +56,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.HENAN_NORMAL_UNIVERSITY
-import com.smart.htu.utils.Constants.Companion.RETRIEVE_PASSWORD
 import com.smart.htu.utils.startLaunchAPK
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
@@ -84,7 +81,7 @@ fun LoginScreen(
     navController: NavController,
     viewModel: LoginViewModel
 ) {
-    val uiState = viewModel.uiState.collectAsState().value
+    val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
     val autofillManager = LocalAutofillManager.current
 
@@ -92,6 +89,8 @@ fun LoginScreen(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     displayPassword = isPressed
+
+    val showLoginInfoDialog = remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.loginJWCState) {
         if (uiState.loginJWCState == 1) {
@@ -113,18 +112,19 @@ fun LoginScreen(
                 actions = {
                     IconButton(
                         onClick = {
+                            navController.popBackStack()
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Info,
-                            contentDescription = "info"
+                            imageVector = Icons.Outlined.Close,
+                            contentDescription = "close"
                         )
                     }
                 }
             )
         },
         snackbarHost = {
-            SnackbarHost(hostState = snackBarHostState)
+            SnackbarHost(hostState = viewModel.snackBarHostState)
         }
     ) {
         LazyColumn(
@@ -138,7 +138,7 @@ fun LoginScreen(
         ) {
             item {
                 top.yukonga.miuix.kmp.basic.Card(
-                    modifier = Modifier.padding(top = 40.dp, bottom = 36.dp),
+                    modifier = Modifier.padding(top = 44.dp, bottom = 56.dp),
                     color = Color.Transparent
                 ) {
                     Image(
@@ -190,10 +190,11 @@ fun LoginScreen(
                 ) {
                     TextButton(
                         onClick = {
-                            navController.navigateToWebView(
+                            showLoginInfoDialog.value = true
+                            /*navController.navigateToWebView(
                                 url = RETRIEVE_PASSWORD,
                                 label = "忘记密码"
-                            )
+                            )*/
                         }
                     ) {
                         Text(text = "忘记密码?")
@@ -460,6 +461,12 @@ fun LoginScreen(
             )
         }*/
     }
+    LoginInfoDialog(
+        showDialog = showLoginInfoDialog,
+        onDismissRequests = {
+            viewModel.showSnackBar("请前往河南师大智慧教务微信公众号进行密码重置")
+        }
+    )
 }
 
 @Composable
@@ -478,13 +485,13 @@ fun LoginTextField(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        Text(
+        /*Text(
             text = title,
             style = MaterialTheme.typography.titleLarge.copy(color = MiuixTheme.colorScheme.primary),
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(20.dp))*/
         TextField(
             value = uiState.studentID,
             onValueChange = {
@@ -568,17 +575,4 @@ fun TextWithProgressIndicatorButton(
             )
         }
     }
-}
-
-@Preview
-@Composable
-fun LoginScreenPreview() {
-    TextWithProgressIndicatorButton(
-        text = "正在登录...",
-        onClick = {
-        },
-        enabled = false,
-        modifier = Modifier
-            .fillMaxWidth()
-    )
 }

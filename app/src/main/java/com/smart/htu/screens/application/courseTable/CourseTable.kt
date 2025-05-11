@@ -15,11 +15,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
@@ -28,11 +31,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -41,35 +46,50 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.smart.htu.MainActivity
 import com.smart.htu.R
 import com.smart.htu.api.module.Course
-import com.smart.htu.component.CourseDetailDialog
+import com.smart.htu.screens.main.CourseDetailDialog
+import com.smart.htu.utils.CourseColorUtil.getColorByCourseName
 import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
 import com.smart.htu.utils.CourseTimeRange.summerOrWinterTimeInterval
+import com.smart.htu.utils.Permission
+import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.ListPopup
+import top.yukonga.miuix.kmp.basic.ListPopupColumn
+import top.yukonga.miuix.kmp.basic.ListPopupDefaults
+import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.lang.Integer.max
 import java.time.format.DateTimeFormatter
 
-/*
-*Author: jayfunc
-*Project: GongYun-for-Android
-*GitHub: https://github.com/jayfunc/GongYun-for-Android/blob/daaa651b821558319a46d672a90b3325fe9a2520/app/src/main/java/com/dart/campushelper/ui/schedule/ScheduleTable.kt
-*/
+/**
+ * Copyright (C) 2025
+ *
+ * @link https://github.com/jayfunc/GongYun-for-Android/blob/daaa651b821558319a46d672a90b3325fe9a2520/app/src/main/java/com/dart/campushelper/ui/schedule/ScheduleTable.kt
+ * @author jayfunc
+ * @modifier JiaLiFuNia
+ */
 
 @SuppressLint("ConfigurationScreenWidthHeight")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CourseTable(
     navController: NavController,
-    courseTableViewModel: CourseTableViewModel = hiltViewModel()
+    viewModel: CourseTableViewModel = hiltViewModel()
 ) {
-    val uiState by courseTableViewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val nodeColumnWeight = 0.65F
     val screenHeight = LocalConfiguration.current.screenHeightDp
     val minHeight = max((screenHeight - 180) / 12, 70)
+    val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
+    val showDropDownMenu = remember { mutableStateOf(false) }
+    val context = LocalContext.current
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -91,8 +111,81 @@ fun CourseTable(
                             contentDescription = "back"
                         )
                     }
+                },
+                actions = {
+                    ListPopup(
+                        show = showDropDownMenu,
+                        popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
+                        alignment = PopupPositionProvider.Align.TopRight,
+                        onDismissRequest = {
+                            showDropDownMenu.value = false
+                        }
+                    ) {
+                        ListPopupColumn {
+                            DropdownImpl(
+                                text = "切换到上一周",
+                                isSelected = false,
+                                optionSize = 4,
+                                onSelectedIndexChange = {
+                                    showDropDownMenu.value = false
+                                    scope.launch {
+                                        viewModel.getCurrentWeekCourseSchedule(uiState.week - 1)
+                                    }
+                                },
+                                index = 0
+                            )
+                            DropdownImpl(
+                                text = "切换到下一周",
+                                isSelected = false,
+                                optionSize = 4,
+                                onSelectedIndexChange = {
+                                    showDropDownMenu.value = false
+                                    scope.launch {
+                                        viewModel.getCurrentWeekCourseSchedule(uiState.week + 1)
+                                    }
+                                },
+                                index = 1
+                            )
+                            DropdownImpl(
+                                text = "同步到日历",
+                                isSelected = false,
+                                optionSize = 4,
+                                onSelectedIndexChange = {
+                                    showDropDownMenu.value = false
+                                    if (Permission.hasCalendarPermissions(context)) {
+                                        viewModel.showSnackBar("已同步到日历")
+                                    } else {
+                                        if (context is MainActivity) {
+                                            context.requestCalendarPermissions()
+                                        }
+                                    }
+                                },
+                                index = 2
+                            )
+                            DropdownImpl(
+                                text = "导出为ICS日历文件",
+                                isSelected = false,
+                                optionSize = 4,
+                                onSelectedIndexChange = {
+                                    showDropDownMenu.value = false
+                                    viewModel.exportToICS()
+                                },
+                                index = 3
+                            )
+                        }
+                    }
+                    IconButton(
+                        onClick = {
+                            showDropDownMenu.value = true
+                        }
+                    ) {
+                        Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "more")
+                    }
                 }
             )
+        },
+        snackbarHost = {
+            SnackbarHost(viewModel.snackBarHostState)
         }
     ) {
         Column(
@@ -114,6 +207,7 @@ fun CourseTable(
                         text = "25\n年",
                         fontFamily = FontFamily.Serif,
                         textAlign = TextAlign.Center,
+                        color = MiuixTheme.colorScheme.onBackground,
                         modifier = Modifier.align(Alignment.Center),
                     )
                 }
@@ -149,7 +243,7 @@ fun CourseTable(
                                     )
                                 )
                                 Text(
-                                    text = uiState.startDateCurrentWeek?.plusDays(index.toLong())
+                                    text = uiState.startDatePerWeek?.plusDays(index.toLong())
                                         ?.format(DateTimeFormatter.ofPattern("M-d")) ?: "",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         color = color
@@ -164,7 +258,7 @@ fun CourseTable(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
                     .padding(top = 2.dp)
             ) {
                 Row(
@@ -213,7 +307,7 @@ fun CourseTable(
                         modifier = Modifier.weight(7F),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        if (uiState.courseTable.data != null) {
+                        if (uiState.currentWeekCourseTable.data != null) {
                             // 遍历星期一到星期日的数据
                             (0..6).forEach { dayIndex ->
                                 Column(
@@ -224,7 +318,8 @@ fun CourseTable(
                                     verticalArrangement = Arrangement.Top
                                 ) {
                                     val dayClasses =
-                                        uiState.courseTable.data?.getOrNull(dayIndex) ?: emptyList()
+                                        uiState.currentWeekCourseTable.data?.getOrNull(dayIndex)
+                                            ?: emptyList()
                                     // 用于记录每个时间段是否有课程
                                     val timeSlots = Array(10) { slot ->
                                         dayClasses.find { course ->
@@ -289,6 +384,7 @@ fun CourseTableSingleCourseCard(
     slotsOccupied: Int = 1
 ) {
     val isBottomSheetShow = remember { mutableStateOf(false) }
+
     Surface(
         onClick = {
             isBottomSheetShow.value = true
@@ -298,12 +394,12 @@ fun CourseTableSingleCourseCard(
             .height((minHeight * slotsOccupied).dp)
             .padding(vertical = 2.dp),
         shape = MaterialTheme.shapes.small,
-        color = MiuixTheme.colorScheme.surface
+        color = getColorByCourseName(course.courseName)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(vertical = 2.dp, horizontal = 3.dp),
+                .padding(vertical = 4.dp, horizontal = 3.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -311,7 +407,7 @@ fun CourseTableSingleCourseCard(
                 text = course.courseName,
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Bold,
-                color = MiuixTheme.colorScheme.onSurface,
+                color = Color.DarkGray,
                 textAlign = TextAlign.Start,
                 maxLines = 3,
                 modifier = Modifier.fillMaxWidth()
@@ -321,16 +417,15 @@ fun CourseTableSingleCourseCard(
                 style = MaterialTheme.typography.labelSmall,
                 textAlign = TextAlign.Start,
                 fontWeight = FontWeight.Medium,
-                color = MiuixTheme.colorScheme.onSurface.copy(0.8f),
+                color = Color.DarkGray.copy(alpha = 0.8f),
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = course.teacherName,
                 style = MaterialTheme.typography.labelSmall,
-                maxLines = 1,
                 textAlign = TextAlign.Start,
-                color = MiuixTheme.colorScheme.onSurface.copy(0.6f),
+                color = Color.DarkGray.copy(alpha = 0.6f),
                 modifier = Modifier.fillMaxWidth()
             )
         }

@@ -82,8 +82,7 @@ fun AccountManage(
                     onActionClick = { onEditable(true) },
                     text = "请不要将此页面信息泄露给他人",
                     type = SuggestChipType.ERROR,
-                    icon = Icons.Outlined.Info,
-                    visibility = remember { mutableStateOf(true) }
+                    icon = Icons.Outlined.Info
                 )
             }
             item {

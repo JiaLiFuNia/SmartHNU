@@ -1,6 +1,5 @@
 package com.smart.htu.api.module
 
-
 enum class Status {
     SUCCESS,
     ERROR,

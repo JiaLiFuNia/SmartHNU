@@ -5,14 +5,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.remember
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.smart.htu.screens.NavHostScreen
+import com.smart.htu.screens.application.courseTable.CourseTableViewModel
 import com.smart.htu.ui.theme.SmartHNUTheme
+import com.smart.htu.utils.Permission.Companion.checkRequestCalendarPermissions
 import dagger.hilt.android.AndroidEntryPoint
-import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.basic.Surface
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -20,6 +24,10 @@ class MainActivity : ComponentActivity() {
     companion object {
         lateinit var snackBarHostState: SnackbarHostState
     }
+
+    private val courseTableViewModel: CourseTableViewModel by viewModels()
+    private lateinit var calendarPermissionLauncher: ActivityResultLauncher<Array<String>>
+
 
     @SuppressLint("FlowOperatorInvokedInComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,12 +38,24 @@ class MainActivity : ComponentActivity() {
             snackBarHostState = remember { SnackbarHostState() }
 
             SmartHNUTheme {
-                Surface(
-                    color = MiuixTheme.colorScheme.background
-                ) {
-                    NavHostScreen()
-                }
+                Surface { NavHostScreen() }
+            }
+        }
+
+
+        calendarPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            val allGranted = permissions.entries.all { it.value }
+            if (allGranted) {
+                courseTableViewModel.setIsWriteCalendarPermissionGranted(true)
             }
         }
     }
+
+    fun requestCalendarPermissions() {
+        checkRequestCalendarPermissions(this, calendarPermissionLauncher)
+    }
 }
+
+

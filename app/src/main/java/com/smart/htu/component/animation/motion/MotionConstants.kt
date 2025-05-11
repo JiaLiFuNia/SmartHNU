@@ -1,4 +1,4 @@
-package com.xhand.hnu.components.motion
+package com.smart.htu.component.animation.motion
 
 /*
  * Copyright 2021 SOUP

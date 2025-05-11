@@ -1,9 +1,9 @@
 package com.smart.htu.screens.login
 
 import android.util.Log
+import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.smart.htu.MainActivity
 import com.smart.htu.api.module.PersonalMessageEntity
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.di.NetworkCookieJar
@@ -67,6 +67,8 @@ class LoginViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+
+    val snackBarHostState = SnackbarHostState()
 
     private val blurStateFlow = dataStoreRepo.observerBlurState()
         .stateIn(
@@ -243,11 +245,11 @@ class LoginViewModel @Inject constructor(
                 password = _uiState.value.password
             )
             logState.onSuccess {
-                changLoginAuthState(1)
+                changeLoginAuthState(1)
                 passwordRepo.savePassword(_uiState.value.password, PASSWORD)
             }
             logState.onFailure {
-                changLoginAuthState(-1)
+                changeLoginAuthState(-1)
             }
         } catch (_: Exception) {
             Log.i("TAG666 viewModel", "Failed to login")
@@ -284,7 +286,7 @@ class LoginViewModel @Inject constructor(
             }
             logState.onFailure {
                 changeLoginJWCState(-1)
-                MainActivity.snackBarHostState.showSnackbar(it.message ?: "智慧教务登录失败")
+                showSnackBar(it.message ?: "智慧教务登录失败")
             }
         } catch (e: Exception) {
             Log.i("TAG666 viewModel", "Failed to login $e")
@@ -308,7 +310,7 @@ class LoginViewModel @Inject constructor(
                 changeLoginJWCState(0)
             }
         } catch (e: Exception) {
-            Log.i("TAG666", "Failed to check JWC token $e")
+            Log.i("TAG666 check", "Failed to check JWC token $e")
             changeLoginJWCState(1)
         }
     }
@@ -329,7 +331,7 @@ class LoginViewModel @Inject constructor(
         changeUsername("HNUer")
     }
 
-    private fun changLoginAuthState(state: Int) {
+    private fun changeLoginAuthState(state: Int) {
         viewModelScope.launch {
             dataStoreRepo.changeLoginState(state)
             _uiState.update { it.copy(loginState = state) }
@@ -392,13 +394,20 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    fun showSnackBar(message: String) {
+        viewModelScope.launch {
+            snackBarHostState.showSnackbar(message)
+        }
+    }
+
     fun logout() = viewModelScope.launch {
         clearCookies()
-        changLoginAuthState(DEFAULT_LOGIN_STATE)
+        changeLoginAuthState(DEFAULT_LOGIN_STATE)
         changeLoginJWCState(DEFAULT_LOGIN_STATE)
         changeUsername(DEFAULT_USERNAME)
         editQQNumber(DEFAULT_QQ_NUMBER)
         setJWCLogToken(DEFAULT_TOKEN)
+        setTokenValid(DEFAULT_TOKEN_VALIDITY)
         dataStoreRepo.saveCookies(emptyList())
         dataStoreRepo.changeRoomId(DEFAULT_BUILDING_ID)
         dataStoreRepo.changeBuildingId(DEFAULT_ROOM_ID)

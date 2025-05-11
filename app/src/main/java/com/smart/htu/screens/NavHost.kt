@@ -10,7 +10,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.smart.htu.component.animation.animatedComposable
 import com.smart.htu.screens.application.ApplicationEdit
-import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.airCondition.AirCondition
 import com.smart.htu.screens.application.airCondition.AirConditionSetting
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
@@ -26,7 +25,6 @@ import com.smart.htu.screens.login.LoginScreen
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.message.MessageScreen
-import com.smart.htu.screens.message.MessageViewModel
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsSearch
 import com.smart.htu.screens.news.NewsViewModel
@@ -34,19 +32,16 @@ import com.smart.htu.screens.person.AccountManage
 import com.smart.htu.screens.setting.About
 import com.smart.htu.screens.setting.License
 import com.smart.htu.screens.setting.SettingScreen
-import com.smart.htu.screens.setting.SettingViewModel
+import com.smart.htu.screens.setting.feedback.Feedback
 import com.smart.htu.screens.webview.WebViewContent
 import com.smart.htu.utils.startAppUrl
 import com.smart.htu.utils.startLaunchAPK
 
 @Composable
 fun NavHostScreen() {
-    val settingViewModel: SettingViewModel = hiltViewModel()
     val mainViewModel: MainViewModel = hiltViewModel()
     val loginViewModel: LoginViewModel = hiltViewModel()
-    val applicationViewModel: ApplicationViewModel = hiltViewModel()
     val newsViewModel: NewsViewModel = hiltViewModel()
-    val messageViewModel: MessageViewModel = hiltViewModel()
     val airConditionViewModel: AirConditionViewModel = hiltViewModel()
     val navController = rememberNavController()
     NavHost(
@@ -58,9 +53,7 @@ fun NavHostScreen() {
                 navController = navController,
                 mainViewModel = mainViewModel,
                 loginViewModel = loginViewModel,
-                applicationViewModel = applicationViewModel,
                 newsViewModel = newsViewModel,
-                settingViewModel = settingViewModel,
                 airConditionViewModel = airConditionViewModel
             )
         }
@@ -71,22 +64,13 @@ fun NavHostScreen() {
             )
         }
         animatedComposable(Destinations.Message.route) {
-            MessageScreen(
-                navController = navController,
-                viewModel = messageViewModel
-            )
+            MessageScreen(navController = navController)
         }
         animatedComposable(Destinations.Setting.route) {
-            SettingScreen(
-                navController = navController,
-                viewModel = settingViewModel
-            )
+            SettingScreen(navController = navController)
         }
         animatedComposable(Destinations.ApplicationEdit.route) {
-            ApplicationEdit(
-                navController = navController,
-                viewModel = applicationViewModel
-            )
+            ApplicationEdit(navController = navController)
         }
         animatedComposable(Destinations.ClassroomSearch.route) {
             ClassroomSearchScreen(navController = navController)
@@ -135,10 +119,7 @@ fun NavHostScreen() {
             )
         }
         animatedComposable(Destinations.About.route) {
-            About(
-                navController = navController,
-                viewModel = settingViewModel
-            )
+            About(navController = navController)
         }
         animatedComposable(Destinations.Grade.route) {
             Grade(navController = navController)
@@ -171,6 +152,9 @@ fun NavHostScreen() {
         }
         animatedComposable(Destinations.CourseTable.route) {
             CourseTable(navController = navController)
+        }
+        animatedComposable(Destinations.Feedback.route) {
+            Feedback(navController = navController)
         }
     }
 }

@@ -53,7 +53,6 @@ import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissPopup
 
 @SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -153,7 +152,7 @@ fun WebViewContent(
                         popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
                         alignment = PopupPositionProvider.Align.TopRight,
                         onDismissRequest = {
-                            dismissPopup(showDropDownMenu)
+                            showDropDownMenu.value = false
                         }
                     ) {
                         ListPopupColumn {
@@ -163,7 +162,7 @@ fun WebViewContent(
                                     isSelected = false,
                                     optionSize = dropdownOptions.size,
                                     onSelectedIndexChange = {
-                                        dismissPopup(showDropDownMenu)
+                                        showDropDownMenu.value = false
                                         when (index) {
                                             0 -> {
                                                 Intent(Intent.ACTION_SEND).also {

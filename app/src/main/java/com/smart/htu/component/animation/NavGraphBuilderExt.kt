@@ -8,15 +8,15 @@
 
 package com.smart.htu.component.animation
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.runtime.Composable
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDeepLink
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.xhand.hnu.components.motion.materialSharedAxisXIn
-import com.xhand.hnu.components.motion.materialSharedAxisXOut
+import com.smart.htu.component.animation.motion.materialSharedAxisXIn
+import com.smart.htu.component.animation.motion.materialSharedAxisXOut
 
 private const val INITIAL_OFFSET_FACTOR = 0.10f
 

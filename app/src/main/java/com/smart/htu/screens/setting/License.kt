@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.navigation.NavController
 import com.mikepenz.aboutlibraries.ui.compose.LibraryDefaults
-import com.smart.htu.component.aboutLibrary.LibrariesContainer
-import com.smart.htu.component.aboutLibrary.libraryColors
+import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
+import com.mikepenz.aboutlibraries.ui.compose.m3.libraryColors
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme

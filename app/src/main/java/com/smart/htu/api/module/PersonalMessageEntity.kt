@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class PersonalMessageRes(
     val msg: String,
-    @SerializedName("xjxx") val personalMessage: PersonalMessageEntity? = null,
+    @SerializedName("xjxx") val personalMessage: PersonalMessageEntity? = PersonalMessageEntity(),
     val code: Int
 )
 

@@ -31,7 +31,6 @@ import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.dismissDialog
 
 @Composable
 fun EditQQNumberDialog(
@@ -47,7 +46,7 @@ fun EditQQNumberDialog(
         title = "修改头像",
         summary = "通过设置 QQ 号码以修改头像，暂不支持其他头像修改方式",
         onDismissRequest = {
-            dismissDialog(showDialog)
+            showDialog.value = false
         }
     ) {
         Column(
@@ -120,7 +119,7 @@ fun EditQQNumberDialog(
                 TextButton(
                     text = stringResource(id = R.string.cancel),
                     onClick = {
-                        dismissDialog(showDialog)
+                        showDialog.value = false
                     },
                     modifier = Modifier.weight(1f)
                 )
@@ -129,7 +128,7 @@ fun EditQQNumberDialog(
                     text = stringResource(id = R.string.confirm),
                     onClick = {
                         onConfirmRequests(customizedQQNumber)
-                        dismissDialog(showDialog)
+                        showDialog.value = false
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.textButtonPrimaryColors()

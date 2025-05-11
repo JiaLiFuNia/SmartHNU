@@ -1,8 +1,10 @@
 package com.smart.htu.screens.application
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -29,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.extra.CheckboxLocation
 import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -73,14 +76,16 @@ fun ApplicationEdit(
     ) {
         LazyColumn(
             contentPadding = PaddingValues(16.dp, 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .padding(it)
                 .fillMaxSize()
                 .overScrollVertical(),
             overscrollEffect = null
         ) {
-            items(uiState.appList) {
+            stickyHeader {
+                StickyHeader(text = "已添加应用")
+            }
+            items(uiState.appList.filter { it in uiState.appListIsCommonList }) {
                 Card {
                     SuperCheckbox(
                         checkboxLocation = CheckboxLocation.Right,
@@ -92,7 +97,40 @@ fun ApplicationEdit(
                         }
                     )
                 }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+            stickyHeader {
+                StickyHeader(text = "未添加应用")
+            }
+            items(uiState.appList.filter { it !in uiState.appListIsCommonList }) {
+                Card {
+                    SuperCheckbox(
+                        checkboxLocation = CheckboxLocation.Right,
+                        title = stringResource(it.label),
+                        summary = it.category.category,
+                        checked = it in uiState.appListIsCommonList,
+                        onCheckedChange = { value ->
+                            viewModel.changeCommonAppListState(it, value)
+                        }
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
     }
+}
+
+@Composable
+fun StickyHeader(
+    text: String,
+    insideMargin: PaddingValues = PaddingValues(start = 12.dp, top = 8.dp)
+) {
+    SmallTitle(
+        text = text,
+        insideMargin = insideMargin,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MiuixTheme.colorScheme.background)
+            .padding(bottom = 12.dp)
+    )
 }

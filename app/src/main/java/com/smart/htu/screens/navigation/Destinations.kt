@@ -25,4 +25,5 @@ sealed class Destinations(
     data object Textbook : Destinations("textbook")
     data object TextbookSelect : Destinations("textbook_select")
     data object CourseTable : Destinations("course_table")
+    data object Feedback : Destinations("feedback")
 }

@@ -52,7 +52,6 @@ import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.Status
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
-import com.smart.htu.component.SingleCourseCard
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.LargeCardDisplay
@@ -67,8 +66,11 @@ import com.smart.htu.screens.navigateWithAuthCheck
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsItem
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
+import com.smart.htu.utils.Constants.Companion.SECOND_CLASS_URL
 import com.smart.htu.utils.startCalendar
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.PullToRefresh
+import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
@@ -91,26 +93,27 @@ fun Main(
     val loginUiState by loginViewModel.uiState.collectAsState()
     val airConditionUiState by airConditionViewModel.uiState.collectAsState()
 
-    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
+    val pullToRefreshState = rememberPullToRefreshState()
 
     val coroutineScope = rememberCoroutineScope()
     val onRefresh: () -> Unit = {
         coroutineScope.launch {
             pullToRefreshState.completeRefreshing {
                 mainViewModel.getCurrentWeather()
-                mainViewModel.refreshGiteeConfig()
+                mainViewModel.refreshNoticeAndUpdate()
                 mainViewModel.getNewsList()
-                if (loginUiState.loginJWCState == 1)
+                if (loginUiState.loginJWCState == 1) {
                     mainViewModel.getTodayCourse()
+                    mainViewModel.getCurrentWeek()
+                }
             }
         }
     }
-
     val loginState = remember {
         derivedStateOf { mutableStateOf(loginUiState.loginJWCState != 1) }
     }
 
-    top.yukonga.miuix.kmp.basic.PullToRefresh(
+    PullToRefresh(
         pullToRefreshState = pullToRefreshState,
         refreshTexts = PULL_TO_REFRESH_TEXT,
         onRefresh = onRefresh,
@@ -126,15 +129,16 @@ fun Main(
             verticalArrangement = Arrangement.spacedBy(20.dp),
             overscrollEffect = null
         ) {
-            if (loginState.value.value) item {
-                SuggestChip(
-                    onClick = { navController.navigate(Destinations.Login.route) },
-                    onActionClick = { navController.navigate(Destinations.Login.route) },
-                    text = "暂未登录，登录后即可体验全部功能",
-                    type = SuggestChipType.ERROR,
-                    visibility = loginState.value,
-                    icon = Icons.AutoMirrored.Filled.ArrowForward
-                )
+            if (loginState.value.value) {
+                item {
+                    SuggestChip(
+                        onClick = { navController.navigate(Destinations.Login.route) },
+                        onActionClick = { navController.navigate(Destinations.Login.route) },
+                        text = "暂未登录，登录后即可体验全部功能",
+                        type = SuggestChipType.ERROR,
+                        icon = Icons.AutoMirrored.Filled.ArrowForward
+                    )
+                }
             }
             item {
                 FocusCard(navController, loginUiState, airConditionUiState, uiState)
@@ -242,7 +246,7 @@ fun FocusCard(
                     },
                     trailingContent = {
                     },
-                    title = today.format(formatter),
+                    title = "${today.format(formatter)} " + if (mainUiState.holidayData?.holiday != null) mainUiState.holidayData.holiday.holiday else "",
                     content = "第 ${mainUiState.courseSchedule.data?.week ?: "-"} 周 $dayOfWeek",
                     onClick = { startCalendar() },
                     modifier = Modifier.weight(0.5f)
@@ -274,8 +278,13 @@ fun FocusCard(
                         )
                     },
                     title = "第二课堂",
-                    content = "625 学时",
-                    onClick = { /*TODO*/ },
+                    content = "-- 学时",
+                    onClick = {
+                        navController.navigateToWebView(
+                            url = SECOND_CLASS_URL,
+                            label = context.getString(R.string.second_class)
+                        )
+                    },
                     modifier = Modifier.weight(0.5f)
                 )
                 FocusCardItem(
@@ -415,7 +424,7 @@ fun CommonAppsCard(
     navController: NavController,
     loginUiState: LoginUiState
 ) {
-    val rowCount = remember { derivedStateOf { ceil(uiState.appListIsCommonList.size / 5.0) } }
+    val rowCount = remember { derivedStateOf { ceil(uiState.commonAppList.size / 5.0) } }
     val lazyVerticalGridHeight by remember { derivedStateOf { rowCount.value * 70 + (rowCount.value - 1) * 4 + 16 } }
     LargeCardDisplay(
         containerColor = MiuixTheme.colorScheme.surface,
@@ -424,7 +433,7 @@ fun CommonAppsCard(
         leadingIconPainting = R.drawable.app_registration_24px,
         actionText = "编辑",
         content = {
-            if (uiState.appListIsCommonList.isEmpty())
+            if (uiState.commonAppList.isEmpty())
                 EmptyContent(
                     text = "点击右上角编辑以添加常用应用",
                     modifier = Modifier
@@ -440,7 +449,7 @@ fun CommonAppsCard(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     userScrollEnabled = false
                 ) {
-                    items(uiState.appListIsCommonList) { app ->
+                    items(uiState.commonAppList) { app ->
                         Box(
                             modifier = Modifier,
                             contentAlignment = Alignment.Center

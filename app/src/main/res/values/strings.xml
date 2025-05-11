@@ -125,4 +125,8 @@
     <string name="saturday">周六</string>
     <string name="sunday">周日</string>
     <string name="course_table">课程表</string>
+    <string name="feedback">反馈</string>
+    <string name="clear_cookie">清除 Cookie</string>
+    <string name="clear_webview">清除 WebView 数据</string>
+    <string name="select_term">选择学期</string>
 </resources>

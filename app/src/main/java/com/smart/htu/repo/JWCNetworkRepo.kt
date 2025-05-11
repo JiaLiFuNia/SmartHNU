@@ -18,6 +18,7 @@ import com.smart.htu.api.module.TextbookEntity
 import com.smart.htu.api.module.TextbookSelectPost
 import com.smart.htu.api.module.TodayCourseResponse
 import com.smart.htu.api.network.JWCService
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_PASSWORD
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN
 import com.smart.htu.repo.PasswordRepo.Companion.JWC_PASSWORD
 import com.smart.htu.utils.RSAUtil
@@ -51,6 +52,15 @@ class JWCNetworkRepo @Inject constructor(
             }
         )
 
+    private val loginStateStateFlow = dataStoreRepo.observeLoginJWCState()
+        .stateIn(
+            scope = scope,
+            started = Eagerly,
+            initialValue = runBlocking {
+                dataStoreRepo.observeLoginJWCState().first()
+            }
+        )
+
     suspend fun getCourseScheduleService(
         week: String = "",
         section: String = ""
@@ -59,12 +69,7 @@ class JWCNetworkRepo @Inject constructor(
         val res = call.awaitResponse().body()
         return when (res?.code) {
             200 -> res
-            401 -> {
-                if (reLogin())
-                    return getCourseScheduleService(week, section)
-                else
-                    null
-            }
+            401 -> null
 
             else -> null
         }
@@ -76,12 +81,7 @@ class JWCNetworkRepo @Inject constructor(
         val res = call.awaitResponse().body()
         return when (res?.code) {
             200 -> res
-            401 -> {
-                if (reLogin())
-                    return getPersonalMessageService()
-                else
-                    null
-            }
+            401 -> null
 
             else -> null
         }
@@ -92,12 +92,7 @@ class JWCNetworkRepo @Inject constructor(
         val res = call.awaitResponse().body()
         return when (res?.code) {
             200 -> res
-            401 -> {
-                if (reLogin())
-                    return getTodayCourseService()
-                else
-                    null
-            }
+            401 -> null
 
             else -> null
         }
@@ -111,13 +106,7 @@ class JWCNetworkRepo @Inject constructor(
         val res = call.awaitResponse().body()
         return when (res?.code) {
             200 -> res
-            401 -> {
-                if (reLogin())
-                    return getSelectableTextbookService(termCode, courseTaskCode)
-                else
-                    null
-            }
-
+            401 -> null
             else -> null
         }
     }
@@ -130,13 +119,7 @@ class JWCNetworkRepo @Inject constructor(
         val res = call.awaitResponse().body()
         return when (res?.code) {
             200 -> res
-            401 -> {
-                if (reLogin())
-                    return getSelectedTextbookService(termCode, courseTaskCode)
-                else
-                    null
-            }
-
+            401 -> null
             else -> null
         }
     }
@@ -147,13 +130,7 @@ class JWCNetworkRepo @Inject constructor(
         val res = call.awaitResponse().body()
         return when (res?.code) {
             200 -> res
-            401 -> {
-                if (reLogin())
-                    return getTextbookService(termCode)
-                else
-                    null
-            }
-
+            401 -> null
             else -> null
         }
     }
@@ -164,12 +141,7 @@ class JWCNetworkRepo @Inject constructor(
         val res = call.awaitResponse().body()
         return when (res?.code) {
             200 -> res
-            401 -> {
-                if (reLogin())
-                    return getTeacherListService(termCode)
-                else
-                    null
-            }
+            401 -> null
 
             else -> null
         }
@@ -183,12 +155,7 @@ class JWCNetworkRepo @Inject constructor(
             val res = jwcService.classroomOccupation(building)
             return when (res.code) {
                 200 -> Result.success(res)
-                401 -> {
-                    if (reLogin())
-                        return getClassroomOccupationService(building)
-                    else
-                        Result.failure(Exception("获取失败"))
-                }
+                401 -> Result.failure(Exception(res.msg))
 
                 else -> Result.failure(Exception("获取失败"))
             }
@@ -204,13 +171,7 @@ class JWCNetworkRepo @Inject constructor(
         val res = call.awaitResponse().body()
         return when (res?.code) {
             200 -> res
-            401 -> {
-                if (reLogin())
-                    return getCourseGradeService(termCode)
-                else
-                    null
-            }
-
+            401 -> null
             else -> null
         }
     }
@@ -222,27 +183,25 @@ class JWCNetworkRepo @Inject constructor(
     ): Result<LoginJWCEntity> {
         try {
             if (username == "" || password == "") {
-                return Result.failure(Exception("用户名或密码不能为空"))
+                return Result.failure(Exception("学号或密码不能为空"))
             }
             val publicKey = RSAUtil.getPublicKeyFromRaw(context, R.raw.public_key)
             val passwordEncrypt = publicKey?.let { RSAUtil.encryptText(password, it) }
             val logState = jwcService.login(LoginPost(username, passwordEncrypt ?: ""))
-            Log.i("TAG666 jwclogin", logState.toString())
+            Log.i("TAG666 jwcLogin", logState.toString())
             return when (logState.code) {
                 200 -> {
                     dataStoreRepo.setTokenValidity(true)
                     Result.success(logState)
                 }
 
-                401 -> {
+                else -> {
                     dataStoreRepo.setTokenValidity(false)
                     Result.failure(Exception("智慧教务登录失败"))
                 }
-
-                else -> Result.failure(Exception("智慧教务登录失败"))
             }
         } catch (e: Exception) {
-            Log.e("TAG666", "${e.message}")
+            Log.e("TAG666 jwcLogin", "${e.message}")
             return Result.failure(e)
         }
     }
@@ -254,23 +213,23 @@ class JWCNetworkRepo @Inject constructor(
                 200 -> Result.success(true)
                 401 -> {
                     if (reLogin()) Result.success(true)
-                    else Result.failure(Exception("false"))
+                    else Result.failure(Exception(res.msg))
                 }
 
-                else -> Result.failure(Exception("false"))
+                else -> Result.failure(Exception(res.msg))
             }
         } catch (e: Exception) {
-            Log.e("TAG666", "${e.message}")
+            Log.e("TAG666 check token", "${e.message}")
             return Result.failure(e)
         }
     }
 
     suspend fun reLogin(): Boolean {
-        val password = passwordRepo.getPassword(JWC_PASSWORD) ?: ""
-        // val studentId = dataStoreRepo.observeStudentId().first()
+        val password = passwordRepo.getPassword(JWC_PASSWORD) ?: DEFAULT_PASSWORD
         val res = jwcLogin(studentIdStateFlow.value, password)
-        Log.i("TAG666 relogin", res.toString())
+        Log.i("TAG666 reLogin", res.toString())
         res.onSuccess {
+            dataStoreRepo.setTokenValidity(true)
             dataStoreRepo.setJWCToken(it.user?.token ?: DEFAULT_TOKEN)
         }
         return res.isSuccess

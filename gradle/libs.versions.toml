@@ -15,8 +15,8 @@ haze = "1.5.3"
 hiltAndroid = "2.56.1"
 hiltNavigationCompose = "1.2.0"
 konfetti = "2.0.5"
-material = "1.8.0"
-material3 = "1.4.0-alpha13"
+material = "1.8.1"
+material3 = "1.4.0-alpha14"
 materialIconsCore = "1.7.8"
 jsoup = "1.18.1"
 coreKtx = "1.16.0"
@@ -29,7 +29,7 @@ lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
 composeBom = "2025.04.00"
 material3AdaptiveNavigationSuite = "1.3.2"
-miuix = "0.4.2"
+miuix = "0.4.3"
 navigationCompose = "2.8.9"
 coil = "2.6.0"
 appcompat = "1.7.0"
@@ -43,7 +43,6 @@ accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-
 androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "materialIconsCore" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
-androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material" }
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
 
 androidx-adaptive-navigation-android = { module = "androidx.compose.material3.adaptive:adaptive-navigation-android", version.ref = "adaptiveNavigationAndroid" }

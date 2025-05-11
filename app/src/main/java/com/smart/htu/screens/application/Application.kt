@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.window.core.layout.WindowSizeClass
 import com.smart.htu.component.SuggestChip
@@ -31,6 +32,7 @@ import com.smart.htu.screens.navigateWithAuthCheck
 import com.smart.htu.screens.navigation.Destinations
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
@@ -38,7 +40,7 @@ import top.yukonga.miuix.kmp.basic.SmallTitle
 fun Application(
     contentPadding: PaddingValues,
     navController: NavController,
-    viewModel: ApplicationViewModel,
+    viewModel: ApplicationViewModel = hiltViewModel(),
     loginViewModel: LoginViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -54,7 +56,10 @@ fun Application(
         columns = GridCells.Fixed(if (windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)) 2 else 4),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.padding(contentPadding),
+        modifier = Modifier
+            .padding(contentPadding)
+            .overScrollVertical(),
+        overscrollEffect = null,
     ) {
         if (visibility.value.value) {
             item(span = { GridItemSpan(maxLineSpan) }) {
@@ -63,7 +68,6 @@ fun Application(
                     onActionClick = { navController.navigate(Destinations.Login.route) },
                     text = "暂未登录，登录后即可体验全部功能",
                     type = SuggestChipType.ERROR,
-                    visibility = visibility.value,
                     icon = Icons.AutoMirrored.Filled.ArrowForward
                 )
             }

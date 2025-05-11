@@ -54,12 +54,14 @@ class DataStoreRepo @Inject constructor(
         val AIR_CONDITION_COOKIE_TYPE = intPreferencesKey("AIR_CONDITION_COOKIE_TYPE")
         val AIR_CONDITION_USER_COOKIE = stringPreferencesKey("AIR_CONDITION_USER_COOKIE")
         val BOOK_SEARCH_HISTORY_LIST = stringPreferencesKey("BOOK_SEARCH_HISTORY_LIST")
+        val IS_WRITE_CALENDAR_PERMISSION_GRANTED =
+            booleanPreferencesKey("IS_WRITE_CALENDAR_PERMISSION_GRANTED")
 
         const val DEFAULT_COOKIES = "[]"
         const val DEFAULT_MESSAGE_READ_ID = "[]"
         const val DEFAULT_THEME_MODE = 0
         const val DEFAULT_BLUR_EFFECT = false
-        const val DEFAULT_TOKEN_VALIDITY = true
+        const val DEFAULT_TOKEN_VALIDITY = false
         const val DEFAULT_TOKEN = ""
         const val DEFAULT_LOGIN_STATE = 0
         const val DEFAULT_DARK_THEME = 0
@@ -70,6 +72,7 @@ class DataStoreRepo @Inject constructor(
         const val DEFAULT_BUILDING_ID = ""
         const val DEFAULT_ROOM_ID = ""
         const val DEFAULT_MOBILE_CODE = ""
+        const val DEFAULT_WRITE_CALENDAR_PERMISSION_GRANTED = false
         const val DEFAULT_BOOK_SEARCH_HISTORY_LIST = "[]"
         const val DEFAULT_AIR_CONDITION_USER_COOKIE = """{"shiroJID":"", "ymId":""}"""
         const val DEFAULT_AIR_CONDITION_COOKIE_TYPE = 0
@@ -104,7 +107,9 @@ class DataStoreRepo @Inject constructor(
     }
 
     override suspend fun addWaitingBorrowedBookList(waitingBorrowedBookList: List<BorrowedBookEntity>) {
-        context.dataStore.edit { it[WAITING_BORROWED_BOOK_LIST] = Gson().toJson(waitingBorrowedBookList) }
+        context.dataStore.edit {
+            it[WAITING_BORROWED_BOOK_LIST] = Gson().toJson(waitingBorrowedBookList)
+        }
     }
 
     override suspend fun changeBlurState(state: Boolean) {
@@ -157,6 +162,10 @@ class DataStoreRepo @Inject constructor(
 
     override suspend fun saveMobileCode(mobileCode: String) {
         context.dataStore.edit { it[MOBILE_CODE] = mobileCode }
+    }
+
+    override suspend fun setIsWriteCalendarPermissionGranted(enable: Boolean) {
+        context.dataStore.edit { it[IS_WRITE_CALENDAR_PERMISSION_GRANTED] = enable }
     }
 
 
@@ -280,4 +289,9 @@ class DataStoreRepo @Inject constructor(
     override fun observeMobileCode(): Flow<String> {
         return context.dataStore.data.map { it[MOBILE_CODE] ?: DEFAULT_MOBILE_CODE }
     }
+
+    override fun observeIsWriteCalendarPermissionGranted(): Flow<Boolean> {
+        return context.dataStore.data.map { it[IS_WRITE_CALENDAR_PERMISSION_GRANTED] ?: DEFAULT_WRITE_CALENDAR_PERMISSION_GRANTED }
+    }
+
 }

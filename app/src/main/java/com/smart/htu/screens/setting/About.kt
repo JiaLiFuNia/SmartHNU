@@ -38,8 +38,7 @@ import java.util.concurrent.TimeUnit
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun About(
-    navController: NavController,
-    viewModel: SettingViewModel
+    navController: NavController
 ) {
     var showConfetti by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()

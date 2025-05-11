@@ -110,7 +110,7 @@ fun LibrarySearchScreen(
     navController: NavController,
     viewModel: LibrarySearchViewModel = hiltViewModel()
 ) {
-    val uiState = viewModel.uiState.collectAsState().value
+    val uiState by viewModel.uiState.collectAsState()
 
     val hazeState = remember { HazeState() }
     val showBottomSheet = rememberSaveable { mutableStateOf(false) }

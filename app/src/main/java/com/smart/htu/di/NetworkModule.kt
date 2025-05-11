@@ -3,9 +3,9 @@ package com.smart.htu.di
 import android.util.Log
 import com.smart.htu.api.network.AirConditionService
 import com.smart.htu.api.network.AppLoginService
+import com.smart.htu.api.network.AppService
 import com.smart.htu.api.network.AuthLoginService
 import com.smart.htu.api.network.EHallService
-import com.smart.htu.api.network.GiteeService
 import com.smart.htu.api.network.JWCService
 import com.smart.htu.api.network.LibraryService
 import com.smart.htu.api.network.NewsService
@@ -52,6 +52,8 @@ object NetworkModule {
         const val AIR_CONDITION_BASE_URL = "https://application.xiaofubao.com/"
         const val GITEE_BASE_URL = "https://gitee.com/"
         const val WEATHER_BASE_URL = "https://devapi.qweather.com/v7/"
+
+        const val SMH_BASE_URL = "https://smh.xubohan04.tk/"
     }
 
     @Provides
@@ -174,16 +176,6 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideGiteeConfig(): GiteeService {
-        val retrofit = Retrofit.Builder()
-            .baseUrl(ApiConstants.GITEE_BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-        return retrofit.create(GiteeService::class.java)
-    }
-
-    @Provides
-    @Singleton
     fun provideWeatherService(): WeatherService {
         val retrofit = Retrofit.Builder()
             .baseUrl(ApiConstants.WEATHER_BASE_URL)
@@ -199,6 +191,17 @@ object NetworkModule {
             .baseUrl(ApiConstants.HTU_BASE_URL)
             .build()
         return retrofit.create(NewsService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAppNetworkRepo(): AppService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(ApiConstants.SMH_BASE_URL)
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(AppService::class.java)
     }
 }
 

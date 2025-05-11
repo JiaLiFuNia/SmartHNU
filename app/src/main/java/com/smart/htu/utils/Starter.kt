@@ -2,9 +2,8 @@ package com.smart.htu.utils
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.net.Uri
-import com.smart.htu.App.Companion.context
 import androidx.core.net.toUri
+import com.smart.htu.App.Companion.context
 
 // 打开日历
 fun startCalendar() {

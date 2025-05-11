@@ -1,4 +1,4 @@
-package com.smart.htu.component
+package com.smart.htu.screens.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -32,9 +32,12 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.smart.htu.R
 import com.smart.htu.api.module.Course
+import com.smart.htu.component.BasicBottomSheet
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
+import com.smart.htu.utils.CourseColorUtil.getColorByCourseName
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
@@ -42,7 +45,7 @@ import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 @Composable
 fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
     val isBottomSheetShow = remember { mutableStateOf(false) }
-    top.yukonga.miuix.kmp.basic.Surface(
+    Surface(
         modifier = modifier,
         onClick = {
             onClick()
@@ -62,7 +65,7 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
                     .width(4.dp)
                     .height(32.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(MiuixTheme.colorScheme.primary)
+                    .background(getColorByCourseName(message.courseName))
             )
             Spacer(modifier = Modifier.width(8.dp))
             Column(

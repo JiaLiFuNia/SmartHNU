@@ -24,6 +24,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,7 +40,6 @@ import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.animation.SlideTransition
 import com.smart.htu.screens.application.Application
-import com.smart.htu.screens.application.ApplicationViewModel
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.screens.login.LoginViewModel
@@ -49,7 +50,6 @@ import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsScreen
 import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.person.PersonScreen
-import com.smart.htu.screens.setting.SettingViewModel
 import com.smart.htu.utils.DoubleBackToExitApp
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -71,26 +71,23 @@ fun MainFrame(
     navController: NavController,
     mainViewModel: MainViewModel,
     loginViewModel: LoginViewModel,
-    settingViewModel: SettingViewModel,
     newsViewModel: NewsViewModel,
-    applicationViewModel: ApplicationViewModel,
     airConditionViewModel: AirConditionViewModel
 ) {
     val context = LocalContext.current
-    val loginUiState = loginViewModel.uiState.collectAsState().value
-    val mainUiState = mainViewModel.uiState.collectAsState().value
-    val settingUiState = settingViewModel.uiState.collectAsState().value
+    val loginUiState by loginViewModel.uiState.collectAsState()
+    val mainUiState by mainViewModel.uiState.collectAsState()
     val savableStateHolder = rememberSaveableStateHolder()
     val (selectedItemIndex, onSelectedItemIndex) = rememberSaveable { mutableIntStateOf(0) }
-
+    val messageCount = remember {
+        derivedStateOf { mainUiState.noticeIdList.size - mainUiState.readNoticeIdList.size }
+    }
     val navigationItem = listOf(
         BottomNavigationItem(
             title = R.string.main,
             selectedIcon = R.drawable.baseline_home_24,
             unselectedIcon = R.drawable.outline_home_24,
-            badge = (mainUiState.giteeConfig?.notice?.filter {
-                !mainUiState.hadReadIdList.contains(it.id)
-            }?.size ?: 0) + if (settingUiState.updateState) 1 else 0
+            badge = messageCount.value + if (mainUiState.updateData.isNeedUpdate == true) 1 else 0
         ),
         BottomNavigationItem(
             title = R.string.application,
@@ -133,16 +130,12 @@ fun MainFrame(
                         ) {
                             BadgedBox(
                                 badge = {
-                                    val messageCount =
-                                        mainUiState.giteeConfig?.notice?.filter {
-                                            !mainUiState.hadReadIdList.contains(it.id)
-                                        }?.size ?: 0
-                                    if (messageCount != 0)
-                                        Badge {
-                                            Text(
-                                                text = messageCount.toString()
-                                            )
-                                        }
+                                    if (messageCount.value > 0)
+                                        Badge(
+                                            content = {
+                                                Text(text = messageCount.value.toString())
+                                            }
+                                        )
                                 }
                             ) {
                                 Icon(
@@ -157,7 +150,7 @@ fun MainFrame(
                             }
                         ) {
                             BadgedBox(
-                                badge = { Badge() }
+                                badge = { if (mainUiState.updateData.isNeedUpdate == true) Badge() }
                             ) {
                                 Icon(
                                     imageVector = Icons.Outlined.Settings,
@@ -289,7 +282,6 @@ fun MainFrame(
 
                         1 -> Application(
                             navController = navController,
-                            viewModel = applicationViewModel,
                             loginViewModel = loginViewModel,
                             contentPadding = it
                         )
@@ -313,6 +305,25 @@ fun MainFrame(
     }
 
     // val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val showUpdateDialog = rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(mainUiState.updateData.isNeedUpdate, mainUiState.isShowUpdateDialog) {
+        if (mainUiState.updateData.isNeedUpdate == true && mainUiState.isShowUpdateDialog.value) {
+            showUpdateDialog.value = true
+        } else {
+            showUpdateDialog.value = false
+        }
+    }
+    UpdateDialog(
+        showDialog = showUpdateDialog,
+        onConfirmClick = {
+
+        },
+        onDismissRequest = {
+            mainViewModel.changeUpdateDialogState(false)
+        },
+        isForceUpdate = mainUiState.updateData.isForceUpdate,
+        updateData = mainUiState.updateData
+    )
 
     DoubleBackToExitApp(
         onExit = {

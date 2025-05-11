@@ -1,11 +1,10 @@
 package com.smart.htu.api.module
 
-data class GiteeEntity(
-    val version: String,
-    val versionCode: String,
-    val termCode: String,
+data class NoticeEntity(
+    val code: Int,
+    val message: String,
+    val data: List<Notice>,
     val airConditionCookie: LoginCookie,
-    val notice: List<Notice>
 )
 
 data class Notice(

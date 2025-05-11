@@ -6,11 +6,11 @@ data class NewsItemEntity(
     val label: NewsType,
     val title: String,
     private val _url: String,
-    val _imgUrl: String? = "",
+    val imgUrlWithoutHttp: String? = "",
     val time: String
 ){
     val url: String
         get() = if (_url.startsWith("http")) _url else "https://www.htu.edu.cn$_url"
     val imgUrl: String
-        get() = if (_imgUrl?.startsWith("http") == true) _imgUrl else "https://www.htu.edu.cn$_imgUrl"
+        get() = if (imgUrlWithoutHttp?.startsWith("http") == true) imgUrlWithoutHttp else "https://www.htu.edu.cn$imgUrlWithoutHttp"
 }

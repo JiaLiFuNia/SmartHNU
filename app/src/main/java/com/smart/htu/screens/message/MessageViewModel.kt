@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 data class MessageUiState(
     val noticeList: List<Notice> = emptyList(),
-    val hadReadIdList: List<Int> = emptyList(),
+    val readNoticeIdList: List<Int> = emptyList(),
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
 
@@ -33,14 +33,14 @@ class MessageViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(MessageUiState())
     val uiState: StateFlow<MessageUiState> = _uiState.asStateFlow()
 
-    private val _blurStateFlow = dataStoreRepo.observerBlurState()
+    private val blurStateFlow = dataStoreRepo.observerBlurState()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking { dataStoreRepo.observerBlurState().first() }
         )
 
-    private val _hadReadIdListStateFlow = dataStoreRepo.observeReadNoticeIdList()
+    private val hadReadIdListStateFlow = dataStoreRepo.observeReadNoticeIdList()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -49,21 +49,23 @@ class MessageViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            sharedDataRepository.giteeConfig
+            sharedDataRepository.notice
                 .collect { config ->
                     _uiState.update {
-                        it.copy(noticeList = config?.notice ?: emptyList())
+                        it.copy(
+                            noticeList = config?.data ?: emptyList()
+                        )
                     }
                 }
         }
         viewModelScope.launch {
-            _blurStateFlow.collect { value ->
+            blurStateFlow.collect { value ->
                 _uiState.update { it.copy(blurEffect = value) }
             }
         }
         viewModelScope.launch {
-            _hadReadIdListStateFlow.collect { value ->
-                _uiState.update { it.copy(hadReadIdList = value) }
+            hadReadIdListStateFlow.collect { value ->
+                _uiState.update { it.copy(readNoticeIdList = value) }
             }
         }
     }
@@ -75,13 +77,13 @@ class MessageViewModel @Inject constructor(
     }
 
     fun addReadNoticeId(id: Int) = viewModelScope.launch {
-        if (!_uiState.value.hadReadIdList.contains(id)) {
-            _uiState.update { it.copy(hadReadIdList = it.hadReadIdList + id) }
-            dataStoreRepo.addReadNoticeId(_uiState.value.hadReadIdList)
+        if (!_uiState.value.readNoticeIdList.contains(id)) {
+            _uiState.update { it.copy(readNoticeIdList = it.readNoticeIdList + id) }
+            dataStoreRepo.addReadNoticeId(_uiState.value.readNoticeIdList)
         }
     }
 
-    suspend fun refreshGiteeConfig() {
-        sharedDataRepository.getGiteeConfig()
+    suspend fun refreshNoticeData() {
+        sharedDataRepository.getNotice()
     }
 }

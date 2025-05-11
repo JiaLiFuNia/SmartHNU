@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
 import com.smart.htu.App.Companion.context
+import com.smart.htu.api.module.UpdateData
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_THEME_MODE
@@ -32,7 +33,8 @@ data class SettingUiState(
     val isDarkTheme: Int = 0,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val selectedLanguageIndex: Int = 0,
-    val updateState: Boolean = true,
+    val updateInfo: UpdateData = UpdateData(),
+    val isUpdate: Boolean = false,
     val termCode: String,
     val cacheSize: String = "计算中..."
 )
@@ -107,7 +109,27 @@ class SettingViewModel @Inject constructor(
                     }
                 }
         }
+        viewModelScope.launch {
+            sharedDataRepository.update
+                .collect { config ->
+                    _uiState.update {
+                        it.copy(
+                            updateInfo = config ?: UpdateData(),
+                            isUpdate = config?.isNeedUpdate == true
+                        )
+                    }
+                }
+        }
         calculateCacheSize()
+    }
+
+
+    suspend fun getUpdate(): Boolean {
+        sharedDataRepository.getUpdate()
+            .onSuccess {
+                return it.isNeedUpdate
+            }
+        return false
     }
 
     fun changeDynamicTheme(mode: Int) {

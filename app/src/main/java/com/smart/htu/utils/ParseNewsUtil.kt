@@ -1,6 +1,5 @@
 package com.smart.htu.utils
 
-import android.util.Log
 import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.screens.news.entity.NewsType
 import org.jsoup.Jsoup
@@ -61,11 +60,11 @@ object ParseNewsUtil {
                 label = label,
                 title = selectElement(it, rules.titlePath),
                 _url = selectElement(it, rules.urlPath),
-                _imgUrl = selectElement(it, rules.imgUrlPath),
+                imgUrlWithoutHttp = selectElement(it, rules.imgUrlPath),
                 time = selectElement(it, rules.timePath)
             )
-            if (newsListElement._imgUrl != "top") resultList.add(newsListElement)
-            Log.i("TAG666 parseHtml Element", newsListElement.toString())
+            if (newsListElement.imgUrlWithoutHttp != "top") resultList.add(newsListElement)
+            // Log.i("TAG666 parseHtml Element", newsListElement.toString())
         }
         return resultList
     }

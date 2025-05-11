@@ -1,30 +1,43 @@
 {
-  "version": "3.0.3",
-  "versionCode": "20250113",
+  "version": "3.0.9",
+  "versionCode": 202505042,
+  "update": {
+    "version": "3.0.9",
+    "versionCode": 202505042,
+    "updateUrl": "",
+    "updateContent": "优化 设置页面\n新增 课程成绩\n师韵（SmartHNU）v3.0 即将来袭"
+  },
   "airConditionCookie": {
     "shiroJID": "295444bf-c1cf-458b-b041-b6cc36f07461",
     "ymId": "2209553875734609932"
   },
-  "term": "202502",
   "notice": [
     {
-      "id": "2025012001",
-      "time": "2025-1-20 15:37",
+      "id": 2025050401,
+      "time": "2025-5-4 10:00",
       "title": "软件通知",
-      "content": "这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知，这是一条测试通知。",
+      "content": "师韵（SmartHNU）v3.0 即将来袭",
       "action": null,
       "type": "COMMON"
     },
     {
-      "id": "2025012002",
-      "time": "2025-1-21 17:05",
-      "title": "软件通知",
-      "content": "博客已更新，欢迎访问。",
-      "action": "https://xhand.site",
-      "type": "URL"
+      "id": 2025021401,
+      "time": "2025-2-14 22:28",
+      "title": "新增页面",
+      "content": "新增 课程成绩",
+      "action": "grade",
+      "type": "SCREEN"
     },
     {
-      "id": "2025012301",
+      "id": 2025021201,
+      "time": "2025-2-12 17:45",
+      "title": "软件通知",
+      "content": "优化 设置页面",
+      "action": "setting",
+      "type": "SCREEN"
+    },
+    {
+      "id": 2025012301,
       "time": "2025-1-23 12:14",
       "title": "软件通知",
       "content": "师韵——集教务与新闻于一体的校园助手。",
@@ -32,9 +45,9 @@
       "type": "COMMON"
     },
     {
-      "id": "2025012302",
+      "id": 2025012302,
       "time": "2025-1-23 12:15",
-      "title": "软件通知",
+      "title": "校园通知",
       "action": "https://www.htu.edu.cn/",
       "content": "河南师范大学",
       "type": "URL"
