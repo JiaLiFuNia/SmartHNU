@@ -209,6 +209,14 @@ class Constants {
                 routeType = RouteType.SCREEN,
                 route = Destinations.CourseTable.route,
                 category = ApplicationCategory.ACADEMIC_AFFAIRS
+            ),
+            ApplicationEntity(
+                guestEnable = true,
+                icon = R.drawable.calendar_month_24px,
+                label = R.string.website_navigation,
+                routeType = RouteType.SCREEN,
+                route = Destinations.WebsiteNavigation.route,
+                category = ApplicationCategory.QUICK_APP
             )
         )
         val INIT_COMMON_APP_LIST = listOf(

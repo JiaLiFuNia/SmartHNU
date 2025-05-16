@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,7 +62,9 @@ import com.smart.htu.utils.formatDateToFriendly
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -82,7 +86,7 @@ fun NewsScreen(
     val selectedTabIndex = remember { derivedStateOf { newsPagerState.currentPage } }
 
     val scope = rememberCoroutineScope()
-    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
+    val pullToRefreshState = rememberPullToRefreshState()
     val onRefresh: () -> Unit = {
         scope.launch {
             pullToRefreshState.completeRefreshing {
@@ -136,7 +140,7 @@ fun NewsScreen(
         val bannerTitle = uiState.bannerPicList.data?.map { it.title } ?: emptyList()
         val bannerUrl = uiState.bannerPicList.data?.map { it.url } ?: emptyList()
 
-        top.yukonga.miuix.kmp.basic.PullToRefresh(
+        PullToRefresh(
             pullToRefreshState = pullToRefreshState,
             refreshTexts = PULL_TO_REFRESH_TEXT,
             onRefresh = onRefresh,
@@ -149,18 +153,41 @@ fun NewsScreen(
                     .fillMaxSize()
                     .padding(top = 4.dp),
                 pageSpacing = 12.dp
-            ) {
-                if (uiState.newsList[it].status != Status.SUCCESS) {
+            ) { pageIndex ->
+                // 在这里为每个页面创建独立的滚动状态
+                val lazyListState = rememberLazyListState()
+
+                // 检测当前页面是否滚动到底部
+                val isAtBottom by remember {
+                    derivedStateOf {
+                        val layoutInfo = lazyListState.layoutInfo
+                        val totalItemsCount = layoutInfo.totalItemsCount
+                        val lastVisibleItemIndex =
+                            (layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) + 1
+
+                        lastVisibleItemIndex >= totalItemsCount && totalItemsCount > 0
+                    }
+                }
+
+                // 当滚动到底部时加载更多
+                LaunchedEffect(isAtBottom) {
+                    if (isAtBottom && uiState.hasMoreNews[pageIndex]) {
+                        viewModel.getNewsList(pageIndex, loadMore = true)
+                    }
+                }
+
+                if (uiState.newsList[pageIndex].status != Status.SUCCESS && uiState.newsPages[pageIndex] == 1) {
                     CircularProgressIndicator(modifier = Modifier.fillMaxSize())
                 } else {
                     LazyColumn(
+                        state = lazyListState,
                         modifier = Modifier
                             .fillMaxSize()
                             .overScrollVertical(),
                         overscrollEffect = null,
                         contentPadding = PaddingValues(16.dp, 8.dp)
                     ) {
-                        if (it == 1)
+                        if (pageIndex == 1)
                             item {
                                 HorizontalMultiBrowseCarousel(
                                     state = rememberCarouselState { bannerPicUrl.count() },
@@ -214,7 +241,7 @@ fun NewsScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
                         itemsIndexed(
-                            uiState.newsList[it].data ?: emptyList()
+                            uiState.newsList[pageIndex].data ?: emptyList()
                         ) { _, news ->
                             NewsItem(
                                 news = news,
@@ -226,6 +253,24 @@ fun NewsScreen(
                                 }
                             )
                             Spacer(modifier = Modifier.height(8.dp))
+                        }
+                        item {
+                            if (uiState.hasMoreNews[pageIndex] && uiState.newsList[pageIndex].data?.isNotEmpty() == true) {
+                                if (isAtBottom) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.fillParentMaxWidth()
+                                    )
+                                }
+                            } else if (!uiState.hasMoreNews[pageIndex] && uiState.newsList[pageIndex].data?.isNotEmpty() == true) {
+                                Text(
+                                    text = "没有更多内容了",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    textAlign = TextAlign.Center,
+                                    color = Color.Gray
+                                )
+                            }
                         }
                     }
                 }

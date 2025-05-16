@@ -128,7 +128,7 @@ fun SettingScreen(
                 .fillMaxSize()
                 .overScrollVertical(),
             overscrollEffect = null,
-            contentPadding = PaddingValues(16.dp, 8.dp)
+            contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 8.dp, bottom = 16.dp)
         ) {
             item {
                 SettingItemCard(
@@ -314,17 +314,6 @@ fun SettingScreen(
                             viewModel.clearCache()
                         },
                         rightText = uiState.cacheSize
-                    )
-                    SuperArrow(
-                        title = stringResource(R.string.clear_cookie),
-                        onClick = {
-
-                        }
-                    )
-                    SuperArrow(
-                        title = stringResource(R.string.clear_webview),
-                        onClick = {
-                        }
                     )
                 }
             }

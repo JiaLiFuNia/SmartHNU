@@ -29,6 +29,10 @@ data class NewsUiState(
     val bannerPicList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
     val newsList: List<ResultWithStatus<List<NewsItemEntity>>> = List(newsOptionItems.size) { ResultWithStatus() },
     val searchList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
+    val searchPage: Int = 1,
+    val hasMoreSearchResults: Boolean = true,
+    val newsPages: List<Int> = List(newsOptionItems.size) { 1 },
+    val hasMoreNews: List<Boolean> = List(newsOptionItems.size) { true }
 )
 
 @HiltViewModel
@@ -89,14 +93,35 @@ class NewsViewModel @Inject constructor(
         }
     }
 
-    suspend fun searchNews(keyword: String, page: Int = 1) {
+    suspend fun searchNews(keyword: String, loadMore: Boolean = false) {
         try {
+            val currentPage = if (loadMore) _uiState.value.searchPage else 1
+
+            _uiState.update {
+                if (!loadMore)
+                    it.copy(searchList = ResultWithStatus())
+                else
+                    it
+            }
+
             val searchKeys =
-                """[{"field":"pageIndex","value":${page}},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$keyword"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
+                """[{"field":"pageIndex","value":${currentPage}},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$keyword"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
             val searchKeyEncode = Base64.encodeToString(searchKeys.toByteArray(), 0)
             val res = networkRepo.searchNewsService(searchKeyEncode)
             Log.i("TAG666", "searchNews: $res")
-            _uiState.update { it.copy(searchList = ResultWithStatus(res)) }
+            val hasMore = res.isNotEmpty()
+            val combinedResults = if (loadMore) {
+                (_uiState.value.searchList.data ?: emptyList()) + res
+            } else {
+                res
+            }
+            _uiState.update {
+                it.copy(
+                    searchList = ResultWithStatus(combinedResults),
+                    searchPage = currentPage + 1,
+                    hasMoreSearchResults = hasMore
+                )
+            }
         } catch (e: Exception) {
             Log.i("TAG666", "searchNews: $e")
         }
@@ -106,15 +131,50 @@ class NewsViewModel @Inject constructor(
     * @Param index: tab index
     * @Param page: page index
     * */
-    suspend fun getNewsList(index: Int, page: Int = 1) {
+    suspend fun getNewsList(index: Int, loadMore: Boolean = false) {
         try {
-            val res = networkRepo.getNewsService(_uiState.value.newsOptionItems[index], page)
+            if (!loadMore) {
+                val tempList = _uiState.value.newsList.toMutableList()
+                tempList[index] = ResultWithStatus()
+                _uiState.update { it.copy(newsList = tempList) }
+            }
+
+            val currentPage = if (loadMore) _uiState.value.newsPages[index] else 1
+
+            val res = networkRepo.getNewsService(_uiState.value.newsOptionItems[index], currentPage)
+            val hasMore = res.isNotEmpty()
+
+            val combinedResults = if (loadMore) {
+                (_uiState.value.newsList[index].data ?: emptyList()) + res
+            } else {
+                res
+            }
+
+            val sortedResults = combinedResults.sortedByDescending { it.time }
+
             val tempList = _uiState.value.newsList.toMutableList()
-            tempList[index] = ResultWithStatus(res.sortedByDescending { it.time })
-            _uiState.update { it.copy(newsList = tempList) }
-            Log.i("TAG666", "getNewsList: $res")
+            tempList[index] = ResultWithStatus(sortedResults)
+
+            val tempPages = _uiState.value.newsPages.toMutableList()
+            tempPages[index] = currentPage + 1
+
+            val tempHasMore = _uiState.value.hasMoreNews.toMutableList()
+            tempHasMore[index] = hasMore
+
+            _uiState.update {
+                it.copy(
+                    newsList = tempList,
+                    newsPages = tempPages,
+                    hasMoreNews = tempHasMore
+                )
+            }
+
+            Log.i("TAG666", "getNewsList for tab $index, page $currentPage: found ${res.size} items")
         } catch (e: Exception) {
-            Log.i("TAG666", "getNewsList: $e")
+            Log.i("TAG666", "getNewsList error: $e")
+            val tempList = _uiState.value.newsList.toMutableList()
+            tempList[index] = ResultWithStatus()
+            _uiState.update { it.copy(newsList = tempList) }
         }
     }
 

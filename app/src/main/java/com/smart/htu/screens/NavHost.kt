@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.smart.htu.component.animation.animatedComposable
 import com.smart.htu.screens.application.ApplicationEdit
+import com.smart.htu.screens.application.WebsiteNavigation
 import com.smart.htu.screens.application.airCondition.AirCondition
 import com.smart.htu.screens.application.airCondition.AirConditionSetting
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
@@ -159,6 +160,9 @@ fun NavHostScreen() {
         }
         animatedComposable(Destinations.Feedback.route) {
             Feedback(navController = navController)
+        }
+        animatedComposable(Destinations.WebsiteNavigation.route) {
+            WebsiteNavigation(navController = navController)
         }
     }
 }

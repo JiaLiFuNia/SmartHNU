@@ -28,14 +28,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -62,6 +65,25 @@ fun NewsSearch(
     val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    val isAtBottom by remember {
+        derivedStateOf {
+            val layoutInfo = lazyListState.layoutInfo
+            val totalItemsCount = layoutInfo.totalItemsCount
+            val lastVisibleItemIndex = (layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) + 1
+
+            lastVisibleItemIndex >= totalItemsCount && totalItemsCount > 0
+        }
+    }
+
+    val currentSearchKeyword = remember { mutableStateOf("") }
+
+    LaunchedEffect(isAtBottom) {
+        if (isAtBottom && uiState.hasMoreSearchResults && currentSearchKeyword.value.isNotEmpty()) {
+            viewModel.searchNews(currentSearchKeyword.value, loadMore = true)
+        }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -126,6 +148,7 @@ fun NewsSearch(
                             .padding(vertical = 8.dp),
                         state = textFieldState,
                         onSearch = {
+                            currentSearchKeyword.value = it
                             scope.launch {
                                 viewModel.searchNews(it)
                             }
@@ -161,6 +184,24 @@ fun NewsSearch(
                             )
                         }
                     )
+                }
+                item {
+                    if (uiState.hasMoreSearchResults && uiState.searchList.data?.isNotEmpty() == true) {
+                        if (isAtBottom) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .fillParentMaxWidth()
+                            )
+                        }
+                    } else if (!uiState.hasMoreSearchResults && uiState.searchList.data?.isNotEmpty() == true) {
+                        Text(
+                            text = "没有更多内容了",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }

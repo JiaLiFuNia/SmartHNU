@@ -1,10 +1,10 @@
 package com.smart.htu.screens.application.airCondition
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -184,8 +184,8 @@ fun AirConditionSetting(
                         )
                     }
                     AnimatedVisibility(
-                        enter = fadeIn() + slideInVertically(),
-                        exit = fadeOut() + slideOutVertically(),
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically(),
                         visible = uiState.setCookieType == 1
                     ) {
                         Column(

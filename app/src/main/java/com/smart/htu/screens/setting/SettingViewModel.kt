@@ -177,6 +177,18 @@ class SettingViewModel @Inject constructor(
                     val imageLoader = context.imageLoader
                     imageLoader.memoryCache?.clear()
                     imageLoader.diskCache?.clear()
+
+                    val cacheDir = context.cacheDir
+                    if (cacheDir.exists() && cacheDir.isDirectory) {
+                        cacheDir.listFiles()?.forEach { file ->
+                            if (file.isDirectory) {
+                                file.deleteRecursively()
+                            } else {
+                                file.delete()
+                            }
+                        }
+                    }
+
                     calculateCacheSize()
                 } catch (e: Exception) {
                     e.printStackTrace()
