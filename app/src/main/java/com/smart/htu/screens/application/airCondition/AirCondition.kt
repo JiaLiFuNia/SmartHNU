@@ -57,6 +57,7 @@ import com.smart.htu.R
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
+import com.smart.htu.component.TabRow
 import com.smart.htu.component.chart.ColumnChart
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
@@ -218,7 +219,7 @@ fun AirCondition(
                     Spacer(modifier = Modifier.height(12.dp))
                 }
                 item {
-                    top.yukonga.miuix.kmp.basic.TabRow(
+                    TabRow(
                         tabs = tabItem,
                         selectedTabIndex = selectTabIndex,
                         onTabSelected = {

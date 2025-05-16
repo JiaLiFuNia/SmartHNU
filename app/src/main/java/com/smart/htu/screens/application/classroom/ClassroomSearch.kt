@@ -60,6 +60,7 @@ import androidx.navigation.NavController
 import androidx.window.core.layout.WindowSizeClass
 import com.smart.htu.R
 import com.smart.htu.component.CircularProgressIndicator
+import com.smart.htu.component.TabRow
 import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.utils.Constants.Companion.COURSE_PERIOD
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
@@ -275,7 +276,7 @@ fun ClassroomSearchScreen(
                                     }
                                 )
                             }
-                            top.yukonga.miuix.kmp.basic.TabRow(
+                            TabRow(
                                 tabs = tabRowItem,
                                 selectedTabIndex = selectFloorIndex.value,
                                 onTabSelected = {

@@ -17,14 +17,13 @@ fun <T> HorizontalPagerTabRow(
     isHeaderVisible: Boolean = true,
     tabs: List<String>?,
     pagerState: PagerState = rememberPagerState { tabs?.size ?: 0 },
-    dataSource: List<T>?,
-    pageContent: @Composable (List<T>, String) -> Unit,
+    pageContent: @Composable (Int) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     if (!tabs.isNullOrEmpty()) {
         Column {
             if (isHeaderVisible) {
-                top.yukonga.miuix.kmp.basic.TabRow(
+                TabRow(
                     tabs = tabs,
                     selectedTabIndex = pagerState.currentPage,
                     onTabSelected = {
@@ -38,9 +37,7 @@ fun <T> HorizontalPagerTabRow(
                 state = pagerState,
                 verticalAlignment = Alignment.Top
             ) { pageIndex ->
-                if (dataSource != null) {
-                    pageContent(dataSource, tabs[pageIndex])
-                }
+                pageContent(pageIndex)
             }
         }
     }

@@ -45,6 +45,7 @@ import com.smart.htu.api.module.Textbook
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.ScaffoldWithHazeLazyColumn
+import com.smart.htu.component.TabRow
 import com.smart.htu.component.svgVector.DrawableVectors
 import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.component.textButtonPrimaryColors
@@ -102,7 +103,7 @@ fun TextbookSelect(
         refreshState = pullToRefreshState,
         onRefresh = { onRefresh() }
     ) {
-        top.yukonga.miuix.kmp.basic.TabRow(
+        TabRow(
             tabs = tabItem,
             selectedTabIndex = selectIndex,
             onTabSelected = {
