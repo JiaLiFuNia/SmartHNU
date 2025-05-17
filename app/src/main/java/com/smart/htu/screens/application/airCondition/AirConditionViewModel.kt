@@ -4,14 +4,14 @@ import android.util.Log
 import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.smart.htu.api.module.ACCookie
 import com.smart.htu.api.module.AreaData
 import com.smart.htu.api.module.BillDetail
 import com.smart.htu.api.module.BillRecords
 import com.smart.htu.api.module.BuyRecords
-import com.smart.htu.api.module.LoginCookie
+import com.smart.htu.repo.AppNetworkRepo
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.NetworkRepo
-import com.smart.htu.repo.SharedDataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,8 +26,8 @@ import javax.inject.Inject
 
 data class AirConditionUiState(
     val blurEffect: Boolean = true,
-    val remoteLoginCookie: LoginCookie? = LoginCookie("", ""),
-    val userLoginCookie: LoginCookie? = LoginCookie("", ""),
+    val remoteLoginCookie: ACCookie? = ACCookie("", ""),
+    val userLoginCookie: ACCookie? = ACCookie("", ""),
     val customConfig: AreaData? = null,
     val buildingCode: String = "",
     val roomCode: String = "",
@@ -42,7 +42,7 @@ data class AirConditionUiState(
 @HiltViewModel
 class AirConditionViewModel @Inject constructor(
     private val networkRepo: NetworkRepo,
-    private val sharedDataRepository: SharedDataRepository,
+    private val appNetworkRepo: AppNetworkRepo,
     private val dataStoreRepo: DataStoreRepo
 ) : ViewModel() {
 
@@ -92,7 +92,7 @@ class AirConditionViewModel @Inject constructor(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
-                LoginCookie("", "")
+                ACCookie("", "")
             }
         )
 
@@ -123,22 +123,23 @@ class AirConditionViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            sharedDataRepository.notice
-                .collect { config ->
-                    changeRemoteLoginCookie(config?.airConditionCookie ?: LoginCookie())
-                }
-        }
-        viewModelScope.launch {
-            refreshConfig()
+            getRemoteLoginCookie()
             changeLoadingState(false)
         }
     }
 
+    suspend fun getRemoteLoginCookie() {
+        appNetworkRepo.configService()
+            .onSuccess {
+                setRemoteLoginCookie(it.acCookieValue)
+            }
+    }
+
     // 刷新配置
     suspend fun refreshConfig() {
-        sharedDataRepository.getNotice()
+        getRemoteLoginCookie()
         Log.i("TAG666 airCookie", getCookieByType().toString())
-        if (getCookieByType() != LoginCookie()) {
+        if (getCookieByType() != ACCookie()) {
             getAirConditionConfig()
             if (_uiState.value.buildingCode.isNotEmpty() && _uiState.value.roomCode.isNotEmpty()) {
                 getBillDetailService()
@@ -230,8 +231,11 @@ class AirConditionViewModel @Inject constructor(
         }
     }
 
-    private fun changeRemoteLoginCookie(loginCookie: LoginCookie) {
-        _uiState.update { it.copy(remoteLoginCookie = loginCookie) }
+    private fun setRemoteLoginCookie(loginCookie: ACCookie) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(remoteLoginCookie = loginCookie) }
+            dataStoreRepo.saveAirConditionUserCookie(loginCookie)
+        }
     }
 
     fun changeUserCookieSY(
@@ -241,7 +245,7 @@ class AirConditionViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
-                    userLoginCookie = LoginCookie(
+                    userLoginCookie = ACCookie(
                         shiroJID = shiroJID,
                         ymId = ymId
                     )
@@ -288,11 +292,11 @@ class AirConditionViewModel @Inject constructor(
         }
     }
 
-    fun getCookieByType(): LoginCookie {
+    fun getCookieByType(): ACCookie {
         return when (_uiState.value.setCookieType) {
-            0 -> _uiState.value.remoteLoginCookie ?: LoginCookie("", "")
-            1 -> _uiState.value.userLoginCookie ?: LoginCookie("", "")
-            else -> LoginCookie("", "")
+            0 -> _uiState.value.remoteLoginCookie ?: ACCookie("", "")
+            1 -> _uiState.value.userLoginCookie ?: ACCookie("", "")
+            else -> ACCookie("", "")
         }
     }
 }

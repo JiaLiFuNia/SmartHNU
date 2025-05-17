@@ -25,7 +25,7 @@ import androidx.navigation.NavController
 import androidx.window.core.layout.WindowSizeClass
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
-import com.smart.htu.component.card.SmallMediumCardDisplay
+import com.smart.htu.component.card.MediumCardDisplay
 import com.smart.htu.screens.application.entity.ApplicationCategory
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateWithAuthCheck
@@ -84,7 +84,7 @@ fun Application(
                 )
             }
             items(appList) { app ->
-                SmallMediumCardDisplay(
+                MediumCardDisplay(
                     enabled = (loginUiState.isGuest && app.guestEnable) || loginUiState.loginJWCState == 1,
                     content = app,
                     modifier = Modifier,

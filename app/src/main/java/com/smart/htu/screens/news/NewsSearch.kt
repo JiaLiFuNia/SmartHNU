@@ -46,7 +46,6 @@ import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.api.module.Status
 import com.smart.htu.component.CircularProgressIndicator
-import com.smart.htu.screens.navigateToWebView
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -178,7 +177,7 @@ fun NewsSearch(
                     NewsItem(
                         news = it,
                         onClick = {
-                            navController.navigateToWebView(
+                            navController.navigateToNewsDetail(
                                 url = it.url,
                                 label = context.getString(it.label.label)
                             )

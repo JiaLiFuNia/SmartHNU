@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Serializable
-data class LoginCookie(
+data class ACCookie(
     val shiroJID: String = "",
     val ymId: String = ""
 )

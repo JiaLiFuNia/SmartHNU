@@ -27,6 +27,7 @@ import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.message.MessageScreen
 import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.news.NewsDetail
 import com.smart.htu.screens.news.NewsSearch
 import com.smart.htu.screens.news.NewsStar
 import com.smart.htu.screens.news.NewsViewModel
@@ -154,6 +155,25 @@ fun NavHostScreen() {
         }
         animatedComposable(Destinations.NewsStar.route) {
             NewsStar(navController = navController)
+        }
+        animatedComposable(
+            route = "${Destinations.NewsDetail.route}/{url}/{title}",
+            arguments = listOf(
+                navArgument(name = "url") {
+                    type = NavType.StringType
+                },
+                navArgument(name = "title") {
+                    type = NavType.StringType
+                }
+            )
+        ) { webview ->
+            val url = webview.arguments?.getString("url") ?: ""
+            NewsDetail(
+                navController = navController,
+                url = Uri.decode(url),
+                title = webview.arguments?.getString("title") ?: "",
+                newsViewModel = newsViewModel
+            )
         }
         animatedComposable(Destinations.CourseTable.route) {
             CourseTable(navController = navController)

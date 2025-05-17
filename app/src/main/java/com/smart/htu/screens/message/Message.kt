@@ -40,7 +40,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.smart.htu.R
-import com.smart.htu.api.module.Notice
+import com.smart.htu.api.module.NoticeEntity
 import com.smart.htu.api.module.NoticeType
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.svgVector.DrawableVectors
@@ -166,7 +166,7 @@ fun MessageScreen(
 fun SingleMessage(
     isRead: Boolean,
     read: (Int) -> Unit,
-    notice: Notice,
+    notice: NoticeEntity,
     navController: NavController
 ) {
     Surface(

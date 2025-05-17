@@ -1,6 +1,6 @@
 package com.smart.htu.api
 
-import com.smart.htu.api.module.LoginCookie
+import com.smart.htu.api.module.ACCookie
 import com.smart.htu.screens.application.entity.ApplicationEntity
 import com.smart.htu.screens.application.librarySearch.BorrowedBookEntity
 import kotlinx.coroutines.flow.Flow
@@ -23,7 +23,7 @@ interface DataStoreService {
     suspend fun changeBuildingId(id: String)
     suspend fun changeRoomId(room: String)
     suspend fun saveAirConditionCookieType(type: Int)
-    suspend fun saveAirConditionUserCookie(cookie: LoginCookie)
+    suspend fun saveAirConditionUserCookie(cookie: ACCookie)
     suspend fun changeBookSearchHistoryList(list: List<String>)
     suspend fun setJWCToken(token: String)
     suspend fun addReadNoticeId(id: List<Int>)
@@ -45,7 +45,7 @@ interface DataStoreService {
     fun observeBuildingId(): Flow<String>
     fun observeRoomId(): Flow<String>
     fun observeAirConditionCookieType(): Flow<Int>
-    fun observeAirConditionUserCookie(): Flow<LoginCookie>
+    fun observeAirConditionUserCookie(): Flow<ACCookie>
     fun observeBookSearchHistoryList(): Flow<List<String>>
     fun observeJWCToken(): Flow<String>
     fun observeLoginJWCState(): Flow<Int>

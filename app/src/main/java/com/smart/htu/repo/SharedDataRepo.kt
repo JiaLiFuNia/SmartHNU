@@ -2,9 +2,9 @@ package com.smart.htu.repo
 
 import android.util.Log
 import com.smart.htu.api.module.GlobalTerm
-import com.smart.htu.api.module.NoticeEntity
+import com.smart.htu.api.module.NoticeRes
 import com.smart.htu.api.module.TermIndex
-import com.smart.htu.api.module.UpdateData
+import com.smart.htu.api.module.UpdateEntity
 import com.smart.htu.api.network.AppService
 import com.smart.htu.api.network.JWCService
 import kotlinx.coroutines.CoroutineScope
@@ -21,12 +21,12 @@ import javax.inject.Singleton
 
 interface SharedDataRepository {
     val termIndex: StateFlow<TermIndex?>
-    val notice: MutableStateFlow<NoticeEntity?>
-    val update: StateFlow<UpdateData?>
+    val notice: StateFlow<NoticeRes?>
+    val update: StateFlow<UpdateEntity?>
 
     suspend fun getTermIndex(termCode: GlobalTerm = GlobalTerm()): Result<TermIndex>
-    suspend fun getNotice(): Result<NoticeEntity>
-    suspend fun getUpdate(): Result<UpdateData>
+    suspend fun getNotice(): Result<NoticeRes>
+    suspend fun getUpdate(): Result<UpdateEntity>
 }
 
 @Singleton
@@ -39,8 +39,8 @@ class SharedDataRepoImpl @Inject constructor(
     val scope = CoroutineScope(Dispatchers.IO)
 
     override val termIndex = MutableStateFlow<TermIndex?>(null)
-    override val notice = MutableStateFlow<NoticeEntity?>(null)
-    override val update = MutableStateFlow<UpdateData?>(null)
+    override val notice = MutableStateFlow<NoticeRes?>(null)
+    override val update = MutableStateFlow<UpdateEntity?>(null)
 
     private val tokenValidity = dataStoreRepo.observeTokenValidity()
         .stateIn(
@@ -51,7 +51,7 @@ class SharedDataRepoImpl @Inject constructor(
             }
         )
 
-    override suspend fun getUpdate(): Result<UpdateData> {
+    override suspend fun getUpdate(): Result<UpdateEntity> {
         try {
             val call = appService.getUpdate()
             val res = call.awaitResponse()
@@ -79,7 +79,7 @@ class SharedDataRepoImpl @Inject constructor(
     }
 
 
-    override suspend fun getNotice(): Result<NoticeEntity> {
+    override suspend fun getNotice(): Result<NoticeRes> {
         try {
             val call = appService.getNotice()
             val res = call.awaitResponse()

@@ -2,25 +2,24 @@ package com.smart.htu.api.module
 
 import com.smart.htu.utils.APPVersion.getVersionCode
 
-data class UpdateEntity(
+data class UpdateRes(
     val code: Int,
     val message: String,
-    val data: UpdateData
+    val data: UpdateEntity
 )
 
-data class UpdateData(
+data class UpdateEntity(
     val versionName: String = "",
     val versionCode: Int = 0,
     val isNeedUpdate: Boolean = false,
-    val update: UpdateDetail? = null,
+    val update: UpdateData? = null,
     val isForceUpdate: Boolean = true,
 )
 
-data class UpdateDetail(
+data class UpdateData(
     val url: String,
     val content: String,
 )
-
 
 data class VersionEntity(
     val versionCode: Int = getVersionCode(),

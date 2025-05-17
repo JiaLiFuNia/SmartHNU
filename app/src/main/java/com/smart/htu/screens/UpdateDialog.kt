@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.smart.htu.api.module.UpdateData
+import com.smart.htu.api.module.UpdateEntity
 import com.smart.htu.component.textButtonPrimaryColors
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.extra.SuperDialog
@@ -23,12 +23,12 @@ fun UpdateDialog(
     isForceUpdate: Boolean,
     onConfirmClick: () -> Unit,
     onDismissRequest: () -> Unit,
-    updateData: UpdateData
+    updateEntity: UpdateEntity
 ) {
     SuperDialog(
         title = "发现新版本",
         show = showDialog,
-        summary = "版本：${updateData.versionName}(${updateData.versionCode})",
+        summary = "版本：${updateEntity.versionName}(${updateEntity.versionCode})",
         onDismissRequest = {
             if (!isForceUpdate) {
                 onDismissRequest()
@@ -37,7 +37,7 @@ fun UpdateDialog(
         }
     ) {
         Column {
-            Text(text = updateData.update?.content ?: "更新内容", color = MiuixTheme.colorScheme.onSurface)
+            Text(text = updateEntity.update?.content ?: "更新内容", color = MiuixTheme.colorScheme.onSurface)
             Spacer(modifier = Modifier.height(20.dp))
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween

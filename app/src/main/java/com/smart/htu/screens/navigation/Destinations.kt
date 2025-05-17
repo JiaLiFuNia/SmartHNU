@@ -10,6 +10,7 @@ sealed class Destinations(
     data object Application : Destinations("application")
     data object NewsSearch : Destinations("news_search")
     data object NewsStar : Destinations("news_star")
+    data object NewsDetail : Destinations("news_detail")
     data object ApplicationEdit : Destinations("application_edit")
     data object Message : Destinations("message")
     data object Setting : Destinations("setting")

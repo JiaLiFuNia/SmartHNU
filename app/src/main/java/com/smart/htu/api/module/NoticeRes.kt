@@ -1,13 +1,12 @@
 package com.smart.htu.api.module
 
-data class NoticeEntity(
+data class NoticeRes(
     val code: Int,
     val message: String,
-    val data: List<Notice>,
-    val airConditionCookie: LoginCookie,
+    val data: List<NoticeEntity>
 )
 
-data class Notice(
+data class NoticeEntity(
     val id: Int,
     val time: String,
     val title: String,

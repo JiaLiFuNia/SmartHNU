@@ -2,7 +2,7 @@ package com.smart.htu.screens.message
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.smart.htu.api.module.Notice
+import com.smart.htu.api.module.NoticeEntity
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.SharedDataRepository
@@ -19,7 +19,7 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class MessageUiState(
-    val noticeList: List<Notice> = emptyList(),
+    val noticeList: List<NoticeEntity> = emptyList(),
     val readNoticeIdList: List<Int> = emptyList(),
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )

@@ -324,7 +324,7 @@ fun SettingScreen(
         isForceUpdate = uiState.updateInfo.isForceUpdate,
         onConfirmClick = {},
         onDismissRequest = {},
-        updateData = uiState.updateInfo
+        updateEntity = uiState.updateInfo
     )
 }
 

@@ -65,6 +65,7 @@ import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigateWithAuthCheck
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsItem
+import com.smart.htu.screens.news.navigateToNewsDetail
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.Constants.Companion.SECOND_CLASS_URL
 import com.smart.htu.utils.startCalendar
@@ -195,7 +196,7 @@ fun NewsCard(
                             } else {
                                 newsListStatus.data.forEach { news ->
                                     NewsItem(news = news, maxLines = 2) {
-                                        navController.navigateToWebView(
+                                        navController.navigateToNewsDetail(
                                             url = news.url,
                                             label = context.getString(news.label.label)
                                         )
@@ -246,7 +247,7 @@ fun FocusCard(
                     },
                     trailingContent = {
                     },
-                    title = "${today.format(formatter)} " + if (mainUiState.holidayData?.holiday != null) mainUiState.holidayData.holiday.holiday else "",
+                    title = "${today.format(formatter)} " + if (mainUiState.holidayEntity?.holiday != null) mainUiState.holidayEntity.holiday.holiday else "",
                     content = "第 ${mainUiState.courseSchedule.data?.week ?: "-"} 周 $dayOfWeek",
                     onClick = { startCalendar() },
                     modifier = Modifier.weight(0.5f)

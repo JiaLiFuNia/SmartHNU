@@ -7,10 +7,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.Course
 import com.smart.htu.api.module.CourseScheduleEntity
-import com.smart.htu.api.module.HolidayData
+import com.smart.htu.api.module.HolidayEntity
 import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.ResultWithStatus
-import com.smart.htu.api.module.UpdateData
+import com.smart.htu.api.module.UpdateEntity
 import com.smart.htu.api.module.WeatherNowData
 import com.smart.htu.repo.AppNetworkRepo
 import com.smart.htu.repo.DataStoreRepo
@@ -42,14 +42,14 @@ data class AppUiState(
     val currentWeather: ResultWithStatus<WeatherNowData> = ResultWithStatus(),
     val newsList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
     val courseSchedule: ResultWithStatus<CourseScheduleEntity> = ResultWithStatus(),
-    val holidayData: HolidayData? = null,
+    val holidayEntity: HolidayEntity? = null,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val username: String = DEFAULT_USERNAME,
     val isLogSuccess: Boolean = false,
     val isTokenValid: Boolean = DEFAULT_TOKEN_VALIDITY,
     val readNoticeIdList: List<Int> = emptyList(),
     val noticeIdList: List<Int> = emptyList(),
-    val updateData: UpdateData = UpdateData(),
+    val updateEntity: UpdateEntity = UpdateEntity(),
     val isShowUpdateDialog: MutableState<Boolean> = mutableStateOf(false),
     val commonAppList: List<ApplicationEntity> = INIT_COMMON_APP_LIST
 )
@@ -146,7 +146,7 @@ class MainViewModel @Inject constructor(
                 .collect { config ->
                     _uiState.update { uiState ->
                         uiState.copy(
-                            updateData = config ?: UpdateData(),
+                            updateEntity = config ?: UpdateEntity(),
                             isShowUpdateDialog = mutableStateOf(config?.isNeedUpdate == true)
                         )
                     }
@@ -249,7 +249,7 @@ class MainViewModel @Inject constructor(
             val res = appNetworkRepo.holidayService(today)
             res.onSuccess {
                 _uiState.update { uiState ->
-                    uiState.copy(holidayData = it)
+                    uiState.copy(holidayEntity = it)
                 }
             }
             Log.i("TAG666", "getHoliday: $res")

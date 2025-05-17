@@ -11,7 +11,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.smart.htu.api.DataStoreService
-import com.smart.htu.api.module.LoginCookie
+import com.smart.htu.api.module.ACCookie
 import com.smart.htu.screens.application.entity.ApplicationEntity
 import com.smart.htu.screens.application.librarySearch.BorrowedBookEntity
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
@@ -132,7 +132,7 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[AIR_CONDITION_COOKIE_TYPE] = type }
     }
 
-    override suspend fun saveAirConditionUserCookie(cookie: LoginCookie) {
+    override suspend fun saveAirConditionUserCookie(cookie: ACCookie) {
         context.dataStore.edit { it[AIR_CONDITION_USER_COOKIE] = Json.encodeToString(cookie) }
     }
 
@@ -246,9 +246,9 @@ class DataStoreRepo @Inject constructor(
         }
     }
 
-    override fun observeAirConditionUserCookie(): Flow<LoginCookie> {
+    override fun observeAirConditionUserCookie(): Flow<ACCookie> {
         return context.dataStore.data.map {
-            Json.decodeFromString<LoginCookie>(
+            Json.decodeFromString<ACCookie>(
                 it[AIR_CONDITION_USER_COOKIE] ?: DEFAULT_AIR_CONDITION_USER_COOKIE
             )
         }

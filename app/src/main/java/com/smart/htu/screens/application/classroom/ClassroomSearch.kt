@@ -457,6 +457,12 @@ fun TipDialog(
                     }
                 }
             }
+            Text(
+                text = "若当天教学楼为考场，请以实际为准",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = MiuixTheme.colorScheme.onBackground
+                )
+            )
             Spacer(modifier = Modifier.height(12.dp))
             top.yukonga.miuix.kmp.basic.TextButton(
                 text = "我知道了",

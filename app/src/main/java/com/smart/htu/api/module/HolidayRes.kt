@@ -1,21 +1,21 @@
 package com.smart.htu.api.module
 
-data class HolidayEntity(
+data class HolidayRes(
     val code: Int,
     val message: String,
-    val data: HolidayData
+    val data: HolidayEntity
 )
 
 // {'date': '2025-02-01', 'holiday': {'isLieu': False, 'holiday': '春节', 'message': ''}, 'isOffDay': True, 'name': '星期六', 'weekDay': 6}
-data class HolidayData(
+data class HolidayEntity(
     val date: String,
-    val holiday: Holiday? = null,
+    val holiday: HolidayData? = null,
     val isOffDay: Boolean,
     val name: String,
     val weekDay: Int,
 )
 
-data class Holiday(
+data class HolidayData(
     val isLieu: Boolean,
     val holiday: String,
     val message: String,

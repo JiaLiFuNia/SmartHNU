@@ -1,5 +1,6 @@
 package com.smart.htu.screens.news
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
@@ -56,7 +57,7 @@ import com.smart.htu.R
 import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.Status
 import com.smart.htu.component.CircularProgressIndicator
-import com.smart.htu.screens.navigateToWebView
+import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.formatDateToFriendly
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -154,10 +155,8 @@ fun NewsScreen(
                     .padding(top = 4.dp),
                 pageSpacing = 12.dp
             ) { pageIndex ->
-                // 在这里为每个页面创建独立的滚动状态
                 val lazyListState = rememberLazyListState()
 
-                // 检测当前页面是否滚动到底部
                 val isAtBottom by remember {
                     derivedStateOf {
                         val layoutInfo = lazyListState.layoutInfo
@@ -169,7 +168,6 @@ fun NewsScreen(
                     }
                 }
 
-                // 当滚动到底部时加载更多
                 LaunchedEffect(isAtBottom) {
                     if (isAtBottom && uiState.hasMoreNews[pageIndex]) {
                         viewModel.getNewsList(pageIndex, loadMore = true)
@@ -199,7 +197,7 @@ fun NewsScreen(
                                 ) { index ->
                                     Box(
                                         modifier = Modifier.clickable {
-                                            navController.navigateToWebView(
+                                            navController.navigateToNewsDetail(
                                                 url = bannerUrl[index],
                                                 label = "河南师范大学"
                                             )
@@ -246,7 +244,7 @@ fun NewsScreen(
                             NewsItem(
                                 news = news,
                                 onClick = {
-                                    navController.navigateToWebView(
+                                    navController.navigateToNewsDetail(
                                         url = news.url,
                                         label = context.getString(news.label.label)
                                     )
@@ -328,6 +326,12 @@ fun NewsItem(news: NewsItemEntity, maxLines: Int = 2, onClick: () -> Unit) {
     }
 }
 
+fun NavController.navigateToNewsDetail(
+    url: String,
+    label: String
+) {
+    this.navigate("${Destinations.NewsDetail.route}/${Uri.encode(url)}/${label}")
+}
 
 /*@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable

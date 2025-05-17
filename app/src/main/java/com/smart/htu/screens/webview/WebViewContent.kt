@@ -6,6 +6,8 @@ import android.graphics.Bitmap
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -40,7 +43,6 @@ import com.kevinnzou.web.LoadingState
 import com.kevinnzou.web.WebView
 import com.kevinnzou.web.rememberWebViewNavigator
 import com.kevinnzou.web.rememberWebViewState
-import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.utils.copyContent
 import com.smart.htu.utils.setDefaultSettings
@@ -62,12 +64,12 @@ fun WebViewContent(
     title: String,
     navController: NavController,
     headers: Map<String, String> = emptyMap(),
-    content: (@Composable () -> Unit)? = null
+    content: (@Composable BoxScope.() -> Unit)? = null
 ) {
     val state = rememberWebViewState(url = url, additionalHttpHeaders = headers)
     val navigator = rememberWebViewNavigator()
     val scope = rememberCoroutineScope()
-    val snackBarHostState = remember { snackBarHostState }
+    val snackBarHostState = remember { SnackbarHostState() }
     val (currentUrl, onCurrentUrl) = remember { mutableStateOf(url) }
     var showDropDownMenu = remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -222,62 +224,67 @@ fun WebViewContent(
             )
         },
         floatingActionButton = {
-            if (content != null) {
-                content()
-            }
         },
         snackbarHost = {
             SnackbarHost(snackBarHostState)
         },
         modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = paddingValues.calculateTopPadding())
+                .padding(paddingValues)
         ) {
-            when (val loadingState = state.loadingState) {
-                is LoadingState.Initializing -> LinearProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                )
-
-                is LoadingState.Loading -> LinearProgressIndicator(
-                    progress = { loadingState.progress },
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                )
-
-                else -> {}
-            }
-            WebView(
-                state = state,
+            Column(
                 modifier = Modifier
-                    .fillMaxSize(),
-                navigator = navigator,
-                onCreated = { webView ->
-                    webView.setDefaultSettings()
+                    .fillMaxSize()
+            ) {
+                when (val loadingState = state.loadingState) {
+                    is LoadingState.Initializing -> LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                    )
 
-                    /*Log.i("TAG666", "cookies: $cookies")
-                    if (cookies.isNotEmpty()) {
-                        val cookieManager = CookieManager.getInstance()
-                        cookieManager.setAcceptCookie(true)
-                        cookieManager.setAcceptThirdPartyCookies(webView, true)
+                    is LoadingState.Loading -> LinearProgressIndicator(
+                        progress = { loadingState.progress },
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                    )
 
-                        cookies.forEach { (key, value) ->
-                            val cookieString = "$key=$value"
-                            Log.d("TAG666 WebViewCookie", "Setting cookie: $cookieString for $url")
-                            cookieManager.setCookie(url, cookieString)
+                    else -> {}
+                }
+                WebView(
+                    state = state,
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    navigator = navigator,
+                    onCreated = { webView ->
+                        webView.setDefaultSettings()
+
+                        /*Log.i("TAG666", "cookies: $cookies")
+                        if (cookies.isNotEmpty()) {
+                            val cookieManager = CookieManager.getInstance()
+                            cookieManager.setAcceptCookie(true)
+                            cookieManager.setAcceptThirdPartyCookies(webView, true)
+
+                            cookies.forEach { (key, value) ->
+                                val cookieString = "$key=$value"
+                                Log.d("TAG666 WebViewCookie", "Setting cookie: $cookieString for $url")
+                                cookieManager.setCookie(url, cookieString)
+                            }
+                            cookieManager.flush()
+                        }*/
+
+                        headers["user-agent"]?.let {
+                            webView.settings.userAgentString = it
                         }
-                        cookieManager.flush()
-                    }*/
-
-                    headers["user-agent"]?.let {
-                        webView.settings.userAgentString = it
-                    }
-                },
-                client = webClient
-            )
+                    },
+                    client = webClient
+                )
+            }
+            if (content != null) {
+                content()
+            }
         }
     }
 }
