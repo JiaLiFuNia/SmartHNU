@@ -29,4 +29,5 @@ sealed class Destinations(
     data object CourseTable : Destinations("course_table")
     data object Feedback : Destinations("feedback")
     data object WebsiteNavigation : Destinations("website_navigation")
+    data object AIConfiguration : Destinations("ai_configuration")
 }

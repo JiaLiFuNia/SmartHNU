@@ -10,7 +10,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.smart.htu.component.animation.animatedComposable
 import com.smart.htu.screens.application.ApplicationEdit
-import com.smart.htu.screens.application.WebsiteNavigation
 import com.smart.htu.screens.application.airCondition.AirCondition
 import com.smart.htu.screens.application.airCondition.AirConditionSetting
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
@@ -22,6 +21,7 @@ import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluation
 import com.smart.htu.screens.application.textbook.Textbook
 import com.smart.htu.screens.application.textbook.TextbookSelect
+import com.smart.htu.screens.application.websiteNavigation.WebsiteNavigation
 import com.smart.htu.screens.login.LoginScreen
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.MainViewModel
@@ -32,6 +32,7 @@ import com.smart.htu.screens.news.NewsSearch
 import com.smart.htu.screens.news.NewsStar
 import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.person.AccountManage
+import com.smart.htu.screens.setting.AIConfigurationScreen
 import com.smart.htu.screens.setting.About
 import com.smart.htu.screens.setting.License
 import com.smart.htu.screens.setting.SettingScreen
@@ -184,6 +185,9 @@ fun NavHostScreen() {
         animatedComposable(Destinations.WebsiteNavigation.route) {
             WebsiteNavigation(navController = navController)
         }
+        animatedComposable(Destinations.AIConfiguration.route) {
+            AIConfigurationScreen(navController = navController)
+        }
     }
 }
 
@@ -191,7 +195,7 @@ fun NavController.navigateWithAuthCheck(
     isGuest: Boolean = false,
     route: String? = null,
     routeType: RouteType? = null,
-    label: Int,
+    label: Int = 0,
     logState: Boolean,
     loginRoute: String = Destinations.Login.route
 ) {

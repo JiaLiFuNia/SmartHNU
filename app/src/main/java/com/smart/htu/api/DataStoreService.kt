@@ -31,6 +31,7 @@ interface DataStoreService {
     suspend fun setGlobalTermCode(term: String)
     suspend fun saveMobileCode(mobileCode: String)
     suspend fun setIsWriteCalendarPermissionGranted(enable: Boolean)
+    suspend fun changeAIFunctionEnabled(enabled: Boolean)
 
     fun observeThemeMode(): Flow<Int>
     fun observeDarkTheme(): Flow<Int>
@@ -54,5 +55,6 @@ interface DataStoreService {
     fun observeGlobalTermCode(): Flow<String>
     fun observeMobileCode(): Flow<String>
     fun observeIsWriteCalendarPermissionGranted(): Flow<Boolean>
+    fun observeAIFunctionEnabled(): Flow<Boolean>
 
 }

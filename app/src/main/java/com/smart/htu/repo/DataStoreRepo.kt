@@ -56,12 +56,14 @@ class DataStoreRepo @Inject constructor(
         val BOOK_SEARCH_HISTORY_LIST = stringPreferencesKey("BOOK_SEARCH_HISTORY_LIST")
         val IS_WRITE_CALENDAR_PERMISSION_GRANTED =
             booleanPreferencesKey("IS_WRITE_CALENDAR_PERMISSION_GRANTED")
+        val AI_FUNCTION_ENABLED = booleanPreferencesKey("AI_FUNCTION_ENABLED")
 
         const val DEFAULT_COOKIES = "[]"
         const val DEFAULT_MESSAGE_READ_ID = "[]"
         const val DEFAULT_THEME_MODE = 0
         const val DEFAULT_BLUR_EFFECT = false
         const val DEFAULT_TOKEN_VALIDITY = false
+        const val DEFAULT_AI_FUNCTION_ENABLED = false
         const val DEFAULT_TOKEN = ""
         const val DEFAULT_LOGIN_STATE = 0
         const val DEFAULT_DARK_THEME = 0
@@ -166,6 +168,10 @@ class DataStoreRepo @Inject constructor(
 
     override suspend fun setIsWriteCalendarPermissionGranted(enable: Boolean) {
         context.dataStore.edit { it[IS_WRITE_CALENDAR_PERMISSION_GRANTED] = enable }
+    }
+
+    override suspend fun changeAIFunctionEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[AI_FUNCTION_ENABLED] = enabled }
     }
 
 
@@ -294,4 +300,7 @@ class DataStoreRepo @Inject constructor(
         return context.dataStore.data.map { it[IS_WRITE_CALENDAR_PERMISSION_GRANTED] ?: DEFAULT_WRITE_CALENDAR_PERMISSION_GRANTED }
     }
 
+    override fun observeAIFunctionEnabled(): Flow<Boolean> {
+        return context.dataStore.data.map { it[AI_FUNCTION_ENABLED] ?: DEFAULT_AI_FUNCTION_ENABLED }
+    }
 }

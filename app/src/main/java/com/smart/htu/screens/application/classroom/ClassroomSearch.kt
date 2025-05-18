@@ -388,7 +388,7 @@ fun <T> LazyVerticalGridCustom(
                     }
                 }
                 if (singleRowButtons.size < columnSize) {
-                    for (i in singleRowButtons.size until columnSize) {
+                    repeat(columnSize - singleRowButtons.size) {
                         Box(
                             modifier = if (ifEqualWeight) Modifier
                                 .weight(1f / columnSize)
@@ -461,7 +461,9 @@ fun TipDialog(
                 text = "若当天教学楼为考场，请以实际为准",
                 style = MaterialTheme.typography.titleMedium.copy(
                     color = MiuixTheme.colorScheme.onBackground
-                )
+                ),
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Start
             )
             Spacer(modifier = Modifier.height(12.dp))
             top.yukonga.miuix.kmp.basic.TextButton(

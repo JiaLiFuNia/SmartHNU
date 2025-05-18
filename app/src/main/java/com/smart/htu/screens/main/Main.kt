@@ -266,7 +266,7 @@ fun FocusCard(
                     },
                     title = "即时天气",
                     content = "${mainUiState.currentWeather.data?.weather ?: "--"} ${mainUiState.currentWeather.data?.temperature ?: "--"} ℃",
-                    onClick = { /*TODO*/ },
+                    onClick = { },
                     modifier = Modifier.weight(0.5f)
                 )
             }
@@ -371,7 +371,11 @@ fun TodayCourseCard(
         title = stringResource(id = R.string.today_course),
         actionText = "课程表",
         navigateTo = {
-            navController.navigate(Destinations.CourseTable.route)
+            navController.navigateWithAuthCheck(
+                route = Destinations.CourseTable.route,
+                routeType = RouteType.SCREEN,
+                logState = loginUiState.loginJWCState == 1
+            )
         },
         leadingIconPainting = R.drawable.today_24px,
         content = {
