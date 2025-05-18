@@ -4,10 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,8 +22,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -44,15 +46,18 @@ import com.kevinnzou.web.WebView
 import com.kevinnzou.web.rememberWebViewNavigator
 import com.kevinnzou.web.rememberWebViewState
 import com.smart.htu.R
+import com.smart.htu.utils.FileUtil.downloadFile
 import com.smart.htu.utils.copyContent
 import com.smart.htu.utils.setDefaultSettings
 import com.smart.htu.utils.startWebUrl
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.FabPosition
 import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.ToolbarPosition
 import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -64,7 +69,10 @@ fun WebViewContent(
     title: String,
     navController: NavController,
     headers: Map<String, String> = emptyMap(),
-    content: (@Composable BoxScope.() -> Unit)? = null
+    floatingActionButton: @Composable (() -> Unit) = {},
+    floatingActionButtonPosition: FabPosition = FabPosition.End,
+    floatingToolbar: @Composable (() -> Unit) = {},
+    floatingToolbarPosition: ToolbarPosition = ToolbarPosition.BottomCenter
 ) {
     val state = rememberWebViewState(url = url, additionalHttpHeaders = headers)
     val navigator = rememberWebViewNavigator()
@@ -104,6 +112,19 @@ fun WebViewContent(
                 request: WebResourceRequest?,
             ): Boolean {
                 request?.let {
+                    if (it.url.toString().startsWith("weixin://")) {
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, it.url)
+                            context.startActivity(intent)
+                            return true
+                        } catch (_: Exception) {
+                            scope.launch {
+                                snackBarHostState.showSnackbar("未安装微信或无法打开微信")
+                            }
+                            return true
+                        }
+                    }
+
                     // Don't attempt to open blobs as webpages
                     if (it.url.toString().startsWith("blob:http")) {
                         return false
@@ -119,6 +140,40 @@ fun WebViewContent(
                 }
                 return super.shouldOverrideUrlLoading(view, request)
             }
+
+            // 添加下载请求处理
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): WebResourceResponse? {
+                request?.let {
+                    val requestUrl = it.url.toString()
+                    val isDownloadable = requestUrl.contains(".pdf") ||
+                            requestUrl.contains(".doc") ||
+                            requestUrl.contains(".docx") ||
+                            requestUrl.contains(".xls") ||
+                            requestUrl.contains(".xlsx") ||
+                            requestUrl.contains(".zip") ||
+                            requestUrl.contains(".rar")
+
+                    if (isDownloadable && !requestUrl.startsWith("blob:") && !requestUrl.startsWith("data:")) {
+                        scope.launch {
+                            val fileName = requestUrl.substringAfterLast('/')
+                            val confirmDownload = snackBarHostState.showSnackbar(
+                                message = "是否下载文件：$fileName?",
+                                actionLabel = "下载",
+                                duration = SnackbarDuration.Long
+                            )
+
+                            if (confirmDownload == SnackbarResult.ActionPerformed) {
+                                downloadFile(context, requestUrl, fileName)
+                            }
+                        }
+                    }
+                }
+                return super.shouldInterceptRequest(view, request)
+            }
+
         }
     }
     Scaffold(
@@ -223,8 +278,10 @@ fun WebViewContent(
                 }
             )
         },
-        floatingActionButton = {
-        },
+        floatingActionButton = floatingActionButton,
+        floatingActionButtonPosition = floatingActionButtonPosition,
+        floatingToolbar = floatingToolbar,
+        floatingToolbarPosition = floatingToolbarPosition,
         snackbarHost = {
             SnackbarHost(snackBarHostState)
         },
@@ -281,9 +338,6 @@ fun WebViewContent(
                     },
                     client = webClient
                 )
-            }
-            if (content != null) {
-                content()
             }
         }
     }
