@@ -38,7 +38,7 @@ class WebsiteNavigationViewModel @Inject constructor(
                     it.copy(websiteList = configEntity.websiteNavigation)
                 }
             }.onFailure {
-                Log.i("TAG666 website", it.toString());
+                Log.i("TAG666 website", it.toString())
             }
     }
 
