@@ -166,7 +166,7 @@ fun SettingScreen(
             }
             item {
                 SettingItemCard(
-                    label = "教务",
+                    label = "通用",
                     modifier = Modifier
                 ) {
                     val termString = Term.termConverter(uiState.termCode).split("-")
@@ -174,6 +174,16 @@ fun SettingScreen(
                         title = "学期",
                         summary = "当前学期 ${termString[0]}-${termString[1]} 学年第 ${termString[2]} 学期",
                         onClick = {
+                            scope.launch {
+                                snackBarHostState.showSnackbar("全局学期不能修改")
+                            }
+                        }
+                    )
+                    SuperArrow(
+                        title = "AI 功能",
+                        summary = "使用大模型为应用注入新活力",
+                        onClick = {
+                            navController.navigate(Destinations.AIConfiguration.route)
                         }
                     )
                 }

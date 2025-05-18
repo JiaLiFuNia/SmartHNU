@@ -34,6 +34,7 @@ data class SettingUiState(
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val selectedLanguageIndex: Int = 0,
     val updateInfo: UpdateEntity = UpdateEntity(),
+    val aiFunctionEnabled: Boolean = false,
     val isUpdate: Boolean = false,
     val termCode: String,
     val cacheSize: String = "计算中..."
@@ -45,10 +46,10 @@ class SettingViewModel @Inject constructor(
     private val sharedDataRepository: SharedDataRepository
 ) : ViewModel() {
 
-    private val languageMap = mapOf(
+    /*private val languageMap = mapOf(
         "中文(简体)" to "zh",
         "English" to "en"
-    )
+    )*/
 
     private val _uiState = MutableStateFlow(
         SettingUiState(
@@ -85,6 +86,15 @@ class SettingViewModel @Inject constructor(
             }
         )
 
+    private val aiFunctionEnabledStateFlow = dataStoreRepo.observeAIFunctionEnabled()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeAIFunctionEnabled().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
             themeModeStateFlow.collect { value ->
@@ -99,6 +109,11 @@ class SettingViewModel @Inject constructor(
         viewModelScope.launch {
             blurStateFlow.collect { value ->
                 _uiState.update { it.copy(blurEffect = value) }
+            }
+        }
+        viewModelScope.launch {
+            aiFunctionEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(aiFunctionEnabled = value) }
             }
         }
         viewModelScope.launch {
@@ -144,11 +159,17 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    fun changeBlurState(state: Boolean) {
+    fun changeAiFunctionEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            dataStoreRepo.changeAIFunctionEnabled(enabled)
+        }
+    }
+
+    /*fun changeBlurState(state: Boolean) {
         viewModelScope.launch {
             dataStoreRepo.changeBlurState(state = state)
         }
-    }
+    }*/
 
     fun calculateCacheSize() {
         viewModelScope.launch {
