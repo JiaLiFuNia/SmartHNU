@@ -5,6 +5,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,9 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -46,6 +49,9 @@ import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.api.module.Status
 import com.smart.htu.component.CircularProgressIndicator
+import com.smart.htu.component.EmptyContent
+import com.smart.htu.component.svgVector.DrawableVectors
+import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -93,7 +99,7 @@ fun NewsSearch(
                     scrolledContainerColor = MiuixTheme.colorScheme.background
                 ),
                 title = {
-                    Text("新闻搜索")
+                    Text(text = "搜索")
                 },
                 navigationIcon = {
                     IconButton(
@@ -125,81 +131,106 @@ fun NewsSearch(
             }
         }
     ) {
-        LazyColumn(
-            state = lazyListState,
-            contentPadding = PaddingValues(16.dp, 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(it)
-                .overScrollVertical(),
-            overscrollEffect = null
+        Column(
+            modifier = Modifier.padding(it)
         ) {
-            stickyHeader {
-                Row(
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .background(MiuixTheme.colorScheme.background)
+            ) {
+                SearchBarDefaults.InputField(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MiuixTheme.colorScheme.background)
-                ) {
-                    SearchBarDefaults.InputField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        state = textFieldState,
-                        onSearch = {
-                            currentSearchKeyword.value = it
-                            scope.launch {
-                                viewModel.searchNews(it)
+                        .padding(vertical = 8.dp),
+                    state = textFieldState,
+                    onSearch = {
+                        currentSearchKeyword.value = it
+                        scope.launch {
+                            viewModel.searchNews(it)
+                        }
+                    },
+                    expanded = false,
+                    onExpandedChange = { },
+                    placeholder = { Text("搜索新闻、公告和通知...") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Outlined.Search,
+                            contentDescription = "search"
+                        )
+                    },
+                    trailingIcon = {
+                        if (textFieldState.text.isNotEmpty()) {
+                            IconButton(
+                                onClick = {
+                                    textFieldState.clearText()
+                                    currentSearchKeyword.value = ""
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Clear,
+                                    contentDescription = "clear"
+                                )
                             }
-                        },
-                        expanded = false,
-                        onExpandedChange = { },
-                        placeholder = { Text("搜索新闻、公告和通知...") },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Search,
-                                contentDescription = "search"
-                            )
-                        },
-                        colors = inputFieldColors(
-                            focusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh,
-                            unfocusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh
-                        )
+                        }
+                    },
+                    colors = inputFieldColors(
+                        focusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh,
+                        unfocusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh
                     )
-                }
+                )
             }
-            if (uiState.searchList.status == Status.LOADING)
-                item {
-                    CircularProgressIndicator()
-                }
-            else {
-                items(uiState.searchList.data ?: emptyList()) {
-                    NewsItem(
-                        news = it,
-                        onClick = {
-                            navController.navigateToNewsDetail(
-                                url = it.url,
-                                label = context.getString(it.label.label)
+            LazyColumn(
+                state = lazyListState,
+                contentPadding = PaddingValues(16.dp, 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .overScrollVertical(),
+                overscrollEffect = null
+            ) {
+                if (uiState.searchList.status == Status.LOADING)
+                    item {
+                        CircularProgressIndicator()
+                    }
+                else {
+                    if (uiState.searchList.data?.isEmpty() == true) {
+                        item {
+                            EmptyContent(
+                                text = "没有相关新闻或通知",
+                                image = DrawableVectors.emptyData()
                             )
                         }
-                    )
-                }
-                item {
-                    if (uiState.hasMoreSearchResults && uiState.searchList.data?.isNotEmpty() == true) {
-                        if (isAtBottom) {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .fillParentMaxWidth()
-                            )
-                        }
-                    } else if (!uiState.hasMoreSearchResults && uiState.searchList.data?.isNotEmpty() == true) {
-                        Text(
-                            text = "没有更多内容了",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            textAlign = TextAlign.Center
+                    }
+                    items(uiState.searchList.data ?: emptyList()) {
+                        NewsItem(
+                            news = it,
+                            onClick = {
+                                navController.navigateToNewsDetail(
+                                    url = it.url,
+                                    label = context.getString(it.label.label)
+                                )
+                            }
                         )
+                    }
+                    item {
+                        if (uiState.hasMoreSearchResults && uiState.searchList.data?.isNotEmpty() == true) {
+                            if (isAtBottom) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .fillParentMaxWidth()
+                                )
+                            }
+                        } else if (!uiState.hasMoreSearchResults && uiState.searchList.data?.isNotEmpty() == true) {
+                            Text(
+                                text = "没有更多内容了",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }

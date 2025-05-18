@@ -169,7 +169,7 @@ class NewsViewModel @Inject constructor(
                 )
             }
 
-            Log.i("TAG666", "getNewsList for tab $index, page $currentPage: found ${res.size} items")
+            Log.i("TAG666", "getNewsList $index $currentPage ${res.size}")
         } catch (e: Exception) {
             Log.i("TAG666", "getNewsList error: $e")
             val tempList = _uiState.value.newsList.toMutableList()

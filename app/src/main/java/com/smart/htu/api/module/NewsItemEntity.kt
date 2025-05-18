@@ -8,9 +8,16 @@ data class NewsItemEntity(
     private val _url: String,
     val imgUrlWithoutHttp: String? = "",
     val time: String
-){
+) {
     val url: String
-        get() = if (_url.startsWith("http")) _url else "https://www.htu.edu.cn$_url"
+        get() = if (_url.startsWith("http")) {
+            if (_url.contains("web."))
+                _url.replace("http://web", "https://www")
+                    .replace("psp", "htm")
+            else _url
+        } else {
+            "https://www.htu.edu.cn$_url"
+        }
     val imgUrl: String
         get() = if (imgUrlWithoutHttp?.startsWith("http") == true) imgUrlWithoutHttp else "https://www.htu.edu.cn$imgUrlWithoutHttp"
 }

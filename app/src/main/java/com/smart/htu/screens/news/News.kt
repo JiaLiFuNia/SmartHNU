@@ -21,6 +21,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -155,121 +157,131 @@ fun NewsScreen(
                     .padding(top = 4.dp),
                 pageSpacing = 12.dp
             ) { pageIndex ->
-                val lazyListState = rememberLazyListState()
+                Box {
+                    val lazyListState = rememberLazyListState()
+                    val isAtBottom by remember {
+                        derivedStateOf {
+                            val layoutInfo = lazyListState.layoutInfo
+                            val totalItemsCount = layoutInfo.totalItemsCount
+                            val lastVisibleItemIndex =
+                                (layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) + 1
 
-                val isAtBottom by remember {
-                    derivedStateOf {
-                        val layoutInfo = lazyListState.layoutInfo
-                        val totalItemsCount = layoutInfo.totalItemsCount
-                        val lastVisibleItemIndex =
-                            (layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) + 1
-
-                        lastVisibleItemIndex >= totalItemsCount && totalItemsCount > 0
+                            lastVisibleItemIndex >= totalItemsCount && totalItemsCount > 0
+                        }
                     }
-                }
-
-                LaunchedEffect(isAtBottom) {
-                    if (isAtBottom && uiState.hasMoreNews[pageIndex]) {
-                        viewModel.getNewsList(pageIndex, loadMore = true)
+                    LaunchedEffect(isAtBottom) {
+                        if (isAtBottom && uiState.hasMoreNews[pageIndex]) {
+                            viewModel.getNewsList(pageIndex, loadMore = true)
+                        }
                     }
-                }
 
-                if (uiState.newsList[pageIndex].status != Status.SUCCESS && uiState.newsPages[pageIndex] == 1) {
-                    CircularProgressIndicator(modifier = Modifier.fillMaxSize())
-                } else {
-                    LazyColumn(
-                        state = lazyListState,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .overScrollVertical(),
-                        overscrollEffect = null,
-                        contentPadding = PaddingValues(16.dp, 8.dp)
-                    ) {
-                        if (pageIndex == 1)
-                            item {
-                                HorizontalMultiBrowseCarousel(
-                                    state = rememberCarouselState { bannerPicUrl.count() },
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(16.dp))
-                                        .fillMaxWidth(),
-                                    preferredItemWidth = 320.dp,
-                                    itemSpacing = 4.dp
-                                ) { index ->
-                                    Box(
-                                        modifier = Modifier.clickable {
-                                            navController.navigateToNewsDetail(
-                                                url = bannerUrl[index],
-                                                label = "河南师范大学"
-                                            )
-                                        },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        AsyncImage(
-                                            model = ImageRequest.Builder(LocalContext.current)
-                                                .data(bannerPicUrl[index])
-                                                .crossfade(true)
-                                                .addHeader("User-Agent", "Mozilla/5.0")
-                                                .error(R.drawable.image_placeholder)
-                                                .build(),
-                                            contentDescription = "picture",
-                                            contentScale = ContentScale.FillBounds,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .aspectRatio(16 / 9f)
-                                                .maskClip(MaterialTheme.shapes.extraLarge),
-                                            placeholder = painterResource(id = R.drawable.image_placeholder)
-                                        )
-                                        Text(
-                                            text = bannerTitle[index],
-                                            overflow = TextOverflow.Ellipsis,
-                                            maxLines = 1,
-                                            style = MaterialTheme.typography.titleMedium.copy(
-                                                color = MaterialTheme.colorScheme.onSecondary
-                                            ),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .align(Alignment.BottomEnd)
-                                                .padding(
-                                                    horizontal = 16.dp,
-                                                    vertical = 8.dp
+                    if (uiState.newsList[pageIndex].status != Status.SUCCESS && uiState.newsPages[pageIndex] == 1) {
+                        CircularProgressIndicator(modifier = Modifier.fillMaxSize())
+                    } else {
+                        LazyColumn(
+                            state = lazyListState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .overScrollVertical(),
+                            overscrollEffect = null,
+                            contentPadding = PaddingValues(16.dp, 8.dp)
+                        ) {
+                            if (pageIndex == 1)
+                                item {
+                                    HorizontalMultiBrowseCarousel(
+                                        state = rememberCarouselState { bannerPicUrl.count() },
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .fillMaxWidth(),
+                                        preferredItemWidth = 320.dp,
+                                        itemSpacing = 4.dp
+                                    ) { index ->
+                                        Box(
+                                            modifier = Modifier.clickable {
+                                                navController.navigateToNewsDetail(
+                                                    url = bannerUrl[index],
+                                                    label = "河南师范大学"
                                                 )
+                                            },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            AsyncImage(
+                                                model = ImageRequest.Builder(LocalContext.current)
+                                                    .data(bannerPicUrl[index])
+                                                    .crossfade(true)
+                                                    .addHeader("User-Agent", "Mozilla/5.0")
+                                                    .error(R.drawable.image_placeholder)
+                                                    .build(),
+                                                contentDescription = "picture",
+                                                contentScale = ContentScale.FillBounds,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .aspectRatio(16 / 9f)
+                                                    .maskClip(MaterialTheme.shapes.extraLarge),
+                                                placeholder = painterResource(id = R.drawable.image_placeholder)
+                                            )
+                                            Text(
+                                                text = bannerTitle[index],
+                                                overflow = TextOverflow.Ellipsis,
+                                                maxLines = 1,
+                                                style = MaterialTheme.typography.titleMedium.copy(
+                                                    color = MaterialTheme.colorScheme.onSecondary
+                                                ),
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .align(Alignment.BottomEnd)
+                                                    .padding(
+                                                        horizontal = 16.dp,
+                                                        vertical = 8.dp
+                                                    )
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
+                            itemsIndexed(
+                                uiState.newsList[pageIndex].data ?: emptyList()
+                            ) { _, news ->
+                                NewsItem(
+                                    news = news,
+                                    onClick = {
+                                        navController.navigateToNewsDetail(
+                                            url = news.url,
+                                            label = context.getString(news.label.label)
                                         )
                                     }
-                                }
+                                )
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
-                        itemsIndexed(
-                            uiState.newsList[pageIndex].data ?: emptyList()
-                        ) { _, news ->
-                            NewsItem(
-                                news = news,
-                                onClick = {
-                                    navController.navigateToNewsDetail(
-                                        url = news.url,
-                                        label = context.getString(news.label.label)
+                            item {
+                                if (uiState.hasMoreNews[pageIndex] && uiState.newsList[pageIndex].data?.isNotEmpty() == true) {
+                                    if (isAtBottom) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.fillParentMaxWidth()
+                                        )
+                                    }
+                                } else if (!uiState.hasMoreNews[pageIndex] && uiState.newsList[pageIndex].data?.isNotEmpty() == true) {
+                                    Text(
+                                        text = "没有更多内容了",
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        textAlign = TextAlign.Center,
+                                        color = Color.Gray
                                     )
                                 }
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-                        item {
-                            if (uiState.hasMoreNews[pageIndex] && uiState.newsList[pageIndex].data?.isNotEmpty() == true) {
-                                if (isAtBottom) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.fillParentMaxWidth()
-                                    )
-                                }
-                            } else if (!uiState.hasMoreNews[pageIndex] && uiState.newsList[pageIndex].data?.isNotEmpty() == true) {
-                                Text(
-                                    text = "没有更多内容了",
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    textAlign = TextAlign.Center,
-                                    color = Color.Gray
-                                )
                             }
                         }
+                    }
+
+                    FloatingActionButton(
+                        modifier = Modifier.align(Alignment.BottomEnd).padding(14.dp),
+                        onClick = { scope.launch { lazyListState.scrollToItem(0) } }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_arrow_upward_24),
+                            contentDescription = "up"
+                        )
                     }
                 }
             }
