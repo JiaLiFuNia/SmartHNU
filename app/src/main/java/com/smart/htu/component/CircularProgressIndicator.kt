@@ -19,7 +19,8 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LazyItemScope.CircularProgressIndicator(
-    size: Dp = ProgressIndicatorDefaults.DefaultInfiniteProgressIndicatorSize
+    size: Dp = ProgressIndicatorDefaults.DefaultInfiniteProgressIndicatorSize,
+    loadingText: String = "正在加载..."
 ) {
     Box(
         modifier = Modifier.fillParentMaxSize(),
@@ -34,7 +35,7 @@ fun LazyItemScope.CircularProgressIndicator(
                 size = size
             )
             Text(
-                text = "正在加载...",
+                text = loadingText,
                 modifier = Modifier.padding(top = 8.dp),
                 style = MiuixTheme.textStyles.subtitle.copy(
                     color = Color.Gray
@@ -49,7 +50,8 @@ fun LazyItemScope.CircularProgressIndicator(
 @Composable
 fun CircularProgressIndicator(
     modifier: Modifier,
-    size: Dp = ProgressIndicatorDefaults.DefaultInfiniteProgressIndicatorSize
+    size: Dp = ProgressIndicatorDefaults.DefaultInfiniteProgressIndicatorSize,
+    loadingText: String = "正在加载..."
 ) {
     Box(
         modifier = modifier,
@@ -61,7 +63,7 @@ fun CircularProgressIndicator(
         ) {
             top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator(size = size)
             Text(
-                text = "正在加载...",
+                text = loadingText,
                 modifier = Modifier.padding(top = 8.dp),
                 style = MiuixTheme.textStyles.subtitle.copy(
                     color = Color.Gray

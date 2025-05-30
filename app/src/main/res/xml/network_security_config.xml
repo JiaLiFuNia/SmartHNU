@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">www.htu.edu.cn</domain>
-        <domain includeSubdomains="true">htu.edu.cn</domain>
-        <domain includeSubdomains="true">authserver2.htu.edu.cn</domain>
-        <domain includeSubdomains="true">ehall2.htu.edu.cn</domain>
-        <domain includeSubdomains="true">app.htu.edu.cn</domain>
-        <domain includeSubdomains="true">libmsg.htu.cn</domain>
-        <domain includeSubdomains="true">img3.doubanio.com</domain>
-        <domain includeSubdomains="true">dekt.htu.edu.cn</domain>
-        <domain includeSubdomains="true">ydxg.htu.edu.cn</domain>
-        <domain includeSubdomains="true">htu.g8n.cn</domain>
-        <domain includeSubdomains="true">c.d8n.cn</domain>
         <domain includeSubdomains="true">hm.baidu.com</domain>
+        <domain includeSubdomains="true">img3.doubanio.com</domain>
+        <domain includeSubdomains="true">c.d8n.cn</domain>
+        <domain includeSubdomains="true">htu.g8n.cn</domain>
+        <domain includeSubdomains="true">libmsg.htu.cn</domain>
+        <domain includeSubdomains="true">htu.edu.cn</domain>
+        <domain includeSubdomains="true">shuren100.com</domain>
+        <domain includeSubdomains="true">chinanews.com.cn</domain>
     </domain-config>
+
 </network-security-config>

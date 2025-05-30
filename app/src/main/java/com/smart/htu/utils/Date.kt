@@ -36,23 +36,30 @@ fun convertDateToDouble(dateString: String, pattern: String): String {
 }
 
 /**
+ * 从字符串中提取日期
+ * @param dateString 可能包含日期的字符串
+ * @return 提取的日期字符串，格式为 "yyyy-MM-dd"；如果无法提取则返回原始字符串
+ */
+fun extractDateFromString(dateString: String): String? {
+    val dateRegex = """(\d{4}-\d{2}-\d{2})""".toRegex()
+    val matchResult = dateRegex.find(dateString)
+    return matchResult?.value
+}
+
+/**
  * 将日期转换为更友好的显示格式
  * - 最近三天：今天、昨天、前天
- * - 3-7天内：n天前
+ * - 3-5天内：n天前
  * - 今年内：MM月DD日
  * - 其他年份：YYYY年MM月DD日
  *
  * @param dateString 日期字符串，格式为 "yyyy-MM-dd"
  * @return 格式化后的日期字符串
  */
-fun formatDateToFriendly(dateString: String): String {
-    val dateRegex = """(\d{4}-\d{2}-\d{2})""".toRegex()
-    val matchResult = dateRegex.find(dateString)
-    val extractedDate = matchResult?.value ?: return dateString
-
+fun convertToFriendlyDate(dateString: String): String {
     try {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        val date = LocalDate.parse(extractedDate, formatter)
+        val date = LocalDate.parse(dateString, formatter)
         val today = LocalDate.now()
 
         val daysDiff = ChronoUnit.DAYS.between(date, today)
@@ -68,4 +75,14 @@ fun formatDateToFriendly(dateString: String): String {
     } catch (e: Exception) {
         return dateString
     }
+}
+
+/**
+ * 将日期转换为更友好的显示格式
+ * @param dateString 可能包含日期的字符串
+ * @return 格式化后的日期字符串
+ */
+fun formatDateToFriendly(dateString: String): String {
+    val extractedDate = extractDateFromString(dateString)
+    return convertToFriendlyDate(extractedDate.toString())
 }

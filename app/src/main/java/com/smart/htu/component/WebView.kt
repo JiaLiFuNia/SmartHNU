@@ -1,0 +1,219 @@
+package com.smart.htu.component
+
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.graphics.Bitmap
+import android.webkit.JavascriptInterface
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebView
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import com.kevinnzou.web.AccompanistWebViewClient
+import com.kevinnzou.web.LoadingState
+import com.kevinnzou.web.WebView
+import com.kevinnzou.web.WebViewNavigator
+import com.kevinnzou.web.WebViewState
+import com.kevinnzou.web.rememberWebViewState
+import com.smart.htu.screens.news.newsView.JavaScriptInterface
+import com.smart.htu.utils.FileUtil.downloadFile
+import com.smart.htu.utils.getHtml
+import com.smart.htu.utils.setDefaultSettings
+import kotlinx.coroutines.launch
+
+@SuppressLint("SetJavaScriptEnabled")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WebView(
+    url: String,
+    headers: Map<String, String> = emptyMap(),
+    webViewState: WebViewState = rememberWebViewState(url, headers),
+    onHtml: (String) -> Unit? = {},
+    onFinished: (Boolean) -> Unit = {},
+    onCurrentUrl: (String) -> Unit = {},
+    onImageClick: (imgUrl: String) -> Unit = { },
+    isShowLinearProgressIndicator: Boolean = true,
+    snackBarHostState: SnackbarHostState,
+    navigator: WebViewNavigator
+) {
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    val webClient = remember {
+        object : AccompanistWebViewClient() {
+            override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+                onFinished(false)
+                url?.let {
+                    onCurrentUrl(it)
+                }
+            }
+
+            override fun onPageFinished(view: WebView, url: String?) {
+                super.onPageFinished(view, url)
+                onFinished(true)
+                scope.launch {
+                    try {
+                        val html = view.getHtml()
+                        val cleanHtml = html.trim('"').replace("\\\"", "\"")
+                            .replace("\\n", "\n")
+                            .replace("\\r", "\r")
+                            .replace("\\t", "\t")
+                            .replace("\\\\", "\\")
+                        onHtml(cleanHtml)
+                    } catch (e: Exception) {
+                        snackBarHostState.showSnackbar("获取网页内容失败：${e.message}")
+                    }
+                }
+            }
+
+            override fun doUpdateVisitedHistory(
+                view: WebView,
+                url: String?,
+                isReload: Boolean,
+            ) {
+                super.doUpdateVisitedHistory(view, url, isReload)
+                url?.let {
+                    onCurrentUrl(it)
+                }
+            }
+
+            override fun shouldOverrideUrlLoading(
+                view: WebView?,
+                request: WebResourceRequest?,
+            ): Boolean {
+                request?.let {
+                    if (it.url.toString().startsWith("weixin://")) {
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, it.url)
+                            context.startActivity(intent)
+                            return true
+                        } catch (_: Exception) {
+                            scope.launch {
+                                snackBarHostState.showSnackbar("未安装微信或无法打开微信")
+                            }
+                            return true
+                        }
+                    }
+                    // email
+                    if (it.url.toString().startsWith("mailto:")) {
+                        try {
+                            val intent = Intent(Intent.ACTION_SENDTO, it.url)
+                            context.startActivity(intent)
+                            return true
+                        } catch (_: Exception) {
+                            scope.launch {
+                                snackBarHostState.showSnackbar("无法打开邮件客户端")
+                            }
+                            return true
+                        }
+                    }
+
+                    // Don't attempt to open blobs as webpages
+                    if (it.url.toString().startsWith("blob:http")) {
+                        return false
+                    }
+
+                    // Ignore intents urls
+                    if (it.url.toString().startsWith("intent://")) {
+                        return true
+                    }
+
+                    // Continue with request, but with custom headers
+                    view?.loadUrl(it.url.toString(), headers)
+                }
+                return super.shouldOverrideUrlLoading(view, request)
+            }
+
+            // 添加下载请求处理
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): WebResourceResponse? {
+                request?.let {
+                    val requestUrl = it.url.toString()
+                    val isDownloadable = requestUrl.contains(".pdf") ||
+                            requestUrl.contains(".doc") ||
+                            requestUrl.contains(".docx") ||
+                            requestUrl.contains(".xls") ||
+                            requestUrl.contains(".xlsx") ||
+                            requestUrl.contains(".zip") ||
+                            requestUrl.contains(".rar")
+
+                    if (isDownloadable && !requestUrl.startsWith("blob:") && !requestUrl.startsWith(
+                            "data:"
+                        )
+                    ) {
+                        scope.launch {
+                            val fileName = requestUrl.substringAfterLast('/')
+                            val confirmDownload = snackBarHostState.showSnackbar(
+                                message = "是否下载文件：$fileName?",
+                                actionLabel = "下载",
+                                duration = SnackbarDuration.Long
+                            )
+
+                            if (confirmDownload == SnackbarResult.ActionPerformed) {
+                                downloadFile(context, requestUrl, fileName)
+                            }
+                        }
+                    }
+                }
+                return super.shouldInterceptRequest(view, request)
+            }
+
+        }
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        val loadingState = webViewState.loadingState
+        when (loadingState) {
+            is LoadingState.Loading -> {
+                if (isShowLinearProgressIndicator)
+                    LinearProgressIndicator(
+                        progress = { loadingState.progress },
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                    )
+            }
+
+            else -> {}
+        }
+        WebView(
+            state = webViewState,
+            modifier = Modifier
+                .fillMaxSize(),
+            navigator = navigator,
+            onCreated = { webView ->
+                webView.setDefaultSettings()
+                webView.setBackgroundColor(Color.Transparent.toArgb())
+
+                headers["user-agent"]?.let {
+                    webView.settings.userAgentString = it
+                }
+
+                webView.addJavascriptInterface(object : JavaScriptInterface {
+                    @JavascriptInterface
+                    override fun onImgTagClick(imgUrl: String?) {
+                        onImageClick(imgUrl ?: "")
+                    }
+                }, JavaScriptInterface.NAME)
+            },
+            client = webClient
+        )
+    }
+}

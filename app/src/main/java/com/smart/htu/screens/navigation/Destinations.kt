@@ -16,7 +16,7 @@ sealed class Destinations(
     data object Setting : Destinations("setting")
     data object About : Destinations("about")
     data object ClassroomSearch : Destinations("classroom_search")
-    data object WebView : Destinations("webview")
+    data object SharedWebView : Destinations("shared_webview")
     data object License : Destinations("license")
     data object LibrarySearch : Destinations("library_search")
     data object AirCondition : Destinations("air_condition")
@@ -30,4 +30,6 @@ sealed class Destinations(
     data object Feedback : Destinations("feedback")
     data object WebsiteNavigation : Destinations("website_navigation")
     data object AIConfiguration : Destinations("ai_configuration")
+    data object PhysicalTest : Destinations("physical_test")
+    data object PdfReaderView : Destinations("pdf_viewer")
 }

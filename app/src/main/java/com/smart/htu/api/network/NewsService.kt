@@ -24,13 +24,13 @@ interface NewsService {
     ): Call<ResponseBody>
 
     @GET
-    suspend fun getNewsDetail(@Url url: String): Call<ResponseBody>
+    suspend fun getNewsDetail(@Url url: String): ResponseBody
 
     @POST
     suspend fun getVisitNumbers(
         @Url url: String,
         @Header("referer") referer: String
-    ): Call<ResponseBody>
+    ): ResponseBody
 
     @Headers("referer: https://www.htu.edu.cn/_web/_search/api/search/new.rst?locale=zh_CN&request_locale=zh_CN&_p=YXM9MyZ0PTQ0NDQmZD0xMjk3MCZwPTEmbT1TTiY_")
     @POST("_web/_search/api/searchCon/create.rst?_p=YXM9MyZ0PTQ0NDQmZD0xMjk3MCZwPTEmbT1TTiY_")

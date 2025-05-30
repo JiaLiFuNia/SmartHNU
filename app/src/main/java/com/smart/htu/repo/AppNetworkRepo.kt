@@ -1,5 +1,6 @@
 package com.smart.htu.repo
 
+import android.util.Log
 import com.smart.htu.api.module.ConfigEntity
 import com.smart.htu.api.module.FeedbackEntity
 import com.smart.htu.api.module.FeedbackRes
@@ -24,12 +25,12 @@ class AppNetworkRepo @Inject constructor(
                     if (body != null) {
                         Result.success(body.data)
                     } else {
-                        Result.failure(Exception("null"))
+                        Result.failure(Exception("获取失败，请稍后重试，错误码：${res.code()}"))
                     }
                 }
 
                 else -> {
-                    Result.failure(Exception("获取失败，请切换至移动网络后重试"))
+                    Result.failure(Exception("获取失败，请稍后重试，错误码：${res.code()}"))
                 }
             }
         } catch (e: Exception) {
@@ -41,6 +42,7 @@ class AppNetworkRepo @Inject constructor(
         try {
             val call = appService.feedback(content)
             val res = call.awaitResponse()
+            Log.e("TAG666 ", "feedbackService: $res")
             return when (res.code()) {
                 200 -> {
                     val body = res.body()
@@ -48,12 +50,12 @@ class AppNetworkRepo @Inject constructor(
                         if (body.success) Result.success(body)
                         else Result.failure(Exception(body.message))
                     } else {
-                        Result.failure(Exception("null"))
+                        Result.failure(Exception("提交失败，请稍后重试，错误码：${res.code()}"))
                     }
                 }
 
                 else -> {
-                    Result.failure(Exception("获取失败，请切换至移动网络后重试"))
+                    Result.failure(Exception("提交失败，请稍后重试，错误码：${res.code()}"))
                 }
             }
         } catch (e: Exception) {
@@ -71,12 +73,12 @@ class AppNetworkRepo @Inject constructor(
                     if (body != null) {
                         Result.success(body.data)
                     } else {
-                        Result.failure(Exception("null"))
+                        Result.failure(Exception("获取失败，请切换至移动网络后重试，错误码：${res.code()}"))
                     }
                 }
 
                 else -> {
-                    Result.failure(Exception("获取失败，请切换至移动网络后重试"))
+                    Result.failure(Exception("获取失败，请切换至移动网络后重试，错误码：${res.code()}"))
                 }
             }
         } catch (e: Exception) {

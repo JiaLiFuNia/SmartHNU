@@ -1,16 +1,21 @@
 package com.smart.htu.repo
 
 import android.util.Log
+import com.smart.htu.api.module.AIModulePostEntity
+import com.smart.htu.api.module.AIResponseEntity
 import com.smart.htu.api.module.AppToken
 import com.smart.htu.api.module.Area
 import com.smart.htu.api.module.BillDetail
 import com.smart.htu.api.module.BillRecords
 import com.smart.htu.api.module.BuyRecords
+import com.smart.htu.api.module.NewsArticleEntity
 import com.smart.htu.api.module.NewsItemEntity
+import com.smart.htu.api.module.Usage
 import com.smart.htu.api.module.WeatherNowData
 import com.smart.htu.api.network.AirConditionService
 import com.smart.htu.api.network.AppLoginService
 import com.smart.htu.api.network.AuthLoginService
+import com.smart.htu.api.network.ChatService
 import com.smart.htu.api.network.EHallService
 import com.smart.htu.api.network.LibraryService
 import com.smart.htu.api.network.NewsService
@@ -20,7 +25,8 @@ import com.smart.htu.screens.application.librarySearch.LibraryBookDetail
 import com.smart.htu.screens.application.librarySearch.LibraryBookListEntity
 import com.smart.htu.screens.news.entity.NewsCategoryEntity
 import com.smart.htu.utils.AESUtils
-import com.smart.htu.utils.ParseNewsUtil.parseNewsHTML
+import com.smart.htu.utils.ParseNewsArticleUtil.parseHTMLToNewsArticle
+import com.smart.htu.utils.ParseNewsListUtil.parseHTMLToNewsList
 import com.smart.htu.utils.parseLibraryBookDetail
 import com.smart.htu.utils.parseLibrarySearchResult
 import kotlinx.coroutines.Dispatchers
@@ -40,9 +46,38 @@ class NetworkRepo @Inject constructor(
     private val airConditionService: AirConditionService,
     private val weatherService: WeatherService,
     private val newsService: NewsService,
+    private val chatService: ChatService,
     private val networkCookieJar: NetworkCookieJar,
     private val dataStoreRepo: DataStoreRepo
 ) {
+
+    // ai
+    suspend fun chatService(
+        url: String,
+        key: String,
+        data: AIModulePostEntity
+    ): Result<AIResponseEntity> {
+        return try {
+            val res = chatService.chatService(authorization = "Bearer $key", data = data)
+            when (res.code()) {
+                200 -> Result.success(
+                    res.body() ?: AIResponseEntity(
+                        id = "",
+                        exampleGenerateObject = "",
+                        created = 0L,
+                        model = "",
+                        choices = emptyList(),
+                        usage = Usage(0, 0, 0)
+                    )
+                )
+
+                else -> Result.failure(Exception(res.body()?.detail))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "chatService error: ${e.message}")
+            Result.failure(e)
+        }
+    }
 
     // 搜索新闻
     suspend fun searchNewsService(searchInfo: String): List<NewsItemEntity> {
@@ -71,10 +106,21 @@ class NetworkRepo @Inject constructor(
             )
             val res = call.awaitResponse().body()?.string() ?: ""
             // Log.i("TAG666", "getBannerPicService: $res")
-            return parseNewsHTML(res, newsOptionItems.label)
+            return parseHTMLToNewsList(res, newsOptionItems.label)
         } catch (e: Exception) {
             Log.e("TAG666", "getB $e")
             return emptyList()
+        }
+    }
+
+    // 新闻详情
+    suspend fun getNewsDetailService(url: String): NewsArticleEntity? {
+        try {
+            val res = newsService.getNewsDetail(url).string()
+            return parseHTMLToNewsArticle(url, res)
+        } catch (e: Exception) {
+            Log.e("TAG666", "getNewsDetailService $e")
+            return null
         }
     }
 

@@ -2,7 +2,7 @@ package com.smart.htu.api.module
 
 import com.google.gson.annotations.SerializedName
 import com.smart.htu.screens.news.entity.NewsType
-import com.smart.htu.utils.ParseNewsUtil.parseNewsHTML
+import com.smart.htu.utils.ParseNewsListUtil.parseHTMLToNewsList
 
 data class SearchResultEntity(
     @SerializedName("data") private val data: String,
@@ -12,5 +12,5 @@ data class SearchResultEntity(
         get() = totalString.toIntOrNull() ?: 0
 
     val dataList: List<NewsItemEntity>
-        get() = parseNewsHTML(data, NewsType.SEARCH)
+        get() = parseHTMLToNewsList(data, NewsType.SEARCH)
 }

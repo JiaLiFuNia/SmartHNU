@@ -8,6 +8,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.smart.htu.component.PdfReaderView
 import com.smart.htu.component.animation.animatedComposable
 import com.smart.htu.screens.application.ApplicationEdit
 import com.smart.htu.screens.application.airCondition.AirCondition
@@ -18,6 +19,7 @@ import com.smart.htu.screens.application.courseTable.CourseTable
 import com.smart.htu.screens.application.entity.RouteType
 import com.smart.htu.screens.application.grade.Grade
 import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
+import com.smart.htu.screens.application.physicalTest.PhysicalTest
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluation
 import com.smart.htu.screens.application.textbook.Textbook
 import com.smart.htu.screens.application.textbook.TextbookSelect
@@ -27,17 +29,17 @@ import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.message.MessageScreen
 import com.smart.htu.screens.navigation.Destinations
-import com.smart.htu.screens.news.NewsDetail
 import com.smart.htu.screens.news.NewsSearch
 import com.smart.htu.screens.news.NewsStar
 import com.smart.htu.screens.news.NewsViewModel
+import com.smart.htu.screens.news.newsView.NewsDetail
 import com.smart.htu.screens.person.AccountManage
 import com.smart.htu.screens.setting.AIConfigurationScreen
 import com.smart.htu.screens.setting.About
 import com.smart.htu.screens.setting.License
 import com.smart.htu.screens.setting.SettingScreen
 import com.smart.htu.screens.setting.feedback.Feedback
-import com.smart.htu.screens.webview.WebViewContent
+import com.smart.htu.screens.webview.SharedWebView
 import com.smart.htu.utils.startAppUrl
 import com.smart.htu.utils.startLaunchAPK
 
@@ -80,7 +82,7 @@ fun NavHostScreen() {
             ClassroomSearchScreen(navController = navController)
         }
         animatedComposable(
-            route = "${Destinations.WebView.route}/{url}/{title}",
+            route = "${Destinations.SharedWebView.route}/{url}/{title}",
             arguments = listOf(
                 navArgument(name = "url") {
                     type = NavType.StringType
@@ -91,11 +93,10 @@ fun NavHostScreen() {
             )
         ) { webview ->
             val url = Uri.decode(webview.arguments?.getString("url") ?: "")
-            // webViewViewModel.loadCookiesForUrl(url)
-            WebViewContent(
-                navController = navController,
+            SharedWebView(
                 url = url,
-                title = webview.arguments?.getString("title") ?: ""
+                title = webview.arguments?.getString("title") ?: "",
+                navController = navController,
             )
         }
         animatedComposable(Destinations.License.route) {
@@ -172,8 +173,7 @@ fun NavHostScreen() {
             NewsDetail(
                 navController = navController,
                 url = Uri.decode(url),
-                title = webview.arguments?.getString("title") ?: "",
-                newsViewModel = newsViewModel
+                title = webview.arguments?.getString("title") ?: ""
             )
         }
         animatedComposable(Destinations.CourseTable.route) {
@@ -187,6 +187,27 @@ fun NavHostScreen() {
         }
         animatedComposable(Destinations.AIConfiguration.route) {
             AIConfigurationScreen(navController = navController)
+        }
+        animatedComposable(Destinations.PhysicalTest.route) {
+            PhysicalTest(navController = navController)
+        }
+        animatedComposable(
+            route = "${Destinations.PdfReaderView.route}/{url}/{title}",
+            arguments = listOf(
+                navArgument(name = "url") {
+                    type = NavType.StringType
+                },
+                navArgument(name = "title") {
+                    type = NavType.StringType
+                }
+            )
+        ) { webview ->
+            val url = webview.arguments?.getString("url") ?: ""
+            PdfReaderView(
+                navController = navController,
+                url = Uri.decode(url),
+                title = webview.arguments?.getString("title") ?: ""
+            )
         }
     }
 }
@@ -236,5 +257,5 @@ fun NavController.navigateToWebView(
     url: String,
     label: String
 ) {
-    this.navigate("${Destinations.WebView.route}/${Uri.encode(url)}/${label}")
+    this.navigate("${Destinations.SharedWebView.route}/${Uri.encode(url)}/${label}")
 }

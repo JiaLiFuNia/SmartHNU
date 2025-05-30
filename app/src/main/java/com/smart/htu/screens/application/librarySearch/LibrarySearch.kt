@@ -85,10 +85,12 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
-import com.smart.htu.component.BasicBottomSheet
+import com.smart.htu.component.BasicDialog
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.card.LargeCardDisplay
+import com.smart.htu.component.svgVector.DrawableVectors
+import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.copyContent
 import dev.chrisbanes.haze.HazeState
@@ -344,7 +346,10 @@ fun LibrarySearchScreen(
                             }
                         } else {
                             item {
-                                EmptyContent("没有搜索结果")
+                                EmptyContent(
+                                    text = "没有搜索结果",
+                                    image = DrawableVectors.emptyData()
+                                )
                             }
                         }
                     }
@@ -378,7 +383,7 @@ fun BookRentDetailBottomSheet(
     isBottomSheetShow: MutableState<Boolean>,
     uiState: LibrarySearchUiState,
 ) {
-    BasicBottomSheet(
+    BasicDialog(
         showDialog = isBottomSheetShow,
         insideMargin = DpSize(16.dp, 24.dp),
         title = "详情"

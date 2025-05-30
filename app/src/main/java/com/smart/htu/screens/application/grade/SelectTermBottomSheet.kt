@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.smart.htu.R
 import com.smart.htu.api.module.SingleTerm
-import com.smart.htu.component.BasicBottomSheet
+import com.smart.htu.component.BasicDialog
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.extra.SpinnerEntry
 import top.yukonga.miuix.kmp.extra.SpinnerItemImpl
@@ -27,7 +27,7 @@ fun SelectTermBottomSheet(
     isBottomSheetShow: MutableState<Boolean>,
     onClick: (String) -> Unit
 ) {
-    BasicBottomSheet(
+    BasicDialog(
         showDialog = isBottomSheetShow,
         title = stringResource(id = R.string.select_term),
         insideMargin = DpSize(0.dp, 24.dp)

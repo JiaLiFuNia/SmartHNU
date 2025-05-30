@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.smart.htu.R
 import com.smart.htu.api.module.Course
-import com.smart.htu.component.BasicBottomSheet
+import com.smart.htu.component.BasicDialog
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
 import com.smart.htu.utils.CourseColorUtil.getColorByCourseName
@@ -146,7 +146,7 @@ fun CourseDetailDialog(
     message: Course,
     isBottomSheetShow: MutableState<Boolean>
 ) {
-    BasicBottomSheet(
+    BasicDialog(
         showDialog = isBottomSheetShow,
         title = message.courseName + if (message.classroomName.isNullOrEmpty()) {
             " - ${message.projectName}"

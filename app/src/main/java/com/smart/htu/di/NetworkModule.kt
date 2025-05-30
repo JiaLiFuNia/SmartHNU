@@ -5,11 +5,13 @@ import com.smart.htu.api.network.AirConditionService
 import com.smart.htu.api.network.AppLoginService
 import com.smart.htu.api.network.AppService
 import com.smart.htu.api.network.AuthLoginService
+import com.smart.htu.api.network.ChatService
 import com.smart.htu.api.network.EHallService
 import com.smart.htu.api.network.JWCService
 import com.smart.htu.api.network.LibraryService
 import com.smart.htu.api.network.NewsService
 import com.smart.htu.api.network.WeatherService
+import com.smart.htu.di.NetworkModule.ApiConstants.CHAT_BASE_URL
 import com.smart.htu.repo.DataStoreRepo
 import dagger.Module
 import dagger.Provides
@@ -47,13 +49,15 @@ object NetworkModule {
         const val AUTH_BASE_URL = "https://authserver2.htu.edu.cn/"
         const val APP_BASE_URL = "http://app.htu.edu.cn/appapi/"
         const val EHALL_BASE_URL = "https://ehall2.htu.edu.cn/"
+        const val CHAT_BASE_URL = "https://chat.htu.edu.cn/"
         const val LIBRARY_BASE_URL = "http://libmsg.htu.cn/"
 
         const val AIR_CONDITION_BASE_URL = "https://application.xiaofubao.com/"
         const val GITEE_BASE_URL = "https://gitee.com/"
         const val WEATHER_BASE_URL = "https://devapi.qweather.com/v7/"
 
-        const val SMH_BASE_URL = "https://smh.xubohan04.tk/"
+        const val SMH_BASE_URL = "https://xhand.edu.deal/api/"
+        //"https://shtu.xubohan04.tk/api/"
     }
 
     @Provides
@@ -196,6 +200,16 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideChatService(): ChatService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(CHAT_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(ChatService::class.java)
+    }
+
+    @Provides
+    @Singleton
     fun provideAppNetworkRepo(): AppService {
         val retrofit = Retrofit.Builder()
             .baseUrl(ApiConstants.SMH_BASE_URL)
@@ -204,6 +218,7 @@ object NetworkModule {
             .build()
         return retrofit.create(AppService::class.java)
     }
+
 }
 
 class NetworkCookieJar @Inject constructor(

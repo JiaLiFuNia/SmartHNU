@@ -12,6 +12,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.smart.htu.api.DataStoreService
 import com.smart.htu.api.module.ACCookie
+import com.smart.htu.api.module.AIModelConfigEntity
 import com.smart.htu.screens.application.entity.ApplicationEntity
 import com.smart.htu.screens.application.librarySearch.BorrowedBookEntity
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
@@ -57,6 +58,7 @@ class DataStoreRepo @Inject constructor(
         val IS_WRITE_CALENDAR_PERMISSION_GRANTED =
             booleanPreferencesKey("IS_WRITE_CALENDAR_PERMISSION_GRANTED")
         val AI_FUNCTION_ENABLED = booleanPreferencesKey("AI_FUNCTION_ENABLED")
+        val AI_MODEL_KEY = stringPreferencesKey("AI_MODEL_KEY")
 
         const val DEFAULT_COOKIES = "[]"
         const val DEFAULT_MESSAGE_READ_ID = "[]"
@@ -64,6 +66,7 @@ class DataStoreRepo @Inject constructor(
         const val DEFAULT_BLUR_EFFECT = false
         const val DEFAULT_TOKEN_VALIDITY = false
         const val DEFAULT_AI_FUNCTION_ENABLED = false
+        const val DEFAULT_AI_MODEL_KEY = ""
         const val DEFAULT_TOKEN = ""
         const val DEFAULT_LOGIN_STATE = 0
         const val DEFAULT_DARK_THEME = 0
@@ -172,6 +175,10 @@ class DataStoreRepo @Inject constructor(
 
     override suspend fun changeAIFunctionEnabled(enabled: Boolean) {
         context.dataStore.edit { it[AI_FUNCTION_ENABLED] = enabled }
+    }
+
+    override suspend fun saveAIModelConfig(config: AIModelConfigEntity) {
+        context.dataStore.edit { it[AI_MODEL_KEY] = config.key }
     }
 
 
@@ -297,10 +304,16 @@ class DataStoreRepo @Inject constructor(
     }
 
     override fun observeIsWriteCalendarPermissionGranted(): Flow<Boolean> {
-        return context.dataStore.data.map { it[IS_WRITE_CALENDAR_PERMISSION_GRANTED] ?: DEFAULT_WRITE_CALENDAR_PERMISSION_GRANTED }
+        return context.dataStore.data.map {
+            it[IS_WRITE_CALENDAR_PERMISSION_GRANTED] ?: DEFAULT_WRITE_CALENDAR_PERMISSION_GRANTED
+        }
     }
 
     override fun observeAIFunctionEnabled(): Flow<Boolean> {
         return context.dataStore.data.map { it[AI_FUNCTION_ENABLED] ?: DEFAULT_AI_FUNCTION_ENABLED }
+    }
+
+    override fun observeAIModelConfig(): Flow<String> {
+        return context.dataStore.data.map { it[AI_MODEL_KEY] ?: DEFAULT_AI_MODEL_KEY }
     }
 }

@@ -67,6 +67,7 @@ import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.extra.DropDownMode
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDropdown
+import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -184,6 +185,14 @@ fun SettingScreen(
                         summary = "使用大模型为应用注入新活力",
                         onClick = {
                             navController.navigate(Destinations.AIConfiguration.route)
+                        }
+                    )
+                    SuperSwitch(
+                        checked = uiState.loadImgEnabled,
+                        title = "无图模式",
+                        summary = "关闭加载文章和列表图片，节省流量",
+                        onCheckedChange = {
+                            viewModel.changeLoadImgEnabled(it)
                         }
                     )
                 }

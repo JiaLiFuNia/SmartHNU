@@ -3,6 +3,7 @@ package com.smart.htu.screens.application.websiteNavigation
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.WebsiteNavigationEntity
 import com.smart.htu.repo.AppNetworkRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,7 +15,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class WebsiteNavigationUiState(
-    val websiteList: List<WebsiteNavigationEntity> = emptyList()
+    val websiteList: ResultWithStatus<List<WebsiteNavigationEntity>> = ResultWithStatus()
 )
 
 @HiltViewModel
@@ -35,7 +36,7 @@ class WebsiteNavigationViewModel @Inject constructor(
         appNetworkRepo.configService()
             .onSuccess { configEntity ->
                 _uiState.update {
-                    it.copy(websiteList = configEntity.websiteNavigation)
+                    it.copy(websiteList = ResultWithStatus(configEntity.websiteNavigation))
                 }
             }.onFailure {
                 Log.i("TAG666 website", it.toString())

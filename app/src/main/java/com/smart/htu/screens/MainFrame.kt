@@ -180,8 +180,8 @@ fun MainFrame(
                     actions = {
                         IconButton(onClick = { navController.navigate(Destinations.NewsStar.route) }) {
                             Icon(
-                                painter = painterResource(id = R.drawable.star_24px),
-                                contentDescription = "star"
+                                painter = painterResource(id = R.drawable.download_24px),
+                                contentDescription = "download"
                             )
                         }
                         IconButton(onClick = { navController.navigate(Destinations.NewsSearch.route) }) {

@@ -6,12 +6,13 @@ ksp = "2.1.20-2.0.0"
 aboutlibraries = "12.1.0"
 accompanistSystemuicontroller = "0.36.0"
 adaptiveNavigationAndroid = "1.1.0"
+pdfViewerVersion = "2.3.7"
 webview = "0.33.6"
 gson = "2.11.0"
 scalars = "2.9.0"
 coreSplashscreen = "1.0.1"
 datastore = "1.1.4"
-haze = "1.5.3"
+haze = "1.6.2"
 hiltAndroid = "2.56.1"
 hiltNavigationCompose = "1.2.0"
 konfetti = "2.0.5"
@@ -40,6 +41,7 @@ vico = "2.0.1"
 [libraries]
 aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutlibraries" }
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
+pdf-viewer = { module = "io.github.afreakyelf:Pdf-Viewer", version.ref = "pdfViewerVersion" }
 androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "materialIconsCore" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }

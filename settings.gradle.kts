@@ -16,6 +16,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        gradlePluginPortal()
+        maven("https://jitpack.io")
+        maven("https://repository.liferay.com/nexus/content/repositories/public/")
     }
 }
 

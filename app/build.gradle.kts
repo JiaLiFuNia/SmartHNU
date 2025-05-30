@@ -18,7 +18,7 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 35
-        versionCode = 202505111
+        versionCode = 202505301
         versionName = "3.0.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -142,5 +142,8 @@ dependencies {
 
     // JWT
     implementation(libs.eddsa)
+
+    // pdf
+    implementation(libs.pdf.viewer)
 
 }

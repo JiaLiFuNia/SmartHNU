@@ -20,13 +20,18 @@ object FileUtil {
         }
     }
 
-    fun downloadFile(context: Context, url: String, fileName: String) {
+    fun downloadFile(
+        context: Context,
+        url: String,
+        fileName: String,
+        targetDirectory: String = Environment.DIRECTORY_DOWNLOADS
+    ) {
         try {
             val request = DownloadManager.Request(url.toUri())
                 .setTitle(fileName)
                 .setDescription("正在下载文件")
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+                .setDestinationInExternalPublicDir(targetDirectory, fileName)
                 .setAllowedOverMetered(true)
                 .setAllowedOverRoaming(true)
 

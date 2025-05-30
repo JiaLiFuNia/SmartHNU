@@ -5,10 +5,15 @@ import androidx.lifecycle.viewModelScope
 import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
 import com.smart.htu.App.Companion.context
+import com.smart.htu.api.module.AIMessageEntity
+import com.smart.htu.api.module.AIModelConfigEntity
+import com.smart.htu.api.module.AIModulePostEntity
+import com.smart.htu.api.module.AIRole
 import com.smart.htu.api.module.UpdateEntity
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_THEME_MODE
+import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.utils.CoilUtil.formatFileSize
 import com.smart.htu.utils.CoilUtil.getDirectorySize
@@ -35,14 +40,18 @@ data class SettingUiState(
     val selectedLanguageIndex: Int = 0,
     val updateInfo: UpdateEntity = UpdateEntity(),
     val aiFunctionEnabled: Boolean = false,
+    val aiModuleConfig: AIModelConfigEntity,
+    val isTestLoading: Boolean = false,
     val isUpdate: Boolean = false,
     val termCode: String,
-    val cacheSize: String = "计算中..."
+    val cacheSize: String = "计算中...",
+    val loadImgEnabled: Boolean = true,
 )
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
     private val dataStoreRepo: DataStoreRepo,
+    private val networkRepo: NetworkRepo,
     private val sharedDataRepository: SharedDataRepository
 ) : ViewModel() {
 
@@ -53,7 +62,11 @@ class SettingViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(
         SettingUiState(
-            termCode = getCurrentTerm()
+            termCode = getCurrentTerm(),
+            aiModuleConfig = AIModelConfigEntity(
+                url = "https://chat.htu.edu.cn/api/chat/completions",
+                module = "DeepSeek-R1-Distill-Llama-70B"
+            )
         )
     )
 
@@ -95,6 +108,15 @@ class SettingViewModel @Inject constructor(
             }
         )
 
+    private val aiModelKeyStateFlow = dataStoreRepo.observeAIModelConfig()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeAIModelConfig().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
             themeModeStateFlow.collect { value ->
@@ -109,6 +131,11 @@ class SettingViewModel @Inject constructor(
         viewModelScope.launch {
             blurStateFlow.collect { value ->
                 _uiState.update { it.copy(blurEffect = value) }
+            }
+        }
+        viewModelScope.launch {
+            aiModelKeyStateFlow.collect { value ->
+                _uiState.update { it.copy(aiModuleConfig = AIModelConfigEntity(key = value)) }
             }
         }
         viewModelScope.launch {
@@ -159,17 +186,66 @@ class SettingViewModel @Inject constructor(
         }
     }
 
+    fun changeLoadImgEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            // dataStoreRepo.changeLoadImgEnabled(enabled)
+            _uiState.update { it.copy(loadImgEnabled = enabled) }
+        }
+    }
+
     fun changeAiFunctionEnabled(enabled: Boolean) {
         viewModelScope.launch {
             dataStoreRepo.changeAIFunctionEnabled(enabled)
         }
     }
 
-    /*fun changeBlurState(state: Boolean) {
+    fun saveAIModelKey(key: String) {
         viewModelScope.launch {
-            dataStoreRepo.changeBlurState(state = state)
+            dataStoreRepo.saveAIModelConfig(AIModelConfigEntity(key = key))
         }
-    }*/
+    }
+
+    fun setAIModuleConfig(
+        url: String = _uiState.value.aiModuleConfig.url,
+        module: String = _uiState.value.aiModuleConfig.module,
+        key: String = _uiState.value.aiModuleConfig.key
+    ) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(aiModuleConfig = AIModelConfigEntity(url, module, key)) }
+        }
+    }
+
+    fun testAIService(onResponse: (String) -> Unit) = viewModelScope.launch {
+        _uiState.update { it.copy(isTestLoading = true) }
+        val res = networkRepo.chatService(
+            url = _uiState.value.aiModuleConfig.url,
+            key = _uiState.value.aiModuleConfig.key,
+            data = AIModulePostEntity(
+                messages = listOf(
+                    AIMessageEntity(
+                        content = "我通过接收信息来测试API是否正常工作，不需要思考，只需要向用户回复“测试成功”即可。",
+                        role = AIRole.SYSTEM.value
+                    ),
+                    AIMessageEntity(
+                        content = "你好",
+                        role = AIRole.USER.value
+                    )
+                ),
+                model = _uiState.value.aiModuleConfig.module
+            )
+        )
+        _uiState.update { it.copy(isTestLoading = false) }
+        res.onSuccess {
+            if (it.choices.first().message.result.contains("测试成功")) {
+                onResponse("测试成功")
+                saveAIModelKey(_uiState.value.aiModuleConfig.key)
+            } else {
+                onResponse("测试失败: ${it.choices.first().message.result}")
+            }
+        }.onFailure {
+            onResponse("测试失败: " + (it.message ?: "请检查API配置"))
+        }
+    }
 
     fun calculateCacheSize() {
         viewModelScope.launch {

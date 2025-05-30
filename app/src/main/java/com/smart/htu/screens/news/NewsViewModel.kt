@@ -4,6 +4,11 @@ import android.util.Base64
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.smart.htu.api.module.AIMessageEntity
+import com.smart.htu.api.module.AIModelConfigEntity
+import com.smart.htu.api.module.AIModulePostEntity
+import com.smart.htu.api.module.AIRole
+import com.smart.htu.api.module.NewsArticleEntity
 import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.repo.DataStoreRepo
@@ -32,7 +37,9 @@ data class NewsUiState(
     val searchPage: Int = 1,
     val hasMoreSearchResults: Boolean = true,
     val newsPages: List<Int> = List(newsOptionItems.size) { 1 },
-    val hasMoreNews: List<Boolean> = List(newsOptionItems.size) { true }
+    val hasMoreNews: List<Boolean> = List(newsOptionItems.size) { true },
+    val aiModelKey: String = "",
+    val newsArticle: NewsArticleEntity? = null
 )
 
 @HiltViewModel
@@ -82,10 +89,24 @@ class NewsViewModel @Inject constructor(
             }
         )
 
+    private val aiModelKeyStateFlow = dataStoreRepo.observeAIModelConfig()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeAIModelConfig().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
             _blurStateFlow.collect { value ->
                 _uiState.update { it.copy(blurEffect = value) }
+            }
+        }
+        viewModelScope.launch {
+            aiModelKeyStateFlow.collect { value ->
+                _uiState.update { it.copy(aiModelKey = value) }
             }
         }
         viewModelScope.launch {
@@ -194,5 +215,40 @@ class NewsViewModel @Inject constructor(
             Log.i("TAG666", "getNewsList: $e")
         }
     }
+
+    suspend fun getNewsDetail(url: String) {
+        val res = networkRepo.getNewsDetailService(url)
+        _uiState.update { it.copy(newsArticle = res) }
+    }
+
+    fun aiNewsSummaryService(onResponse: (String) -> Unit, message: String) =
+        viewModelScope.launch {
+            val res = networkRepo.chatService(
+                url = AIModelConfigEntity().url,
+                key = _uiState.value.aiModelKey,
+                data = AIModulePostEntity(
+                    messages = listOf(
+                        AIMessageEntity(
+                            content = "我是一个新闻摘要助手",
+                            role = AIRole.SYSTEM.value
+                        ),
+                        AIMessageEntity(
+                            content = message,
+                            role = AIRole.USER.value
+                        )
+                    ),
+                    model = AIModelConfigEntity().module
+                )
+            )
+            res.onSuccess {
+                if (it.choices.first().message.result.contains("测试成功")) {
+                    onResponse("测试成功")
+                } else {
+                    onResponse("测试失败: ${it.choices.first().message.result}")
+                }
+            }.onFailure {
+                onResponse("测试失败: " + (it.message ?: "请检查API配置"))
+            }
+        }
 
 }

@@ -1,6 +1,7 @@
 package com.smart.htu.api
 
 import com.smart.htu.api.module.ACCookie
+import com.smart.htu.api.module.AIModelConfigEntity
 import com.smart.htu.screens.application.entity.ApplicationEntity
 import com.smart.htu.screens.application.librarySearch.BorrowedBookEntity
 import kotlinx.coroutines.flow.Flow
@@ -32,6 +33,7 @@ interface DataStoreService {
     suspend fun saveMobileCode(mobileCode: String)
     suspend fun setIsWriteCalendarPermissionGranted(enable: Boolean)
     suspend fun changeAIFunctionEnabled(enabled: Boolean)
+    suspend fun saveAIModelConfig(config: AIModelConfigEntity)
 
     fun observeThemeMode(): Flow<Int>
     fun observeDarkTheme(): Flow<Int>
@@ -56,5 +58,6 @@ interface DataStoreService {
     fun observeMobileCode(): Flow<String>
     fun observeIsWriteCalendarPermissionGranted(): Flow<Boolean>
     fun observeAIFunctionEnabled(): Flow<Boolean>
+    fun observeAIModelConfig(): Flow<String>
 
 }

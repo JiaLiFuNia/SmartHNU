@@ -1,0 +1,494 @@
+package com.smart.htu.screens.news.newsView
+
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.kevinnzou.web.rememberWebViewNavigator
+import com.kevinnzou.web.rememberWebViewState
+import com.kevinnzou.web.rememberWebViewStateWithHTMLData
+import com.smart.htu.R
+import com.smart.htu.api.module.AttachmentEntity
+import com.smart.htu.component.CircularProgressIndicator
+import com.smart.htu.component.WebView
+import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.news.NewsViewModel
+import com.smart.htu.screens.news.newsView.NewsStyle.HORIZONTAL_MARGIN
+import com.smart.htu.utils.FileUtil.downloadFile
+import com.smart.htu.utils.copyContent
+import com.smart.htu.utils.getCurrentDates
+import com.smart.htu.utils.sendToast
+import com.smart.htu.utils.startWebUrl
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.FloatingToolbar
+import top.yukonga.miuix.kmp.basic.ListPopup
+import top.yukonga.miuix.kmp.basic.ListPopupColumn
+import top.yukonga.miuix.kmp.basic.ListPopupDefaults
+import top.yukonga.miuix.kmp.basic.PopupPositionProvider
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.ToolbarPosition
+import top.yukonga.miuix.kmp.extra.DropdownImpl
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
+@Composable
+fun NewsDetail(
+    url: String,
+    title: String,
+    newsViewModel: NewsViewModel = hiltViewModel(),
+    navController: NavController
+) {
+    val uiState by newsViewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val navigator = rememberWebViewNavigator()
+
+    val listState = rememberLazyListState()
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    val showDropDownMenu = remember { mutableStateOf(false) }
+    val showFloatingToolbar = remember { mutableStateOf(true) }
+
+    val isHTUNews = remember { mutableStateOf(url.toUri().host == "www.htu.edu.cn") }
+    val newsViewMode = remember { mutableIntStateOf(0) }
+    val newsDetailHTML = remember { mutableStateOf("") }
+    val bionicReadingEnabled = remember { mutableStateOf(true) }
+    val newsLoading = remember { mutableStateOf(true) }
+    val showHtml = remember { mutableStateOf(false) }
+    val showImagePreview = remember { mutableStateOf(false) }
+    val selectedImageData = remember { mutableStateOf("") }
+
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 200 }
+            .collect { hasScrolled ->
+                showFloatingToolbar.value = !hasScrolled
+            }
+    }
+
+    LaunchedEffect(url) {
+        if (isHTUNews.value) {
+            newsViewMode.intValue = 0
+            delay(1000)
+            newsViewModel.getNewsDetail(url)
+        } else {
+            newsViewMode.intValue = 1
+        }
+    }
+
+    Scaffold(
+        containerColor = MiuixTheme.colorScheme.background,
+        topBar = {
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = MiuixTheme.colorScheme.background
+                ),
+                title = {
+                    Text(
+                        text = title,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                actions = {
+                    val dropdownOptions = listOf(
+                        "分享",
+                        "复制链接",
+                        stringResource(id = R.string.open_outside),
+                        stringResource(id = R.string.forward),
+                        "显示解析后的html"
+                    )
+                    ListPopup(
+                        show = showDropDownMenu,
+                        popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
+                        alignment = PopupPositionProvider.Align.TopRight,
+                        onDismissRequest = {
+                            showDropDownMenu.value = false
+                        }
+                    ) {
+                        ListPopupColumn {
+                            dropdownOptions.forEachIndexed { index, item ->
+                                DropdownImpl(
+                                    text = item,
+                                    isSelected = false,
+                                    optionSize = dropdownOptions.size,
+                                    onSelectedIndexChange = {
+                                        showDropDownMenu.value = false
+                                        when (index) {
+                                            0 -> {
+                                                Intent(Intent.ACTION_SEND).also {
+                                                    it.putExtra(Intent.EXTRA_TEXT, url)
+                                                    it.type = "text/plain"
+                                                    if (it.resolveActivity(context.packageManager) != null) {
+                                                        context.startActivity(it)
+                                                    }
+                                                }
+                                            }
+
+                                            1 -> {
+                                                scope.launch {
+                                                    copyContent(url)
+                                                    snackBarHostState.showSnackbar("已复制到剪贴板")
+                                                }
+                                            }
+
+                                            2 -> {
+                                                startWebUrl(url)
+                                            }
+
+                                            3 -> {
+                                                if (navigator.canGoForward) navigator.navigateForward()
+                                            }
+
+                                            4 -> {
+                                                showHtml.value = !showHtml.value
+                                            }
+                                        }
+                                    },
+                                    index = index
+                                )
+                            }
+                        }
+                    }
+                    IconButton(onClick = { showDropDownMenu.value = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "more")
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "close")
+                    }
+                }
+            )
+        },
+        floatingToolbar = {
+            AnimatedVisibility(
+                enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
+                exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top),
+                visible = showFloatingToolbar.value
+            ) {
+                FloatingToolbar {
+                    Row {
+                        IconButton(
+                            onClick = {
+                                if (uiState.aiModelKey.isEmpty()) navController.navigate(
+                                    Destinations.AIConfiguration.route
+                                )
+                                else newsViewModel.aiNewsSummaryService(
+                                    {},
+                                    uiState.newsArticle?.articleContent ?: ""
+                                )
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.wand_stars_24px),
+                                contentDescription = "ai",
+                                tint = MiuixTheme.colorScheme.onSurface
+                            )
+                        }
+                        IconButton(onClick = { /* 操作 2 */ }) {
+                            Icon(
+                                painterResource(R.drawable.star_24px), contentDescription = "star",
+                                tint = MiuixTheme.colorScheme.onSurface
+                            )
+                        }
+                        IconButton(
+                            enabled = isHTUNews.value,
+                            onClick = {
+                                newsViewMode.intValue = if (newsViewMode.intValue == 0) 1 else 0
+                            }
+                        ) {
+                            Icon(
+                                painterResource(R.drawable.ic_outline_article),
+                                contentDescription = "news",
+                                tint = MiuixTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        floatingToolbarPosition = ToolbarPosition.BottomCenter,
+        snackbarHost = {
+            SnackbarHost(snackBarHostState)
+        },
+        modifier = Modifier.fillMaxSize()
+    ) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it),
+        ) {
+            if (newsViewMode.intValue == 0 && uiState.newsArticle == null && newsLoading.value) {
+                item {
+                    CircularProgressIndicator()
+                }
+            } else {
+                if (newsViewMode.intValue == 0) {
+                    item {
+                        TittleContent(
+                            title = uiState.newsArticle?.title ?: "无标题",
+                            publishDate = uiState.newsArticle?.publishDate ?: getCurrentDates(),
+                            visitCount = uiState.newsArticle?.visitCount ?: "10",
+                            onClick = {
+                                copyContent(uiState.newsArticle?.title.toString())
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 6.dp)
+                        )
+                        if (showHtml.value) Text(text = uiState.newsArticle?.articleContent.toString())
+                    }
+                }
+
+                item {
+                    when (newsViewMode.intValue) {
+                        0 -> WebView(
+                            url = url,
+                            webViewState = rememberWebViewStateWithHTMLData(
+                                data = NewsHTML.HTML.format(
+                                    NewsStyle.get(
+                                        fontSize = 17,
+                                        lineHeight = 1.0F,
+                                        letterSpacing = 0.5F,
+                                        textMargin = HORIZONTAL_MARGIN,
+                                        textColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
+                                        textBold = false,
+                                        textAlign = "start",
+                                        boldTextColor = MaterialTheme.colorScheme.onSurface.toArgb(),
+                                        subheadBold = false,
+                                        subheadUpperCase = false,
+                                        imgMargin = HORIZONTAL_MARGIN,
+                                        imgBorderRadius = 4,
+                                        linkTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
+                                        codeTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
+                                        codeBgColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
+                                        tableMargin = 0,
+                                        selectionTextColor = MaterialTheme.colorScheme.onSurface.toArgb(),
+                                        selectionBgColor = MaterialTheme.colorScheme.primaryContainer.toArgb(),
+                                        signatureColor = Color.Gray.toArgb()
+                                    ),
+                                    url,
+                                    uiState.newsArticle?.articleContent,
+                                    WebViewScript.get(bionicReadingEnabled.value)
+                                ),
+                                baseUrl = url
+                            ),
+                            onHtml = {
+                                newsDetailHTML.value = it
+                            },
+                            onFinished = {
+                                newsLoading.value = !it
+                            },
+                            onImageClick = {
+                                selectedImageData.value = it
+                                showImagePreview.value = true
+                            },
+                            isShowLinearProgressIndicator = false,
+                            navigator = navigator,
+                            snackBarHostState = snackBarHostState
+                        )
+
+                        else -> WebView(
+                            url = url,
+                            webViewState = rememberWebViewState(url),
+                            onHtml = {
+                                // newsDetailHTML.value = it
+                            },
+                            navigator = navigator,
+                            snackBarHostState = snackBarHostState
+                        )
+                    }
+                }
+
+                if (newsViewMode.intValue == 0) {
+                    item {
+                        uiState.newsArticle?.attachment
+                            .let { attachments ->
+                                if (attachments?.isNotEmpty() == true) {
+                                    AttachmentContent(
+                                        attachments = attachments,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp),
+                                        onClick = { url, title ->
+                                            navController.navigate("${Destinations.PdfReaderView.route}/${url}/${title}")
+                                        }
+                                    )
+                                }
+                            }
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+    }
+
+    if (showImagePreview.value) {
+        ImagePreviewDialog(
+            imageUrl = selectedImageData.value,
+            onDismiss = { showImagePreview.value = false },
+            onDownload = {
+                scope.launch {
+                    sendToast(context, "正在下载图片：$title.jpg")
+                    downloadFile(context, selectedImageData.value, "$title.jpg")
+                    sendToast(context, "下载成功")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun TittleContent(
+    title: String,
+    publishDate: String,
+    visitCount: String,
+    onClick: () -> Unit = { },
+    modifier: Modifier
+) {
+    Surface(
+        modifier = modifier,
+        onClick = onClick,
+        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = title,
+                textAlign = TextAlign.Start,
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text(
+                    text = "发布时间：${publishDate}",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = Color.Gray
+                    )
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "浏览次数：${visitCount}",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = Color.Gray
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AttachmentContent(
+    attachments: List<AttachmentEntity>,
+    modifier: Modifier,
+    onClick: (String, String) -> Unit = { _, _ -> }
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        attachments.forEach { attachment ->
+            if (attachment.fileName.isNotEmpty() || attachment.url.isNotEmpty()) {
+                Card {
+                    val showDownloadDialog = remember { mutableStateOf(false) }
+                    BasicComponent(
+                        leftAction = {
+                            Icon(
+                                painter = painterResource(R.drawable.folder_24px),
+                                contentDescription = "file",
+                                modifier = Modifier.padding(end = 10.dp),
+                                tint = MiuixTheme.colorScheme.onSurface
+                            )
+                        },
+                        title = attachment.fileName,
+                        onClick = {
+                            if (attachment.fileType == "pdf" || attachment.isNeedOnlineView)
+                                onClick(Uri.encode(attachment.url), attachment.fileName)
+                            else
+                                showDownloadDialog.value = true
+                        }
+                    )
+                    DownloadDialog(
+                        showDialog = showDownloadDialog,
+                        fileName = attachment.fileName,
+                        url = attachment.url
+                    )
+                }
+            }
+        }
+    }
+}

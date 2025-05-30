@@ -8,6 +8,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -22,23 +23,28 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.smart.htu.screens.login.TextWithProgressIndicatorButton
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.TextField
+import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -51,7 +57,7 @@ fun AIConfigurationScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    // val scope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
 
@@ -102,7 +108,6 @@ fun AIConfigurationScreen(
                     )
                 }
             }
-
             item {
                 AnimatedVisibility(
                     enter = fadeIn() + expandVertically(),
@@ -116,19 +121,82 @@ fun AIConfigurationScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         SmallTitle(
-                            text = "配置 API",
+                            text = "功能",
+                            insideMargin = PaddingValues(start = 12.dp, top = 8.dp)
+                        )
+                        Card {
+                            SuperArrow(
+                                title = "新闻总结",
+                                summary = "使用 AI 对新闻进行总结，快速获取新闻要点",
+                            )
+                        }
+                    }
+                }
+            }
+            item {
+                AnimatedVisibility(
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically(),
+                    visible = uiState.aiFunctionEnabled
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        SmallTitle(
+                            text = "配置 API (*目前仅支持预置的 API)",
                             insideMargin = PaddingValues(start = 12.dp, top = 8.dp)
                         )
                         TextField(
                             label = "URL",
-                            value = "https://chat.htu.edu.cn/api/chat/completed",
+                            value = uiState.aiModuleConfig.url,
                             readOnly = true,
-                            onValueChange = { }
+                            singleLine = true,
+                            onValueChange = {
+                                viewModel.setAIModuleConfig(url = it)
+                            }
                         )
                         TextField(
-                            label = "API Key",
-                            value = "",
-                            onValueChange = { }
+                            label = "模型",
+                            value = uiState.aiModuleConfig.module,
+                            readOnly = true,
+                            singleLine = true,
+                            onValueChange = {
+                                viewModel.setAIModuleConfig(module = it)
+                            }
+                        )
+                        TextField(
+                            label = "Key",
+                            value = uiState.aiModuleConfig.key,
+                            singleLine = true,
+                            onValueChange = {
+                                viewModel.setAIModuleConfig(key = it)
+                            }
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            TextButton(onClick = { }) {
+                                Text(text = "如何申请 Key?")
+                            }
+                        }
+                        TextWithProgressIndicatorButton(
+                            text = "测试",
+                            onClick = {
+                                viewModel.testAIService(
+                                    onResponse = {
+                                        scope.launch {
+                                            snackBarHostState.showSnackbar(it)
+                                        }
+                                    }
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            enabled = !uiState.isTestLoading
                         )
                     }
                 }

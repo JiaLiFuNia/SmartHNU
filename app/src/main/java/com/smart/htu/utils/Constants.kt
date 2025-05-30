@@ -22,7 +22,9 @@ class Constants {
         const val ACADEMIC_APP_URL = "https://jwc.htu.edu.cn/app/"
         const val SECOND_CLASS_URL = "http://dekt.htu.edu.cn/"
 
-        const val SMH_URL = "https://smh.xubohan04.tk/"
+        const val SMH_URL = "https://xhand.edu.deal/"
+            // "https://shtu.xubohan04.tk/"
+
 
         const val SHOWER_ALIPAY_URL =
             "alipays://platformapi/startapp?appId=20000067&url=https://ur.alipay.com/_3Zz793BHBpUQsAf6r8hLXZ"
@@ -217,6 +219,14 @@ class Constants {
                 routeType = RouteType.SCREEN,
                 route = Destinations.WebsiteNavigation.route,
                 category = ApplicationCategory.QUICK_APP
+            ),
+            ApplicationEntity(
+                guestEnable = false,
+                icon = R.drawable.sports_handball_24px,
+                label = R.string.physical_test,
+                routeType = RouteType.SCREEN,
+                route = Destinations.PhysicalTest.route,
+                category = ApplicationCategory.CAMPUS
             )
         )
         val INIT_COMMON_APP_LIST = listOf(

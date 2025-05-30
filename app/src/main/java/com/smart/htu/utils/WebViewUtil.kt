@@ -78,6 +78,7 @@ fun WebView.setDefaultSettings() {
         domStorageEnabled = true
         useWideViewPort = true
         loadWithOverviewMode = true
+        isHorizontalScrollBarEnabled = false
         cacheMode = WebSettings.LOAD_DEFAULT
 
         // Allow zooming
