@@ -6,11 +6,22 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,17 +32,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.smart.htu.R
+import com.smart.htu.screens.navigateToWebView
+import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.utils.Constants.Companion.GITHUB_PERSON_URL
+import com.smart.htu.utils.Constants.Companion.GITHUB_PROJECT_URL
+import com.smart.htu.utils.Constants.Companion.SMH_URL
+import com.smart.htu.utils.startWebUrl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import nl.dionsegijn.konfetti.compose.KonfettiView
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
+import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.extra.SuperArrow
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.util.concurrent.TimeUnit
 
@@ -60,26 +84,56 @@ fun About(
             emitter = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100)
         )
     }
-    Scaffold {
-        Box(modifier = Modifier.fillMaxSize()) {
-            LazyColumn(
-                contentPadding = PaddingValues(
-                    horizontal = 16.dp,
-                    vertical = 12.dp
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    Scaffold(
+        containerColor = MiuixTheme.colorScheme.background,
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            MediumTopAppBar(
+                scrollBehavior = scrollBehavior,
+                colors = topAppBarColors(
+                    containerColor = MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = MiuixTheme.colorScheme.background
                 ),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it)
-                    .overScrollVertical(),
-                overscrollEffect = null
-            ) {
-                item {
-                    Column(
+                title = { Text(text = stringResource(id = R.string.about)) },
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "back"
+                        )
+                    }
+                }
+            )
+        }
+    ) {
+        LazyColumn(
+            contentPadding = PaddingValues(
+                horizontal = 16.dp,
+                vertical = 12.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+                .overScrollVertical(),
+            overscrollEffect = null
+        ) {
+            item {
+                Column(
+                    modifier = Modifier
+                        .height(320.dp)
+                        .fillParentMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Card(
+                        pressFeedbackType = PressFeedbackType.Tilt,
+                        showIndication = true,
+                        cornerRadius = 40.dp,
                         modifier = Modifier
-                            .fillParentMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                            .size(160.dp)
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.smarthnu),
@@ -89,14 +143,81 @@ fun About(
                                 .clip(RoundedCornerShape(40.dp))
                         )
                     }
+                    Text(
+                        text = stringResource(R.string.app_name) + "-SmartHNU",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 16.dp)
+                            .padding(bottom = 8.dp)
+                    )
                 }
             }
-            if (showConfetti) {
-                KonfettiView(
-                    parties = listOf(party),
-                    modifier = Modifier.fillMaxSize()
-                )
+            item {
+                SettingItemCard(
+                    label = "开发",
+                    modifier = Modifier
+                ) {
+                    SuperArrow(
+                        leftAction = {
+                            Box(
+                                contentAlignment = Alignment.TopStart,
+                                modifier = Modifier.padding(end = 16.dp)
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.developer_icon),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                )
+                            }
+                        },
+                        title = stringResource(id = R.string.developer_name),
+                        summary = stringResource(id = R.string.developer_description),
+                        onClick = {
+                            startWebUrl(GITHUB_PERSON_URL)
+                        }
+                    )
+                    SuperArrow(
+                        title = "项目地址",
+                        onClick = {
+                            startWebUrl(GITHUB_PROJECT_URL)
+                        }
+                    )
+                }
             }
+            item {
+                SettingItemCard(
+                    label = "其他",
+                    modifier = Modifier
+                ) {
+                    SuperArrow(
+                        title = "官方网站",
+                        onClick = {
+                            navController.navigateToWebView(
+                                url = SMH_URL,
+                                label = "师韵"
+                            )
+                        }
+                    )
+                    SuperArrow(
+                        title = stringResource(id = R.string.open_source_license),
+                        onClick = {
+                            navController.navigate(Destinations.License.route)
+                        }
+                    )
+                }
+            }
+        }
+    }
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (showConfetti) {
+            KonfettiView(
+                parties = listOf(party),
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }

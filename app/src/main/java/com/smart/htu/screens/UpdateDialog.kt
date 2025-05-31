@@ -9,10 +9,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.smart.htu.api.module.UpdateEntity
 import com.smart.htu.component.textButtonPrimaryColors
+import com.smart.htu.utils.FileUtil.downloadFile
+import com.smart.htu.utils.sendToast
+import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -21,10 +26,11 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 fun UpdateDialog(
     showDialog: MutableState<Boolean>,
     isForceUpdate: Boolean,
-    onConfirmClick: () -> Unit,
     onDismissRequest: () -> Unit,
     updateEntity: UpdateEntity
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     SuperDialog(
         title = "发现新版本",
         show = showDialog,
@@ -37,7 +43,10 @@ fun UpdateDialog(
         }
     ) {
         Column {
-            Text(text = updateEntity.update?.content ?: "更新内容", color = MiuixTheme.colorScheme.onSurface)
+            Text(
+                text = updateEntity.update?.content ?: "更新内容",
+                color = MiuixTheme.colorScheme.onSurface
+            )
             Spacer(modifier = Modifier.height(20.dp))
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -56,7 +65,17 @@ fun UpdateDialog(
                 top.yukonga.miuix.kmp.basic.TextButton(
                     text = "下载并更新",
                     onClick = {
-                        onConfirmClick()
+                        scope.launch {
+                            updateEntity.update?.downloadUrl?.let { url ->
+                                downloadFile(
+                                    context = context,
+                                    url = url,
+                                    fileName = url.substringAfterLast("/")
+                                )
+                            }
+                            showDialog.value = false
+                            sendToast(context, "下拉通知栏，查看进度")
+                        }
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.textButtonPrimaryColors()

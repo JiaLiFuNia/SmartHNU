@@ -169,11 +169,6 @@ fun NewsScreen(
                             lastVisibleItemIndex >= totalItemsCount && totalItemsCount > 0
                         }
                     }
-                    LaunchedEffect(isAtBottom) {
-                        if (isAtBottom && uiState.hasMoreNews[pageIndex]) {
-                            viewModel.getNewsList(pageIndex, loadMore = true)
-                        }
-                    }
 
                     if (uiState.newsList[pageIndex].status != Status.SUCCESS && uiState.newsPages[pageIndex] == 1) {
                         CircularProgressIndicator(modifier = Modifier.fillMaxSize())
@@ -254,28 +249,36 @@ fun NewsScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
                             item {
-                                if (uiState.hasMoreNews[pageIndex] && uiState.newsList[pageIndex].data?.isNotEmpty() == true) {
-                                    if (isAtBottom) {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier.fillParentMaxWidth()
-                                        )
-                                    }
-                                } else if (!uiState.hasMoreNews[pageIndex] && uiState.newsList[pageIndex].data?.isNotEmpty() == true) {
+                                if (uiState.hasMoreNews[pageIndex]) {
                                     Text(
-                                        text = "没有更多内容了",
+                                        text = "加载更多...",
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(16.dp),
+                                            .padding(vertical = 16.dp),
                                         textAlign = TextAlign.Center,
-                                        color = Color.Gray
+                                        style = MaterialTheme.typography.bodyMedium
                                     )
+                                } else {
+                                    Text(
+                                        text = "没有更多了",
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 16.dp),
+                                        textAlign = TextAlign.Center,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                                LaunchedEffect(Unit) {
+                                    viewModel.getNewsList(pageIndex, true)
                                 }
                             }
                         }
                     }
 
                     FloatingActionButton(
-                        modifier = Modifier.align(Alignment.BottomEnd).padding(14.dp),
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(14.dp),
                         onClick = { scope.launch { lazyListState.scrollToItem(0) } }
                     ) {
                         Icon(

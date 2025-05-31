@@ -17,7 +17,7 @@ data class UpdateEntity(
 )
 
 data class UpdateData(
-    val url: String,
+    val downloadUrl: String,
     val content: String,
 )
 

@@ -29,8 +29,8 @@ import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.message.MessageScreen
 import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.news.NewsHistory
 import com.smart.htu.screens.news.NewsSearch
-import com.smart.htu.screens.news.NewsStar
 import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.news.newsView.NewsDetail
 import com.smart.htu.screens.person.AccountManage
@@ -155,8 +155,8 @@ fun NavHostScreen() {
         animatedComposable(Destinations.NewsSearch.route) {
             NewsSearch(navController = navController)
         }
-        animatedComposable(Destinations.NewsStar.route) {
-            NewsStar(navController = navController)
+        animatedComposable(Destinations.NewsHistory.route) {
+            NewsHistory(navController = navController)
         }
         animatedComposable(
             route = "${Destinations.NewsDetail.route}/{url}/{title}",

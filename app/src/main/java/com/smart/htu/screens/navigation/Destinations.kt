@@ -9,7 +9,7 @@ sealed class Destinations(
     data object Person : Destinations("person")
     data object Application : Destinations("application")
     data object NewsSearch : Destinations("news_search")
-    data object NewsStar : Destinations("news_star")
+    data object NewsHistory : Destinations("news_history")
     data object NewsDetail : Destinations("news_detail")
     data object ApplicationEdit : Destinations("application_edit")
     data object Message : Destinations("message")

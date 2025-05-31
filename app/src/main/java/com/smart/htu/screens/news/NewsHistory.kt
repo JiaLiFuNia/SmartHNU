@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,15 +29,13 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewsStar(
+fun NewsHistory(
     navController: NavController,
     viewModel: NewsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    val textFieldState = rememberTextFieldState()
-
     val scope = rememberCoroutineScope()
+
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -50,7 +47,7 @@ fun NewsStar(
                     scrolledContainerColor = MiuixTheme.colorScheme.background
                 ),
                 title = {
-                    Text("星标")
+                    Text(text = "浏览历史")
                 },
                 navigationIcon = {
                     IconButton(

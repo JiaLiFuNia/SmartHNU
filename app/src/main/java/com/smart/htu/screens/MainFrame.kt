@@ -1,7 +1,6 @@
 package com.smart.htu.screens
 
 import android.app.Activity
-import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
@@ -53,18 +53,6 @@ import com.smart.htu.screens.person.PersonScreen
 import com.smart.htu.utils.DoubleBackToExitApp
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-data class Screen(
-    val route: String,
-    @StringRes val label: Int,
-    val unselectedIcon: Int,
-    val selectedIcon: Int,
-    val enabled: Boolean,
-    val badge: Int = 0,
-    val title: String? = null,
-    val fab: @Composable (() -> Unit)? = null,
-    val actions: @Composable (() -> Unit)? = null
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainFrame(
@@ -78,6 +66,7 @@ fun MainFrame(
     val loginUiState by loginViewModel.uiState.collectAsState()
     val mainUiState by mainViewModel.uiState.collectAsState()
     val savableStateHolder = rememberSaveableStateHolder()
+    val scope = rememberCoroutineScope()
     val (selectedItemIndex, onSelectedItemIndex) = rememberSaveable { mutableIntStateOf(0) }
     val messageCount = remember {
         derivedStateOf { mainUiState.noticeIdList.size - mainUiState.readNoticeIdList.size }
@@ -178,10 +167,10 @@ fun MainFrame(
                     colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
                     title = { Text(text = stringResource(R.string.news)) },
                     actions = {
-                        IconButton(onClick = { navController.navigate(Destinations.NewsStar.route) }) {
+                        IconButton(onClick = { navController.navigate(Destinations.NewsHistory.route) }) {
                             Icon(
-                                painter = painterResource(id = R.drawable.download_24px),
-                                contentDescription = "download"
+                                painter = painterResource(id = R.drawable.outline_history_24),
+                                contentDescription = "history"
                             )
                         }
                         IconButton(onClick = { navController.navigate(Destinations.NewsSearch.route) }) {
@@ -315,9 +304,6 @@ fun MainFrame(
     }
     UpdateDialog(
         showDialog = showUpdateDialog,
-        onConfirmClick = {
-
-        },
         onDismissRequest = {
             mainViewModel.changeUpdateDialogState(false)
         },

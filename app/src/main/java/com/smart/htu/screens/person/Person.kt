@@ -1,7 +1,6 @@
 package com.smart.htu.screens.person
 
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -9,9 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -26,16 +23,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.card.LargeCardDisplay
@@ -70,7 +61,6 @@ fun PersonScreen(
     }
 
     var showLogoutDialog = remember { mutableStateOf(false) }
-    var showEditMessageDialog = remember { mutableStateOf(false) }
     top.yukonga.miuix.kmp.basic.PullToRefresh(
         pullToRefreshState = pullToRefreshState,
         refreshTexts = PULL_TO_REFRESH_TEXT,
@@ -92,37 +82,6 @@ fun PersonScreen(
                     title = "我的信息",
                     leadingIconPainting = R.drawable.person_search_24px
                 ) {
-                    PersonalMessage(
-                        label = stringResource(id = R.string.avatar),
-                        content = {
-                            if (uiState.qqNumber == "")
-                                Image(
-                                    painter = painterResource(id = R.drawable.avator_1),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(10.dp))
-                                )
-                            else
-                                AsyncImage(
-                                    model = ImageRequest.Builder(LocalContext.current)
-                                        .data("https://q1.qlogo.cn/g?b=qq&nk=${uiState.qqNumber}&s=100")
-                                        .crossfade(true)
-                                        .addHeader("User-Agent", "Mozilla/5.0")
-                                        .error(R.drawable.avator_1)
-                                        .build(),
-                                    contentDescription = "picture",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(10.dp)),
-                                    placeholder = painterResource(id = R.drawable.book_failure)
-                                )
-                        },
-                        onClick = {
-                            showEditMessageDialog.value = true
-                        }
-                    )
                     PersonalMessage(
                         label = stringResource(id = R.string.username),
                         trailingText = uiState.personalMessage.data?.username
@@ -214,13 +173,6 @@ fun PersonScreen(
             }
         }
     }
-
-    EditQQNumberDialog(
-        showDialog = showEditMessageDialog,
-        onConfirmRequests = {
-            viewModel.editQQNumber(it)
-        }
-    )
 
     LogoutDialog(
         showDialog = showLogoutDialog,

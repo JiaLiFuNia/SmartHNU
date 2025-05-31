@@ -50,7 +50,7 @@ fun AccountManage(
     val scope = rememberCoroutineScope()
     val onRefresh: () -> Unit = {
         scope.launch {
-            delay(500)
+            delay(0)
         }
     }
 
@@ -93,6 +93,7 @@ fun AccountManage(
                     leadingIconPainting = R.drawable.circle_admin
                 ) {
                     TextField(
+                        backgroundColor = MiuixTheme.colorScheme.surface,
                         value = uiState.token,
                         onValueChange = {},
                         label = "token",
@@ -116,6 +117,7 @@ fun AccountManage(
                     ) {
                         uiState.cookies.forEach {
                             TextField(
+                                backgroundColor = MiuixTheme.colorScheme.surface,
                                 value = it.value,
                                 onValueChange = {},
                                 label = it.name,
