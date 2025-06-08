@@ -18,7 +18,9 @@ import com.smart.htu.screens.application.classroom.ClassroomSearchScreen
 import com.smart.htu.screens.application.courseTable.CourseTable
 import com.smart.htu.screens.application.entity.RouteType
 import com.smart.htu.screens.application.grade.Grade
+import com.smart.htu.screens.application.librarySearch.LibrarySearchDetail
 import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
+import com.smart.htu.screens.application.librarySearch.LibrarySearchViewModel
 import com.smart.htu.screens.application.physicalTest.PhysicalTest
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluation
 import com.smart.htu.screens.application.textbook.Textbook
@@ -49,6 +51,7 @@ fun NavHostScreen() {
     val loginViewModel: LoginViewModel = hiltViewModel()
     val newsViewModel: NewsViewModel = hiltViewModel()
     val airConditionViewModel: AirConditionViewModel = hiltViewModel()
+    val librarySearchViewModel: LibrarySearchViewModel = hiltViewModel()
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -103,7 +106,23 @@ fun NavHostScreen() {
             License(navController = navController)
         }
         animatedComposable(Destinations.LibrarySearch.route) {
-            LibrarySearchScreen(navController = navController)
+            LibrarySearchScreen(
+                navController = navController,
+                viewModel = librarySearchViewModel
+            )
+        }
+        animatedComposable(
+            route = "${Destinations.LibrarySearchDetail.route}/{bookId}",
+            arguments = listOf(
+                navArgument(name = "bookId") {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            LibrarySearchDetail(
+                navController = navController,
+                bookId = it.arguments?.getString("bookId").toString()
+            )
         }
         animatedComposable(Destinations.AirCondition.route) {
             AirCondition(
@@ -153,7 +172,7 @@ fun NavHostScreen() {
             )
         }
         animatedComposable(Destinations.NewsSearch.route) {
-            NewsSearch(navController = navController)
+            NewsSearch(navController = navController, viewModel = newsViewModel)
         }
         animatedComposable(Destinations.NewsHistory.route) {
             NewsHistory(navController = navController)

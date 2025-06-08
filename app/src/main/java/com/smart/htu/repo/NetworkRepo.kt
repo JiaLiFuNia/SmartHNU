@@ -17,18 +17,13 @@ import com.smart.htu.api.network.AppLoginService
 import com.smart.htu.api.network.AuthLoginService
 import com.smart.htu.api.network.ChatService
 import com.smart.htu.api.network.EHallService
-import com.smart.htu.api.network.LibraryService
 import com.smart.htu.api.network.NewsService
 import com.smart.htu.api.network.WeatherService
 import com.smart.htu.di.NetworkCookieJar
-import com.smart.htu.screens.application.librarySearch.LibraryBookDetail
-import com.smart.htu.screens.application.librarySearch.LibraryBookListEntity
 import com.smart.htu.screens.news.entity.NewsCategoryEntity
 import com.smart.htu.utils.AESUtils
 import com.smart.htu.utils.ParseNewsArticleUtil.parseHTMLToNewsArticle
 import com.smart.htu.utils.ParseNewsListUtil.parseHTMLToNewsList
-import com.smart.htu.utils.parseLibraryBookDetail
-import com.smart.htu.utils.parseLibrarySearchResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
@@ -42,7 +37,6 @@ class NetworkRepo @Inject constructor(
     private val authServerService: AuthLoginService,
     private val appLoginService: AppLoginService,
     private val eHallService: EHallService,
-    private val libraryService: LibraryService,
     private val airConditionService: AirConditionService,
     private val weatherService: WeatherService,
     private val newsService: NewsService,
@@ -234,43 +228,6 @@ class NetworkRepo @Inject constructor(
                 Log.e("TAG666", "${e.message}")
                 Result.failure(Exception("请求失败"))
             }
-        }
-    }
-
-    // 图书搜索
-    suspend fun librarySearch(
-        keyword: String,
-        page: Int
-    ): Pair<String, List<LibraryBookListEntity>> {
-        try {
-            val res = libraryService.librarySearch(keyword, page)
-            val resParsed: Pair<String, MutableList<LibraryBookListEntity>> =
-                if (res.code() == 200) {
-                    parseLibrarySearchResult(res.body()?.string() ?: "")
-                } else {
-                    "0" to mutableListOf()
-                }
-            return resParsed
-        } catch (e: Exception) {
-            Log.e("TAG666", "${e.message}")
-            return "0" to mutableListOf()
-        }
-    }
-
-    // 图书详情
-    suspend fun libraryBookDetails(id: String): List<LibraryBookDetail> {
-        val bookList: List<LibraryBookDetail>
-        try {
-            val res = libraryService.libraryBookDetails(id)
-            bookList = if (res.code() == 200) {
-                parseLibraryBookDetail(res.body()?.string() ?: "")
-            } else {
-                emptyList()
-            }
-            return bookList
-        } catch (e: Exception) {
-            Log.e("TAG666", "${e.message}")
-            return emptyList()
         }
     }
 

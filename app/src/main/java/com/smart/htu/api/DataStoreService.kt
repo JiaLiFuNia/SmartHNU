@@ -2,8 +2,8 @@ package com.smart.htu.api
 
 import com.smart.htu.api.module.ACCookie
 import com.smart.htu.api.module.AIModelConfigEntity
+import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.screens.application.entity.ApplicationEntity
-import com.smart.htu.screens.application.librarySearch.BorrowedBookEntity
 import kotlinx.coroutines.flow.Flow
 import okhttp3.Cookie
 
@@ -19,7 +19,7 @@ interface DataStoreService {
     suspend fun changeLoginState(state: Int)
     suspend fun changeLoginJWCState(state: Int)
     suspend fun saveCookies(cookies: List<Cookie>)
-    suspend fun addWaitingBorrowedBookList(waitingBorrowedBookList: List<BorrowedBookEntity>)
+    suspend fun addWaitingBorrowedBookList(waitingBorrowedBookList: List<LibraryDetailEntity>)
     suspend fun saveStudentId(id: String)
     suspend fun changeBuildingId(id: String)
     suspend fun changeRoomId(room: String)
@@ -43,7 +43,7 @@ interface DataStoreService {
     fun observeUsername(): Flow<String>
     fun observeLoginState(): Flow<Int>
     fun observeCookies(): Flow<List<Cookie>>
-    fun observeWaitingBorrowedBookList(): Flow<List<BorrowedBookEntity>>
+    fun observeWaitingBorrowedBookList(): Flow<List<LibraryDetailEntity>>
     fun observeStudentId(): Flow<String>
     fun observeBuildingId(): Flow<String>
     fun observeRoomId(): Flow<String>

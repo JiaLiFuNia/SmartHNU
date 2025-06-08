@@ -13,8 +13,8 @@ import com.google.gson.reflect.TypeToken
 import com.smart.htu.api.DataStoreService
 import com.smart.htu.api.module.ACCookie
 import com.smart.htu.api.module.AIModelConfigEntity
+import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.screens.application.entity.ApplicationEntity
-import com.smart.htu.screens.application.librarySearch.BorrowedBookEntity
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import com.smart.htu.utils.Term
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -111,7 +111,7 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[SSO_TICKET] = Gson().toJson(cookies) }
     }
 
-    override suspend fun addWaitingBorrowedBookList(waitingBorrowedBookList: List<BorrowedBookEntity>) {
+    override suspend fun addWaitingBorrowedBookList(waitingBorrowedBookList: List<LibraryDetailEntity>) {
         context.dataStore.edit {
             it[WAITING_BORROWED_BOOK_LIST] = Gson().toJson(waitingBorrowedBookList)
         }
@@ -225,13 +225,13 @@ class DataStoreRepo @Inject constructor(
         }
     }
 
-    override fun observeWaitingBorrowedBookList(): Flow<List<BorrowedBookEntity>> {
+    override fun observeWaitingBorrowedBookList(): Flow<List<LibraryDetailEntity>> {
         return context.dataStore.data.map {
             val json = it[WAITING_BORROWED_BOOK_LIST] ?: ""
             if (json == "") {
                 emptyList()
             } else {
-                val typeOfT = object : TypeToken<List<BorrowedBookEntity>>() {}.type
+                val typeOfT = object : TypeToken<List<LibraryDetailEntity>>() {}.type
                 Gson().fromJson(json, typeOfT)
             }
         }

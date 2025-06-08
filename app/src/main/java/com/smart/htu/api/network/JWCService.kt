@@ -36,10 +36,10 @@ interface JWCService {
     suspend fun classroomOccupation(@Body body: BuildingEntity): ClassroomOccupationEntity
 
     @POST("dev-api/appapi/Studentcj/data")
-    fun grade(@Body body: GlobalTerm): Call<CourseGrade>
+    suspend fun grade(@Body body: GlobalTerm): CourseGrade
 
     @POST("dev-api/appapi/Studentpjwj/teacher")
-    fun teacherEvaluation(@Body body: GlobalTerm): Call<TEEntity>
+    suspend fun teacherEvaluation(@Body body: GlobalTerm): TEEntity
 
     @POST("dev-api/appapi/Studentxsxdjc/xdjcdatas")
     fun getTextbook(@Body body: GlobalTerm): Call<TextbookEntity>

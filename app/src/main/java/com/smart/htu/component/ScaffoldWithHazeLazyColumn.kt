@@ -29,6 +29,7 @@ fun ScaffoldWithHazeLazyColumn(
     isMediumTopAppBar: Boolean = false,
     refreshState: PullToRefreshState,
     onRefresh: () -> Unit,
+    floatingActionButton: @Composable () -> Unit = {},
     content: @Composable ColumnScope.() -> Unit
 ) {
     top.yukonga.miuix.kmp.basic.Scaffold(
@@ -62,7 +63,8 @@ fun ScaffoldWithHazeLazyColumn(
                     actions = { actions() },
                     navigationIcon = { navigationIcon() }
                 )
-        }
+        },
+        floatingActionButton = floatingActionButton
     ) {
         top.yukonga.miuix.kmp.basic.PullToRefresh(
             pullToRefreshState = refreshState,

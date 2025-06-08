@@ -50,7 +50,7 @@ object NetworkModule {
         const val APP_BASE_URL = "http://app.htu.edu.cn/appapi/"
         const val EHALL_BASE_URL = "https://ehall2.htu.edu.cn/"
         const val CHAT_BASE_URL = "https://chat.htu.edu.cn/"
-        const val LIBRARY_BASE_URL = "http://libmsg.htu.cn/"
+        const val LIBRARY_BASE_URL = "https://opac.htu.edu.cn/"
 
         const val AIR_CONDITION_BASE_URL = "https://application.xiaofubao.com/"
         const val GITEE_BASE_URL = "https://gitee.com/"

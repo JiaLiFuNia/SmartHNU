@@ -19,6 +19,7 @@ sealed class Destinations(
     data object SharedWebView : Destinations("shared_webview")
     data object License : Destinations("license")
     data object LibrarySearch : Destinations("library_search")
+    data object LibrarySearchDetail : Destinations("library_search_detail")
     data object AirCondition : Destinations("air_condition")
     data object AirConditionSetting : Destinations("air_condition_setting")
     data object AccountManage : Destinations("account_manage")

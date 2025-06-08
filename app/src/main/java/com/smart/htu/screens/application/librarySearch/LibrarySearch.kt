@@ -18,10 +18,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,11 +31,10 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Clear
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -50,14 +50,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarDefaults.inputFieldColors
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -76,32 +73,33 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
-import com.smart.htu.component.BasicDialog
+import com.smart.htu.api.module.SearchBookData
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.component.svgVector.DrawableVectors
 import com.smart.htu.component.svgVector.drawablevectors.emptyData
+import com.smart.htu.screens.navigateToWebView
+import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
-import com.smart.htu.utils.copyContent
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.PullToRefresh
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import kotlin.math.ceil
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -110,22 +108,19 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @Composable
 fun LibrarySearchScreen(
     navController: NavController,
-    viewModel: LibrarySearchViewModel = hiltViewModel()
+    viewModel: LibrarySearchViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val scope = rememberCoroutineScope()
+    val lazyListState = rememberLazyListState()
+    val pullToRefreshState = rememberPullToRefreshState()
 
-    val hazeState = remember { HazeState() }
-    val showBottomSheet = rememberSaveable { mutableStateOf(false) }
     val (expand, onExpand) = rememberSaveable { mutableStateOf(false) }
     val (isSearching, onSearch) = rememberSaveable { mutableStateOf(false) }
     val searchTextFieldState = rememberTextFieldState()
 
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val lazyListState = rememberLazyListState()
     val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
-    val scope = rememberCoroutineScope()
 
-    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
     val onRefresh: () -> Unit = {
         scope.launch {
             pullToRefreshState.completeRefreshing {
@@ -143,7 +138,8 @@ fun LibrarySearchScreen(
         }
     }
 
-    top.yukonga.miuix.kmp.basic.Scaffold(
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = {
@@ -153,8 +149,8 @@ fun LibrarySearchScreen(
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background
+                    containerColor = MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = MiuixTheme.colorScheme.background
                 ),
                 title = {
                     Text(text = "图书查询")
@@ -169,7 +165,14 @@ fun LibrarySearchScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /*TODO*/ }) {
+                    IconButton(
+                        onClick = {
+                            navController.navigateToWebView(
+                                url = "https://opac.htu.edu.cn/space/index",
+                                label = "图书馆"
+                            )
+                        }
+                    ) {
                         Icon(imageVector = Icons.Outlined.Info, contentDescription = "info")
                     }
                 }
@@ -201,244 +204,199 @@ fun LibrarySearchScreen(
                 .fillMaxSize()
                 .padding(it)
         ) {
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp, 12.dp),
-                state = lazyListState,
-                modifier = Modifier
-                    .hazeSource(state = hazeState)
-                    .fillMaxSize()
-                    .overScrollVertical(),
-                overscrollEffect = null,
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                item {
-                    DockedSearchBar(
-                        colors = SearchBarDefaults.colors(containerColor = MiuixTheme.colorScheme.surfaceContainerHigh),
-                        modifier = Modifier
-                            .heightIn(max = 240.dp)
-                            .fillMaxWidth(),
-                        inputField = {
-                            SearchBarDefaults.InputField(
-                                colors = inputFieldColors(
-                                    focusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh,
-                                    unfocusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh
-                                ),
-                                modifier = Modifier.fillMaxWidth(),
-                                state = searchTextFieldState,
-                                onSearch = {
-                                    onExpand(false)
-                                    onSearch(true)
-                                    viewModel.librarySearch(it, 1)
-                                    viewModel.addSearchHistory(it)
-                                },
-                                expanded = expand,
-                                onExpandedChange = { onExpand(it) },
-                                placeholder = { Text(text = "搜索书名、作者、ISBN...") },
-                                leadingIcon = {
+            Column(modifier = Modifier.fillMaxSize()) {
+                DockedSearchBar(
+                    colors = SearchBarDefaults.colors(containerColor = MiuixTheme.colorScheme.surfaceContainerHigh),
+                    modifier = Modifier
+                        .heightIn(max = 240.dp)
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 8.dp),
+                    inputField = {
+                        SearchBarDefaults.InputField(
+                            colors = inputFieldColors(
+                                focusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh,
+                                unfocusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh
+                            ),
+                            modifier = Modifier.fillMaxWidth(),
+                            state = searchTextFieldState,
+                            onSearch = {
+                                onExpand(false)
+                                onSearch(true)
+                                viewModel.librarySearch(it, 1)
+                                viewModel.addSearchHistory(it)
+                            },
+                            expanded = expand,
+                            onExpandedChange = { onExpand(it) },
+                            placeholder = { Text(text = "搜索书名、作者、ISBN...") },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = null
+                                )
+                            },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        if (expand) {
+                                            onExpand(false)
+                                        } else {
+                                            if (isSearching)
+                                                onSearch(false)
+                                            else
+                                                onExpand(true)
+                                        }
+                                    }
+                                ) {
                                     Icon(
-                                        imageVector = Icons.Default.Search,
+                                        imageVector = when {
+                                            expand -> Icons.Default.KeyboardArrowUp
+                                            isSearching -> Icons.Outlined.Clear
+                                            else -> Icons.Default.KeyboardArrowDown
+                                        },
+                                        contentDescription = ""
+                                    )
+                                }
+                            }
+                        )
+                    },
+                    expanded = expand,
+                    onExpandedChange = { onExpand(it) },
+                ) {
+                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                        uiState.searchHistoryList.forEachIndexed { index, resultText ->
+                            ListItem(
+                                headlineContent = { Text(text = resultText) },
+                                leadingContent = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.outline_history_24),
                                         contentDescription = null
                                     )
                                 },
-                                trailingIcon = {
-                                    IconButton(onClick = { /*TODO*/ }) {
+                                trailingContent = {
+                                    IconButton(onClick = { viewModel.deleteSearchHistory(index) }) {
                                         Icon(
-                                            imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                                            contentDescription = ""
+                                            imageVector = Icons.Outlined.Clear,
+                                            contentDescription = "delete"
                                         )
                                     }
-                                }
-                            )
-                        },
-                        expanded = expand,
-                        onExpandedChange = { onExpand(it) },
-                    ) {
-                        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                            uiState.searchHistoryList.forEachIndexed { index, resultText ->
-                                ListItem(
-                                    headlineContent = { Text(text = resultText) },
-                                    leadingContent = {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.outline_history_24),
-                                            contentDescription = null
+                                },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                modifier = Modifier
+                                    .clickable {
+                                        searchTextFieldState.setTextAndPlaceCursorAtEnd(
+                                            resultText
                                         )
-                                    },
-                                    trailingContent = {
-                                        IconButton(onClick = { viewModel.deleteSearchHistory(index) }) {
-                                            Icon(
-                                                imageVector = Icons.Outlined.Clear,
-                                                contentDescription = "delete"
-                                            )
-                                        }
-                                    },
-                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                    modifier = Modifier
-                                        .clickable {
-                                            searchTextFieldState.setTextAndPlaceCursorAtEnd(
-                                                resultText
-                                            )
-                                            viewModel.librarySearch(resultText, page = 1)
-                                            onSearch(true)
-                                            onExpand(false)
-                                        }
-                                        .fillMaxWidth()
-                                )
-                            }
+                                        viewModel.librarySearch(resultText, page = 1)
+                                        onSearch(true)
+                                        onExpand(false)
+                                    }
+                                    .fillMaxWidth()
+                            )
                         }
                     }
                 }
-                if (isSearching) {
-                    if (uiState.isSearching) {
-                        item {
-                            CircularProgressIndicator()
-                        }
-                    } else {
-                        if (uiState.searchResult.isNotEmpty()) {
-                            itemsIndexed(uiState.searchResult) { _, item ->
-                                LibrarySingleBook(
-                                    state = uiState.rentList.any { item.id == it.id },
-                                    content = item,
-                                    onClick = {
-                                        showBottomSheet.value = true
-                                        viewModel.libraryBookDetail(item.id)
-                                    },
-                                    onFavorite = {
-                                        viewModel.addRentBookList(
-                                            BorrowedBookEntity(
-                                                bookName = item.title,
-                                                publisher = item.publisher,
-                                                id = item.id,
-                                                imageUrl = item.imageUrl
-                                            )
-                                        )
-                                        val message = when {
-                                            uiState.rentList.size > 4 && !uiState.rentList.any { item.id == it.id } -> "最多添加 5 本"
-                                            uiState.rentList.any { item.id == it.id } -> "已取消"
-                                            else -> "已添加到待借清单"
-                                        }
-                                        scope.launch {
-                                            val result =
-                                                snackBarHostState.showSnackbar(
-                                                    message = message,
-                                                    actionLabel = "取消",
-                                                    duration = SnackbarDuration.Short
-                                                )
-                                            when (result) {
-                                                SnackbarResult.ActionPerformed -> viewModel.addRentBookList(
-                                                    BorrowedBookEntity(
-                                                        bookName = item.title,
-                                                        publisher = item.publisher,
-                                                        id = item.id,
-                                                        imageUrl = item.imageUrl
-                                                    )
-                                                )
 
-                                                SnackbarResult.Dismissed -> {}
-                                            }
-                                        }
-                                    }
-                                )
-                            }
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp, 12.dp),
+                    state = lazyListState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .overScrollVertical(),
+                    overscrollEffect = null,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    if (isSearching) {
+                        if (uiState.isSearching) {
                             item {
-                                LaunchedEffect(Unit) {
-                                    viewModel.loadNextPage(searchTextFieldState.text.toString())
-                                }
+                                CircularProgressIndicator()
                             }
                         } else {
-                            item {
-                                EmptyContent(
-                                    text = "没有搜索结果",
-                                    image = DrawableVectors.emptyData()
-                                )
+                            if (uiState.bookSearchList.isNotEmpty()) {
+                                items(uiState.bookSearchList) {
+                                    LibrarySingleBook(
+                                        bookContent = it,
+                                        onClick = {
+                                            navController.navigate("${Destinations.LibrarySearchDetail.route}/${it.bookId}")
+                                        }
+                                    )
+                                }
+                                item {
+                                    LaunchedEffect(Unit) {
+                                        viewModel.loadNextPage(searchTextFieldState.text.toString())
+                                    }
+                                }
+                            } else {
+                                item {
+                                    EmptyContent(
+                                        text = "\"${searchTextFieldState.text}\"\n没有搜索结果",
+                                        image = DrawableVectors.emptyData()
+                                    )
+                                }
                             }
                         }
-                    }
-                } else {
-                    item {
-                        Spacer(modifier = Modifier.height(10.dp))
-                        RentBooksList(
-                            uiState = uiState,
-                            viewModel = viewModel,
-                            onClick = {
-                                showBottomSheet.value = true
-                            }
-                        )
+                    } else {
+                        item {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            WaitingBorrowedBookList(
+                                uiState = uiState,
+                                onClick = {
+                                    navController.navigate("${Destinations.LibrarySearchDetail.route}/$it")
+                                }
+                            )
+                        }
+                        item {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            HistoricalBorrowedBookList(
+                                uiState = uiState,
+                                onClick = {
+                                    navController.navigate("${Destinations.LibrarySearchDetail.route}/$it")
+                                }
+                            )
+                        }
                     }
                 }
             }
         }
-        BookRentDetailBottomSheet(
-            isBottomSheetShow = showBottomSheet,
-            uiState = uiState,
-        )
-    }
-}
-
-@OptIn(
-    ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3ExpressiveApi::class
-)
-@Composable
-fun BookRentDetailBottomSheet(
-    isBottomSheetShow: MutableState<Boolean>,
-    uiState: LibrarySearchUiState,
-) {
-    BasicDialog(
-        showDialog = isBottomSheetShow,
-        insideMargin = DpSize(16.dp, 24.dp),
-        title = "详情"
-    ) {
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            if (uiState.isLoading) {
-                item {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .height(100.dp)
-                            .fillMaxWidth()
-                    )
-                }
-            } else {
-                stickyHeader {
-                    LibrarySingleBookDetailNoImage(content = uiState.singleBookDetail.first())
-                }
-                itemsIndexed(uiState.singleBookDetail.takeLast(uiState.singleBookDetail.size - 1)) { _, item ->
-                    LibrarySingleBookDetail(content = item)
-                }
-            }
-        }
-
     }
 }
 
 @Composable
-fun RentBooksList(
+fun WaitingBorrowedBookList(
     uiState: LibrarySearchUiState,
-    viewModel: LibrarySearchViewModel,
-    onClick: () -> Unit = {}
+    onClick: (String) -> Unit = {}
 ) {
     LargeCardDisplay(
         modifier = Modifier,
-        title = "待借清单(${uiState.rentList.size}/5)",
+        title = "待借清单",
         leadingIconPainting = R.drawable.book_4_24px
     ) {
-        if (uiState.rentList.isNotEmpty()) {
-            LazyRow(
-                modifier = Modifier.padding(4.dp)
+        if (uiState.waitingBorrowedBookList.isNotEmpty()) {
+            val rowCount = remember {
+                derivedStateOf { ceil(uiState.waitingBorrowedBookList.size / 3.0) }
+            }
+            val lazyVerticalGridHeight by remember { derivedStateOf { rowCount.value * 180 + (rowCount.value - 1) * 8 } }
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                modifier = Modifier
+                    .height(lazyVerticalGridHeight.dp),
+                contentPadding = PaddingValues(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                userScrollEnabled = false
             ) {
-                itemsIndexed(uiState.rentList) { index, it ->
+                items(uiState.waitingBorrowedBookList) {
                     Card(
                         colors = CardDefaults.cardColors(Color.Transparent),
                         onClick = {
-                            onClick()
-                            viewModel.libraryBookDetail(it.id)
+                            onClick(it.bookId.toString())
                         },
-                        modifier = Modifier.widthIn(max = 108.dp)
+                        modifier = Modifier
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(4.dp)
+                            modifier = Modifier
+                                .padding(4.dp)
                         ) {
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
@@ -448,26 +406,105 @@ fun RentBooksList(
                                     .error(R.drawable.book_failure)
                                     .build(),
                                 contentDescription = "picture",
-                                contentScale = ContentScale.Crop,
+                                contentScale = ContentScale.FillHeight,
                                 modifier = Modifier
-                                    .width(100.dp)
-                                    .aspectRatio(10 / 15f)
+                                    .height(120.dp)
                                     .clip(RoundedCornerShape(10.dp)),
                                 placeholder = painterResource(id = R.drawable.book_failure)
                             )
                             Text(
-                                text = it.bookName,
-                                style = MiuixTheme.textStyles.body2,
+                                text = it.title.toString(),
+                                style = MaterialTheme.typography.titleMedium,
                                 maxLines = 1,
                                 textAlign = TextAlign.Left,
                                 modifier = Modifier
+                                    .fillMaxWidth()
                                     .basicMarquee(
                                         repeatDelayMillis = 2_000,
                                     )
-                                    .fillMaxWidth()
                             )
                             Text(
-                                text = it.publisher,
+                                text = it.author.toString(),
+                                style = MiuixTheme.textStyles.footnote1.copy(color = MiuixTheme.colorScheme.onSurfaceVariantSummary),
+                                maxLines = 1,
+                                textAlign = TextAlign.Start,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            EmptyContent(text = "搜索以添加待借书籍", modifier = Modifier.height(120.dp))
+        }
+    }
+}
+
+@Composable
+fun HistoricalBorrowedBookList(
+    uiState: LibrarySearchUiState,
+    onClick: (String) -> Unit = {}
+) {
+    LargeCardDisplay(
+        modifier = Modifier,
+        title = "借阅历史",
+        leadingIconPainting = R.drawable.overview_24px
+    ) {
+        if (uiState.waitingBorrowedBookList.isNotEmpty()) {
+            val rowCount = remember {
+                derivedStateOf { ceil(uiState.waitingBorrowedBookList.size / 3.0) }
+            }
+            val lazyVerticalGridHeight by remember { derivedStateOf { rowCount.value * 180 + (rowCount.value - 1) * 8 } }
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                modifier = Modifier
+                    .height(lazyVerticalGridHeight.dp),
+                contentPadding = PaddingValues(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                userScrollEnabled = false
+            ) {
+                items(uiState.waitingBorrowedBookList) {
+                    Card(
+                        colors = CardDefaults.cardColors(Color.Transparent),
+                        onClick = {
+                            onClick(it.bookId.toString())
+                        },
+                        modifier = Modifier
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .padding(4.dp)
+                        ) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(it.imageUrl)
+                                    .crossfade(true)
+                                    .addHeader("User-Agent", "Mozilla/5.0")
+                                    .error(R.drawable.book_failure)
+                                    .build(),
+                                contentDescription = "picture",
+                                contentScale = ContentScale.FillHeight,
+                                modifier = Modifier
+                                    .height(120.dp)
+                                    .clip(RoundedCornerShape(10.dp)),
+                                placeholder = painterResource(id = R.drawable.book_failure)
+                            )
+                            Text(
+                                text = it.title.toString(),
+                                style = MaterialTheme.typography.titleMedium,
+                                maxLines = 1,
+                                textAlign = TextAlign.Left,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .basicMarquee(
+                                        repeatDelayMillis = 2_000,
+                                    )
+                            )
+                            Text(
+                                text = it.author.toString(),
                                 style = MiuixTheme.textStyles.footnote1.copy(color = MiuixTheme.colorScheme.onSurfaceVariantSummary),
                                 maxLines = 1,
                                 textAlign = TextAlign.Start,
@@ -486,12 +523,10 @@ fun RentBooksList(
 
 @Composable
 fun LibrarySingleBook(
-    state: Boolean,
-    content: LibraryBookListEntity,
-    onClick: () -> Unit = {},
-    onFavorite: () -> Unit = {}
+    bookContent: SearchBookData,
+    onClick: () -> Unit = {}
 ) {
-    top.yukonga.miuix.kmp.basic.Surface(
+    Surface(
         shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
@@ -500,12 +535,12 @@ fun LibrarySingleBook(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 5.dp),
+                .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(content.imageUrl)
+                    .data(bookContent.imageUrl)
                     .crossfade(true)
                     .addHeader("User-Agent", "Mozilla/5.0")
                     .error(R.drawable.book_failure)
@@ -525,7 +560,7 @@ fun LibrarySingleBook(
                     .weight(0.8f)
             ) {
                 Text(
-                    text = content.title,
+                    text = bookContent.title.toString(),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = MiuixTheme.colorScheme.onBackground,
@@ -533,43 +568,40 @@ fun LibrarySingleBook(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = content.publisher,
+                    text = bookContent.author ?: "未知作者",
                     maxLines = 1,
                     fontSize = 16.sp,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = content.publishPlace,
+                    text = bookContent.publisher ?: "未知出版社",
                     maxLines = 1,
                     fontSize = 16.sp,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = content.publishYear,
+                    text = bookContent.publishYear ?: "未知出版年份",
                     maxLines = 1,
                     fontSize = 16.sp,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            IconButton(onClick = { onFavorite() }) {
-                Icon(
-                    imageVector = if (state) Icons.Filled.Favorite
-                    else Icons.Outlined.FavoriteBorder,
-                    contentDescription = "like",
-                    tint = MiuixTheme.colorScheme.primary,
-                )
-            }
+            Text(
+                text = "可借\n${bookContent.borrowableCount}",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(end = 8.dp)
+            )
         }
     }
 }
 
-@Composable
-fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
+/*@Composable
+fun LibrarySingleBookDetailNoImage(content: SearchBookData) {
     val scope = rememberCoroutineScope()
-    top.yukonga.miuix.kmp.basic.Surface(
+    Surface(
         shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
         modifier = Modifier.fillMaxWidth(),
         color = MiuixTheme.colorScheme.secondaryContainer,
@@ -587,7 +619,7 @@ fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = content.bookName,
+                    text = content.title,
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = MiuixTheme.colorScheme.onBackground
@@ -598,13 +630,13 @@ fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
                     overflow = TextOverflow.Ellipsis
                 )
                 SingleMessage("编著", content.publisher)
-                SingleMessage("出版社", content.publishPlace)
+                SingleMessage("出版社", content.bookId)
                 SingleMessage("出版年份", content.publishYear)
-                SingleMessage(label = "ISBN", content = content.isbn)
+                SingleMessage("ISBN", content.isbn)
             }
             IconButton(
                 onClick = {
-                    copyContent("${content.bookName} ${content.publisher} ${content.isbn}")
+                    copyContent("${content.title} ${content.publisher} ${content.isbn}")
                     scope.launch {
                         snackBarHostState.showSnackbar("已复制到剪切板")
                     }
@@ -618,11 +650,11 @@ fun LibrarySingleBookDetailNoImage(content: LibraryBookDetail) {
             }
         }
     }
-}
+}*/
 
-@Composable
+/*@Composable
 fun LibrarySingleBookDetail(content: LibraryBookDetail) {
-    top.yukonga.miuix.kmp.basic.Surface(
+    Surface(
         shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
         modifier = Modifier.fillMaxWidth(),
         color = MiuixTheme.colorScheme.secondaryContainer,
@@ -681,8 +713,9 @@ fun LibrarySingleBookDetail(content: LibraryBookDetail) {
                 }
         }
     }
-}
+}*/
 
+/*
 @Composable
 fun SingleMessage(label: String, content: String) {
     Row(
@@ -706,4 +739,4 @@ fun SingleMessage(label: String, content: String) {
             )
         )
     }
-}
+}*/

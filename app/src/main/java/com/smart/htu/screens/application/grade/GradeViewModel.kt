@@ -1,6 +1,5 @@
 package com.smart.htu.screens.application.grade
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.GlobalTerm
@@ -101,15 +100,11 @@ class GradeViewModel @Inject constructor(
     }
 
     suspend fun getCourseGrade() {
-        try {
-            val res = jwcNetworkRepo.getCourseGradeService(
-                GlobalTerm(_uiState.value.termCode)
-            )
-            _uiState.update { uiState ->
-                uiState.copy(courseGrade = ResultWithStatus(res?.gradeData))
-            }
-        } catch (e: Exception) {
-            Log.i("TAG666", "getCourseGrade: $e")
+        val res = jwcNetworkRepo.getCourseGradeService(
+            GlobalTerm(_uiState.value.termCode)
+        )
+        _uiState.update { uiState ->
+            uiState.copy(courseGrade = ResultWithStatus(res?.gradeData))
         }
     }
 

@@ -1,14 +1,15 @@
 package com.smart.htu.screens.application.librarySearch
 
 import android.util.Log
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.smart.htu.api.module.BookBorrowingDetails
+import com.smart.htu.api.module.LibraryDetailEntity
+import com.smart.htu.api.module.SearchBookData
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
-import com.smart.htu.repo.NetworkRepo
+import com.smart.htu.repo.LibraryNetworkRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,32 +24,32 @@ import javax.inject.Inject
 
 data class LibrarySearchUiState(
     val isSearching: Boolean = false,
-    val isLoading: Boolean = false,
     val totalPage: Int = 0,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
-    val searchResult: List<LibraryBookListEntity> = emptyList(),
     val searchHistoryList: List<String> = emptyList(),
-    val singleBookDetail: List<LibraryBookDetail> = emptyList(),
-    val rentList: List<BorrowedBookEntity> = emptyList()
+    val bookSearchList: List<SearchBookData> = emptyList(),
+    val libraryBookDetail: LibraryDetailEntity? = null,
+    val libraryBookBorrowingDetail: List<BookBorrowingDetails> = emptyList(),
+    val waitingBorrowedBookList: List<LibraryDetailEntity> = emptyList()
 )
 
 @HiltViewModel
 class LibrarySearchViewModel @Inject constructor(
     private val dataStoreRepo: DataStoreRepo,
-    private val networkRepo: NetworkRepo
+    private val libraryNetworkRepo: LibraryNetworkRepo
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LibrarySearchUiState())
     val uiState: StateFlow<LibrarySearchUiState> = _uiState.asStateFlow()
 
-    private val rentBookList = dataStoreRepo.observeWaitingBorrowedBookList()
+    private val waitingBorrowedBookListStateFlow = dataStoreRepo.observeWaitingBorrowedBookList()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
                 dataStoreRepo.observeWaitingBorrowedBookList().first()
             }
-    )
+        )
 
     private val blurStateFlow = dataStoreRepo.observerBlurState()
         .stateIn(
@@ -59,7 +60,7 @@ class LibrarySearchViewModel @Inject constructor(
             }
         )
 
-    private val searchHistoryList = dataStoreRepo.observeBookSearchHistoryList()
+    private val searchHistoryListStateFlow = dataStoreRepo.observeBookSearchHistoryList()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -70,8 +71,8 @@ class LibrarySearchViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            rentBookList.collect { value ->
-                _uiState.update { it.copy(rentList = value) }
+            waitingBorrowedBookListStateFlow.collect { value ->
+                _uiState.update { it.copy(waitingBorrowedBookList = value) }
             }
         }
         viewModelScope.launch {
@@ -80,55 +81,94 @@ class LibrarySearchViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            searchHistoryList.collect { value ->
+            searchHistoryListStateFlow.collect { value ->
                 _uiState.update { it.copy(searchHistoryList = value) }
             }
         }
     }
 
-    fun addRentBookList(book: BorrowedBookEntity) {
+    fun addWaitingBorrowedBookList(book: LibraryDetailEntity) {
         viewModelScope.launch {
-            val currentRentList = _uiState.value.rentList.toMutableList()
-            if (currentRentList.contains(book))
+            val currentRentList = _uiState.value.waitingBorrowedBookList.toMutableList()
+            if (currentRentList.map { it.bookId }.contains(book.bookId))
                 currentRentList.apply { remove(book) }
             else
-                if (uiState.value.rentList.size <= 4)
-                    currentRentList.apply { add(book) }
+                currentRentList.apply { add(book) }
             dataStoreRepo.addWaitingBorrowedBookList(currentRentList)
-            _uiState.update { it.copy(rentList = currentRentList) }
         }
     }
 
-
-    private var pageNumbers by mutableIntStateOf(1)
+    private var pageNumber = mutableIntStateOf(1)
 
     fun librarySearch(keyword: String, page: Int) = viewModelScope.launch {
-        Log.i("TAG666", keyword)
         _uiState.update { it.copy(isSearching = true) }
-        val res = networkRepo.librarySearch(keyword, page)
-        _uiState.update { it.copy(searchResult = res.second) }
-        _uiState.update { it.copy(totalPage = if (res.first != "") res.first.toInt() else 0) }
+        libraryNetworkRepo.librarySearchService(keyword, page)
+            .onSuccess { res ->
+                _uiState.update {
+                    it.copy(totalPage = res.actualTotal)
+                }
+                fetchBookImages(res.dataList ?: emptyList())
+            }
         _uiState.update { it.copy(isSearching = false) }
-        Log.i("TAG666", uiState.value.searchResult.size.toString())
     }
 
-    fun loadNextPage(keyword: String) {
-        viewModelScope.launch {
-            val nextPage = pageNumbers + 1
-            pageNumbers = nextPage
-            if (nextPage <= _uiState.value.totalPage) {
-                val newResults = networkRepo.librarySearch(keyword, nextPage)
-                _uiState.update { it.copy(searchResult = uiState.value.searchResult + newResults.second) }
-            }
+    fun loadNextPage(keyword: String) = viewModelScope.launch {
+        val nextPage = pageNumber.intValue + 1
+        if (nextPage <= _uiState.value.totalPage) {
+            pageNumber.intValue = nextPage
+            libraryNetworkRepo.librarySearchService(keyword, nextPage)
+                .onSuccess { res ->
+                    _uiState.update { it.copy(totalPage = res.actualTotal) }
+                    fetchBookImages(res.dataList ?: emptyList())
+                }
         }
     }
 
-    fun libraryBookDetail(id: String) = viewModelScope.launch {
-        _uiState.update { it.copy(isLoading = true) }
-        val res = networkRepo.libraryBookDetails(id)
-        Log.i("TAG666", res.toString())
-        _uiState.update { it.copy(singleBookDetail = res) }
-        _uiState.update { it.copy(isLoading = false) }
+    private suspend fun fetchBookImages(books: List<SearchBookData>) {
+        if (books.isEmpty()) return
+        libraryNetworkRepo.libraryBookImgService(
+            isbnList = books.map { it.isbn },
+            bookIdList = books.map { it.bookId }
+        ).onSuccess { imageResults ->
+            Log.i("TAG666", "$imageResults")
+            val updatedBooks = books.map { book ->
+                book.apply {
+                    imageUrl = imageResults[book.bookId]?.firstOrNull()?.coverImageUrl ?: ""
+                }
+            }
+            _uiState.update { it.copy(bookSearchList = it.bookSearchList + updatedBooks) }
+        }
+    }
+
+    fun libraryBookDetail(bookId: String) = viewModelScope.launch {
+        libraryNetworkRepo.libraryBookDetailService(bookId)
+            .onSuccess { res ->
+                var imageUrl = ""
+                libraryNetworkRepo.libraryBookImgService(
+                    listOf(res.baseInfo.map.isbn),
+                    listOf(bookId)
+                ).onSuccess { res ->
+                    imageUrl = res[bookId]?.firstOrNull()?.coverImageUrl.toString()
+                    Log.i("TAG666", "$res")
+                }
+                _uiState.update {
+                    it.copy(
+                        libraryBookDetail = LibraryDetailEntity(
+                            title = res.baseInfo.map.title,
+                            author = res.baseInfo.map.author,
+                            bookId = bookId,
+                            isbn = res.baseInfo.map.isbn,
+                            tags = res.baseInfo.map.tags,
+                            abstract = res.detailInfo.map.abstract,
+                            imageUrl = imageUrl
+                        )
+                    )
+                }
+            }
+        libraryNetworkRepo.libraryBookBorrowingDetailService(bookId)
+            .onSuccess { res ->
+                _uiState.update { it.copy(libraryBookBorrowingDetail = res) }
+            }
     }
 
     fun addSearchHistory(keyword: String) = viewModelScope.launch {
@@ -137,13 +177,12 @@ class LibrarySearchViewModel @Inject constructor(
             currentSearchHistoryList.apply { remove(keyword) }
         currentSearchHistoryList.add(0, keyword)
         dataStoreRepo.changeBookSearchHistoryList(currentSearchHistoryList)
-        _uiState.update { it.copy(searchHistoryList = currentSearchHistoryList) }
     }
 
     fun deleteSearchHistory(keywordIndex: Int) = viewModelScope.launch {
         val currentSearchHistoryList = _uiState.value.searchHistoryList.toMutableList()
         currentSearchHistoryList.removeAt(keywordIndex)
         dataStoreRepo.changeBookSearchHistoryList(currentSearchHistoryList)
-        _uiState.update { it.copy(searchHistoryList = currentSearchHistoryList) }
     }
+
 }

@@ -137,13 +137,16 @@ class JWCNetworkRepo @Inject constructor(
 
     // 教师评价
     suspend fun getTeacherListService(termCode: GlobalTerm): TEEntity? {
-        val call = jwcService.teacherEvaluation(termCode)
-        val res = call.awaitResponse().body()
-        return when (res?.code) {
-            200 -> res
-            401 -> null
-
-            else -> null
+        try {
+            val res = jwcService.teacherEvaluation(termCode)
+            return when (res.code) {
+                200 -> res
+                401 -> null
+                else -> null
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return null
         }
     }
 
@@ -167,12 +170,16 @@ class JWCNetworkRepo @Inject constructor(
 
     // 成绩查询
     suspend fun getCourseGradeService(termCode: GlobalTerm): CourseGrade? {
-        val call = jwcService.grade(termCode)
-        val res = call.awaitResponse().body()
-        return when (res?.code) {
-            200 -> res
-            401 -> null
-            else -> null
+        try {
+            val res = jwcService.grade(termCode)
+            return when (res.code) {
+                200 -> res
+                401 -> null
+                else -> null
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return null
         }
     }
 

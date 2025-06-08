@@ -155,6 +155,12 @@ fun PersonScreen(
                         onClick = {
                         }
                     )
+                    PersonalMessage(
+                        label = "我的图书馆",
+                        trailingText = stringResource(id = loginStateString(0)),
+                        onClick = {
+                        }
+                    )
                 }
                 Spacer(modifier = Modifier.height(20.dp))
             }

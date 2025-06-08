@@ -11,9 +11,9 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 202505111,
+      "versionCode": 202505311,
       "versionName": "3.0.9",
-      "outputFile": "SmartHNU_v3.0.9(202505111)_release.apk"
+      "outputFile": "SmartHNU_v3.0.9(202505311)_release.apk"
     }
   ],
   "elementType": "File",
@@ -22,14 +22,14 @@
       "minApi": 28,
       "maxApi": 30,
       "baselineProfiles": [
-        "baselineProfiles/1/SmartHNU_v3.0.9(202505111)_release.dm"
+        "baselineProfiles/1/SmartHNU_v3.0.9(202505311)_release.dm"
       ]
     },
     {
       "minApi": 31,
       "maxApi": 2147483647,
       "baselineProfiles": [
-        "baselineProfiles/0/SmartHNU_v3.0.9(202505111)_release.dm"
+        "baselineProfiles/0/SmartHNU_v3.0.9(202505311)_release.dm"
       ]
     }
   ],

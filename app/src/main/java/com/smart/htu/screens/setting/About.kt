@@ -210,6 +210,34 @@ fun About(
                     )
                 }
             }
+            item {
+                SettingItemCard(
+                    label = "鸣谢",
+                    modifier = Modifier
+                ) {
+                    SuperArrow(
+                        title = "HFUT-Schedule",
+                        summary = "@Chiu-xaH",
+                        onClick = {
+                            startWebUrl("https://github.com/Chiu-xaH/HFUT-Schedule")
+                        }
+                    )
+                    SuperArrow(
+                        title = "GongYun-for-Android",
+                        summary = "@jayfunc",
+                        onClick = {
+                            startWebUrl("https://github.com/jayfunc/GongYun-for-Android")
+                        }
+                    )
+                    SuperArrow(
+                        title = "ReadYou",
+                        summary = "@Ashinch",
+                        onClick = {
+                            startWebUrl("https://github.com/Ashinch/ReadYou")
+                        }
+                    )
+                }
+            }
         }
     }
     Box(modifier = Modifier.fillMaxSize()) {

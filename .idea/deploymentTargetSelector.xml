@@ -3,11 +3,11 @@
   <component name="deploymentTargetSelector">
     <selectionStates>
       <SelectionState runConfigName="app">
-        <option name="selectionMode" value="DIALOG" />
-        <DropdownSelection timestamp="2025-05-27T14:42:07.169718700Z">
+        <option name="selectionMode" value="DROPDOWN" />
+        <DropdownSelection timestamp="2025-06-08T02:28:59.426549900Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=GACIZLQW7DEQON9P" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\woshi\.android\avd\Pixel_7.avd" />
             </handle>
           </Target>
         </DropdownSelection>

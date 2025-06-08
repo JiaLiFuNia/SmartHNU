@@ -44,11 +44,3 @@ data class LibraryBookDetail(
     val publishPlace = publisherMatch?.groupValues?.get(1) ?: ""
     val publishYear = publishYearMatch?.groupValues?.get(1) ?: ""
 }
-
-@Keep
-data class BorrowedBookEntity(
-    val imageUrl: String,
-    val bookName: String,
-    val publisher: String,
-    val id: String
-)

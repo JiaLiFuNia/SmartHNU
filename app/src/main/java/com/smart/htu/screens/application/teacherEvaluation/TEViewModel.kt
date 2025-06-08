@@ -1,6 +1,5 @@
 package com.smart.htu.screens.application.teacherEvaluation
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.GlobalTerm
@@ -107,18 +106,14 @@ class TEViewModel @Inject constructor(
         }
         viewModelScope.launch {
             refreshTermIndex()
-            getTeacherListService(_uiState.value.termCode)
+            getTeacherListService()
         }
     }
 
-    fun getTeacherListService(termCode: String) = viewModelScope.launch {
-        try {
-            val teacherList = jwcNetworkRepo.getTeacherListService(GlobalTerm(termCode))
-            _uiState.update { uiState ->
-                uiState.copy(evaluationInfo = ResultWithStatus(teacherList))
-            }
-        } catch (e: Exception) {
-            Log.i("TAG666", "getCourseGrade: $e")
+    fun getTeacherListService() = viewModelScope.launch {
+        val teacherList = jwcNetworkRepo.getTeacherListService(GlobalTerm(_uiState.value.termCode))
+        _uiState.update { uiState ->
+            uiState.copy(evaluationInfo = ResultWithStatus(teacherList))
         }
     }
 

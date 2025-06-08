@@ -43,7 +43,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.smart.htu.App.Companion.context
 import com.smart.htu.R
@@ -61,7 +60,7 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @Composable
 fun NewsSearch(
     navController: NavController,
-    viewModel: NewsViewModel = hiltViewModel()
+    viewModel: NewsViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -190,46 +189,51 @@ fun NewsSearch(
                     .overScrollVertical(),
                 overscrollEffect = null
             ) {
-                if (uiState.searchList.status == Status.LOADING)
-                    item {
-                        CircularProgressIndicator()
-                    }
-                else {
-                    if (uiState.searchList.data?.isEmpty() == true) {
+                when (uiState.searchList.status) {
+                    Status.SUCCESS -> {
+                        if (uiState.searchList.data?.isEmpty() == true) {
+                            item {
+                                EmptyContent(
+                                    text = "没有相关新闻或通知",
+                                    image = DrawableVectors.emptyData()
+                                )
+                            }
+                        } else {
+                            items(uiState.searchList.data ?: emptyList()) {
+                                NewsItem(
+                                    news = it,
+                                    onClick = {
+                                        navController.navigateToNewsDetail(
+                                            url = it.url,
+                                            label = context.getString(it.label.label)
+                                        )
+                                    }
+                                )
+                            }
+                        }
                         item {
-                            EmptyContent(
-                                text = "没有相关新闻或通知",
-                                image = DrawableVectors.emptyData()
-                            )
+                            if (uiState.hasMoreSearchResults && uiState.searchList.data?.isNotEmpty() == true) {
+                                if (isAtBottom) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .fillParentMaxWidth()
+                                    )
+                                }
+                            } else if (!uiState.hasMoreSearchResults && uiState.searchList.data?.isNotEmpty() == true) {
+                                Text(
+                                    text = "没有更多内容了",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
                     }
-                    items(uiState.searchList.data ?: emptyList()) {
-                        NewsItem(
-                            news = it,
-                            onClick = {
-                                navController.navigateToNewsDetail(
-                                    url = it.url,
-                                    label = context.getString(it.label.label)
-                                )
-                            }
-                        )
-                    }
-                    item {
-                        if (uiState.hasMoreSearchResults && uiState.searchList.data?.isNotEmpty() == true) {
-                            if (isAtBottom) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier
-                                        .fillParentMaxWidth()
-                                )
-                            }
-                        } else if (!uiState.hasMoreSearchResults && uiState.searchList.data?.isNotEmpty() == true) {
-                            Text(
-                                text = "没有更多内容了",
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                textAlign = TextAlign.Center
-                            )
+
+                    else -> {
+                        item {
+                            CircularProgressIndicator()
                         }
                     }
                 }
