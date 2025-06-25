@@ -421,7 +421,8 @@ fun WaitingBorrowedBookList(
                                     .fillMaxWidth()
                                     .basicMarquee(
                                         repeatDelayMillis = 2_000,
-                                    )
+                                    ),
+                                color = MiuixTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = it.author.toString(),
@@ -501,7 +502,8 @@ fun HistoricalBorrowedBookList(
                                     .fillMaxWidth()
                                     .basicMarquee(
                                         repeatDelayMillis = 2_000,
-                                    )
+                                    ),
+                                color = MiuixTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = it.author.toString(),
@@ -563,7 +565,7 @@ fun LibrarySingleBook(
                     text = bookContent.title.toString(),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MiuixTheme.colorScheme.onBackground,
+                    color = MiuixTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -592,7 +594,8 @@ fun LibrarySingleBook(
             Text(
                 text = "可借\n${bookContent.borrowableCount}",
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(end = 8.dp)
+                modifier = Modifier.padding(end = 8.dp),
+                color = MiuixTheme.colorScheme.onSurface
             )
         }
     }

@@ -7,7 +7,7 @@ import com.smart.htu.api.module.HolidayRes
 import com.smart.htu.api.module.NoticeRes
 import com.smart.htu.api.module.UpdateRes
 import com.smart.htu.api.module.VersionEntity
-import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -16,22 +16,22 @@ import retrofit2.http.Query
 interface AppService {
 
     @GET("notice")
-    fun getNotice(): Call<NoticeRes>
+    suspend fun getNotice(): Response<NoticeRes>
 
     @POST("latest")
-    fun getUpdate(
+    suspend fun getUpdate(
         @Body versionCode: VersionEntity = VersionEntity()
-    ): Call<UpdateRes>
+    ): Response<UpdateRes>
 
     @GET("holiday")
-    fun getHoliday(
+    suspend fun getHoliday(
         @Query("date") date: String,
-    ): Call<HolidayRes>
+    ): Response<HolidayRes>
 
     @POST("feedback")
-    fun feedback(@Body feedback: FeedbackEntity): Call<FeedbackRes>
+    suspend fun feedback(@Body feedback: FeedbackEntity): Response<FeedbackRes>
 
     @GET("config")
-    fun getConfig(): Call<ConfigRes>
+    suspend fun getConfig(): Response<ConfigRes>
 
 }

@@ -228,10 +228,10 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun login() {
+    fun login(onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            if (_uiState.value.loginJWCState != 1) jwcLogin() // 智慧教务
+            if (_uiState.value.loginJWCState != 1) jwcLogin(onSuccess) // 智慧教务
             // if (_uiState.value.loginState != 1) authLogin() // 统一认证登录
             _uiState.update { it.copy(isLoading = false) }
         }
@@ -269,13 +269,14 @@ class LoginViewModel @Inject constructor(
         }
     }*/
 
-    private suspend fun jwcLogin() {
+    private suspend fun jwcLogin(onSuccess: () -> Unit = {}) {
         try {
             val logState = jwcNetworkRepo.jwcLogin(
                 username = _uiState.value.studentID,
                 password = _uiState.value.jwcPassword
             )
             logState.onSuccess {
+                onSuccess()
                 changeLoginJWCState(1)
                 setTokenValid(true)
                 getPersonalMessage()
@@ -286,7 +287,7 @@ class LoginViewModel @Inject constructor(
             }
             logState.onFailure {
                 changeLoginJWCState(-1)
-                showSnackBar(it.message ?: "智慧教务登录失败")
+                showSnackBar(it.message.toString())
             }
         } catch (e: Exception) {
             Log.i("TAG666 viewModel", "Failed to login $e")

@@ -1,7 +1,9 @@
 package com.smart.htu.screens.application.teacherEvaluation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.smart.htu.api.module.EvaluationQuestion
 import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.SingleTerm
@@ -30,6 +32,7 @@ data class TEUiState(
     val globalTermCode: String,
     val termList: List<SingleTerm> = emptyList(),
     val evaluationInfo: ResultWithStatus<TEEntity> = ResultWithStatus(),
+    val evaluationQuestionList: ResultWithStatus<List<EvaluationQuestion>> = ResultWithStatus(),
     val isTokenValid: Boolean = DEFAULT_TOKEN_VALIDITY,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
@@ -114,6 +117,22 @@ class TEViewModel @Inject constructor(
         val teacherList = jwcNetworkRepo.getTeacherListService(GlobalTerm(_uiState.value.termCode))
         _uiState.update { uiState ->
             uiState.copy(evaluationInfo = ResultWithStatus(teacherList))
+        }
+    }
+
+    fun getTEDetailService(
+        syllabusEvaluateCode: String,
+        teacherCode: String
+    ) {
+        try {
+            viewModelScope.launch {
+                val res = jwcNetworkRepo.getTEDetailService(syllabusEvaluateCode, teacherCode)
+                _uiState.update { uiState ->
+                    uiState.copy(evaluationQuestionList = ResultWithStatus(res))
+                }
+            }
+        } catch (e: Exception) {
+            Log.i("TAG666 getTEDetailService", "${e.message}")
         }
     }
 

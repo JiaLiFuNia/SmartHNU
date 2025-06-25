@@ -4,14 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
@@ -33,7 +32,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
@@ -51,6 +49,7 @@ import com.smart.htu.api.module.BookBorrowingDetails
 import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
+import com.smart.htu.utils.copyContent
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
@@ -129,6 +128,22 @@ fun LibrarySearchDetail(
                             contentDescription = "favorite"
                         )
                     }
+                    IconButton(
+                        onClick = {
+                            copyContent(
+                                textContent =
+                                    "书名：${uiState.libraryBookDetail?.title}\n" +
+                                            "作者：${uiState.libraryBookDetail?.author}\n" +
+                                            "ISBN：${uiState.libraryBookDetail?.isbn}\n"
+                            )
+                        },
+                        enabled = uiState.libraryBookDetail != null
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.content_copy_24px),
+                            contentDescription = "favorite"
+                        )
+                    }
                 }
             )
         }
@@ -157,25 +172,37 @@ fun LibrarySearchDetail(
                 } else {
                     item {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(uiState.libraryBookDetail?.imageUrl)
-                                    .crossfade(true)
-                                    .addHeader("User-Agent", "Mozilla/5.0")
-                                    .error(R.drawable.book_failure)
-                                    .build(),
-                                contentDescription = "picture",
-                                contentScale = ContentScale.Crop,
+                            Card(
                                 modifier = Modifier
-                                    .width(170.dp)
-                                    .aspectRatio(10 / 15f)
-                                    .clip(RoundedCornerShape(10.dp)),
-                                alignment = Alignment.Center,
-                                placeholder = painterResource(id = R.drawable.book_failure)
-                            )
-                            Column {
+                                    .weight(0.42f)
+                                    .fillMaxHeight()
+                                    .height(220.dp)
+                            ) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(uiState.libraryBookDetail?.imageUrl)
+                                        .crossfade(true)
+                                        .addHeader("User-Agent", "Mozilla/5.0")
+                                        .error(R.drawable.book_failure)
+                                        .build(),
+                                    contentDescription = "picture",
+                                    contentScale = ContentScale.FillWidth,
+                                    modifier = Modifier
+                                        .fillMaxHeight(),
+                                    alignment = Alignment.Center,
+                                    placeholder = painterResource(id = R.drawable.book_failure)
+                                )
+                            }
+                            Column(
+                                modifier = Modifier
+                                    .weight(0.58f)
+                                    .fillMaxHeight(),
+                                verticalArrangement = Arrangement.SpaceAround
+                            ) {
                                 BookInfo("书名", uiState.libraryBookDetail?.title ?: "未知书名")
                                 BookInfo("作者", uiState.libraryBookDetail?.author ?: "未知作者")
                                 BookInfo("ISBN", uiState.libraryBookDetail?.isbn ?: "")
@@ -192,7 +219,8 @@ fun LibrarySearchDetail(
                                 Text(
                                     text = uiState.libraryBookDetail?.abstract.toString(),
                                     overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.padding(12.dp)
+                                    modifier = Modifier.padding(12.dp),
+                                    color = MiuixTheme.colorScheme.onSurface
                                 )
                             }
                         }
@@ -247,14 +275,15 @@ fun BookInfo(
                 text = label,
                 style = MaterialTheme.typography.labelMedium.copy(
                     color = MiuixTheme.colorScheme.primary
-                ),
-                maxLines = 1
+                )
             )
         },
         supportingContent = {
             Text(
                 text = content,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
         }
     )

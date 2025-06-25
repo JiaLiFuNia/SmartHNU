@@ -23,6 +23,7 @@ import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
 import com.smart.htu.screens.application.librarySearch.LibrarySearchViewModel
 import com.smart.htu.screens.application.physicalTest.PhysicalTest
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluation
+import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluationDetail
 import com.smart.htu.screens.application.textbook.Textbook
 import com.smart.htu.screens.application.textbook.TextbookSelect
 import com.smart.htu.screens.application.websiteNavigation.WebsiteNavigation
@@ -31,7 +32,7 @@ import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.message.MessageScreen
 import com.smart.htu.screens.navigation.Destinations
-import com.smart.htu.screens.news.NewsHistory
+import com.smart.htu.screens.news.NewsMark
 import com.smart.htu.screens.news.NewsSearch
 import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.news.newsView.NewsDetail
@@ -151,6 +152,23 @@ fun NavHostScreen() {
         animatedComposable(Destinations.TeacherEvaluation.route) {
             TeacherEvaluation(navController = navController)
         }
+        animatedComposable(
+            route = "${Destinations.TeacherEvaluationDetail.route}/{syllabusEvaluateCode}/{teacherCode}",
+            arguments = listOf(
+                navArgument(name = "syllabusEvaluateCode") {
+                    type = NavType.StringType
+                },
+                navArgument(name = "teacherCode") {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            TeacherEvaluationDetail(
+                navController = navController,
+                syllabusEvaluateCode = it.arguments?.getString("syllabusEvaluateCode") ?: "",
+                teacherCode = it.arguments?.getString("teacherCode") ?: ""
+            )
+        }
         animatedComposable(Destinations.Textbook.route) {
             Textbook(navController = navController)
         }
@@ -175,7 +193,7 @@ fun NavHostScreen() {
             NewsSearch(navController = navController, viewModel = newsViewModel)
         }
         animatedComposable(Destinations.NewsHistory.route) {
-            NewsHistory(navController = navController)
+            NewsMark(navController = navController)
         }
         animatedComposable(
             route = "${Destinations.NewsDetail.route}/{url}/{title}",

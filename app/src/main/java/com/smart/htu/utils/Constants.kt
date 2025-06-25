@@ -1,7 +1,6 @@
 package com.smart.htu.utils
 
 import com.smart.htu.R
-import com.smart.htu.api.module.BuildingEntity
 import com.smart.htu.screens.application.entity.ApplicationCategory
 import com.smart.htu.screens.application.entity.ApplicationEntity
 import com.smart.htu.screens.application.entity.RouteType
@@ -31,12 +30,6 @@ class Constants {
         const val HOT_WATER_WASHER_ALIPAY_URL =
             "alipays://platformapi/startapp?appId=20000067&url=https://ur.alipay.com/_5vgVGlXsaUEmCUjnaEvLJL"
         val PULL_TO_REFRESH_TEXT = listOf("下拉刷新", "松开刷新", "正在刷新...", "刷新成功")
-        val BUILDING_LIST = listOf(
-            BuildingEntity("104", "启智楼"),
-            BuildingEntity("107", "新五五四楼"),
-            BuildingEntity("102", "文渊楼"),
-            BuildingEntity("310", "文昌楼（东综）")
-        )
 
         val COURSE_PERIOD = mapOf(
             R.string.period_1_2 to "0102",
@@ -47,15 +40,6 @@ class Constants {
         )
 
         val ALL_APP_LIST = listOf(
-            ApplicationEntity(
-                guestEnable = true,
-                icon = R.drawable.hnu,
-                trailingIcon = R.drawable.i_hnu_logo,
-                label = R.string.i_hnu,
-                routeType = RouteType.APP,
-                route = "com.autewifi.sd.enroll",
-                category = ApplicationCategory.QUICK_APP
-            ),
             ApplicationEntity(
                 guestEnable = false,
                 label = R.string.dorm_air_conditioner,
@@ -96,7 +80,7 @@ class Constants {
                 route = "",
                 category = ApplicationCategory.CAMPUS
             ),
-            ApplicationEntity(
+            /*ApplicationEntity(
                 guestEnable = true,
                 icon = R.drawable.bathtub_24px,
                 trailingIcon = R.drawable.circle_alipay,
@@ -115,7 +99,7 @@ class Constants {
                 routeType = RouteType.ALIPAY,
                 route = HOT_WATER_WASHER_ALIPAY_URL,
                 category = ApplicationCategory.QUICK_APP
-            ),
+            ),*/
             ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.format_paint_24px,
@@ -139,14 +123,6 @@ class Constants {
                 routeType = RouteType.SCREEN,
                 route = Destinations.TeacherEvaluation.route,
                 category = ApplicationCategory.ACADEMIC_AFFAIRS
-            ),
-            ApplicationEntity(
-                guestEnable = false,
-                icon = R.drawable.deep_seek,
-                label = R.string.deep_seek,
-                routeType = RouteType.URL,
-                route = "https://chat.htu.edu.cn/",
-                category = ApplicationCategory.AI
             ),
             ApplicationEntity(
                 guestEnable = false,
@@ -187,7 +163,7 @@ class Constants {
                 routeType = RouteType.URL,
                 route = EHALL_APP_BASE_URL + "6225347137673201",
                 category = ApplicationCategory.AI
-            ),
+            ),/*
             ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.zju_logo,
@@ -195,7 +171,7 @@ class Constants {
                 routeType = RouteType.URL,
                 route = EHALL_APP_BASE_URL + "7416844941162412",
                 category = ApplicationCategory.AI
-            ),
+            ),*/
             ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.captive_portal_24px,
@@ -218,16 +194,16 @@ class Constants {
                 label = R.string.website_navigation,
                 routeType = RouteType.SCREEN,
                 route = Destinations.WebsiteNavigation.route,
-                category = ApplicationCategory.QUICK_APP
+                category = ApplicationCategory.CAMPUS
             ),
-            ApplicationEntity(
+            /*ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.sports_handball_24px,
                 label = R.string.physical_test,
                 routeType = RouteType.SCREEN,
                 route = Destinations.PhysicalTest.route,
                 category = ApplicationCategory.CAMPUS
-            )
+            )*/
         )
         val INIT_COMMON_APP_LIST = listOf(
             ALL_APP_LIST[1],

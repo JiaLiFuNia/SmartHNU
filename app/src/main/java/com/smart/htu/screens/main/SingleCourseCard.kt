@@ -31,7 +31,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.smart.htu.R
-import com.smart.htu.api.module.Course
+import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.component.BasicDialog
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
@@ -43,7 +43,7 @@ import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
+fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: CourseEntity) {
     val isBottomSheetShow = remember { mutableStateOf(false) }
     Surface(
         modifier = modifier,
@@ -143,7 +143,7 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: Course) {
 
 @Composable
 fun CourseDetailDialog(
-    message: Course,
+    message: CourseEntity,
     isBottomSheetShow: MutableState<Boolean>
 ) {
     BasicDialog(

@@ -59,6 +59,8 @@ class DataStoreRepo @Inject constructor(
             booleanPreferencesKey("IS_WRITE_CALENDAR_PERMISSION_GRANTED")
         val AI_FUNCTION_ENABLED = booleanPreferencesKey("AI_FUNCTION_ENABLED")
         val AI_MODEL_KEY = stringPreferencesKey("AI_MODEL_KEY")
+        val BIONIC_READING_ENABLED = booleanPreferencesKey("BIONIC_READING_ENABLED")
+        val LOAD_IMG_ENABLED = booleanPreferencesKey("LOAD_IMG_ENABLED")
 
         const val DEFAULT_COOKIES = "[]"
         const val DEFAULT_MESSAGE_READ_ID = "[]"
@@ -78,9 +80,11 @@ class DataStoreRepo @Inject constructor(
         const val DEFAULT_ROOM_ID = ""
         const val DEFAULT_MOBILE_CODE = ""
         const val DEFAULT_WRITE_CALENDAR_PERMISSION_GRANTED = false
+        const val DEFAULT_LOAD_IMG_ENABLED = true
         const val DEFAULT_BOOK_SEARCH_HISTORY_LIST = "[]"
         const val DEFAULT_AIR_CONDITION_USER_COOKIE = """{"shiroJID":"", "ymId":""}"""
         const val DEFAULT_AIR_CONDITION_COOKIE_TYPE = 0
+        const val DEFAULT_BIONIC_READING_ENABLED = true
     }
 
     override suspend fun changeThemeMode(enabled: Int) {
@@ -179,6 +183,14 @@ class DataStoreRepo @Inject constructor(
 
     override suspend fun saveAIModelConfig(config: AIModelConfigEntity) {
         context.dataStore.edit { it[AI_MODEL_KEY] = config.key }
+    }
+
+    override suspend fun changeBionicReadingEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[BIONIC_READING_ENABLED] = enabled }
+    }
+
+    override suspend fun changeLoadImgEnabled(enable: Boolean) {
+        context.dataStore.edit { it[LOAD_IMG_ENABLED] = enable }
     }
 
 
@@ -315,5 +327,13 @@ class DataStoreRepo @Inject constructor(
 
     override fun observeAIModelConfig(): Flow<String> {
         return context.dataStore.data.map { it[AI_MODEL_KEY] ?: DEFAULT_AI_MODEL_KEY }
+    }
+
+    override fun observeBionicReadingEnabled(): Flow<Boolean> {
+        return context.dataStore.data.map { it[BIONIC_READING_ENABLED] ?: DEFAULT_BIONIC_READING_ENABLED }
+    }
+
+    override fun observeLoadImgEnabled(): Flow<Boolean> {
+        return context.dataStore.data.map { it[LOAD_IMG_ENABLED] ?: DEFAULT_LOAD_IMG_ENABLED }
     }
 }

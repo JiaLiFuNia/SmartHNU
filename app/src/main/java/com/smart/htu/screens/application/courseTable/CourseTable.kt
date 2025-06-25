@@ -48,7 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.smart.htu.MainActivity
 import com.smart.htu.R
-import com.smart.htu.api.module.Course
+import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.screens.main.CourseDetailDialog
 import com.smart.htu.utils.CourseColorUtil.getColorByCourseName
 import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
@@ -379,7 +379,7 @@ fun CourseTable(
 
 @Composable
 fun CourseTableSingleCourseCard(
-    course: Course,
+    course: CourseEntity,
     minHeight: Int,
     slotsOccupied: Int = 1
 ) {

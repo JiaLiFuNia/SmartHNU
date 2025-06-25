@@ -54,7 +54,7 @@ fun ImagePreviewDialog(
                     this.drawContentBehind = drawContentBehind
                     this.blurRadius = 50.dp
                 },
-            contentScale = ContentScale.FillHeight
+            contentScale = ContentScale.FillBounds
         )
 
         Surface(

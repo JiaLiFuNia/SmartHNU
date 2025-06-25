@@ -2,7 +2,7 @@
 
 <img src="./img/SmartHNU.svg" width="160" height="160" style="display: block; margin: 0 auto; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); border-radius: 20%;" alt="icon" />
 
-# 师韵 SmartHNU（待补充...）
+# 师韵 SmartHNU
 
 ### 一款 [河师大](https://www.htu.edu.cn) 校园生活助手
 ![Gitea Stars](https://img.shields.io/github/stars/JiaLiFuNia/SmartHNU?style=flat)
@@ -15,9 +15,9 @@
 
 ## 简介
 
-师韵 SmartHNU 是一款基于 `Android` 平台的校园生活助手，集新闻阅览、教务信息、图书查询、教室查询于一体，旨在为河南师范大学本部本科生提供便捷的校园服务。
+师韵 SmartHNU 是一款基于 `Android` 平台的校园生活助手，集新闻阅览、教务信息、图书查询、教室查询于一体，旨在为河南师范大学本科生提供便捷的校园信息查询服务。
 
-## 使用安全
+## 使用
 
 在使用本应用时，登录密码会被加密后存储在本地。其余信息均为实时获取，不会被存储。由于登录令牌具有时效性，当令牌失效时，存储的密码将用于自动重新登录。
 
@@ -32,6 +32,12 @@
 | 教务信息 | [河南师大智慧教务](https://jwc.htu.edu.cn/app/)                                                   |
 |  图书  | [河南师范大学图书馆](http://libmsg.htu.cn/m/opac/search.action)                                    |
 | 第二课堂 | [河南师范大学第二课堂管理系统](http://dekt.htu.edu.cn)                                                  |
+
+
+## 下载
+[GitHub Release](https://github.com/JiaLiFuNia/SmartHNU/releases)
+
+[Telegram CI Channel](https://t.me/SmartHNU)
 
 ## 鸣谢
 

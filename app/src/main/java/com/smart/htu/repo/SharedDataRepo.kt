@@ -3,7 +3,7 @@ package com.smart.htu.repo
 import android.util.Log
 import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.NoticeRes
-import com.smart.htu.api.module.TermIndex
+import com.smart.htu.api.module.TermIndexEntity
 import com.smart.htu.api.module.UpdateEntity
 import com.smart.htu.api.network.AppService
 import com.smart.htu.api.network.JWCService
@@ -15,16 +15,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
-import retrofit2.awaitResponse
 import javax.inject.Inject
 import javax.inject.Singleton
 
 interface SharedDataRepository {
-    val termIndex: StateFlow<TermIndex?>
+    val termIndex: StateFlow<TermIndexEntity?>
     val notice: StateFlow<NoticeRes?>
     val update: StateFlow<UpdateEntity?>
 
-    suspend fun getTermIndex(termCode: GlobalTerm = GlobalTerm()): Result<TermIndex>
+    suspend fun getTermIndex(termCode: GlobalTerm = GlobalTerm()): Result<TermIndexEntity>
     suspend fun getNotice(): Result<NoticeRes>
     suspend fun getUpdate(): Result<UpdateEntity>
 }
@@ -38,7 +37,7 @@ class SharedDataRepoImpl @Inject constructor(
 
     val scope = CoroutineScope(Dispatchers.IO)
 
-    override val termIndex = MutableStateFlow<TermIndex?>(null)
+    override val termIndex = MutableStateFlow<TermIndexEntity?>(null)
     override val notice = MutableStateFlow<NoticeRes?>(null)
     override val update = MutableStateFlow<UpdateEntity?>(null)
 
@@ -53,8 +52,7 @@ class SharedDataRepoImpl @Inject constructor(
 
     override suspend fun getUpdate(): Result<UpdateEntity> {
         try {
-            val call = appService.getUpdate()
-            val res = call.awaitResponse()
+            val res = appService.getUpdate()
             when (res.code()) {
                 200 -> {
                     val updateRes = res.body()
@@ -81,8 +79,7 @@ class SharedDataRepoImpl @Inject constructor(
 
     override suspend fun getNotice(): Result<NoticeRes> {
         try {
-            val call = appService.getNotice()
-            val res = call.awaitResponse()
+            val res = appService.getNotice()
             when (res.code()) {
                 200 -> {
                     val noticeRes = res.body()
@@ -107,7 +104,7 @@ class SharedDataRepoImpl @Inject constructor(
     }
 
     // 学期
-    override suspend fun getTermIndex(termCode: GlobalTerm): Result<TermIndex> {
+    override suspend fun getTermIndex(termCode: GlobalTerm): Result<TermIndexEntity> {
         try {
             if (!tokenValidity.value) {
                 return Result.failure(Exception("token失效"))

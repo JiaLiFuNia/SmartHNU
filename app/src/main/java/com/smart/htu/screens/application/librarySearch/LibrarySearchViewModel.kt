@@ -107,7 +107,7 @@ class LibrarySearchViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(totalPage = res.actualTotal)
                 }
-                fetchBookImages(res.dataList ?: emptyList())
+                fetchBookImages(res.dataList ?: emptyList(), true)
             }
         _uiState.update { it.copy(isSearching = false) }
     }
@@ -119,12 +119,12 @@ class LibrarySearchViewModel @Inject constructor(
             libraryNetworkRepo.librarySearchService(keyword, nextPage)
                 .onSuccess { res ->
                     _uiState.update { it.copy(totalPage = res.actualTotal) }
-                    fetchBookImages(res.dataList ?: emptyList())
+                    fetchBookImages(res.dataList ?: emptyList(), false)
                 }
         }
     }
 
-    private suspend fun fetchBookImages(books: List<SearchBookData>) {
+    private suspend fun fetchBookImages(books: List<SearchBookData>, isFirstLoad: Boolean = true) {
         if (books.isEmpty()) return
         libraryNetworkRepo.libraryBookImgService(
             isbnList = books.map { it.isbn },
@@ -136,7 +136,7 @@ class LibrarySearchViewModel @Inject constructor(
                     imageUrl = imageResults[book.bookId]?.firstOrNull()?.coverImageUrl ?: ""
                 }
             }
-            _uiState.update { it.copy(bookSearchList = it.bookSearchList + updatedBooks) }
+            _uiState.update { it.copy(bookSearchList = if (isFirstLoad) updatedBooks else it.bookSearchList + updatedBooks) }
         }
     }
 

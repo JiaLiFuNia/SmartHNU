@@ -5,7 +5,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.smart.htu.api.module.Course
+import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.api.module.CourseScheduleEntity
 import com.smart.htu.api.module.HolidayEntity
 import com.smart.htu.api.module.NewsItemEntity
@@ -38,7 +38,7 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class AppUiState(
-    val todayCourseList: ResultWithStatus<List<Course>> = ResultWithStatus(),
+    val todayCourseList: ResultWithStatus<List<CourseEntity>> = ResultWithStatus(),
     val currentWeather: ResultWithStatus<WeatherNowData> = ResultWithStatus(),
     val newsList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
     val courseSchedule: ResultWithStatus<CourseScheduleEntity> = ResultWithStatus(),

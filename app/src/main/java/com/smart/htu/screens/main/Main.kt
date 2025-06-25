@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.smart.htu.App.Companion.context
 import com.smart.htu.R
-import com.smart.htu.api.module.Course
+import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.Status
@@ -361,7 +361,7 @@ fun FocusCardItem(
 
 @Composable
 fun TodayCourseCard(
-    todayCourseResult: ResultWithStatus<List<Course>>,
+    todayCourseResult: ResultWithStatus<List<CourseEntity>>,
     loginUiState: LoginUiState,
     navController: NavController
 ) {

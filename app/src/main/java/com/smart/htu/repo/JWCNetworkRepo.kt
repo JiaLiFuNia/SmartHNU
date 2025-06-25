@@ -5,18 +5,22 @@ import android.util.Log
 import com.smart.htu.R
 import com.smart.htu.api.module.BuildingEntity
 import com.smart.htu.api.module.ClassroomOccupationEntity
-import com.smart.htu.api.module.CourseGrade
+import com.smart.htu.api.module.CourseGradeDetailPost
+import com.smart.htu.api.module.CourseGradeDetailRes
+import com.smart.htu.api.module.CourseGradeRes
 import com.smart.htu.api.module.CourseScheduleEntity
 import com.smart.htu.api.module.CourseSchedulePost
+import com.smart.htu.api.module.EvaluationQuestion
 import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.LoginJWCEntity
 import com.smart.htu.api.module.LoginPost
 import com.smart.htu.api.module.PersonalMessageRes
 import com.smart.htu.api.module.SelectEntity
+import com.smart.htu.api.module.TEDetailPost
 import com.smart.htu.api.module.TEEntity
 import com.smart.htu.api.module.TextbookEntity
 import com.smart.htu.api.module.TextbookSelectPost
-import com.smart.htu.api.module.TodayCourseResponse
+import com.smart.htu.api.module.TodayCourseRes
 import com.smart.htu.api.network.JWCService
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_PASSWORD
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN
@@ -29,7 +33,6 @@ import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
-import retrofit2.awaitResponse
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -61,39 +64,46 @@ class JWCNetworkRepo @Inject constructor(
             }
         )
 
+    suspend fun getTEDetailService(
+        syllabusEvaluateCode: String,
+        teacherCode: String
+    ): List<EvaluationQuestion>? {
+        val res = jwcService.getTeacherEvaluationDetail(
+            TEDetailPost(
+                dgksdm = syllabusEvaluateCode,
+                teadm = teacherCode
+            )
+        )
+        return when (res.code) {
+            200 -> res.evaluationQuestionList
+            else -> null
+        }
+    }
+
     suspend fun getCourseScheduleService(
         week: String = "",
         section: String = ""
     ): CourseScheduleEntity? {
-        val call = jwcService.getCourseSchedule(CourseSchedulePost(week, section))
-        val res = call.awaitResponse().body()
-        return when (res?.code) {
+        val res = jwcService.getCourseSchedule(CourseSchedulePost(week, section))
+        return when (res.code) {
             200 -> res
-            401 -> null
-
             else -> null
         }
     }
 
 
     suspend fun getPersonalMessageService(): PersonalMessageRes? {
-        val call = jwcService.getPersonalMessage()
-        val res = call.awaitResponse().body()
-        return when (res?.code) {
+        val res = jwcService.getPersonalMessage()
+        return when (res.code) {
             200 -> res
-            401 -> null
-
             else -> null
         }
     }
 
-    suspend fun getTodayCourseService(): TodayCourseResponse? {
-        val call = jwcService.getTodayCourse()
-        val res = call.awaitResponse().body()
-        return when (res?.code) {
+    suspend fun getTodayCourseService(): TodayCourseRes? {
+        val res = jwcService.getTodayCourse()
+        return when (res.code) {
             200 -> res
-            401 -> null
-
             else -> null
         }
     }
@@ -102,11 +112,9 @@ class JWCNetworkRepo @Inject constructor(
         termCode: String,
         courseTaskCode: String
     ): SelectEntity? {
-        val call = jwcService.getSelectableTextbook(TextbookSelectPost(termCode, courseTaskCode))
-        val res = call.awaitResponse().body()
-        return when (res?.code) {
+        val res = jwcService.getSelectableTextbook(TextbookSelectPost(termCode, courseTaskCode))
+        return when (res.code) {
             200 -> res
-            401 -> null
             else -> null
         }
     }
@@ -115,22 +123,18 @@ class JWCNetworkRepo @Inject constructor(
         termCode: String,
         courseTaskCode: String
     ): SelectEntity? {
-        val call = jwcService.getSelectedTextbook(TextbookSelectPost(termCode, courseTaskCode))
-        val res = call.awaitResponse().body()
-        return when (res?.code) {
+        val res = jwcService.getSelectedTextbook(TextbookSelectPost(termCode, courseTaskCode))
+        return when (res.code) {
             200 -> res
-            401 -> null
             else -> null
         }
     }
 
     // 教材选订
     suspend fun getTextbookService(termCode: GlobalTerm): TextbookEntity? {
-        val call = jwcService.getTextbook(termCode)
-        val res = call.awaitResponse().body()
-        return when (res?.code) {
+        val res = jwcService.getTextbook(termCode)
+        return when (res.code) {
             200 -> res
-            401 -> null
             else -> null
         }
     }
@@ -141,7 +145,6 @@ class JWCNetworkRepo @Inject constructor(
             val res = jwcService.teacherEvaluation(termCode)
             return when (res.code) {
                 200 -> res
-                401 -> null
                 else -> null
             }
         } catch (e: Exception) {
@@ -158,9 +161,7 @@ class JWCNetworkRepo @Inject constructor(
             val res = jwcService.classroomOccupation(building)
             return when (res.code) {
                 200 -> Result.success(res)
-                401 -> Result.failure(Exception(res.msg))
-
-                else -> Result.failure(Exception("获取失败"))
+                else -> Result.failure(Exception(res.msg))
             }
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
@@ -169,17 +170,32 @@ class JWCNetworkRepo @Inject constructor(
     }
 
     // 成绩查询
-    suspend fun getCourseGradeService(termCode: GlobalTerm): CourseGrade? {
+    suspend fun getCourseGradeService(termCode: GlobalTerm): Result<CourseGradeRes> {
         try {
             val res = jwcService.grade(termCode)
             return when (res.code) {
-                200 -> res
-                401 -> null
-                else -> null
+                200 -> Result.success(res)
+                else -> Result.failure(Exception(res.msg))
             }
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
-            return null
+            return Result.failure(e)
+        }
+    }
+
+    // 成绩详情查询
+    suspend fun getCourseGradeDetailService(
+        gradeCode: String
+    ): Result<CourseGradeDetailRes> {
+        try {
+            val res = jwcService.gradeDetail(CourseGradeDetailPost(gradeCode))
+            return when (res.code) {
+                200 -> Result.success(res)
+                else -> Result.failure(Exception(res.msg))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(Exception("获取失败"))
         }
     }
 
@@ -204,7 +220,7 @@ class JWCNetworkRepo @Inject constructor(
 
                 else -> {
                     dataStoreRepo.setTokenValidity(false)
-                    Result.failure(Exception("智慧教务登录失败"))
+                    Result.failure(Exception(logState.msg.ifEmpty { "智慧教务登录失败" }))
                 }
             }
         } catch (e: Exception) {
@@ -218,12 +234,10 @@ class JWCNetworkRepo @Inject constructor(
             val res = jwcService.checkToken()
             return when (res.code) {
                 200 -> Result.success(true)
-                401 -> {
+                else -> {
                     if (reLogin()) Result.success(true)
                     else Result.failure(Exception(res.msg))
                 }
-
-                else -> Result.failure(Exception(res.msg))
             }
         } catch (e: Exception) {
             Log.e("TAG666 check token", "${e.message}")

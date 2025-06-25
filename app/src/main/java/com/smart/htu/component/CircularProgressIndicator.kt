@@ -3,17 +3,26 @@ package com.smart.htu.component
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.ProgressIndicatorDefaults
+import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -61,7 +70,7 @@ fun CircularProgressIndicator(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator(size = size)
+            InfiniteProgressIndicator(size = size)
             Text(
                 text = loadingText,
                 modifier = Modifier.padding(top = 8.dp),
@@ -71,5 +80,35 @@ fun CircularProgressIndicator(
             )
         }
         //CircularWavyProgressIndicator(modifier = Modifier.size(size))
+    }
+}
+
+@Composable
+fun BottomCircularProgressIndicator(
+    loadingState: Boolean,
+    loadingText: String = "正在加载..."
+) {
+    SuperDialog(
+        show = remember(loadingState) { mutableStateOf(loadingState) },
+        onDismissRequest = { }
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            InfiniteProgressIndicator(
+                modifier = Modifier,
+                color = MiuixTheme.colorScheme.onSurface,
+                size = 24.dp,
+                strokeWidth = 2.dp,
+                orbitingDotSize = 2.dp
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = loadingText,
+                fontSize = 19.sp,
+                color = MiuixTheme.colorScheme.onSurface
+            )
+        }
     }
 }

@@ -5,19 +5,20 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -41,7 +42,6 @@ import com.smart.htu.R
 import com.smart.htu.component.animation.SlideTransition
 import com.smart.htu.screens.application.Application
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
-import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.Main
 import com.smart.htu.screens.main.MainViewModel
@@ -51,9 +51,10 @@ import com.smart.htu.screens.news.NewsScreen
 import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.person.PersonScreen
 import com.smart.htu.utils.DoubleBackToExitApp
+import com.smart.htu.utils.startLaunchAPK
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MainFrame(
     navController: NavController,
@@ -154,12 +155,14 @@ fun MainFrame(
                     colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
                     title = { Text(text = stringResource(R.string.application)) },
                     actions = {
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "add"
-                            )
-                        }
+                        TextButton(
+                            onClick = {
+                                startLaunchAPK(
+                                    packageName = "com.autewifi.sd.enroll",
+                                    appName = "i 师大"
+                                )
+                            }
+                        ) { Text(text = "i 师大") }
                     }
                 )
 
@@ -169,7 +172,7 @@ fun MainFrame(
                     actions = {
                         IconButton(onClick = { navController.navigate(Destinations.NewsHistory.route) }) {
                             Icon(
-                                painter = painterResource(id = R.drawable.outline_history_24),
+                                painter = painterResource(id = R.drawable.bookmark_24px),
                                 contentDescription = "history"
                             )
                         }
@@ -314,22 +317,6 @@ fun MainFrame(
     DoubleBackToExitApp(
         onExit = {
             (context as? Activity)?.finish()
-        }
-    )
-
-    val (showLoginDialog, onShowLoginDialog) = remember { mutableStateOf(false) }
-    LaunchedEffect(key1 = loginUiState.loginJWCState, key2 = loginUiState.isGuest) {
-        onShowLoginDialog(!(loginUiState.loginJWCState == 1 || loginUiState.isGuest))
-    }
-    LoginDialog(
-        showDialog = showLoginDialog,
-        onDismissRequests = {
-            loginViewModel.guest()
-            onShowLoginDialog(true)
-        },
-        onConfirmClick = {
-            onShowLoginDialog(false)
-            navController.navigate(Destinations.Login.route)
         }
     )
 }

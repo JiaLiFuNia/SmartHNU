@@ -34,6 +34,8 @@ interface DataStoreService {
     suspend fun setIsWriteCalendarPermissionGranted(enable: Boolean)
     suspend fun changeAIFunctionEnabled(enabled: Boolean)
     suspend fun saveAIModelConfig(config: AIModelConfigEntity)
+    suspend fun changeBionicReadingEnabled(enabled: Boolean)
+    suspend fun changeLoadImgEnabled(enable: Boolean)
 
     fun observeThemeMode(): Flow<Int>
     fun observeDarkTheme(): Flow<Int>
@@ -59,5 +61,7 @@ interface DataStoreService {
     fun observeIsWriteCalendarPermissionGranted(): Flow<Boolean>
     fun observeAIFunctionEnabled(): Flow<Boolean>
     fun observeAIModelConfig(): Flow<String>
+    fun observeBionicReadingEnabled(): Flow<Boolean>
+    fun observeLoadImgEnabled(): Flow<Boolean>
 
 }

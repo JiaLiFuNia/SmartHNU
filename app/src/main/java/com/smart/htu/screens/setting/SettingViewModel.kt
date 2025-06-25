@@ -117,6 +117,15 @@ class SettingViewModel @Inject constructor(
             }
         )
 
+    private val loadImgEnabledStateFlow = dataStoreRepo.observeLoadImgEnabled()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeLoadImgEnabled().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
             themeModeStateFlow.collect { value ->
@@ -141,6 +150,11 @@ class SettingViewModel @Inject constructor(
         viewModelScope.launch {
             aiFunctionEnabledStateFlow.collect { value ->
                 _uiState.update { it.copy(aiFunctionEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
+            loadImgEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(loadImgEnabled = value) }
             }
         }
         viewModelScope.launch {
@@ -188,8 +202,7 @@ class SettingViewModel @Inject constructor(
 
     fun changeLoadImgEnabled(enabled: Boolean) {
         viewModelScope.launch {
-            // dataStoreRepo.changeLoadImgEnabled(enabled)
-            _uiState.update { it.copy(loadImgEnabled = enabled) }
+            dataStoreRepo.changeLoadImgEnabled(enabled)
         }
     }
 

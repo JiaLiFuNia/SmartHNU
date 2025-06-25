@@ -25,6 +25,7 @@ sealed class Destinations(
     data object AccountManage : Destinations("account_manage")
     data object Grade : Destinations("grade")
     data object TeacherEvaluation : Destinations("teacher_evaluation")
+    data object TeacherEvaluationDetail : Destinations("teacher_evaluation_detail")
     data object Textbook : Destinations("textbook")
     data object TextbookSelect : Destinations("textbook_select")
     data object CourseTable : Destinations("course_table")

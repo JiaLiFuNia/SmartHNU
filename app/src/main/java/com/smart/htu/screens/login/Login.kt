@@ -172,9 +172,12 @@ fun LoginScreen(
                         if (uiState.studentID == "admin")
                             navController.navigate(Destinations.AccountManage.route)
                         else {
-                            focusManager.clearFocus()
-                            autofillManager?.commit()
-                            viewModel.login()
+                            viewModel.login(
+                                onSuccess = {
+                                    focusManager.clearFocus()
+                                    autofillManager?.commit()
+                                }
+                            )
                         }
                     },
                     modifier = Modifier
