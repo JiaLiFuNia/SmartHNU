@@ -67,6 +67,10 @@ import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.PullToRefresh
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -95,7 +99,7 @@ fun AirCondition(
     val pagerState = rememberPagerState { tabItem.size }
     val selectTabIndex by remember { derivedStateOf { pagerState.currentPage } }
 
-    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
+    val pullToRefreshState = rememberPullToRefreshState()
     val onRefresh: () -> Unit = {
         scope.launch {
             pullToRefreshState.completeRefreshing {
@@ -104,7 +108,7 @@ fun AirCondition(
         }
     }
 
-    top.yukonga.miuix.kmp.basic.Scaffold(
+    Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -146,7 +150,7 @@ fun AirCondition(
             SnackbarHost(hostState = snackBarHostState)
         }
     ) {
-        top.yukonga.miuix.kmp.basic.PullToRefresh(
+        PullToRefresh(
             pullToRefreshState = pullToRefreshState,
             refreshTexts = PULL_TO_REFRESH_TEXT,
             onRefresh = onRefresh,
@@ -179,7 +183,7 @@ fun AirCondition(
                 }
 
                 item {
-                    top.yukonga.miuix.kmp.basic.Surface(
+                    Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
                         color = MiuixTheme.colorScheme.primaryContainer,

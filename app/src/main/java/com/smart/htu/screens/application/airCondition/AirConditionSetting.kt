@@ -109,7 +109,6 @@ fun AirConditionSetting(
                     text = "宿舍楼和房间",
                     insideMargin = PaddingValues(12.dp, 8.dp)
                 )
-                var errorColor = MaterialTheme.colorScheme.error
                 val buildingIdPattern = Regex("^[西|东]\\d{2}$")
                 val roomIdPattern = Regex("^\\d{4}$")
                 val (buildingIdError, onBuildingError) = remember { mutableStateOf(false) }
@@ -133,7 +132,7 @@ fun AirConditionSetting(
                                 modifier = Modifier.padding(end = 12.dp)
                             )
                     },
-                    labelColor = if (buildingIdError) errorColor else MiuixTheme.colorScheme.onSecondaryContainer,
+                    labelColor = if (buildingIdError) MaterialTheme.colorScheme.error else MiuixTheme.colorScheme.onSecondaryContainer,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
@@ -156,7 +155,7 @@ fun AirConditionSetting(
                                 modifier = Modifier.padding(end = 12.dp)
                             )
                     },
-                    labelColor = if (roomIdError) errorColor else MiuixTheme.colorScheme.onSecondaryContainer,
+                    labelColor = if (roomIdError) MaterialTheme.colorScheme.error else MiuixTheme.colorScheme.onSecondaryContainer,
                 )
             }
             item {

@@ -119,7 +119,7 @@ class AirConditionViewModel @Inject constructor(
         }
         viewModelScope.launch {
             userCookieStateFlow.collect { value ->
-                _uiState.update { it.copy(userLoginCookie = value) }
+                _uiState.update { it.copy(userLoginCookie = value, remoteLoginCookie = value) }
             }
         }
         viewModelScope.launch {
@@ -234,7 +234,8 @@ class AirConditionViewModel @Inject constructor(
     private fun setRemoteLoginCookie(loginCookie: ACCookie) {
         viewModelScope.launch {
             _uiState.update { it.copy(remoteLoginCookie = loginCookie) }
-            dataStoreRepo.saveAirConditionUserCookie(loginCookie)
+            if (_uiState.value.setCookieType == 0)
+                dataStoreRepo.saveAirConditionUserCookie(loginCookie)
         }
     }
 
@@ -257,12 +258,6 @@ class AirConditionViewModel @Inject constructor(
 
     fun saveBuildingAndRoomId(buildingId: String, roomId: String) {
         viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    roomCode = roomId,
-                    buildingCode = buildingId
-                )
-            }
             dataStoreRepo.changeBuildingId(buildingId)
             dataStoreRepo.changeRoomId(roomId)
             refreshConfig()
