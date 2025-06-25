@@ -53,6 +53,7 @@ import com.smart.htu.component.ScaffoldWithHazeLazyColumn
 import com.smart.htu.component.svgVector.DrawableVectors
 import com.smart.htu.component.svgVector.drawablevectors.emptyData
 import com.smart.htu.screens.application.grade.SelectTermBottomSheet
+import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Term.termConverter
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -154,7 +155,12 @@ fun TeacherEvaluation(
                             )
                     }
                     items(uiState.evaluationInfo.data?.evaluationInfoList ?: emptyList()) {
-                        SingleTeacher(it)
+                        SingleTeacher(
+                            teacher = it,
+                            onClick = { syllabusEvaluateCode, teacherCode ->
+                                if (it.evaluationCode.isEmpty()) navController.navigate(route = "${Destinations.TeacherEvaluationDetail.route}/${syllabusEvaluateCode}/${teacherCode}")
+                            }
+                        )
                     }
                 }
             }
@@ -178,10 +184,12 @@ fun TeacherEvaluation(
 
 @Composable
 fun SingleTeacher(
-    teacher: EvaluationInfo
+    teacher: EvaluationInfo,
+    onClick: (String, String) -> Unit = { _, _ -> }
 ) {
     Surface(
         onClick = {
+            onClick(teacher.syllabusEvaluateCode, teacher.teacherCode)
         },
         modifier = Modifier
             .semantics { role = androidx.compose.ui.semantics.Role.Button }
@@ -210,7 +218,7 @@ fun SingleTeacher(
             },
             trailingContent = {
                 Text(
-                    text = "已评价",
+                    text = if (teacher.evaluationCode.isNotEmpty()) "已评价" else "未评价",
                     style = MaterialTheme.typography.labelLarge.copy(
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
