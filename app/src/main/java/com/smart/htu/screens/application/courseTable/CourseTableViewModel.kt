@@ -5,7 +5,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.smart.htu.api.module.Course
+import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.api.module.CourseScheduleEntity
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.SingleTerm
@@ -32,8 +32,8 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 data class CourseTableUiState(
-    val currentWeekCourseTable: ResultWithStatus<List<List<Course>>> = ResultWithStatus(),
-    val allCourseTable: MutableList<List<MutableList<Course>>> =
+    val currentWeekCourseTable: ResultWithStatus<List<List<CourseEntity>>> = ResultWithStatus(),
+    val allCourseTable: MutableList<List<MutableList<CourseEntity>>> =
         MutableList(25) { List(7) { mutableListOf() } },
     val startDatePerWeek: LocalDate? = null,
     val week: Int = 0,
@@ -134,7 +134,7 @@ class CourseTableViewModel @Inject constructor(
         }
     }
 
-    suspend fun getAllWeekCourseSchedule(): MutableList<List<MutableList<Course>>>? {
+    suspend fun getAllWeekCourseSchedule(): MutableList<List<MutableList<CourseEntity>>>? {
         try {
             val res = getCourseSchedule(-1)
             // 合并成按天的课表
@@ -142,7 +142,7 @@ class CourseTableViewModel @Inject constructor(
                 weekMap.values.flatten()
             } ?: emptyList()
             // 处理成按周的课表 第几周 星期几 当天的课
-            val courseTable: MutableList<List<MutableList<Course>>> =
+            val courseTable: MutableList<List<MutableList<CourseEntity>>> =
                 MutableList(25) { List(7) { mutableListOf() } }
             processedCourses.forEach {
                 it.forEach { course ->
@@ -195,7 +195,7 @@ class CourseTableViewModel @Inject constructor(
     }
 
     private fun buildICSFile(
-        courses: MutableList<List<MutableList<Course>>>,
+        courses: MutableList<List<MutableList<CourseEntity>>>,
         termCode: String,
         username: String
     ): String {

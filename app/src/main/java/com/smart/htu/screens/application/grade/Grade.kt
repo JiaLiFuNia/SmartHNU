@@ -11,22 +11,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -43,28 +44,35 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.smart.htu.R
-import com.smart.htu.api.module.GradeData
-import com.smart.htu.api.module.Status
+import com.smart.htu.api.module.CourseGradeDetailRes.CourseGradeDetailEntity
+import com.smart.htu.api.module.CourseGradeRes.CourseGradeEntity
+import com.smart.htu.component.BasicDialog
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.InfoBadge
-import com.smart.htu.component.ScaffoldWithHazeLazyColumn
+import com.smart.htu.component.card.MessageCardDisplay
+import com.smart.htu.component.card.SingleInfo
 import com.smart.htu.component.svgVector.DrawableVectors
 import com.smart.htu.component.svgVector.drawablevectors.emptyData
+import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
+import com.smart.htu.utils.GradeDivideUtil.divideGrade
 import com.smart.htu.utils.Term.termConverter
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.PullToRefresh
+import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Grade(
     viewModel: GradeViewModel = hiltViewModel(),
@@ -74,8 +82,10 @@ fun Grade(
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val pullToRefreshState = rememberPullToRefreshState()
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     val isBottomSheetShow = remember { mutableStateOf(false) }
+    val isGradeDetailBottomSheetShow = remember { mutableStateOf(false) }
     val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
 
     val onRefresh: () -> Unit = {
@@ -87,26 +97,31 @@ fun Grade(
         }
     }
 
-    ScaffoldWithHazeLazyColumn(
-        isMediumTopAppBar = true,
-        scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
-        blurEnabledState = uiState.blurEffect,
-        title = { Text(text = stringResource(id = R.string.course_grade)) },
-        actions = {
-            IconButton(onClick = { isBottomSheetShow.value = true }) {
-                Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "more")
-            }
+    Scaffold(
+        containerColor = MiuixTheme.colorScheme.background,
+        topBar = {
+            MediumTopAppBar(
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = MiuixTheme.colorScheme.background,
+                ),
+                title = { Text(text = stringResource(id = R.string.course_grade)) },
+                actions = {
+                    IconButton(onClick = { isBottomSheetShow.value = true }) {
+                        Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "more")
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "back"
+                        )
+                    }
+                }
+            )
         },
-        navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "back"
-                )
-            }
-        },
-        refreshState = pullToRefreshState,
-        onRefresh = { onRefresh() },
         floatingActionButton = {
             AnimatedVisibility(
                 modifier = Modifier,
@@ -125,23 +140,29 @@ fun Grade(
             }
         }
     ) {
-        LazyColumn(
-            state = lazyListState,
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+        PullToRefresh(
+            pullToRefreshState = pullToRefreshState,
+            refreshTexts = PULL_TO_REFRESH_TEXT,
+            onRefresh = onRefresh,
             modifier = Modifier
                 .fillMaxSize()
-                .overScrollVertical(),
-            overscrollEffect = null
+                .padding(it)
         ) {
-            when (uiState.courseGrade.status == Status.LOADING || !uiState.isTokenValid) {
-                true ->
+            LazyColumn(
+                state = lazyListState,
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .overScrollVertical(),
+                overscrollEffect = null
+            ) {
+                if (uiState.courseGrade == null) {
                     item {
                         CircularProgressIndicator()
                     }
-
-                false -> {
-                    if (uiState.courseGrade.data?.isEmpty() != false) {
+                } else {
+                    if (uiState.courseGrade?.isEmpty() == true) {
                         item {
                             EmptyContent(
                                 text = "学期 ${termConverter(uiState.termCode)}\n暂无数据",
@@ -149,8 +170,16 @@ fun Grade(
                             )
                         }
                     } else {
-                        itemsIndexed(uiState.courseGrade.data ?: emptyList()) { _, course ->
-                            SingleCourseGrade(course)
+                        items(uiState.courseGrade ?: emptyList()) {
+                            SingleCourseGrade(
+                                course = it,
+                                onClick = {
+                                    scope.launch {
+                                        viewModel.getCourseGradeDetail(it)
+                                        isGradeDetailBottomSheetShow.value = true
+                                    }
+                                }
+                            )
                         }
                     }
                 }
@@ -171,16 +200,20 @@ fun Grade(
         }
     )
 
+    CourseGradeDetailDialog(
+        message = uiState.courseGradeDetail,
+        showGradeDetailBottomSheet = isGradeDetailBottomSheetShow
+    )
 }
 
 
 @Composable
 fun SingleCourseGrade(
-    course: GradeData
+    course: CourseGradeEntity,
+    onClick: (String) -> Unit
 ) {
     Surface(
-        onClick = {
-        },
+        onClick = { onClick(course.gradeCode) },
         modifier = Modifier
             .semantics { role = Role.Button }
             .fillMaxWidth()
@@ -203,7 +236,6 @@ fun SingleCourseGrade(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    InfoBadge(course.gradeTypeCode)
                     InfoBadge(course.courseCategory)
                     InfoBadge(course.courseClassification)
                 }
@@ -212,12 +244,42 @@ fun SingleCourseGrade(
                 Text(
                     text = course.gradeString,
                     style = MaterialTheme.typography.titleMedium.copy(
-                        color = if (course.gradeDouble > 60) MaterialTheme.colorScheme.primary else Color.Red,
+                        color = divideGrade(course.gradeDouble),
                         fontWeight = FontWeight.Bold
                     ),
                     textAlign = TextAlign.Center
                 )
             }
         )
+    }
+}
+
+@Composable
+fun CourseGradeDetailDialog(
+    message: CourseGradeDetailEntity?,
+    showGradeDetailBottomSheet: MutableState<Boolean>
+) {
+    BasicDialog(
+        showDialog = showGradeDetailBottomSheet,
+        title = "成绩详情",
+        insideMargin = DpSize(16.dp, 24.dp)
+    ) {
+        if (message == null) {
+            top.yukonga.miuix.kmp.basic.CircularProgressIndicator()
+        } else {
+            MessageCardDisplay(
+                modifier = Modifier.fillMaxWidth(),
+                message = listOf(
+                    SingleInfo(
+                        label = "平时成绩",
+                        content = message.usualGrade.toString()
+                    ),
+                    SingleInfo(
+                        label = "期末成绩",
+                        content = message.finalGrade.toString()
+                    )
+                )
+            )
+        }
     }
 }

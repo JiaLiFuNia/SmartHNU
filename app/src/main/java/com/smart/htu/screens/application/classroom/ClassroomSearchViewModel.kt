@@ -10,7 +10,6 @@ import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN_VALIDITY
 import com.smart.htu.repo.JWCNetworkRepo
-import com.smart.htu.utils.Constants.Companion.BUILDING_LIST
 import com.smart.htu.utils.getCurrentDates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,9 +38,16 @@ class ClassroomSearchViewModel @Inject constructor(
     private val dataStoreRepo: DataStoreRepo
 ) : ViewModel() {
 
+    private val buildingsList = listOf(
+        BuildingEntity("104", "启智楼"),
+        BuildingEntity("107", "新五五四楼"),
+        BuildingEntity("102", "文渊楼"),
+        BuildingEntity("310", "文昌楼（东综）")
+    )
+
     private val _uiState = MutableStateFlow(
         ClassroomUiState(
-            buildingsList = BUILDING_LIST,
+            buildingsList = buildingsList,
         )
     )
     val uiState: StateFlow<ClassroomUiState> = _uiState.asStateFlow()
@@ -54,6 +60,7 @@ class ClassroomSearchViewModel @Inject constructor(
                 dataStoreRepo.observerBlurState().first()
             }
         )
+
     private val tokenStateFlow = dataStoreRepo.observeJWCToken()
         .stateIn(
             viewModelScope,
@@ -96,24 +103,19 @@ class ClassroomSearchViewModel @Inject constructor(
     suspend fun getClassroomOccupation(date: String, index: Int = 0) {
         try {
             changeLoadingState(true)
-            val building = BUILDING_LIST[index]
-            val res = jwcNetworkRepo.getClassroomOccupationService(
-                BuildingEntity(
-                    building.buildingCode,
-                    building.buildingName,
-                    date
-                )
-            )
-            Log.i("TAG666", "getClassroomOccupation: $res")
-            res.onSuccess {
-                _uiState.update { uiState ->
-                    uiState.copy(buildingsOccupation = uiState.buildingsOccupation + (index to it))
-                }
-                setTokenValid(true)
-            }
-            res.onFailure { failure ->
-                if (failure.message == "401")
-                    setTokenValid(false)
+            buildingsList[index].let {
+                jwcNetworkRepo.getClassroomOccupationService(
+                    BuildingEntity(
+                        buildingCode = it.buildingCode,
+                        buildingName = it.buildingName,
+                        date = date
+                    )
+                ).onSuccess {
+                    _uiState.update { uiState ->
+                        uiState.copy(buildingsOccupation = uiState.buildingsOccupation + (index to it))
+                    }
+                    setTokenValid(true)
+                }.onFailure { }
             }
             changeLoadingState(false)
         } catch (e: Exception) {
@@ -124,7 +126,6 @@ class ClassroomSearchViewModel @Inject constructor(
     private fun setTokenValid(valid: Boolean) {
         viewModelScope.launch {
             dataStoreRepo.setTokenValidity(valid)
-            _uiState.update { it.copy(isTokenValid = valid) }
         }
     }
 

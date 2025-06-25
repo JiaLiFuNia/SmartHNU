@@ -2,9 +2,9 @@ package com.smart.htu.screens.application.grade
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.smart.htu.api.module.CourseGradeDetailRes.CourseGradeDetailEntity
+import com.smart.htu.api.module.CourseGradeRes.CourseGradeEntity
 import com.smart.htu.api.module.GlobalTerm
-import com.smart.htu.api.module.GradeData
-import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.SingleTerm
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
@@ -25,7 +25,8 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class GradeUiState(
-    val courseGrade: ResultWithStatus<List<GradeData>> = ResultWithStatus(),
+    val courseGrade: List<CourseGradeEntity>? = null,
+    val courseGradeDetail: CourseGradeDetailEntity? = null,
     val termCode: String,
     val globalTermCode: String,
     val termList: List<SingleTerm> = emptyList(),
@@ -100,12 +101,23 @@ class GradeViewModel @Inject constructor(
     }
 
     suspend fun getCourseGrade() {
-        val res = jwcNetworkRepo.getCourseGradeService(
+        _uiState.update { it.copy(courseGrade = null) }
+        jwcNetworkRepo.getCourseGradeService(
             GlobalTerm(_uiState.value.termCode)
-        )
-        _uiState.update { uiState ->
-            uiState.copy(courseGrade = ResultWithStatus(res?.gradeData))
+        ).onSuccess { res ->
+            _uiState.update { it.copy(courseGrade = res.gradeData) }
         }
+    }
+
+    suspend fun getCourseGradeDetail(gradeCode: String) {
+        _uiState.update { it.copy(courseGradeDetail = null) }
+        jwcNetworkRepo.getCourseGradeDetailService(gradeCode)
+            .onSuccess { res ->
+                _uiState.update { it.copy(courseGradeDetail = res.gradeData) }
+            }
+            .onFailure {
+                _uiState.update { it.copy(courseGradeDetail = null) }
+            }
     }
 
     fun changeTermCode(termCode: String) {
