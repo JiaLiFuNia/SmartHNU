@@ -11,15 +11,15 @@ data class TodayCoursePost(
     val todaykb: String = "1"
 )
 
-data class TodayCourseResponse(
+data class TodayCourseRes(
     @SerializedName("msg") val message: String,
     //  @SerializedName("issj") val isDataValid: Boolean,
     @SerializedName("code") val code: Int,
     //  @SerializedName("isOpen") val isOpen: Boolean,
-    @SerializedName("kbList") val courseList: List<Course>
+    @SerializedName("kbList") val courseList: List<CourseEntity>
 )
 
-data class Course(
+data class CourseEntity(
     @SerializedName("ps") private val sortString: String, // 排序
     @SerializedName("qssj") private val startTimeString: String, // 开始时间
     @SerializedName("jssj") private val endTimeString: String, // 结束时间
@@ -106,6 +106,6 @@ data class CourseScheduleEntity(
         get() = weekday.toIntOrNull() ?: 0
 }
 
-typealias CourseTable = ArrayList<Map<String, List<Course>>>
+typealias CourseTable = ArrayList<Map<String, List<CourseEntity>>>
 
 

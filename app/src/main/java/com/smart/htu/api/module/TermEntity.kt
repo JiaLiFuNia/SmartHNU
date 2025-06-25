@@ -6,7 +6,7 @@ data class GlobalTerm(
     @SerializedName("xnxqdm") val termCode: String? = null,
 )
 
-data class TermIndex(
+data class TermIndexEntity(
     val msg: String,
     val code: Int,
     @SerializedName("xnxqdm") val termCode: String,

@@ -22,6 +22,7 @@ enum class FeedbackType(val type: String) {
 }
 
 data class FeedbackRes(
-    val success: Boolean,
+    val code: Int,
+    val data: Boolean,
     val message: String
 )

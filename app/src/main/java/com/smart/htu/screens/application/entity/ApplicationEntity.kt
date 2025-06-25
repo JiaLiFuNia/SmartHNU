@@ -17,7 +17,6 @@ data class ApplicationEntity(
 
 enum class ApplicationCategory(val category: String) {
     AI("师大 AI"),
-    QUICK_APP("快捷应用"),
     CAMPUS("校园"),
     ACADEMIC_AFFAIRS("教务"),
     OTHERS("其他")
