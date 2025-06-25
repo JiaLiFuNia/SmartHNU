@@ -7,6 +7,8 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -68,6 +70,9 @@ import com.smart.htu.utils.copyContent
 import com.smart.htu.utils.getCurrentDates
 import com.smart.htu.utils.sendToast
 import com.smart.htu.utils.startWebUrl
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
@@ -98,6 +103,8 @@ fun NewsDetail(
     val scope = rememberCoroutineScope()
     val navigator = rememberWebViewNavigator()
 
+    val hazeState = rememberHazeState()
+
     val listState = rememberLazyListState()
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -107,7 +114,6 @@ fun NewsDetail(
     val isHTUNews = remember { mutableStateOf(url.toUri().host == "www.htu.edu.cn") }
     val newsViewMode = remember { mutableIntStateOf(0) }
     val newsDetailHTML = remember { mutableStateOf("") }
-    val bionicReadingEnabled = remember { mutableStateOf(true) }
     val newsLoading = remember { mutableStateOf(true) }
     val showHtml = remember { mutableStateOf(false) }
     val showImagePreview = remember { mutableStateOf(false) }
@@ -224,8 +230,14 @@ fun NewsDetail(
                 exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top),
                 visible = showFloatingToolbar.value
             ) {
-                FloatingToolbar {
-                    Row {
+                FloatingToolbar(
+                    modifier = Modifier
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .background(Color.Transparent)
+                            .hazeEffect(state = hazeState)
+                    ) {
                         IconButton(
                             onClick = {
                                 if (uiState.aiModelKey.isEmpty()) navController.navigate(
@@ -245,7 +257,8 @@ fun NewsDetail(
                         }
                         IconButton(onClick = { /* 操作 2 */ }) {
                             Icon(
-                                painterResource(R.drawable.star_24px), contentDescription = "star",
+                                painter = painterResource(R.drawable.star_24px),
+                                contentDescription = "star",
                                 tint = MiuixTheme.colorScheme.onSurface
                             )
                         }
@@ -256,7 +269,18 @@ fun NewsDetail(
                             }
                         ) {
                             Icon(
-                                painterResource(R.drawable.ic_outline_article),
+                                painter = painterResource(R.drawable.ic_outline_article),
+                                contentDescription = "news",
+                                tint = MiuixTheme.colorScheme.onSurface
+                            )
+                        }
+                        IconButton(
+                            onClick = {
+                                newsViewModel.changeBionicReadingEnabled(!uiState.bionicReadingEnabled)
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.format_bold_24px),
                                 contentDescription = "news",
                                 tint = MiuixTheme.colorScheme.onSurface
                             )
@@ -275,6 +299,7 @@ fun NewsDetail(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
+                .hazeSource(state = hazeState)
                 .padding(it),
         ) {
             if (newsViewMode.intValue == 0 && uiState.newsArticle == null && newsLoading.value) {
@@ -318,6 +343,7 @@ fun NewsDetail(
                                         subheadUpperCase = false,
                                         imgMargin = HORIZONTAL_MARGIN,
                                         imgBorderRadius = 4,
+                                        imgDisplayMode = if(uiState.loadImgEnabled) "block" else "none",
                                         linkTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
                                         codeTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
                                         codeBgColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
@@ -328,7 +354,7 @@ fun NewsDetail(
                                     ),
                                     url,
                                     uiState.newsArticle?.articleContent,
-                                    WebViewScript.get(bionicReadingEnabled.value)
+                                    WebViewScript.get(uiState.bionicReadingEnabled)
                                 ),
                                 baseUrl = url
                             ),
@@ -467,11 +493,24 @@ fun AttachmentContent(
                     val showDownloadDialog = remember { mutableStateOf(false) }
                     BasicComponent(
                         leftAction = {
-                            Icon(
-                                painter = painterResource(R.drawable.folder_24px),
+                            Image(
+                                painter = painterResource(
+                                    id = when (attachment.fileType) {
+                                        "pdf" -> R.drawable.ic_pdf
+                                        "doc", "docx" -> R.drawable.ic_doc
+                                        "xls", "xlsx" -> R.drawable.ic_xls
+                                        "ppt", "pptx" -> R.drawable.ic_ppt
+                                        "mp3", "wav" -> R.drawable.ic_music
+                                        "mp4", "avi", "mkv" -> R.drawable.ic_video
+                                        "zip", "rar", "7z" -> R.drawable.ic_zip
+                                        "jpg", "jpeg", "png", "gif" -> R.drawable.ic_img
+                                        "csv" -> R.drawable.ic_csv
+                                        "psd" -> R.drawable.ic_psd
+                                        else -> R.drawable.folder_24px
+                                    }
+                                ),
                                 contentDescription = "file",
-                                modifier = Modifier.padding(end = 10.dp),
-                                tint = MiuixTheme.colorScheme.onSurface
+                                modifier = Modifier.padding(end = 10.dp)
                             )
                         },
                         title = attachment.fileName,

@@ -40,6 +40,7 @@ object NewsStyle {
         subheadUpperCase: Boolean,
         imgMargin: Int,
         imgBorderRadius: Int,
+        imgDisplayMode: String,
         linkTextColor: Int,
         codeTextColor: Int,
         codeBgColor: Int,
@@ -180,6 +181,7 @@ video,
 embed,
 object,
 img {
+    display: $imgDisplayMode
     margin-top: 0.5em !important;
     margin-left: calc(0px - var(--text-margin) + var(--img-margin)) !important;
     margin-right: calc(0px - var(--text-margin) + var(--img-margin)) !important;

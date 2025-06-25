@@ -10,7 +10,6 @@ import com.smart.htu.api.module.AIModulePostEntity
 import com.smart.htu.api.module.AIRole
 import com.smart.htu.api.module.NewsArticleEntity
 import com.smart.htu.api.module.NewsItemEntity
-import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.NetworkRepo
@@ -31,15 +30,14 @@ import javax.inject.Inject
 data class NewsUiState(
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val newsOptionItems: List<NewsCategoryEntity> = emptyList(),
-    val bannerPicList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
-    val newsList: List<ResultWithStatus<List<NewsItemEntity>>> = List(newsOptionItems.size) { ResultWithStatus() },
-    val searchList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
-    val searchPage: Int = 1,
-    val hasMoreSearchResults: Boolean = true,
+    val bannerPicList: List<NewsItemEntity> = emptyList(),
+    val newsList: List<MutableList<NewsItemEntity>?> = List(newsOptionItems.size) { null },
+    val searchList: List<NewsItemEntity>? = null,
     val newsPages: List<Int> = List(newsOptionItems.size) { 1 },
-    val hasMoreNews: List<Boolean> = List(newsOptionItems.size) { true },
     val aiModelKey: String = "",
-    val newsArticle: NewsArticleEntity? = null
+    val newsArticle: NewsArticleEntity? = null,
+    val bionicReadingEnabled: Boolean = true,
+    val loadImgEnabled: Boolean = true
 )
 
 @HiltViewModel
@@ -98,6 +96,25 @@ class NewsViewModel @Inject constructor(
             }
         )
 
+    private val bionicReadingEnabledStateFlow = dataStoreRepo.observeBionicReadingEnabled()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeBionicReadingEnabled().first()
+            }
+        )
+
+
+    private val loadImgEnabledStateFlow = dataStoreRepo.observeLoadImgEnabled()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeLoadImgEnabled().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
             _blurStateFlow.collect { value ->
@@ -110,92 +127,48 @@ class NewsViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            getBannerImgList()
+            bionicReadingEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(bionicReadingEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
+            loadImgEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(loadImgEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
+            if (_uiState.value.loadImgEnabled) getBannerImgList()
         }
     }
 
-    suspend fun searchNews(keyword: String, loadMore: Boolean = false) {
+    suspend fun searchNews(keyword: String, page: Int = 1) {
         try {
-            val currentPage = if (loadMore) _uiState.value.searchPage else 1
-
-            _uiState.update {
-                if (!loadMore)
-                    it.copy(searchList = ResultWithStatus())
-                else
-                    it
-            }
-
             val searchKeys =
-                """[{"field":"pageIndex","value":${currentPage}},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$keyword"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
+                """[{"field":"pageIndex","value":${page}},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$keyword"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
             val searchKeyEncode = Base64.encodeToString(searchKeys.toByteArray(), 0)
             val res = networkRepo.searchNewsService(searchKeyEncode)
             Log.i("TAG666", "searchNews: $res")
-            val hasMore = res.isNotEmpty()
-            val combinedResults = if (loadMore) {
-                (_uiState.value.searchList.data ?: emptyList()) + res
-            } else {
-                res
-            }
-            _uiState.update {
-                it.copy(
-                    searchList = ResultWithStatus(combinedResults),
-                    searchPage = currentPage + 1,
-                    hasMoreSearchResults = hasMore
-                )
-            }
+            _uiState.update { it.copy(searchList = res) }
         } catch (e: Exception) {
             Log.i("TAG666", "searchNews: $e")
         }
     }
 
-    /*
-    * @Param index: tab index
-    * @Param page: page index
-    * */
-    suspend fun getNewsList(index: Int, loadMore: Boolean = false) {
+    suspend fun getNewsList(typeIndex: Int, page: Int = 1) {
         try {
-            if (!loadMore) {
-                val tempList = _uiState.value.newsList.toMutableList()
-                tempList[index] = ResultWithStatus()
-                _uiState.update { it.copy(newsList = tempList) }
-            }
-
-            val currentPage = if (loadMore) _uiState.value.newsPages[index] else 1
-
-            val res = networkRepo.getNewsService(_uiState.value.newsOptionItems[index], currentPage)
-            val hasMore = res.isNotEmpty()
-
-            val combinedResults = if (loadMore) {
-                (_uiState.value.newsList[index].data ?: emptyList()) + res
+            val res = networkRepo.getNewsService(_uiState.value.newsOptionItems[typeIndex], page)
+            val currentList = _uiState.value.newsList.toMutableList()
+            if (currentList[typeIndex] == null) {
+                currentList[typeIndex] = res.sortedByDescending { it.time }.toMutableList()
             } else {
-                res
+                currentList[typeIndex] = (currentList[typeIndex]?.plus(
+                    res.sortedByDescending { it.time }
+                ))?.toMutableList()
             }
-
-            val sortedResults = combinedResults.sortedByDescending { it.time }
-
-            val tempList = _uiState.value.newsList.toMutableList()
-            tempList[index] = ResultWithStatus(sortedResults)
-
-            val tempPages = _uiState.value.newsPages.toMutableList()
-            tempPages[index] = currentPage + 1
-
-            val tempHasMore = _uiState.value.hasMoreNews.toMutableList()
-            tempHasMore[index] = hasMore
-
-            _uiState.update {
-                it.copy(
-                    newsList = tempList,
-                    newsPages = tempPages,
-                    hasMoreNews = tempHasMore
-                )
-            }
-
-            Log.i("TAG666", "getNewsList $index $currentPage ${res.size}")
+            _uiState.update { it.copy(newsList = currentList) }
+            Log.i("TAG666", "getNewsList: ${currentList[typeIndex]} $res")
         } catch (e: Exception) {
-            Log.i("TAG666", "getNewsList error: $e")
-            val tempList = _uiState.value.newsList.toMutableList()
-            tempList[index] = ResultWithStatus()
-            _uiState.update { it.copy(newsList = tempList) }
+            Log.e("TAG666", "getNewsList error: ${e.message}", e)
         }
     }
 
@@ -209,7 +182,7 @@ class NewsViewModel @Inject constructor(
                     type = "21040"
                 )
             )
-            _uiState.update { it.copy(bannerPicList = ResultWithStatus(res)) }
+            _uiState.update { it.copy(bannerPicList = res) }
             Log.i("TAG666", "getNewsList: $res")
         } catch (e: Exception) {
             Log.i("TAG666", "getNewsList: $e")
@@ -250,5 +223,11 @@ class NewsViewModel @Inject constructor(
                 onResponse("测试失败: " + (it.message ?: "请检查API配置"))
             }
         }
+
+    fun changeBionicReadingEnabled(enable: Boolean) {
+        viewModelScope.launch {
+            dataStoreRepo.changeBionicReadingEnabled(enable)
+        }
+    }
 
 }
