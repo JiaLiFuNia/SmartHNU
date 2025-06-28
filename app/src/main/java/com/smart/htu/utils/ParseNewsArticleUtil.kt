@@ -59,28 +59,39 @@ object ParseNewsArticleUtil {
     )
 
     fun parseHTMLToNewsArticle(url: String, html: String): NewsArticleEntity {
-        val document = Jsoup.parse(html)
-        val rule = selectParseRule(url)
-        val newsArticleElement = document.select(rule.elementPath.path)
-        val articleEntity = NewsArticleEntity(
-            title = selectElement(
-                newsArticleElement.firstOrNull() ?: Element(""),
-                rule.titlePath
-            ),
-            publishDate = extractDateFromString(
-                selectElement(
+        try {
+            val document = Jsoup.parse(html)
+            val rule = selectParseRule(url)
+            val newsArticleElement = document.select(rule.elementPath.path)
+            val articleEntity = NewsArticleEntity(
+                title = selectElement(
                     newsArticleElement.firstOrNull() ?: Element(""),
-                    rule.publishDatePath
-                ).toString()
-            ),
-            visitCount = selectElement(
-                newsArticleElement.firstOrNull() ?: Element(""),
-                rule.visitCountPath
-            ),
-            attachment = extractAttachment(newsArticleElement),
-            articleContent = dealArticleContent(newsArticleElement.select(rule.articleContentPath.path))
-        )
-        return articleEntity
+                    rule.titlePath
+                ),
+                publishDate = extractDateFromString(
+                    selectElement(
+                        newsArticleElement.firstOrNull() ?: Element(""),
+                        rule.publishDatePath
+                    ).toString()
+                ),
+                visitCount = selectElement(
+                    newsArticleElement.firstOrNull() ?: Element(""),
+                    rule.visitCountPath
+                ),
+                attachment = extractAttachment(newsArticleElement),
+                articleContent = dealArticleContent(newsArticleElement.select(rule.articleContentPath.path))
+            )
+            return articleEntity
+        } catch (e: Exception) {
+            Log.e("TAG666 ParseNewsArticleUtil", "Error parsing HTML: ${e.message}")
+            return NewsArticleEntity(
+                title = null,
+                articleContent = null,
+                publishDate = null,
+                visitCount = null,
+                attachment = emptyList()
+            )
+        }
     }
 
     private fun dealArticleContent(rawArticleHtml: Elements): String {

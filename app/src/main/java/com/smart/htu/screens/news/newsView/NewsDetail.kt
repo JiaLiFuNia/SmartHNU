@@ -112,6 +112,7 @@ fun NewsDetail(
     val showFloatingToolbar = remember { mutableStateOf(true) }
 
     val isHTUNews = remember { mutableStateOf(url.toUri().host == "www.htu.edu.cn") }
+
     val newsViewMode = remember { mutableIntStateOf(0) }
     val newsDetailHTML = remember { mutableStateOf("") }
     val newsLoading = remember { mutableStateOf(true) }
@@ -155,10 +156,10 @@ fun NewsDetail(
                 },
                 actions = {
                     val dropdownOptions = listOf(
-                        "分享",
-                        "复制链接",
-                        stringResource(id = R.string.open_outside),
-                        stringResource(id = R.string.forward),
+                        stringResource(R.string.share),
+                        stringResource(R.string.copy_url),
+                        stringResource(R.string.open_outside),
+                        stringResource(R.string.forward),
                         "显示解析后的html"
                     )
                     ListPopup(
@@ -191,7 +192,9 @@ fun NewsDetail(
                                             1 -> {
                                                 scope.launch {
                                                     copyContent(url)
-                                                    snackBarHostState.showSnackbar("已复制到剪贴板")
+                                                    snackBarHostState.showSnackbar(
+                                                        message = context.getString(R.string.copied_to_clipboard)
+                                                    )
                                                 }
                                             }
 
@@ -307,6 +310,13 @@ fun NewsDetail(
                     CircularProgressIndicator()
                 }
             } else {
+                item {
+                    LaunchedEffect(uiState.newsArticle) {
+                        if (uiState.newsArticle?.articleContent == null || uiState.newsArticle?.articleContent == null) {
+                            newsViewMode.intValue = 1
+                        }
+                    }
+                }
                 if (newsViewMode.intValue == 0) {
                     item {
                         TittleContent(
@@ -343,7 +353,7 @@ fun NewsDetail(
                                         subheadUpperCase = false,
                                         imgMargin = HORIZONTAL_MARGIN,
                                         imgBorderRadius = 4,
-                                        imgDisplayMode = if(uiState.loadImgEnabled) "block" else "none",
+                                        imgDisplayMode = if (uiState.loadImgEnabled) "block" else "none",
                                         linkTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
                                         codeTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
                                         codeBgColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
