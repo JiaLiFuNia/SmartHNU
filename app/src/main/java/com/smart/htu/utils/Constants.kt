@@ -1,9 +1,9 @@
 package com.smart.htu.utils
 
 import com.smart.htu.R
-import com.smart.htu.screens.application.entity.ApplicationCategory
 import com.smart.htu.screens.application.entity.ApplicationEntity
-import com.smart.htu.screens.application.entity.RouteType
+import com.smart.htu.screens.application.entity.ApplicationEntity.ApplicationCategory
+import com.smart.htu.screens.application.entity.ApplicationEntity.RouteType
 import com.smart.htu.screens.navigation.Destinations
 
 class Constants {

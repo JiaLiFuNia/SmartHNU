@@ -1,6 +1,8 @@
 package com.smart.htu.screens.application.entity
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
+import com.smart.htu.R
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -13,18 +15,20 @@ data class ApplicationEntity(
     val routeType: RouteType?,
     val route: String?,
     val category: ApplicationCategory
-)
+) {
 
-enum class ApplicationCategory(val category: String) {
-    AI("师大 AI"),
-    CAMPUS("校园"),
-    ACADEMIC_AFFAIRS("教务"),
-    OTHERS("其他")
-}
+    enum class ApplicationCategory(@StringRes val category: Int) {
+        AI(R.string.hnu_ai),
+        CAMPUS(R.string.campus),
+        ACADEMIC_AFFAIRS(R.string.academic_affairs),
+        OTHERS(R.string.other)
+    }
 
-enum class RouteType {
-    URL, // 网页
-    SCREEN, // 页面
-    ALIPAY, // 支付宝
-    APP // 应用
+    enum class RouteType {
+        URL, // 网页
+        SCREEN, // 页面
+        ALIPAY, // 支付宝
+        APP // 应用
+    }
+
 }

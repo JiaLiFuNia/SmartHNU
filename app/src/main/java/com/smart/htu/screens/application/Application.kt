@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -26,7 +27,7 @@ import androidx.window.core.layout.WindowSizeClass
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.MediumCardDisplay
-import com.smart.htu.screens.application.entity.ApplicationCategory
+import com.smart.htu.screens.application.entity.ApplicationEntity.ApplicationCategory
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateWithAuthCheck
 import com.smart.htu.screens.navigation.Destinations
@@ -79,7 +80,7 @@ fun Application(
             }
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SmallTitle(
-                    text = item.category,
+                    text = stringResource(item.category),
                     insideMargin = PaddingValues(start = 12.dp, top = 8.dp)
                 )
             }

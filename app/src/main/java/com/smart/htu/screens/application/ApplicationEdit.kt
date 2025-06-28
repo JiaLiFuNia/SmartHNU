@@ -90,7 +90,7 @@ fun ApplicationEdit(
                     SuperCheckbox(
                         checkboxLocation = CheckboxLocation.Right,
                         title = stringResource(it.label),
-                        summary = it.category.category,
+                        summary = stringResource(it.category.category),
                         checked = it in uiState.appListIsCommonList,
                         onCheckedChange = { value ->
                             viewModel.changeCommonAppListState(it, value)
@@ -107,7 +107,7 @@ fun ApplicationEdit(
                     SuperCheckbox(
                         checkboxLocation = CheckboxLocation.Right,
                         title = stringResource(it.label),
-                        summary = it.category.category,
+                        summary = stringResource(it.category.category),
                         checked = it in uiState.appListIsCommonList,
                         onCheckedChange = { value ->
                             viewModel.changeCommonAppListState(it, value)

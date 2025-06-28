@@ -29,8 +29,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.smart.htu.screens.application.entity.RouteType
 import com.smart.htu.screens.application.entity.ApplicationEntity
+import com.smart.htu.screens.application.entity.ApplicationEntity.RouteType
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

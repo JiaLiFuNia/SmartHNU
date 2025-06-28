@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.smart.htu.R
 import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.screens.application.entity.ApplicationEntity
-import com.smart.htu.screens.application.entity.RouteType
+import com.smart.htu.screens.application.entity.ApplicationEntity.RouteType
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.extra.SuperDialog

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,13 +31,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.smart.htu.App.Companion.context
 import com.smart.htu.R
+import com.smart.htu.component.svgVector.DrawableVectors
+import com.smart.htu.component.svgVector.drawablevectors.appIcon
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.GITHUB_PERSON_URL
@@ -132,21 +135,22 @@ fun About(
                         pressFeedbackType = PressFeedbackType.Tilt,
                         showIndication = true,
                         cornerRadius = 40.dp,
+                        color = Color.Transparent,
                         modifier = Modifier
                             .size(160.dp)
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.smarthnu),
+                            imageVector = DrawableVectors.appIcon(),
                             contentDescription = "app_logo",
                             modifier = Modifier
                                 .size(160.dp)
-                                .clip(RoundedCornerShape(40.dp))
                         )
                     }
                     Text(
-                        text = stringResource(R.string.app_name) + "-SmartHNU",
+                        text = "师韵-SmartHNU",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .padding(top = 16.dp)
@@ -156,7 +160,7 @@ fun About(
             }
             item {
                 SettingItemCard(
-                    label = "开发",
+                    label = stringResource(R.string.developer),
                     modifier = Modifier
                 ) {
                     SuperArrow(
@@ -181,7 +185,7 @@ fun About(
                         }
                     )
                     SuperArrow(
-                        title = "项目地址",
+                        title = stringResource(R.string.project_address),
                         onClick = {
                             startWebUrl(GITHUB_PROJECT_URL)
                         }
@@ -190,15 +194,15 @@ fun About(
             }
             item {
                 SettingItemCard(
-                    label = "其他",
+                    label = stringResource(R.string.other),
                     modifier = Modifier
                 ) {
                     SuperArrow(
-                        title = "官方网站",
+                        title = stringResource(R.string.official_website),
                         onClick = {
                             navController.navigateToWebView(
                                 url = SMH_URL,
-                                label = "师韵"
+                                label = context.getString(R.string.app_name)
                             )
                         }
                     )
@@ -212,7 +216,7 @@ fun About(
             }
             item {
                 SettingItemCard(
-                    label = "鸣谢",
+                    label = stringResource(R.string.acknowledgement),
                     modifier = Modifier
                 ) {
                     SuperArrow(

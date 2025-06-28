@@ -58,7 +58,7 @@ import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.component.card.SmallCardDisplay
 import com.smart.htu.screens.application.airCondition.AirConditionUiState
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
-import com.smart.htu.screens.application.entity.RouteType
+import com.smart.htu.screens.application.entity.ApplicationEntity.RouteType
 import com.smart.htu.screens.login.LoginUiState
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateToWebView

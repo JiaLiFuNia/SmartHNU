@@ -131,4 +131,13 @@
     <string name="select_term">选择学期</string>
     <string name="news_search">搜索</string>
     <string name="website_navigation">网址导航</string>
+    <string name="share">分享</string>
+    <string name="copy_url">复制链接</string>
+    <string name="copied_to_clipboard">已复制到剪贴板</string>
+    <string name="project_address">项目地址</string>
+    <string name="official_website">官方网站</string>
+    <string name="acknowledgement">鸣谢</string>
+    <string name="hnu_ai">师大 AI</string>
+    <string name="campus">校园</string>
+    <string name="academic_affairs">教务</string>
 </resources>
