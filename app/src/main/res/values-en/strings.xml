@@ -140,5 +140,7 @@
     <string name="hnu_ai">HNU AI</string>
     <string name="campus">Campus</string>
     <string name="academic_affairs">Academic Affairs</string>
+    <string name="message_board">留言板</string>
+    <string name="detail">详情</string>
 
 </resources>

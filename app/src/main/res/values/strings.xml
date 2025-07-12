@@ -140,4 +140,6 @@
     <string name="hnu_ai">师大 AI</string>
     <string name="campus">校园</string>
     <string name="academic_affairs">教务</string>
+    <string name="message_board">留言板</string>
+    <string name="detail">详情</string>
 </resources>
