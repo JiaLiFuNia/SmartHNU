@@ -21,8 +21,8 @@ fun SelectTermBottomSheet(
 ) {
     BasicDialog(
         showDialog = isBottomSheetShow,
-        title = stringResource(id = R.string.select_term),
-        insideMargin = DpSize(12.dp, 24.dp)
+        title = stringResource(id = R.string.setting),
+        insideMargin = DpSize(24.dp, 24.dp)
     ) {
         val globalTermIndex = termList.indexOfFirst { it.termCode == globalTermCode }
         val filteredList = if (globalTermIndex != -1) {
@@ -44,7 +44,7 @@ fun SelectTermBottomSheet(
                 onClick(items[it])
             },
             mode = DropDownMode.AlwaysOnRight,
-            maxHeight = 300.dp
+            maxHeight = 240.dp
         )
     }
 }

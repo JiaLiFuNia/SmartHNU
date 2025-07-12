@@ -13,11 +13,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun InfoBadge(
     text: String,
-    color: Color = MaterialTheme.colorScheme.primary
+    color: Color = MiuixTheme.colorScheme.primary
 ) {
     if (text.isNotEmpty())
         Box(

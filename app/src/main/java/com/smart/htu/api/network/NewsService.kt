@@ -17,11 +17,11 @@ import kotlin.random.Random
 interface NewsService {
 
     @GET("{academic}/{type}/list{page}.psp")
-    fun getNewsList(
+    suspend fun getNewsList(
         @Path("academic") academic: String = "",
         @Path("page") page: String,
         @Path("type") type: String
-    ): Call<ResponseBody>
+    ): Response<ResponseBody>
 
     @GET
     suspend fun getNewsDetail(@Url url: String): ResponseBody

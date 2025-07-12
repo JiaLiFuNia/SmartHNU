@@ -11,9 +11,9 @@ interface WeatherService {
 
     //实时天气
     @GET("weather/now")
-    fun getWeather(
+    suspend fun getWeather(
         @Query("location") locationID : String = "113.91,35.33",
         @Header("Authorization") authorization : String = GenerateQWeatherJWT.getQWeatherJWT()
-    ) : Call<WeatherResponse>
+    ) : WeatherResponse
 
 }

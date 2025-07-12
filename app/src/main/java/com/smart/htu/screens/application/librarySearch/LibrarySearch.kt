@@ -84,8 +84,7 @@ import com.smart.htu.api.module.SearchBookData
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.card.LargeCardDisplay
-import com.smart.htu.component.svgVector.DrawableVectors
-import com.smart.htu.component.svgVector.drawablevectors.emptyData
+import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
@@ -330,7 +329,7 @@ fun LibrarySearchScreen(
                                 item {
                                     EmptyContent(
                                         text = "\"${searchTextFieldState.text}\"\n没有搜索结果",
-                                        image = DrawableVectors.emptyData()
+                                        image = emptyData()
                                     )
                                 }
                             }

@@ -20,8 +20,8 @@ data class PersonalMessageEntity(
     @SerializedName("dh") val phoneNumber: String? = "-", // 手机
     @SerializedName("zzmmmc") val politicalProfile: String? = "-", // 政治面貌
     @SerializedName("bjmc") val className: String? = "-", // 班级
-    @SerializedName("ksnd") val gradeNumber: String? = "-", // 年级
     @SerializedName("sfzh") val idNumber: String? = "-", // 身份证号
+    @SerializedName("nj") val gradeNumber: Int? = 2000
 ) {
     val emailNumber: String
         get() = "$studentId@stu.htu.edu.cn"// 邮件地址

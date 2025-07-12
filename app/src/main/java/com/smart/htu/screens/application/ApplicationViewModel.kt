@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
-import com.smart.htu.screens.application.entity.ApplicationEntity
+import com.smart.htu.screens.application.ApplicationEntity
 import com.smart.htu.utils.Constants.Companion.ALL_APP_LIST
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import dagger.hilt.android.lifecycle.HiltViewModel

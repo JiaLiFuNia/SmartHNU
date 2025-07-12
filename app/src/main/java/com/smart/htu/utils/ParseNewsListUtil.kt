@@ -53,6 +53,7 @@ object ParseNewsListUtil {
 
     fun parseHTMLToNewsList(html: String, label: NewsType): List<NewsItemEntity> {
         // Log.i("TAG666 parseHtml", html)
+        if (html == "") return emptyList()
         val resultList = mutableListOf<NewsItemEntity>()
         val rules = when (label) {
             NewsType.NOTICE, NewsType.RESEARCH -> NOTICE_PARSE_RULE

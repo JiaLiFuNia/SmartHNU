@@ -11,15 +11,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,7 +29,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -58,11 +54,11 @@ import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.component.card.SmallCardDisplay
 import com.smart.htu.screens.application.airCondition.AirConditionUiState
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
-import com.smart.htu.screens.application.entity.ApplicationEntity.RouteType
+import com.smart.htu.screens.application.ApplicationEntity.RouteType
 import com.smart.htu.screens.login.LoginUiState
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateToWebView
-import com.smart.htu.screens.navigateWithAuthCheck
+import com.smart.htu.screens.navigateWithCheckLoginState
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsItem
 import com.smart.htu.screens.news.navigateToNewsDetail
@@ -94,6 +90,9 @@ fun Main(
     val loginUiState by loginViewModel.uiState.collectAsState()
     val airConditionUiState by airConditionViewModel.uiState.collectAsState()
 
+    val loginState = remember {
+        derivedStateOf { loginUiState.loginJWCState != 1 && loginUiState.loginJWCState != -2 }
+    }
     val pullToRefreshState = rememberPullToRefreshState()
 
     val coroutineScope = rememberCoroutineScope()
@@ -103,15 +102,10 @@ fun Main(
                 mainViewModel.getCurrentWeather()
                 mainViewModel.refreshNoticeAndUpdate()
                 mainViewModel.getNewsList()
-                if (loginUiState.loginJWCState == 1) {
-                    mainViewModel.getTodayCourse()
-                    mainViewModel.getCurrentWeek()
-                }
+                mainViewModel.getTodayCourse()
+                mainViewModel.getCurrentWeek()
             }
         }
-    }
-    val loginState = remember {
-        derivedStateOf { mutableStateOf(loginUiState.loginJWCState != 1) }
     }
 
     PullToRefresh(
@@ -130,7 +124,7 @@ fun Main(
             verticalArrangement = Arrangement.spacedBy(20.dp),
             overscrollEffect = null
         ) {
-            if (loginState.value.value) {
+            if (loginState.value) {
                 item {
                     SuggestChip(
                         onClick = { navController.navigate(Destinations.Login.route) },
@@ -145,13 +139,14 @@ fun Main(
                 FocusCard(navController, loginUiState, airConditionUiState, uiState)
             }
             item {
-                TodayCourseCard(uiState.todayCourseList, loginUiState, navController)
+                TodayCourseCard(uiState.todayCourseList, loginState.value, navController)
             }
             item {
                 CommonAppsCard(
                     uiState = uiState,
                     navController = navController,
-                    loginUiState = loginUiState
+                    loginUiState = loginUiState,
+                    loginState = loginState.value
                 )
             }
             item {
@@ -177,13 +172,11 @@ fun NewsCard(
         content = {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 320.dp, max = 320.dp),
+                    .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
                     modifier = Modifier
-                        .verticalScroll(rememberScrollState())
                         .fillMaxSize()
                 ) {
                     when (newsListStatus.status) {
@@ -194,7 +187,7 @@ fun NewsCard(
                                     text = "获取失败"
                                 )
                             } else {
-                                newsListStatus.data.forEach { news ->
+                                newsListStatus.data.take(4).forEach { news ->
                                     NewsItem(news = news, maxLines = 2) {
                                         navController.navigateToNewsDetail(
                                             url = news.url,
@@ -207,7 +200,9 @@ fun NewsCard(
 
                         else -> {
                             CircularProgressIndicator(
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .height(300.dp)
                             )
                         }
                     }
@@ -296,9 +291,9 @@ fun FocusCard(
                         )
                     },
                     title = "寝室电费",
-                    content = "${airConditionUiState.billData?.data?.soc ?: 0.0} 度",
+                    content = "${airConditionUiState.billData?.data?.soc ?: "--"} 度",
                     onClick = {
-                        navController.navigateWithAuthCheck(
+                        navController.navigateWithCheckLoginState(
                             isGuest = false,
                             route = Destinations.AirCondition.route,
                             routeType = RouteType.SCREEN,
@@ -361,8 +356,8 @@ fun FocusCardItem(
 
 @Composable
 fun TodayCourseCard(
-    todayCourseResult: ResultWithStatus<List<CourseEntity>>,
-    loginUiState: LoginUiState,
+    todayCourseList: List<CourseEntity>?,
+    loginState: Boolean,
     navController: NavController
 ) {
     LargeCardDisplay(
@@ -371,52 +366,48 @@ fun TodayCourseCard(
         title = stringResource(id = R.string.today_course),
         actionText = "课程表",
         navigateTo = {
-            navController.navigateWithAuthCheck(
+            navController.navigateWithCheckLoginState(
                 route = Destinations.CourseTable.route,
                 routeType = RouteType.SCREEN,
-                logState = loginUiState.loginJWCState == 1
+                logState = !loginState
             )
         },
         leadingIconPainting = R.drawable.today_24px,
         content = {
-            when (todayCourseResult.status) {
-                Status.SUCCESS -> {
-                    Column(
-                        modifier = Modifier
-                    ) {
-                        if (todayCourseResult.data.isNullOrEmpty()) {
-                            EmptyContent(
-                                modifier = Modifier
-                                    .height(86.dp)
-                                    .fillMaxWidth(),
-                                text = "今日无课程"
-                            )
-                        } else {
-                            todayCourseResult.data.forEachIndexed { index, it ->
-                                SingleCourseCard(
-                                    modifier = Modifier.fillMaxSize(),
-                                    onClick = {},
-                                    message = it
-                                )
-                            }
-                        }
-                    }
-                }
-
-                else -> {
-                    if (loginUiState.loginJWCState == 1)
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .height(86.dp)
-                                .fillMaxWidth()
-                        )
-                    else
+            Column(
+                modifier = Modifier
+                    .height(86.dp)
+            ) {
+                if (todayCourseList == null) {
+                    if (loginState) {
                         EmptyContent(
                             modifier = Modifier
-                                .height(86.dp)
                                 .fillMaxWidth(),
                             text = "请登录教务系统"
                         )
+                    } else {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(86.dp)
+                        )
+                    }
+                } else {
+                    if (todayCourseList.isEmpty()) {
+                        EmptyContent(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            text = "今日无课程"
+                        )
+                    } else {
+                        todayCourseList.forEachIndexed { index, it ->
+                            SingleCourseCard(
+                                modifier = Modifier.fillMaxSize(),
+                                onClick = {},
+                                message = it
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -427,7 +418,8 @@ fun TodayCourseCard(
 fun CommonAppsCard(
     uiState: AppUiState,
     navController: NavController,
-    loginUiState: LoginUiState
+    loginUiState: LoginUiState,
+    loginState: Boolean
 ) {
     val rowCount = remember { derivedStateOf { ceil(uiState.commonAppList.size / 5.0) } }
     val lazyVerticalGridHeight by remember { derivedStateOf { rowCount.value * 70 + (rowCount.value - 1) * 4 + 16 } }
@@ -460,17 +452,18 @@ fun CommonAppsCard(
                             contentAlignment = Alignment.Center
                         ) {
                             SmallCardDisplay(
-                                enabled = (loginUiState.isGuest && app.guestEnable) || loginUiState.loginJWCState == 1,
+                                enabled = (loginUiState.isGuestModeEnable && app.guestMode) || !loginState,
                                 content = app,
-                                onCLick = {
-                                    navController.navigateWithAuthCheck(
-                                        isGuest = loginUiState.isGuest && app.guestEnable,
+                                onClick = {
+                                    navController.navigateWithCheckLoginState(
+                                        isGuest = loginUiState.isGuestModeEnable && app.guestMode,
                                         routeType = app.routeType,
                                         route = app.route,
-                                        logState = loginUiState.loginJWCState == 1,
+                                        logState = !loginState,
                                         label = app.label
                                     )
-                                }
+                                },
+                                disableContainerColor = Color.Transparent
                             )
                         }
                     }

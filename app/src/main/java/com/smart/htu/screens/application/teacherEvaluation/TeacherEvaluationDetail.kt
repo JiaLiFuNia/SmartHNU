@@ -94,16 +94,13 @@ fun TeacherEvaluationDetail(
                 .overScrollVertical(),
             overscrollEffect = null
         ) {
-            when (uiState.evaluationQuestionList.status == Status.LOADING || !uiState.isTokenValid) {
-                true ->
-                    item {
-                        CircularProgressIndicator()
-                    }
-
-                false -> {
-                    items(uiState.evaluationQuestionList.data ?: emptyList()) {
-                        QuestionItem(it)
-                    }
+            if (uiState.evaluationQuestionList == null) {
+                item {
+                    CircularProgressIndicator()
+                }
+            } else {
+                items(uiState.evaluationQuestionList ?: emptyList()) {
+                    QuestionItem(it)
                 }
             }
         }

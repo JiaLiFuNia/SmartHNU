@@ -55,28 +55,24 @@ class JWCNetworkRepo @Inject constructor(
             }
         )
 
-    private val loginStateStateFlow = dataStoreRepo.observeLoginJWCState()
-        .stateIn(
-            scope = scope,
-            started = Eagerly,
-            initialValue = runBlocking {
-                dataStoreRepo.observeLoginJWCState().first()
-            }
-        )
-
     suspend fun getTEDetailService(
         syllabusEvaluateCode: String,
         teacherCode: String
-    ): List<EvaluationQuestion>? {
-        val res = jwcService.getTeacherEvaluationDetail(
-            TEDetailPost(
-                dgksdm = syllabusEvaluateCode,
-                teadm = teacherCode
+    ): Result<List<EvaluationQuestion>> {
+        try {
+            val res = jwcService.getTeacherEvaluationDetail(
+                TEDetailPost(
+                    dgksdm = syllabusEvaluateCode,
+                    teadm = teacherCode
+                )
             )
-        )
-        return when (res.code) {
-            200 -> res.evaluationQuestionList
-            else -> null
+            return when (res.code) {
+                200 -> Result.success(res.evaluationQuestionList)
+                else -> Result.failure(Exception(res.msg))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(e)
         }
     }
 
@@ -92,64 +88,89 @@ class JWCNetworkRepo @Inject constructor(
     }
 
 
-    suspend fun getPersonalMessageService(): PersonalMessageRes? {
-        val res = jwcService.getPersonalMessage()
-        return when (res.code) {
-            200 -> res
-            else -> null
+    suspend fun getPersonalMessageService(): Result<PersonalMessageRes> {
+        try {
+            val res = jwcService.getPersonalMessage()
+            return when (res.code) {
+                200 -> Result.success(res)
+                else -> Result.failure(Exception(res.msg))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(e)
         }
     }
 
-    suspend fun getTodayCourseService(): TodayCourseRes? {
-        val res = jwcService.getTodayCourse()
-        return when (res.code) {
-            200 -> res
-            else -> null
+    suspend fun getTodayCourseService(): Result<TodayCourseRes> {
+        try {
+            val res = jwcService.getTodayCourse()
+            return when (res.code) {
+                200 -> Result.success(res)
+                else -> Result.failure(Exception(res.message))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(e)
         }
     }
 
     suspend fun getSelectableTextbookService(
         termCode: String,
         courseTaskCode: String
-    ): SelectEntity? {
-        val res = jwcService.getSelectableTextbook(TextbookSelectPost(termCode, courseTaskCode))
-        return when (res.code) {
-            200 -> res
-            else -> null
+    ): Result<SelectEntity> {
+        try {
+            val res = jwcService.getSelectableTextbook(TextbookSelectPost(termCode, courseTaskCode))
+            return when (res.code) {
+                200 -> Result.success(res)
+                else -> Result.failure(Exception(res.msg))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(e)
         }
     }
 
     suspend fun getSelectedTextbookService(
         termCode: String,
         courseTaskCode: String
-    ): SelectEntity? {
-        val res = jwcService.getSelectedTextbook(TextbookSelectPost(termCode, courseTaskCode))
-        return when (res.code) {
-            200 -> res
-            else -> null
+    ): Result<SelectEntity> {
+        try {
+            val res = jwcService.getSelectedTextbook(TextbookSelectPost(termCode, courseTaskCode))
+            return when (res.code) {
+                200 -> Result.success(res)
+                else -> Result.failure(Exception(res.msg))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(e)
         }
     }
 
     // 教材选订
-    suspend fun getTextbookService(termCode: GlobalTerm): TextbookEntity? {
-        val res = jwcService.getTextbook(termCode)
-        return when (res.code) {
-            200 -> res
-            else -> null
+    suspend fun getTextbookService(termCode: GlobalTerm): Result<TextbookEntity> {
+        try {
+            val res = jwcService.getTextbook(termCode)
+            return when (res.code) {
+                200 -> Result.success(res)
+                else -> Result.failure(Exception(res.msg))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(e)
         }
     }
 
     // 教师评价
-    suspend fun getTeacherListService(termCode: GlobalTerm): TEEntity? {
+    suspend fun getTeacherListService(termCode: GlobalTerm): Result<TEEntity> {
         try {
             val res = jwcService.teacherEvaluation(termCode)
             return when (res.code) {
-                200 -> res
-                else -> null
+                200 -> Result.success(res)
+                else -> Result.failure(Exception(res.msg))
             }
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
-            return null
+            return Result.failure(e)
         }
     }
 
@@ -165,7 +186,7 @@ class JWCNetworkRepo @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
-            return Result.failure(Exception("获取失败"))
+            return Result.failure(e)
         }
     }
 
@@ -214,12 +235,12 @@ class JWCNetworkRepo @Inject constructor(
             Log.i("TAG666 jwcLogin", logState.toString())
             return when (logState.code) {
                 200 -> {
-                    dataStoreRepo.setTokenValidity(true)
+                    dataStoreRepo.changeLoginJWCState(1)
                     Result.success(logState)
                 }
 
                 else -> {
-                    dataStoreRepo.setTokenValidity(false)
+                    dataStoreRepo.changeLoginJWCState(-1)
                     Result.failure(Exception(logState.msg.ifEmpty { "智慧教务登录失败" }))
                 }
             }
@@ -233,7 +254,10 @@ class JWCNetworkRepo @Inject constructor(
         try {
             val res = jwcService.checkToken()
             return when (res.code) {
-                200 -> Result.success(true)
+                200 -> {
+                    Result.success(true)
+                }
+
                 else -> {
                     if (reLogin()) Result.success(true)
                     else Result.failure(Exception(res.msg))
@@ -250,7 +274,7 @@ class JWCNetworkRepo @Inject constructor(
         val res = jwcLogin(studentIdStateFlow.value, password)
         Log.i("TAG666 reLogin", res.toString())
         res.onSuccess {
-            dataStoreRepo.setTokenValidity(true)
+            dataStoreRepo.changeLoginJWCState(1)
             dataStoreRepo.setJWCToken(it.user?.token ?: DEFAULT_TOKEN)
         }
         return res.isSuccess

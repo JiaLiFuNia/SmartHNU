@@ -1,6 +1,5 @@
 package com.smart.htu.screens.setting
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,11 +37,11 @@ import androidx.navigation.NavController
 import com.smart.htu.R
 import com.smart.htu.component.InfoBadge
 import com.smart.htu.screens.UpdateDialog
-import com.smart.htu.screens.main.entity.DarkMode
 import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.setting.entity.DarkMode
 import com.smart.htu.utils.APPVersion.getVersionCode
 import com.smart.htu.utils.APPVersion.getVersionName
-import com.smart.htu.utils.Term
+import com.smart.htu.utils.TermUtil
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -60,7 +59,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun SettingScreen(
@@ -124,7 +122,7 @@ fun SettingScreen(
                     label = "通用",
                     modifier = Modifier
                 ) {
-                    val termString = Term.termConverter(uiState.termCode).split("-")
+                    val termString = TermUtil.termConverter(uiState.termCode).split("-")
                     SuperArrow(
                         title = "学期",
                         summary = "当前学期 ${termString[0]}-${termString[1]} 学年第 ${termString[2]} 学期",
@@ -142,11 +140,11 @@ fun SettingScreen(
                         }
                     )
                     SuperSwitch(
-                        checked = uiState.loadImgEnabled,
+                        checked = !uiState.loadImgEnabled,
                         title = "无图模式",
                         summary = "关闭加载文章和列表图片，节省流量",
                         onCheckedChange = {
-                            viewModel.changeLoadImgEnabled(it)
+                            viewModel.changeLoadImgEnabled(!it)
                         }
                     )
                 }

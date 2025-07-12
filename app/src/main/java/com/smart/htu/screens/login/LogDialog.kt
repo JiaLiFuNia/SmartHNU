@@ -1,16 +1,18 @@
 package com.smart.htu.screens.login
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -20,15 +22,28 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.smart.htu.R
 import com.smart.htu.component.textButtonPrimaryColors
 import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.TextButton
+import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Rename
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LogoutDialog(
     showDialog: MutableState<Boolean>,
@@ -59,15 +74,7 @@ fun LogoutDialog(
         Row(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            top.yukonga.miuix.kmp.basic.TextButton(
-                text = stringResource(id = R.string.cancel),
-                onClick = {
-                    showDialog.value = false
-                },
-                modifier = Modifier.weight(1f)
-            )
-            Spacer(Modifier.width(20.dp))
-            top.yukonga.miuix.kmp.basic.TextButton(
+            TextButton(
                 enabled = countdown == 0,
                 text = stringResource(id = R.string.confirm) + if (isConfirmEnabled) "" else " ($countdown)",
                 onClick = {
@@ -77,6 +84,14 @@ fun LogoutDialog(
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.textButtonPrimaryColors()
             )
+            Spacer(Modifier.width(20.dp))
+            TextButton(
+                text = stringResource(id = R.string.cancel),
+                onClick = {
+                    showDialog.value = false
+                },
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
@@ -84,38 +99,133 @@ fun LogoutDialog(
 
 @Composable
 fun LoginDialog(
-    showDialog: Boolean,
-    onDismissRequests: () -> Unit,
-    onConfirmClick: () -> Unit
+    showDialog: MutableState<Boolean>,
+    title: String = stringResource(R.string.login),
+    summary: String? = null,
+    isNeedVerifyCode: Boolean = false,
+    onConfirmClick: () -> Unit,
+    onLogin: (String, String, String) -> Unit
 ) {
-    if (showDialog)
-        AlertDialog(
-            icon = {
-                Icon(imageVector = Icons.Outlined.Info, contentDescription = "ins")
-            },
-            title = {
-                Text(text = stringResource(id = R.string.tip))
-            },
-            text = {
-                Text(text = "暂未登录，立即登录体验更多功能！")
-            },
-            onDismissRequest = {},
-            dismissButton = {
-                TextButton(onClick = { onDismissRequests() }) {
-                    Text(text = stringResource(R.string.guest))
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onConfirmClick()
+    val account = remember { mutableStateOf("") }
+    val password = remember { mutableStateOf("") }
+    val verifyCode = remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    val focusManager = LocalFocusManager.current
+
+    SuperDialog(
+        title = title,
+        summary = summary,
+        show = showDialog,
+        onDismissRequest = {
+            showDialog.value = false
+        }
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            TextField(
+                value = account.value,
+                onValueChange = {
+                    account.value = it
+                },
+                label = "学号",
+                useLabelAsPlaceholder = true,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(onDone = { focusManager.moveFocus(FocusDirection.Down) }),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { contentType = ContentType.Username },
+            )
+            TextField(
+                value = password.value,
+                onValueChange = {
+                    password.value = it
+                },
+                label = "密码",
+                useLabelAsPlaceholder = true,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(onNext = { focusManager.clearFocus() }),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(
+                        onClick = { passwordVisible = !passwordVisible },
+                        modifier = Modifier.padding(end = 6.dp)
+                    ) {
+                        Icon(
+                            imageVector = MiuixIcons.Useful.Rename,
+                            tint = if (passwordVisible) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.onSecondaryContainer,
+                            contentDescription = if (passwordVisible) "隐藏密码" else "显示密码"
+                        )
                     }
-                ) {
-                    Text(text = stringResource(id = R.string.login_now))
-                }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { contentType = ContentType.Password },
+            )
+            if (isNeedVerifyCode) {
+                TextField(
+                    value = verifyCode.value,
+                    onValueChange = {
+                        verifyCode.value = it
+                    },
+                    label = "验证码",
+                    useLabelAsPlaceholder = true,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.clearFocus() }),
+                    trailingIcon = {
+                        IconButton(
+                            onClick = { passwordVisible = !passwordVisible },
+                            modifier = Modifier.padding(end = 6.dp)
+                        ) {
+                            Icon(
+                                imageVector = MiuixIcons.Useful.Rename,
+                                tint = if (passwordVisible) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.onSecondaryContainer,
+                                contentDescription = if (passwordVisible) "隐藏密码" else "显示密码"
+                            )
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
             }
-        )
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TextButton(
+                    text = stringResource(id = R.string.cancel),
+                    onClick = {
+                        showDialog.value = false
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(Modifier.width(20.dp))
+                TextButton(
+                    text = stringResource(id = R.string.login),
+                    onClick = {
+                        onLogin(account.value, password.value, verifyCode.value)
+                        showDialog.value = false
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.textButtonPrimaryColors()
+                )
+            }
+        }
+    }
 }
+
 
 @Composable
 fun LoginInfoDialog(
@@ -133,7 +243,7 @@ fun LoginInfoDialog(
         Row(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            top.yukonga.miuix.kmp.basic.TextButton(
+            TextButton(
                 text = "真忘了",
                 onClick = {
                     onDismissRequests()
@@ -142,7 +252,7 @@ fun LoginInfoDialog(
                 modifier = Modifier.weight(1f)
             )
             Spacer(Modifier.width(20.dp))
-            top.yukonga.miuix.kmp.basic.TextButton(
+            TextButton(
                 text = "我知道了",
                 onClick = {
                     showDialog.value = false

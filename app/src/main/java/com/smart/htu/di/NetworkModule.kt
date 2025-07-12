@@ -9,6 +9,7 @@ import com.smart.htu.api.network.ChatService
 import com.smart.htu.api.network.EHallService
 import com.smart.htu.api.network.JWCService
 import com.smart.htu.api.network.LibraryService
+import com.smart.htu.api.network.MessageBoardService
 import com.smart.htu.api.network.NewsService
 import com.smart.htu.api.network.WeatherService
 import com.smart.htu.di.NetworkModule.ApiConstants.CHAT_BASE_URL
@@ -51,6 +52,7 @@ object NetworkModule {
         const val EHALL_BASE_URL = "https://ehall2.htu.edu.cn/"
         const val CHAT_BASE_URL = "https://chat.htu.edu.cn/"
         const val LIBRARY_BASE_URL = "https://opac.htu.edu.cn/"
+        const val MESSAGE_BOARD_BASE_URL = "https://yjfk.htu.edu.cn/"
 
         const val AIR_CONDITION_BASE_URL = "https://application.xiaofubao.com/"
         const val GITEE_BASE_URL = "https://gitee.com/"
@@ -110,8 +112,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideAppLoginService(
-    ): AppLoginService {
+    fun provideAppLoginService(): AppLoginService {
         val retrofit = Retrofit.Builder()
             .baseUrl(ApiConstants.APP_BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -210,13 +211,23 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideAppNetworkRepo(): AppService {
+    fun provideAppService(): AppService {
         val retrofit = Retrofit.Builder()
             .baseUrl(ApiConstants.SMH_BASE_URL)
             .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(AppService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMessageBoardService(): MessageBoardService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(ApiConstants.MESSAGE_BOARD_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(MessageBoardService::class.java)
     }
 
 }
@@ -233,7 +244,7 @@ class NetworkCookieJar @Inject constructor(
     init {
         scope.launch {
             try {
-                val cookies = dataStoreRepo.observeCookies().first()
+                val cookies = dataStoreRepo.observeAuthCookie().first()
                 cookies.forEach { cookie ->
                     cookie.toHttpCookie()?.let { httpCookie ->
                         cookieManager.cookieStore.add(URI.create(cookie.domain), httpCookie)
@@ -274,7 +285,7 @@ class NetworkCookieJar @Inject constructor(
             scope.launch {
                 val allCookies = cookieManager.cookieStore.cookies
                     .mapNotNull { it.toOkHttpCookie() }
-                dataStoreRepo.saveCookies(allCookies)
+                dataStoreRepo.saveAuthCookie(allCookies)
             }
         } catch (e: Exception) {
             Log.e("NetworkCookieJar", "Error saving cookies: ${e.message}")
@@ -322,7 +333,7 @@ class NetworkCookieJar @Inject constructor(
 
     suspend fun clearCookies() {
         cookieManager.cookieStore.removeAll()
-        dataStoreRepo.saveCookies(emptyList())
+        dataStoreRepo.saveAuthCookie(emptyList())
     }
 
 }

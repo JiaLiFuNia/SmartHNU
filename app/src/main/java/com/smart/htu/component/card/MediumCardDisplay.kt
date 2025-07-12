@@ -30,8 +30,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.smart.htu.R
 import com.smart.htu.component.textButtonPrimaryColors
-import com.smart.htu.screens.application.entity.ApplicationEntity
-import com.smart.htu.screens.application.entity.ApplicationEntity.RouteType
+import com.smart.htu.screens.application.ApplicationEntity
+import com.smart.htu.screens.application.ApplicationEntity.RouteType
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.extra.SuperDialog
@@ -43,7 +43,7 @@ fun MediumCardDisplay(
     enabled: Boolean,
     content: ApplicationEntity,
     modifier: Modifier,
-    onCLick: () -> Unit
+    onClick: () -> Unit
 ) {
     val showDialog = remember { mutableStateOf(false) }
     Surface(
@@ -51,7 +51,7 @@ fun MediumCardDisplay(
             if (content.routeType == RouteType.ALIPAY) {
                 showDialog.value = true
             } else {
-                onCLick()
+                onClick()
             }
         },
         modifier = modifier
@@ -103,7 +103,7 @@ fun MediumCardDisplay(
     JumpToAlipayDialog(
         showDialog = showDialog,
         onConfirmClick = {
-            onCLick()
+            onClick()
         }
     )
 }

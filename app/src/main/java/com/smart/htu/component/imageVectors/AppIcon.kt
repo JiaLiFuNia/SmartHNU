@@ -1,4 +1,4 @@
-package com.smart.htu.component.svgVector.drawablevectors
+package com.smart.htu.component.imageVectors
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
@@ -13,11 +13,10 @@ import androidx.compose.ui.graphics.vector.ImageVector.Builder
 import androidx.compose.ui.graphics.vector.group
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
-import com.smart.htu.component.svgVector.DrawableVectors
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
-fun DrawableVectors.appIcon(): ImageVector {
+fun appIcon(): ImageVector {
     return Builder(
         name = "appIcon",
         defaultWidth = 512.0.dp,

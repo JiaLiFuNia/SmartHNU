@@ -1,5 +1,7 @@
-package com.smart.htu.component.svgVector.drawablevectors
+package com.smart.htu.component.imageVectors
 
+import androidx.compose.foundation.Image
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -7,11 +9,12 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.ImageVector.Builder
 import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.smart.htu.component.svgVector.DrawableVectors
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
-fun DrawableVectors.emptyData(): ImageVector {
+fun emptyData(): ImageVector {
     return Builder(
         name = "EmptyData",
         defaultWidth = 748.97.dp,
@@ -19,7 +22,7 @@ fun DrawableVectors.emptyData(): ImageVector {
         viewportWidth = 748.97f,
         viewportHeight = 457.27f
     ).apply {
-        path(fill = SolidColor(Color(0xFFF2F2F2))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(384.22f, 369.78f)
             lineTo(122.39f, 437.21f)
             arcToRelative(
@@ -55,7 +58,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(Color(0xFFFFFFFF))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.surface)) {
             moveTo(28.44f, 72.37f)
             arcToRelative(
                 24.66f,
@@ -90,7 +93,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             lineToRelative(-54.79f, -24.53f)
             close()
         }
-        path(fill = SolidColor(Color(0xFFF2F2F2))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(331.23f, 29.5f)
             lineToRelative(-40.52f, 10.44f)
             arcToRelative(
@@ -124,7 +127,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(Color(0xFFCCCCCC))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(309.91f, 292.1f)
             lineToRelative(-119.21f, 30.7f)
             arcToRelative(
@@ -148,7 +151,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(Color(0xFFCCCCCC))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(337.76f, 304.99f)
             lineTo(195.55f, 341.61f)
             arcToRelative(
@@ -172,7 +175,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(MaterialTheme.colorScheme.primary)) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.primary)) {
             moveTo(142.05f, 339.41f)
             moveToRelative(-20.35f, 0f)
             arcToRelative(
@@ -194,7 +197,7 @@ fun DrawableVectors.emptyData(): ImageVector {
                 0f
             )
         }
-        path(fill = SolidColor(Color(0xFFFFFFFF))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.surface)) {
             moveTo(297.24f, 238.83f)
             lineTo(138.92f, 279.58f)
             arcToRelative(
@@ -230,7 +233,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(Color(0xFFE6E6E6))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(297.24f, 238.83f)
             lineTo(138.92f, 279.58f)
             arcToRelative(
@@ -307,7 +310,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(Color(0xFFF2F2F2))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(247.15f, 118.77f)
             lineToRelative(-79.9f, 20.57f)
             arcToRelative(
@@ -332,7 +335,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             curveToRelative(3.29f, 1.66f, 2.42f, 5.07f, 0.09f, 5.67f)
             close()
         }
-        path(fill = SolidColor(Color(0xFFF2F2F2))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(250.75f, 132.78f)
             lineToRelative(-79.9f, 20.57f)
             arcToRelative(
@@ -357,7 +360,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             curveToRelative(3.29f, 1.66f, 2.42f, 5.07f, 0.09f, 5.67f)
             close()
         }
-        path(fill = SolidColor(MaterialTheme.colorScheme.primary)) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.primary)) {
             moveTo(155.63f, 165.78f)
             lineTo(131.25f, 172.05f)
             arcToRelative(
@@ -401,7 +404,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(Color(0xFFF2F2F2))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(257.91f, 161.54f)
             lineTo(135.96f, 192.93f)
             arcToRelative(
@@ -426,7 +429,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             curveToRelative(3.29f, 1.66f, 2.42f, 5.07f, 0.09f, 5.67f)
             close()
         }
-        path(fill = SolidColor(Color(0xFFF2F2F2))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(261.52f, 175.56f)
             lineTo(139.57f, 206.95f)
             arcToRelative(
@@ -451,7 +454,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             curveToRelative(3.29f, 1.66f, 2.42f, 5.07f, 0.09f, 5.67f)
             close()
         }
-        path(fill = SolidColor(Color(0xFFF2F2F2))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(265.12f, 189.57f)
             lineTo(143.18f, 220.96f)
             arcToRelative(
@@ -476,7 +479,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             curveToRelative(3.29f, 1.66f, 2.42f, 5.07f, 0.09f, 5.67f)
             close()
         }
-        path(fill = SolidColor(Color(0xFFF2F2F2))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(268.73f, 203.59f)
             lineTo(146.79f, 234.98f)
             arcToRelative(
@@ -501,7 +504,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             curveTo(271.93f, 199.58f, 271.06f, 202.99f, 268.73f, 203.59f)
             close()
         }
-        path(fill = SolidColor(Color(0xFFF2F2F2))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(272.34f, 217.6f)
             lineTo(150.39f, 248.99f)
             arcToRelative(
@@ -526,7 +529,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             curveTo(275.53f, 213.59f, 274.67f, 217f, 272.34f, 217.6f)
             close()
         }
-        path(fill = SolidColor(Color(0xFFFFFFFF))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(143.55f, 346.54f)
             arcToRelative(
                 2.11f,
@@ -583,7 +586,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(Color(0xFFE6E6E6))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(641.24f, 450.68f)
             lineTo(375.84f, 399.09f)
             arcTo(
@@ -619,7 +622,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(Color(0xFFFFFFFF))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.surface)) {
             moveTo(447.72f, 29.27f)
             arcTo(
                 24.66f,
@@ -654,7 +657,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             lineTo(691.22f, 76.6f)
             close()
         }
-        path(fill = SolidColor(MaterialTheme.colorScheme.primary)) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.primary)) {
             moveTo(643.89f, 161.46f)
             lineTo(523.05f, 137.97f)
             arcTo(5.76f, 5.76f, 56f, isMoreThanHalf = false, isPositiveArc = true, 525.25f, 126.66f)
@@ -670,7 +673,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(MaterialTheme.colorScheme.primary)) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.primary)) {
             moveTo(663.5f, 185.07f)
             lineTo(519.35f, 157.05f)
             arcTo(5.76f, 5.76f, 56f, isMoreThanHalf = false, isPositiveArc = true, 521.54f, 145.74f)
@@ -686,7 +689,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(Color(0xFFCCCCCC))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(629.47f, 235.65f)
             lineTo(508.64f, 212.16f)
             arcToRelative(
@@ -710,7 +713,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(Color(0xFFCCCCCC))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(649.08f, 259.26f)
             lineTo(504.93f, 231.24f)
             arcToRelative(
@@ -734,7 +737,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(Color(0xFFCCCCCC))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(610.65f, 332.46f)
             lineTo(489.81f, 308.97f)
             arcTo(5.76f, 5.76f, 56f, isMoreThanHalf = false, isPositiveArc = true, 492.01f, 297.67f)
@@ -750,7 +753,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(Color(0xFFCCCCCC))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(630.26f, 356.07f)
             lineTo(486.1f, 328.05f)
             arcTo(5.76f, 5.76f, 56f, isMoreThanHalf = false, isPositiveArc = true, 488.3f, 316.75f)
@@ -766,7 +769,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(MaterialTheme.colorScheme.primary)) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.primary)) {
             moveTo(471.98f, 132.07f)
             moveToRelative(-19.98f, -3.88f)
             arcToRelative(
@@ -788,7 +791,7 @@ fun DrawableVectors.emptyData(): ImageVector {
                 -7.77f
             )
         }
-        path(fill = SolidColor(Color(0xFFFFFFFF))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.onSurface)) {
             moveTo(468.52f, 139.31f)
             arcToRelative(
                 2.11f,
@@ -837,7 +840,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(MaterialTheme.colorScheme.primary)) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.primary)) {
             moveTo(477.39f, 221.86f)
             arcTo(
                 20.35f,
@@ -868,7 +871,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(MaterialTheme.colorScheme.primary)) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.primary)) {
             moveTo(438.74f, 303.08f)
             moveToRelative(-19.98f, -3.88f)
             arcToRelative(
@@ -890,7 +893,7 @@ fun DrawableVectors.emptyData(): ImageVector {
                 -7.77f
             )
         }
-        path(fill = SolidColor(Color(0xFFCCCCCC))) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(739.57f, 120.62f)
             lineTo(698.49f, 112.64f)
             arcTo(
@@ -916,7 +919,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(MaterialTheme.colorScheme.primary)) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.primary)) {
             moveTo(496.1f, 423.95f)
             arcToRelative(
                 9.16f,
@@ -949,7 +952,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(MaterialTheme.colorScheme.primary)) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.primary)) {
             moveTo(389.24f, 358.78f)
             arcToRelative(
                 73.26f,
@@ -991,7 +994,7 @@ fun DrawableVectors.emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(MaterialTheme.colorScheme.secondaryContainer)) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.secondaryContainer)) {
             moveTo(325.88f, 319.86f)
             moveToRelative(-53.9f, -18.56f)
             arcToRelative(

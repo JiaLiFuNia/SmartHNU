@@ -46,8 +46,7 @@ import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.ScaffoldWithHazeLazyColumn
 import com.smart.htu.component.TabRow
-import com.smart.htu.component.svgVector.DrawableVectors
-import com.smart.htu.component.svgVector.drawablevectors.emptyData
+import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.utils.copyContent
 import kotlinx.coroutines.launch
@@ -130,7 +129,7 @@ fun TextbookSelect(
 
 @Composable
 fun PagerScope.SelectTextbook(
-    textbook: ResultWithStatus<List<Textbook>>,
+    textbook: List<Textbook>?,
     viewModel: TextbookViewModel
 ) {
     LazyColumn(
@@ -141,23 +140,21 @@ fun PagerScope.SelectTextbook(
             .overScrollVertical(),
         overscrollEffect = null
     ) {
-        if (textbook.status == Status.LOADING) {
+        if (textbook == null) {
             item {
                 CircularProgressIndicator()
             }
         } else {
-            if (textbook.status == Status.SUCCESS) {
-                if (textbook.data?.isEmpty() == true) {
-                    item {
-                        EmptyContent(
-                            text = "没有教材",
-                            image = DrawableVectors.emptyData()
-                        )
-                    }
-                } else {
-                    items(textbook.data ?: emptyList()) {
-                        SingleCourseTextbook(viewModel, it)
-                    }
+            if (textbook.isEmpty() == true) {
+                item {
+                    EmptyContent(
+                        text = "没有教材",
+                        image = emptyData()
+                    )
+                }
+            } else {
+                items(textbook) {
+                    SingleCourseTextbook(viewModel, it)
                 }
             }
         }

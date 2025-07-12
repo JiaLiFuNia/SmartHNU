@@ -1,6 +1,7 @@
-package com.smart.htu.screens.webview
+package com.smart.htu.screens.application.webview
 
 import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,9 +37,12 @@ import androidx.navigation.NavController
 import com.kevinnzou.web.rememberWebViewNavigator
 import com.kevinnzou.web.rememberWebViewState
 import com.smart.htu.R
+import com.smart.htu.component.BottomCircularProgressIndicator
 import com.smart.htu.component.WebView
+import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.utils.copyContent
 import com.smart.htu.utils.startWebUrl
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
@@ -50,10 +54,10 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun SharedWebView(
+fun ApplicationWebView(
     url: String,
     title: String,
-    webViewViewModel: WebViewViewModel = hiltViewModel(),
+    appWebViewViewModel: AppWebViewViewModel = hiltViewModel(),
     navController: NavController
 ) {
     val context = LocalContext.current
@@ -61,6 +65,9 @@ fun SharedWebView(
     val scope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
     val showDropDownMenu = remember { mutableStateOf(false) }
+
+    val showLoginDialog = remember { mutableStateOf(false) }
+    val loggingState = remember { mutableStateOf(true) }
 
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
@@ -173,12 +180,30 @@ fun SharedWebView(
             WebView(
                 url = url,
                 webViewState = rememberWebViewState(url),
-                onHtml = {
-                    // newsDetailHTML.value = it
+                onLogin = {
+                    scope.launch {
+                        delay(1000)
+                        loggingState.value = !it
+                        showLoginDialog.value = it
+                    }
                 },
                 navigator = navigator,
                 snackBarHostState = snackBarHostState
             )
         }
     }
+
+
+    LoginDialog(
+        showDialog = showLoginDialog,
+        summary = "统一身份认证系统",
+        onConfirmClick = {},
+        onLogin = { _, _, _ ->
+        }
+    )
+
+    BottomCircularProgressIndicator(
+        loadingState = loggingState,
+        loadingText = "正在登录..."
+    )
 }

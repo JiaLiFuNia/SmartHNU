@@ -2,6 +2,7 @@ package com.smart.htu.screens.news.newsView
 
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -60,7 +62,10 @@ import com.kevinnzou.web.rememberWebViewState
 import com.kevinnzou.web.rememberWebViewStateWithHTMLData
 import com.smart.htu.R
 import com.smart.htu.api.module.AttachmentEntity
+import com.smart.htu.component.BasicDialog
 import com.smart.htu.component.CircularProgressIndicator
+import com.smart.htu.component.DownloadDialog
+import com.smart.htu.component.ImagePreviewDialog
 import com.smart.htu.component.WebView
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsViewModel
@@ -116,12 +121,14 @@ fun NewsDetail(
     val newsViewMode = remember { mutableIntStateOf(0) }
     val newsDetailHTML = remember { mutableStateOf("") }
     val newsLoading = remember { mutableStateOf(true) }
+    val errorMessage = remember { mutableStateOf("") }
+    val showErrorMessageDialog = remember { mutableStateOf(false) }
     val showHtml = remember { mutableStateOf(false) }
     val showImagePreview = remember { mutableStateOf(false) }
     val selectedImageData = remember { mutableStateOf("") }
 
     LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 200 }
+        snapshotFlow { listState.firstVisibleItemIndex > 1 || listState.firstVisibleItemScrollOffset > 200 }
             .collect { hasScrolled ->
                 showFloatingToolbar.value = !hasScrolled
             }
@@ -306,9 +313,7 @@ fun NewsDetail(
                 .padding(it),
         ) {
             if (newsViewMode.intValue == 0 && uiState.newsArticle == null && newsLoading.value) {
-                item {
-                    CircularProgressIndicator()
-                }
+                item { CircularProgressIndicator() }
             } else {
                 item {
                     LaunchedEffect(uiState.newsArticle) {
@@ -323,12 +328,9 @@ fun NewsDetail(
                             title = uiState.newsArticle?.title ?: "无标题",
                             publishDate = uiState.newsArticle?.publishDate ?: getCurrentDates(),
                             visitCount = uiState.newsArticle?.visitCount ?: "10",
-                            onClick = {
-                                copyContent(uiState.newsArticle?.title.toString())
-                            },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 6.dp)
+                                .padding(horizontal = 16.dp)
                         )
                         if (showHtml.value) Text(text = uiState.newsArticle?.articleContent.toString())
                     }
@@ -370,6 +372,10 @@ fun NewsDetail(
                             ),
                             onHtml = {
                                 newsDetailHTML.value = it
+                            },
+                            onError = {
+                                errorMessage.value = it
+                                if (it.isNotEmpty()) showErrorMessageDialog.value = true
                             },
                             onFinished = {
                                 newsLoading.value = !it
@@ -434,6 +440,12 @@ fun NewsDetail(
             }
         )
     }
+
+    BasicDialog(
+        showDialog = showErrorMessageDialog,
+        title = "提示",
+        summary = errorMessage.value,
+    ) { }
 }
 
 @Composable
@@ -441,46 +453,38 @@ fun TittleContent(
     title: String,
     publishDate: String,
     visitCount: String,
-    onClick: () -> Unit = { },
     modifier: Modifier
 ) {
-    Surface(
-        modifier = modifier,
-        onClick = onClick,
-        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius)
+    Column(
+        modifier = modifier
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.Start
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalAlignment = Alignment.Start
+        Text(
+            text = title,
+            textAlign = TextAlign.Start,
+            style = MaterialTheme.typography.headlineSmall.copy(
+                color = MaterialTheme.colorScheme.onSurface
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Row(
+            horizontalArrangement = Arrangement.Start
         ) {
             Text(
-                text = title,
-                textAlign = TextAlign.Start,
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    color = MaterialTheme.colorScheme.onSurface
-                ),
-                modifier = Modifier.fillMaxWidth()
+                text = "发布时间：${publishDate}",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = Color.Gray
+                )
             )
-            Spacer(modifier = Modifier.height(6.dp))
-            Row(
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Text(
-                    text = "发布时间：${publishDate}",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.Gray
-                    )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = "浏览次数：${visitCount}",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = Color.Gray
                 )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "浏览次数：${visitCount}",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.Gray
-                    )
-                )
-            }
+            )
         }
     }
 }
@@ -520,7 +524,9 @@ fun AttachmentContent(
                                     }
                                 ),
                                 contentDescription = "file",
-                                modifier = Modifier.padding(end = 10.dp)
+                                modifier = Modifier
+                                    .padding(end = 10.dp)
+                                    .size(36.dp)
                             )
                         },
                         title = attachment.fileName,

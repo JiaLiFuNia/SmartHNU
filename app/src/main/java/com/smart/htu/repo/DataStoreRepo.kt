@@ -14,9 +14,9 @@ import com.smart.htu.api.DataStoreService
 import com.smart.htu.api.module.ACCookie
 import com.smart.htu.api.module.AIModelConfigEntity
 import com.smart.htu.api.module.LibraryDetailEntity
-import com.smart.htu.screens.application.entity.ApplicationEntity
+import com.smart.htu.screens.application.ApplicationEntity
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
-import com.smart.htu.utils.Term
+import com.smart.htu.utils.TermUtil
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -34,16 +34,14 @@ class DataStoreRepo @Inject constructor(
 ) : DataStoreService {
 
     companion object {
-        val QQ_NUMBER = stringPreferencesKey("QQ_NUMBER")
         val USERNAME = stringPreferencesKey("USERNAME")
         val LOGIN_STATE = intPreferencesKey("LOGIN_STATE")
         val LOGIN_JWC_STATE = intPreferencesKey("LOGIN_JWC_STATE")
         val TOKEN = stringPreferencesKey("TOKEN")
-        val TOKEN_VALIDITY = booleanPreferencesKey("TOKEN_VALIDITY")
         val DARK_THEME = intPreferencesKey("DARK_THEME")
         val THEME_MODE = intPreferencesKey("THEME_MODE")
         val COMMON_APP_LIST = stringPreferencesKey("COMMON_APP_LIST")
-        val SSO_TICKET = stringPreferencesKey("SSO_TICKET")
+        val AUTH_COOKIE = stringPreferencesKey("AUTH_COOKIE")
         val MOBILE_CODE = stringPreferencesKey("MOBILE_CODE")
         val WAITING_BORROWED_BOOK_LIST = stringPreferencesKey("WAITING_BORROWED_BOOK_LIST")
         val BLUR_EFFECT = booleanPreferencesKey("BLUR_EFFECT")
@@ -66,13 +64,11 @@ class DataStoreRepo @Inject constructor(
         const val DEFAULT_MESSAGE_READ_ID = "[]"
         const val DEFAULT_THEME_MODE = 0
         const val DEFAULT_BLUR_EFFECT = false
-        const val DEFAULT_TOKEN_VALIDITY = false
         const val DEFAULT_AI_FUNCTION_ENABLED = false
         const val DEFAULT_AI_MODEL_KEY = ""
         const val DEFAULT_TOKEN = ""
         const val DEFAULT_LOGIN_STATE = 0
         const val DEFAULT_DARK_THEME = 0
-        const val DEFAULT_QQ_NUMBER = ""
         const val DEFAULT_USERNAME = "未登录"
         const val DEFAULT_PASSWORD = ""
         const val DEFAULT_STUDENT_ID = ""
@@ -99,10 +95,6 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[COMMON_APP_LIST] = Json.encodeToString(appList) }
     }
 
-    override suspend fun changeQQNumber(qqNumber: String) {
-        context.dataStore.edit { it[QQ_NUMBER] = qqNumber }
-    }
-
     override suspend fun changeUsername(name: String) {
         context.dataStore.edit { it[USERNAME] = name }
     }
@@ -111,13 +103,13 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[LOGIN_STATE] = state }
     }
 
-    override suspend fun saveCookies(cookies: List<Cookie>) {
-        context.dataStore.edit { it[SSO_TICKET] = Gson().toJson(cookies) }
+    override suspend fun saveAuthCookie(cookie: List<Cookie>) {
+        context.dataStore.edit { it[AUTH_COOKIE] = Gson().toJson(cookie) }
     }
 
     override suspend fun addWaitingBorrowedBookList(waitingBorrowedBookList: List<LibraryDetailEntity>) {
         context.dataStore.edit {
-            it[WAITING_BORROWED_BOOK_LIST] = Gson().toJson(waitingBorrowedBookList)
+            it[WAITING_BORROWED_BOOK_LIST] = Json.encodeToString(waitingBorrowedBookList)
         }
     }
 
@@ -161,10 +153,6 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[NOTICE_READ_ID_LIST] = Json.encodeToString(id) }
     }
 
-    override suspend fun setTokenValidity(valid: Boolean) {
-        context.dataStore.edit { it[TOKEN_VALIDITY] = valid }
-    }
-
     override suspend fun setGlobalTermCode(term: String) {
         context.dataStore.edit { it[GLOBAL_TERM] = term }
     }
@@ -203,18 +191,13 @@ class DataStoreRepo @Inject constructor(
     }
 
     override fun observeCommonAppList(): Flow<List<ApplicationEntity>> {
-        return context.dataStore.data
-            .map {
-                Json.decodeFromString<List<ApplicationEntity>>(
-                    it[COMMON_APP_LIST] ?: Json.encodeToString(
-                        INIT_COMMON_APP_LIST
-                    )
+        return context.dataStore.data.map {
+            Json.decodeFromString<List<ApplicationEntity>>(
+                it[COMMON_APP_LIST] ?: Json.encodeToString(
+                    INIT_COMMON_APP_LIST
                 )
-            }
-    }
-
-    override fun observeQQNumber(): Flow<String> {
-        return context.dataStore.data.map { it[QQ_NUMBER] ?: DEFAULT_QQ_NUMBER }
+            )
+        }
     }
 
     override fun observeUsername(): Flow<String> {
@@ -225,9 +208,9 @@ class DataStoreRepo @Inject constructor(
         return context.dataStore.data.map { it[LOGIN_STATE] ?: DEFAULT_LOGIN_STATE }
     }
 
-    override fun observeCookies(): Flow<List<Cookie>> {
+    override fun observeAuthCookie(): Flow<List<Cookie>> {
         return context.dataStore.data.map {
-            val json = it[SSO_TICKET] ?: DEFAULT_COOKIES
+            val json = it[AUTH_COOKIE] ?: DEFAULT_COOKIES
             if (json == DEFAULT_COOKIES) {
                 emptyList()
             } else {
@@ -239,13 +222,9 @@ class DataStoreRepo @Inject constructor(
 
     override fun observeWaitingBorrowedBookList(): Flow<List<LibraryDetailEntity>> {
         return context.dataStore.data.map {
-            val json = it[WAITING_BORROWED_BOOK_LIST] ?: ""
-            if (json == "") {
-                emptyList()
-            } else {
-                val typeOfT = object : TypeToken<List<LibraryDetailEntity>>() {}.type
-                Gson().fromJson(json, typeOfT)
-            }
+            Json.decodeFromString<List<LibraryDetailEntity>>(
+                it[WAITING_BORROWED_BOOK_LIST] ?: "[]"
+            )
         }
     }
 
@@ -303,12 +282,8 @@ class DataStoreRepo @Inject constructor(
         }
     }
 
-    override fun observeTokenValidity(): Flow<Boolean> {
-        return context.dataStore.data.map { it[TOKEN_VALIDITY] ?: DEFAULT_TOKEN_VALIDITY }
-    }
-
     override fun observeGlobalTermCode(): Flow<String> {
-        return context.dataStore.data.map { it[GLOBAL_TERM] ?: Term.getCurrentTerm() }
+        return context.dataStore.data.map { it[GLOBAL_TERM] ?: TermUtil.getCurrentTerm() }
     }
 
     override fun observeMobileCode(): Flow<String> {
@@ -330,7 +305,9 @@ class DataStoreRepo @Inject constructor(
     }
 
     override fun observeBionicReadingEnabled(): Flow<Boolean> {
-        return context.dataStore.data.map { it[BIONIC_READING_ENABLED] ?: DEFAULT_BIONIC_READING_ENABLED }
+        return context.dataStore.data.map {
+            it[BIONIC_READING_ENABLED] ?: DEFAULT_BIONIC_READING_ENABLED
+        }
     }
 
     override fun observeLoadImgEnabled(): Flow<Boolean> {

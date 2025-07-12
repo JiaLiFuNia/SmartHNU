@@ -41,16 +41,14 @@ import androidx.navigation.NavController
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseTextbook
-import com.smart.htu.api.module.Status
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.InfoBadge
 import com.smart.htu.component.ScaffoldWithHazeLazyColumn
-import com.smart.htu.component.svgVector.DrawableVectors
-import com.smart.htu.component.svgVector.drawablevectors.emptyData
+import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.application.grade.SelectTermBottomSheet
 import com.smart.htu.screens.navigation.Destinations
-import com.smart.htu.utils.Term.termConverter
+import com.smart.htu.utils.TermUtil.termConverter
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Surface
@@ -108,24 +106,21 @@ fun Textbook(
                 .overScrollVertical(),
             overscrollEffect = null
         ) {
-            when (uiState.courseList.status == Status.LOADING || !uiState.isTokenValid) {
-                true ->
+            if (uiState.courseList == null) {
+                item {
+                    CircularProgressIndicator()
+                }
+            } else {
+                if (uiState.courseList?.courseTextbookList?.isEmpty() == true) {
                     item {
-                        CircularProgressIndicator()
+                        EmptyContent(
+                            text = "学期 ${termConverter(uiState.termCode)}\n暂无数据",
+                            image = emptyData()
+                        )
                     }
-
-                false -> {
-                    if (uiState.courseList.data?.courseTextbookList?.isEmpty() == true) {
-                        item {
-                            EmptyContent(
-                                text = "学期 ${termConverter(uiState.termCode)}\n暂无数据",
-                                image = DrawableVectors.emptyData()
-                            )
-                        }
-                    } else {
-                        items(uiState.courseList.data?.courseTextbookList ?: emptyList()) {
-                            SingleCourseTextbook(uiState.termCode, it, navController)
-                        }
+                } else {
+                    items(uiState.courseList?.courseTextbookList ?: emptyList()) {
+                        SingleCourseTextbook(uiState.termCode, it, navController)
                     }
                 }
             }

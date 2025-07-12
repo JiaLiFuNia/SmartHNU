@@ -19,10 +19,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface SharedDataRepository {
+    val loginJWCState: StateFlow<Int>
     val termIndex: StateFlow<TermIndexEntity?>
     val notice: StateFlow<NoticeRes?>
     val update: StateFlow<UpdateEntity?>
 
+    suspend fun setJWCLoginState(state: Int)
     suspend fun getTermIndex(termCode: GlobalTerm = GlobalTerm()): Result<TermIndexEntity>
     suspend fun getNotice(): Result<NoticeRes>
     suspend fun getUpdate(): Result<UpdateEntity>
@@ -37,18 +39,21 @@ class SharedDataRepoImpl @Inject constructor(
 
     val scope = CoroutineScope(Dispatchers.IO)
 
-    override val termIndex = MutableStateFlow<TermIndexEntity?>(null)
-    override val notice = MutableStateFlow<NoticeRes?>(null)
-    override val update = MutableStateFlow<UpdateEntity?>(null)
-
-    private val tokenValidity = dataStoreRepo.observeTokenValidity()
+    override val loginJWCState = dataStoreRepo.observeLoginJWCState()
         .stateIn(
             scope = scope,
             started = Eagerly,
             initialValue = runBlocking {
-                dataStoreRepo.observeTokenValidity().first()
+                dataStoreRepo.observeLoginJWCState().first()
             }
         )
+    override val termIndex = MutableStateFlow<TermIndexEntity?>(null)
+    override val notice = MutableStateFlow<NoticeRes?>(null)
+    override val update = MutableStateFlow<UpdateEntity?>(null)
+
+    override suspend fun setJWCLoginState(state: Int) {
+        dataStoreRepo.changeLoginJWCState(state)
+    }
 
     override suspend fun getUpdate(): Result<UpdateEntity> {
         try {
@@ -106,9 +111,6 @@ class SharedDataRepoImpl @Inject constructor(
     // 学期
     override suspend fun getTermIndex(termCode: GlobalTerm): Result<TermIndexEntity> {
         try {
-            if (!tokenValidity.value) {
-                return Result.failure(Exception("token失效"))
-            }
             val res = jwcService.getTermIndex(termCode)
             Log.i("TAG666 shared", "获取学期成功")
             return when (res.code) {

@@ -4,7 +4,9 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class LibraryDetailEntity(
     val imageUrl: String? = "",
     val title: String? = "",

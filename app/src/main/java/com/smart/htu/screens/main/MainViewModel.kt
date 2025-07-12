@@ -11,16 +11,16 @@ import com.smart.htu.api.module.HolidayEntity
 import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.UpdateEntity
-import com.smart.htu.api.module.WeatherNowData
+import com.smart.htu.api.module.WeatherCurrentData
 import com.smart.htu.repo.AppNetworkRepo
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN_VALIDITY
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.SharedDataRepository
-import com.smart.htu.screens.application.entity.ApplicationEntity
+import com.smart.htu.screens.application.ApplicationEntity
 import com.smart.htu.screens.news.entity.NewsCategoryEntity
 import com.smart.htu.screens.news.entity.NewsType
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
@@ -38,20 +38,19 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class AppUiState(
-    val todayCourseList: ResultWithStatus<List<CourseEntity>> = ResultWithStatus(),
-    val currentWeather: ResultWithStatus<WeatherNowData> = ResultWithStatus(),
+    val todayCourseList: List<CourseEntity>? = null,
+    val currentWeather: ResultWithStatus<WeatherCurrentData> = ResultWithStatus(),
     val newsList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
     val courseSchedule: ResultWithStatus<CourseScheduleEntity> = ResultWithStatus(),
     val holidayEntity: HolidayEntity? = null,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val username: String = DEFAULT_USERNAME,
-    val isLogSuccess: Boolean = false,
-    val isTokenValid: Boolean = DEFAULT_TOKEN_VALIDITY,
     val readNoticeIdList: List<Int> = emptyList(),
     val noticeIdList: List<Int> = emptyList(),
     val updateEntity: UpdateEntity = UpdateEntity(),
     val isShowUpdateDialog: MutableState<Boolean> = mutableStateOf(false),
-    val commonAppList: List<ApplicationEntity> = INIT_COMMON_APP_LIST
+    val commonAppList: List<ApplicationEntity> = INIT_COMMON_APP_LIST,
+    val loginJWCState: Int = DEFAULT_LOGIN_STATE
 )
 
 @HiltViewModel
@@ -91,13 +90,6 @@ class MainViewModel @Inject constructor(
             runBlocking { dataStoreRepo.observeReadNoticeIdList().first() }
         )
 
-    private val loginState = dataStoreRepo.observeLoginState()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            runBlocking { dataStoreRepo.observeLoginState().first() }
-        )
-
     private val commonAppListStateFlow = dataStoreRepo.observeCommonAppList()
         .stateIn(
             viewModelScope,
@@ -105,14 +97,21 @@ class MainViewModel @Inject constructor(
             runBlocking { dataStoreRepo.observeCommonAppList().first() }
         )
 
-    private val tokenValidityStateFlow = dataStoreRepo.observeTokenValidity()
+    private val loginJWCStateStateFlow = dataStoreRepo.observeLoginJWCState()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            runBlocking { dataStoreRepo.observeTokenValidity().first() }
+            runBlocking {
+                dataStoreRepo.observeLoginJWCState().first()
+            }
         )
 
     init {
+        viewModelScope.launch {
+            loginJWCStateStateFlow.collect { value ->
+                _uiState.update { it.copy(loginJWCState = value) }
+            }
+        }
         viewModelScope.launch {
             blurStateFlow.collect { value ->
                 _uiState.update { it.copy(blurEffect = value) }
@@ -121,13 +120,6 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             usernameStateFlow.collect { value ->
                 _uiState.update { it.copy(username = value) }
-            }
-        }
-        viewModelScope.launch {
-            loginState.collect { value ->
-                _uiState.update {
-                    it.copy(isLogSuccess = value == 1)
-                }
             }
         }
         viewModelScope.launch {
@@ -166,25 +158,11 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             sharedDataRepository.getTermIndex()
         }
-        viewModelScope.launch {
-            tokenValidityStateFlow.collect { value ->
-                _uiState.update { it.copy(isTokenValid = value) }
-            }
-        }
         viewModelScope.launch { getNewsList() }
         viewModelScope.launch { getCurrentWeather() }
         viewModelScope.launch { getHoliday() }
-
-        viewModelScope.launch {
-            if (_uiState.value.isTokenValid) {
-                getTodayCourse()
-            }
-        }
-        viewModelScope.launch {
-            if (_uiState.value.isTokenValid) {
-                getCurrentWeek()
-            }
-        }
+        viewModelScope.launch { getTodayCourse() }
+        viewModelScope.launch { getCurrentWeek() }
     }
 
     suspend fun refreshNoticeAndUpdate() {
@@ -192,9 +170,9 @@ class MainViewModel @Inject constructor(
         sharedDataRepository.getUpdate()
     }
 
-    fun getCurrentWeek(week: String = "", section: String = "") = viewModelScope.launch {
+    fun getCurrentWeek() = viewModelScope.launch {
         try {
-            val res = jwcNetworkRepo.getCourseScheduleService(week, section)
+            val res = jwcNetworkRepo.getCourseScheduleService()
             _uiState.update { it.copy(courseSchedule = ResultWithStatus(res)) }
             Log.i("TAG666 main", "getCurrentWeek: $res")
         } catch (e: Exception) {
@@ -222,7 +200,6 @@ class MainViewModel @Inject constructor(
     fun getCurrentWeather() = viewModelScope.launch {
         try {
             val res = networkRepo.getWeatherService()
-            if (res != null) Log.i("TAG666", "getNowWeather success")
             _uiState.update {
                 it.copy(currentWeather = ResultWithStatus(res))
             }
@@ -233,11 +210,12 @@ class MainViewModel @Inject constructor(
 
     fun getTodayCourse() = viewModelScope.launch {
         try {
-            val res = jwcNetworkRepo.getTodayCourseService()
-            Log.i("TAG666", "getTodayCourse: $res")
-            _uiState.update { uiState ->
-                uiState.copy(todayCourseList = ResultWithStatus(res?.courseList?.sortedBy { it.sortNumber }))
-            }
+            jwcNetworkRepo.getTodayCourseService()
+                .onSuccess { res ->
+                    _uiState.update {
+                        it.copy(todayCourseList = res.courseList.sortedBy { it.sortNumber })
+                    }
+                }
         } catch (e: Exception) {
             Log.i("TAG666", "getTodayCourse: $e")
         }

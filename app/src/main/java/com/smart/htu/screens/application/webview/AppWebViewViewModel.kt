@@ -1,4 +1,4 @@
-package com.smart.htu.screens.webview
+package com.smart.htu.screens.application.webview
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -14,7 +14,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import javax.inject.Inject
 
 @HiltViewModel
-class WebViewViewModel @Inject constructor(
+class AppWebViewViewModel @Inject constructor(
     private val networkCookieJar: NetworkCookieJar
 ) : ViewModel() {
     private val _cookies = MutableStateFlow<Map<String, String>>(emptyMap())

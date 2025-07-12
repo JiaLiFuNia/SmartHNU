@@ -143,10 +143,10 @@ class NewsViewModel @Inject constructor(
 
     suspend fun searchNews(keyword: String, page: Int = 1) {
         try {
-            val searchKeys =
+            val searchInfo =
                 """[{"field":"pageIndex","value":${page}},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$keyword"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
-            val searchKeyEncode = Base64.encodeToString(searchKeys.toByteArray(), 0)
-            val res = networkRepo.searchNewsService(searchKeyEncode)
+            val searchInfoEncode = Base64.encodeToString(searchInfo.toByteArray(), 0)
+            val res = networkRepo.searchNewsService(searchInfoEncode)
             Log.i("TAG666", "searchNews: $res")
             _uiState.update { it.copy(searchList = res) }
         } catch (e: Exception) {
@@ -154,21 +154,22 @@ class NewsViewModel @Inject constructor(
         }
     }
 
-    suspend fun getNewsList(typeIndex: Int, page: Int = 1) {
+    suspend fun getNewsList(typeIndex: Int, pageIndex: Int = 1) {
         try {
-            val res = networkRepo.getNewsService(_uiState.value.newsOptionItems[typeIndex], page)
+            val res = networkRepo.getNewsService(
+                newsOptionItems = _uiState.value.newsOptionItems[typeIndex],
+                page = pageIndex
+            ).sortedByDescending { it.time }
             val currentList = _uiState.value.newsList.toMutableList()
             if (currentList[typeIndex] == null) {
-                currentList[typeIndex] = res.sortedByDescending { it.time }.toMutableList()
+                currentList[typeIndex] = res.toMutableList()
             } else {
-                currentList[typeIndex] = (currentList[typeIndex]?.plus(
-                    res.sortedByDescending { it.time }
-                ))?.toMutableList()
+                currentList[typeIndex] = (currentList[typeIndex]?.plus(res))?.toMutableList()
             }
             _uiState.update { it.copy(newsList = currentList) }
-            Log.i("TAG666", "getNewsList: ${currentList[typeIndex]} $res")
+            Log.i("TAG666 getNewsList", "${currentList[typeIndex]} $res")
         } catch (e: Exception) {
-            Log.e("TAG666", "getNewsList error: ${e.message}", e)
+            Log.e("TAG666 getNewsList ", "error: ${e.message}")
         }
     }
 

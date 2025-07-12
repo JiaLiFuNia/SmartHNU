@@ -39,7 +39,7 @@ fun LazyItemScope.CircularProgressIndicator(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator(
+            InfiniteProgressIndicator(
                 modifier = Modifier.padding(top = 88.dp),
                 size = size
             )
@@ -51,7 +51,6 @@ fun LazyItemScope.CircularProgressIndicator(
                 )
             )
         }
-        // CircularWavyProgressIndicator(modifier = Modifier.padding(top = 88.dp))
     }
 }
 
@@ -77,37 +76,6 @@ fun CircularProgressIndicator(
                 style = MiuixTheme.textStyles.subtitle.copy(
                     color = Color.Gray
                 )
-            )
-        }
-        //CircularWavyProgressIndicator(modifier = Modifier.size(size))
-    }
-}
-
-@Composable
-fun BottomCircularProgressIndicator(
-    loadingState: Boolean,
-    loadingText: String = "正在加载..."
-) {
-    SuperDialog(
-        show = remember(loadingState) { mutableStateOf(loadingState) },
-        onDismissRequest = { }
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            InfiniteProgressIndicator(
-                modifier = Modifier,
-                color = MiuixTheme.colorScheme.onSurface,
-                size = 24.dp,
-                strokeWidth = 2.dp,
-                orbitingDotSize = 2.dp
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = loadingText,
-                fontSize = 19.sp,
-                color = MiuixTheme.colorScheme.onSurface
             )
         }
     }

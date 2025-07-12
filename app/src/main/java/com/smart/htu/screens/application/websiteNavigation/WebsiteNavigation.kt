@@ -34,8 +34,7 @@ import com.smart.htu.api.module.Status
 import com.smart.htu.api.module.WebsiteNavigationEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
-import com.smart.htu.component.svgVector.DrawableVectors
-import com.smart.htu.component.svgVector.drawablevectors.emptyData
+import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import kotlinx.coroutines.launch
@@ -124,7 +123,7 @@ fun WebsiteNavigation(
                             item {
                                 EmptyContent(
                                     text = "暂无数据",
-                                    image = DrawableVectors.emptyData()
+                                    image = emptyData()
                                 )
                             }
                         } else {
@@ -143,7 +142,7 @@ fun WebsiteNavigation(
                         item {
                             EmptyContent(
                                 text = "暂无数据",
-                                image = DrawableVectors.emptyData()
+                                image = emptyData()
                             )
                         }
                     }

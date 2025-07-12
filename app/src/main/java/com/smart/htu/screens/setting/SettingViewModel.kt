@@ -17,7 +17,7 @@ import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.utils.CoilUtil.formatFileSize
 import com.smart.htu.utils.CoilUtil.getDirectorySize
-import com.smart.htu.utils.Term.getCurrentTerm
+import com.smart.htu.utils.TermUtil.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

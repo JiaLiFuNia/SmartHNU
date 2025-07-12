@@ -1,5 +1,8 @@
 package com.smart.htu.screens.navigation
 
+import kotlinx.serialization.Serializable
+import androidx.navigation3.runtime.NavKey
+
 sealed class Destinations(
     val route: String
 ) {
@@ -16,7 +19,7 @@ sealed class Destinations(
     data object Setting : Destinations("setting")
     data object About : Destinations("about")
     data object ClassroomSearch : Destinations("classroom_search")
-    data object SharedWebView : Destinations("shared_webview")
+    data object ApplicationWebView : Destinations("application_webview")
     data object License : Destinations("license")
     data object LibrarySearch : Destinations("library_search")
     data object LibrarySearchDetail : Destinations("library_search_detail")
@@ -34,4 +37,117 @@ sealed class Destinations(
     data object AIConfiguration : Destinations("ai_configuration")
     data object PhysicalTest : Destinations("physical_test")
     data object PdfReaderView : Destinations("pdf_viewer")
+    data object MessageBoard : Destinations("message_board")
+    data object MessageBoardDetail : Destinations("message_board_detail")
 }
+
+@Serializable
+data object MainFrame : NavKey
+
+@Serializable
+data object Login : NavKey
+
+@Serializable
+data object News : NavKey
+
+@Serializable
+data object Person : NavKey
+
+@Serializable
+data object Application : NavKey
+
+@Serializable
+data object NewsSearch : NavKey
+
+@Serializable
+data object NewsHistory : NavKey
+
+@Serializable
+data class NewsDetail(
+    val url: String,
+    val title: String
+) : NavKey
+
+@Serializable
+data object ApplicationEdit : NavKey
+
+@Serializable
+data object Message : NavKey
+
+@Serializable
+data object Setting : NavKey
+
+@Serializable
+data object About : NavKey
+
+@Serializable
+data object ClassroomSearch : NavKey
+
+@Serializable
+data class SharedWebView(
+    val url: String,
+    val label: String
+) : NavKey
+
+@Serializable
+data object License : NavKey
+
+@Serializable
+data object LibrarySearch : NavKey
+
+@Serializable
+data class LibrarySearchDetail(val bookId: String) : NavKey
+
+@Serializable
+data object AirCondition : NavKey
+
+@Serializable
+data object AirConditionSetting : NavKey
+
+@Serializable
+data object AccountManage : NavKey
+
+@Serializable
+data object Grade : NavKey
+
+@Serializable
+data object TeacherEvaluation : NavKey
+
+@Serializable
+data class TeacherEvaluationDetail(
+    val syllabusEvaluateCode: String,
+    val teacherCode: String
+) : NavKey
+
+@Serializable
+data object Textbook : NavKey
+
+@Serializable
+data class TextbookSelect(
+    val courseTaskCode: String,
+    val termCode: String
+) : NavKey
+
+@Serializable
+data object CourseTable : NavKey
+
+@Serializable
+data object Feedback : NavKey
+
+@Serializable
+data object WebsiteNavigation : NavKey
+
+@Serializable
+data object AIConfiguration : NavKey
+
+@Serializable
+data object PhysicalTest : NavKey
+
+@Serializable
+data class PdfReaderView(
+    val url: String,
+    val title: String
+) : NavKey
+
+@Serializable
+data object MessageBoard : NavKey

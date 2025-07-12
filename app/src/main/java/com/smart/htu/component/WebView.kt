@@ -33,6 +33,8 @@ import com.smart.htu.utils.FileUtil.downloadFile
 import com.smart.htu.utils.getHtml
 import com.smart.htu.utils.setDefaultSettings
 import kotlinx.coroutines.launch
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import org.jsoup.Jsoup
 
 @SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,9 +43,11 @@ fun WebView(
     url: String,
     headers: Map<String, String> = emptyMap(),
     webViewState: WebViewState = rememberWebViewState(url, headers),
-    onHtml: (String) -> Unit? = {},
-    onFinished: (Boolean) -> Unit = {},
-    onCurrentUrl: (String) -> Unit = {},
+    onHtml: (String) -> Unit? = { },
+    onError: (String) -> Unit = { },
+    onFinished: (Boolean) -> Unit = { },
+    onLogin: (Boolean) -> Unit = { },
+    onCurrentUrl: (String) -> Unit = { },
     onImageClick: (imgUrl: String) -> Unit = { },
     isShowLinearProgressIndicator: Boolean = true,
     snackBarHostState: SnackbarHostState,
@@ -59,6 +63,9 @@ fun WebView(
                 onFinished(false)
                 url?.let {
                     onCurrentUrl(it)
+                    if (it.contains("/authserver/login?service=")) {
+                        onLogin(true)
+                    }
                 }
             }
 
@@ -68,12 +75,10 @@ fun WebView(
                 scope.launch {
                     try {
                         val html = view.getHtml()
-                        val cleanHtml = html.trim('"').replace("\\\"", "\"")
-                            .replace("\\n", "\n")
-                            .replace("\\r", "\r")
-                            .replace("\\t", "\t")
-                            .replace("\\\\", "\\")
-                        onHtml(cleanHtml)
+                        val document = Jsoup.parse(html)
+                        val errorMessage = document.select("div.wp_error_msg").text()
+                        onError(errorMessage)
+                        onHtml(html)
                     } catch (e: Exception) {
                         snackBarHostState.showSnackbar("获取网页内容失败：${e.message}")
                     }

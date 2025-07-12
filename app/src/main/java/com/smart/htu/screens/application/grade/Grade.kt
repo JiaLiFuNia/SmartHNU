@@ -37,6 +37,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -57,11 +58,10 @@ import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.InfoBadge
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
-import com.smart.htu.component.svgVector.DrawableVectors
-import com.smart.htu.component.svgVector.drawablevectors.emptyData
+import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.GradeDivideUtil.divideGrade
-import com.smart.htu.utils.Term.termConverter
+import com.smart.htu.utils.TermUtil.termConverter
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.PullToRefresh
@@ -99,6 +99,7 @@ fun Grade(
 
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -166,7 +167,7 @@ fun Grade(
                         item {
                             EmptyContent(
                                 text = "学期 ${termConverter(uiState.termCode)}\n暂无数据",
-                                image = DrawableVectors.emptyData()
+                                image = emptyData()
                             )
                         }
                     } else {

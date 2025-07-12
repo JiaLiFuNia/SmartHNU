@@ -1,9 +1,9 @@
 package com.smart.htu.utils
 
 import com.smart.htu.R
-import com.smart.htu.screens.application.entity.ApplicationEntity
-import com.smart.htu.screens.application.entity.ApplicationEntity.ApplicationCategory
-import com.smart.htu.screens.application.entity.ApplicationEntity.RouteType
+import com.smart.htu.screens.application.ApplicationEntity
+import com.smart.htu.screens.application.ApplicationEntity.ApplicationCategory
+import com.smart.htu.screens.application.ApplicationEntity.RouteType
 import com.smart.htu.screens.navigation.Destinations
 
 class Constants {
@@ -41,7 +41,7 @@ class Constants {
 
         val ALL_APP_LIST = listOf(
             ApplicationEntity(
-                guestEnable = false,
+                guestMode = false,
                 label = R.string.dorm_air_conditioner,
                 icon = R.drawable.bolt_24px,
                 routeType = RouteType.SCREEN,
@@ -49,7 +49,7 @@ class Constants {
                 category = ApplicationCategory.CAMPUS
             ),
             ApplicationEntity(
-                guestEnable = false,
+                guestMode = false,
                 label = R.string.classroom_search,
                 icon = R.drawable.apartment_24px,
                 routeType = RouteType.SCREEN,
@@ -57,7 +57,7 @@ class Constants {
                 category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
             ApplicationEntity(
-                guestEnable = true,
+                guestMode = true,
                 label = R.string.book_search,
                 icon = R.drawable.book_4_24px,
                 routeType = RouteType.SCREEN,
@@ -65,7 +65,7 @@ class Constants {
                 category = ApplicationCategory.OTHERS
             ),
             ApplicationEntity(
-                guestEnable = false,
+                guestMode = false,
                 icon = R.drawable.finance_24px,
                 label = R.string.course_grade,
                 routeType = RouteType.SCREEN,
@@ -73,7 +73,7 @@ class Constants {
                 category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
             ApplicationEntity(
-                guestEnable = true,
+                guestMode = true,
                 icon = R.drawable.near_me_24px,
                 label = R.string.live_service,
                 routeType = null,
@@ -101,7 +101,7 @@ class Constants {
                 category = ApplicationCategory.QUICK_APP
             ),*/
             ApplicationEntity(
-                guestEnable = false,
+                guestMode = false,
                 icon = R.drawable.format_paint_24px,
                 label = R.string.second_class,
                 routeType = RouteType.URL,
@@ -109,7 +109,7 @@ class Constants {
                 category = ApplicationCategory.OTHERS
             ),
             ApplicationEntity(
-                guestEnable = false,
+                guestMode = false,
                 icon = R.drawable.book_4_24px,
                 label = R.string.textbook_select,
                 routeType = RouteType.SCREEN,
@@ -117,7 +117,7 @@ class Constants {
                 category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
             ApplicationEntity(
-                guestEnable = false,
+                guestMode = false,
                 icon = R.drawable.person_check_24px,
                 label = R.string.teacher_evaluation,
                 routeType = RouteType.SCREEN,
@@ -125,7 +125,7 @@ class Constants {
                 category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
             ApplicationEntity(
-                guestEnable = false,
+                guestMode = false,
                 icon = R.drawable.credit_card_24px,
                 label = R.string.school_card,
                 routeType = RouteType.URL,
@@ -133,7 +133,7 @@ class Constants {
                 category = ApplicationCategory.CAMPUS
             ),
             ApplicationEntity(
-                guestEnable = false,
+                guestMode = false,
                 icon = R.drawable.school_24px,
                 label = R.string.academic_affairs_system,
                 routeType = RouteType.URL,
@@ -141,7 +141,7 @@ class Constants {
                 category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
             ApplicationEntity(
-                guestEnable = false,
+                guestMode = false,
                 icon = R.drawable.id_card_24px,
                 label = R.string.smart_work,
                 routeType = RouteType.URL,
@@ -149,7 +149,7 @@ class Constants {
                 category = ApplicationCategory.CAMPUS
             ),
             ApplicationEntity(
-                guestEnable = false,
+                guestMode = false,
                 icon = R.drawable.psychology_alt_24px,
                 label = R.string.htu_helper,
                 routeType = RouteType.URL,
@@ -157,7 +157,7 @@ class Constants {
                 category = ApplicationCategory.AI
             ),
             ApplicationEntity(
-                guestEnable = false,
+                guestMode = false,
                 icon = R.drawable.support_agent_24px,
                 label = R.string.campus_helper,
                 routeType = RouteType.URL,
@@ -173,7 +173,7 @@ class Constants {
                 category = ApplicationCategory.AI
             ),*/
             ApplicationEntity(
-                guestEnable = false,
+                guestMode = false,
                 icon = R.drawable.captive_portal_24px,
                 label = R.string.one_stop_service,
                 routeType = RouteType.URL,
@@ -181,7 +181,7 @@ class Constants {
                 category = ApplicationCategory.CAMPUS
             ),
             ApplicationEntity(
-                guestEnable = false,
+                guestMode = false,
                 icon = R.drawable.calendar_month_24px,
                 label = R.string.course_table,
                 routeType = RouteType.SCREEN,
@@ -189,11 +189,19 @@ class Constants {
                 category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
             ApplicationEntity(
-                guestEnable = true,
+                guestMode = true,
                 icon = R.drawable.calendar_month_24px,
                 label = R.string.website_navigation,
                 routeType = RouteType.SCREEN,
                 route = Destinations.WebsiteNavigation.route,
+                category = ApplicationCategory.CAMPUS
+            ),
+            ApplicationEntity(
+                guestMode = true,
+                icon = R.drawable.speaker_notes_24px,
+                label = R.string.message_board,
+                routeType = RouteType.SCREEN,
+                route = Destinations.MessageBoard.route,
                 category = ApplicationCategory.CAMPUS
             ),
             /*ApplicationEntity(

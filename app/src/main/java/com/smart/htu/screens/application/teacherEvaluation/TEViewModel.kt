@@ -1,19 +1,17 @@
 package com.smart.htu.screens.application.teacherEvaluation
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.EvaluationQuestion
 import com.smart.htu.api.module.GlobalTerm
-import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.SingleTerm
 import com.smart.htu.api.module.TEEntity
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN_VALIDITY
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.SharedDataRepository
-import com.smart.htu.utils.Term.getCurrentTerm
+import com.smart.htu.utils.TermUtil.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,10 +29,10 @@ data class TEUiState(
     val termCode: String,
     val globalTermCode: String,
     val termList: List<SingleTerm> = emptyList(),
-    val evaluationInfo: ResultWithStatus<TEEntity> = ResultWithStatus(),
-    val evaluationQuestionList: ResultWithStatus<List<EvaluationQuestion>> = ResultWithStatus(),
-    val isTokenValid: Boolean = DEFAULT_TOKEN_VALIDITY,
-    val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
+    val evaluationInfo: TEEntity? = null,
+    val evaluationQuestionList: List<EvaluationQuestion>? = null,
+    val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
+    val loginJWCState: Int = DEFAULT_LOGIN_STATE
 )
 
 @HiltViewModel
@@ -62,20 +60,21 @@ class TEViewModel @Inject constructor(
             }
         )
 
-    private val tokenValidStateFlow = dataStoreRepo.observeTokenValidity()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            runBlocking {
-                dataStoreRepo.observeTokenValidity().first()
-            }
-        )
     private val termCodeStateFlow = dataStoreRepo.observeGlobalTermCode()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
                 dataStoreRepo.observeGlobalTermCode().first()
+            }
+        )
+
+    private val loginJWCStateStateFlow = dataStoreRepo.observeLoginJWCState()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeLoginJWCState().first()
             }
         )
 
@@ -86,8 +85,8 @@ class TEViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            tokenValidStateFlow.collect { value ->
-                _uiState.update { it.copy(isTokenValid = value) }
+            loginJWCStateStateFlow.collect { value ->
+                _uiState.update { it.copy(loginJWCState = value) }
             }
         }
         viewModelScope.launch {
@@ -114,26 +113,23 @@ class TEViewModel @Inject constructor(
     }
 
     fun getTeacherListService() = viewModelScope.launch {
-        val teacherList = jwcNetworkRepo.getTeacherListService(GlobalTerm(_uiState.value.termCode))
-        _uiState.update { uiState ->
-            uiState.copy(evaluationInfo = ResultWithStatus(teacherList))
-        }
+        jwcNetworkRepo.getTeacherListService(GlobalTerm(_uiState.value.termCode))
+            .onSuccess { res ->
+                _uiState.update { it.copy(evaluationInfo = res) }
+            }
     }
 
     fun getTEDetailService(
         syllabusEvaluateCode: String,
         teacherCode: String
-    ) {
-        try {
-            viewModelScope.launch {
-                val res = jwcNetworkRepo.getTEDetailService(syllabusEvaluateCode, teacherCode)
-                _uiState.update { uiState ->
-                    uiState.copy(evaluationQuestionList = ResultWithStatus(res))
-                }
+    ) = viewModelScope.launch {
+        jwcNetworkRepo.getTEDetailService(syllabusEvaluateCode, teacherCode)
+            .onSuccess { res ->
+                _uiState.update { it.copy(evaluationQuestionList = res) }
             }
-        } catch (e: Exception) {
-            Log.i("TAG666 getTEDetailService", "${e.message}")
-        }
+            .onFailure {
+                _uiState.update { it.copy(evaluationQuestionList = emptyList()) }
+            }
     }
 
     suspend fun refreshTermIndex() {

@@ -16,7 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.smart.htu.screens.main.entity.DarkMode
+import com.smart.htu.screens.setting.entity.DarkMode
 import com.smart.htu.screens.setting.SettingViewModel
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 

@@ -155,10 +155,10 @@ object ParseNewsArticleUtil {
         trElements.removeAttr("style")
 
         // 删除带有附件的元素
-        val sudyFileElements = rawArticleHtml.select("[sudyfile-attr]")
+        /*val sudyFileElements = rawArticleHtml.select("[sudyfile-attr]")
         sudyFileElements.forEach {
             it.remove()
-        }
+        }*/
 
         // 原始文本
         val rawArticleHtml = rawArticleHtml.toString()

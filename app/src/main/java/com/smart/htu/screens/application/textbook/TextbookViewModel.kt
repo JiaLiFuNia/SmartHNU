@@ -1,20 +1,18 @@
 package com.smart.htu.screens.application.textbook
 
-import android.util.Log
 import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.GlobalTerm
-import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.SingleTerm
 import com.smart.htu.api.module.Textbook
 import com.smart.htu.api.module.TextbookEntity
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN_VALIDITY
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.SharedDataRepository
-import com.smart.htu.utils.Term.getCurrentTerm
+import com.smart.htu.utils.TermUtil.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -32,11 +30,11 @@ data class TextbookUiState(
     val globalTermCode: String,
     val termList: List<SingleTerm> = emptyList(),
     val courseTaskCode: String = "",
-    val courseList: ResultWithStatus<TextbookEntity> = ResultWithStatus(),
-    val selectableList: ResultWithStatus<List<Textbook>> = ResultWithStatus(),
-    val selectedList: ResultWithStatus<List<Textbook>> = ResultWithStatus(),
-    val isTokenValid: Boolean = DEFAULT_TOKEN_VALIDITY,
-    val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
+    val courseList: TextbookEntity? = null,
+    val selectableList: List<Textbook>? = null,
+    val selectedList: List<Textbook>? = null,
+    val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
+    val loginJWCState: Int = DEFAULT_LOGIN_STATE
 )
 
 @HiltViewModel
@@ -65,20 +63,21 @@ class TextbookViewModel @Inject constructor(
             }
         )
 
-    private val tokenValidStateFlow = dataStoreRepo.observeTokenValidity()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            runBlocking {
-                dataStoreRepo.observeTokenValidity().first()
-            }
-        )
     private val termCodeStateFlow = dataStoreRepo.observeGlobalTermCode()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
                 dataStoreRepo.observeGlobalTermCode().first()
+            }
+        )
+
+    private val loginJWCStateStateFlow = dataStoreRepo.observeLoginJWCState()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeLoginJWCState().first()
             }
         )
 
@@ -89,8 +88,8 @@ class TextbookViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            tokenValidStateFlow.collect { value ->
-                _uiState.update { it.copy(isTokenValid = value) }
+            loginJWCStateStateFlow.collect { value ->
+                _uiState.update { it.copy(loginJWCState = value) }
             }
         }
         viewModelScope.launch {
@@ -121,30 +120,25 @@ class TextbookViewModel @Inject constructor(
     }
 
     fun getTextbook(termCode: String) = viewModelScope.launch {
-        try {
-            val res = jwcNetworkRepo.getTextbookService(GlobalTerm(termCode))
-            _uiState.update { uiState ->
-                uiState.copy(courseList = ResultWithStatus(res))
+        jwcNetworkRepo.getTextbookService(GlobalTerm(termCode))
+            .onSuccess { res ->
+                _uiState.update { it.copy(courseList = res) }
+            }.onFailure {
+                _uiState.update { it.copy(selectedList = emptyList()) }
             }
-        } catch (e: Exception) {
-            Log.i("TAG666", "getCourseGrade: $e")
-        }
     }
 
     fun getSelectableTextbookService(
         courseTaskCode: String,
         termCode: String
     ) = viewModelScope.launch {
-        try {
-            val res = jwcNetworkRepo.getSelectableTextbookService(
-                termCode = termCode,
-                courseTaskCode = courseTaskCode
-            )
-            _uiState.update {
-                it.copy(selectableList = ResultWithStatus(res?.selectableList))
-            }
-        } catch (e: Exception) {
-            Log.i("TAG666", "getSelectableTextbookService: $e")
+        jwcNetworkRepo.getSelectableTextbookService(
+            termCode = termCode,
+            courseTaskCode = courseTaskCode
+        ).onSuccess { res ->
+            _uiState.update { it.copy(selectableList = res.selectableList) }
+        }.onFailure {
+            _uiState.update { it.copy(selectedList = emptyList()) }
         }
     }
 
@@ -152,16 +146,13 @@ class TextbookViewModel @Inject constructor(
         courseTaskCode: String,
         termCode: String
     ) = viewModelScope.launch {
-        try {
-            val res = jwcNetworkRepo.getSelectedTextbookService(
-                termCode = termCode,
-                courseTaskCode = courseTaskCode
-            )
-            _uiState.update {
-                it.copy(selectedList = ResultWithStatus(res?.selectedList))
-            }
-        } catch (e: Exception) {
-            Log.i("TAG666", "getSelectedTextbookService: $e")
+        jwcNetworkRepo.getSelectedTextbookService(
+            termCode = termCode,
+            courseTaskCode = courseTaskCode
+        ).onSuccess { res ->
+            _uiState.update { it.copy(selectedList = res.selectedList) }
+        }.onFailure {
+            _uiState.update { it.copy(selectedList = emptyList()) }
         }
     }
 

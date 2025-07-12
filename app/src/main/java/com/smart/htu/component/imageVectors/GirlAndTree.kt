@@ -1,4 +1,4 @@
-package com.smart.htu.component.svgVector.drawablevectors
+package com.smart.htu.component.imageVectors
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -10,10 +10,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.ImageVector.Builder
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
-import com.smart.htu.component.svgVector.DrawableVectors
 
 @Composable
-fun DrawableVectors.girlAndTree(): ImageVector {
+fun girlAndTree(): ImageVector {
     return Builder(
         name = "GirlAndTree", defaultWidth = 888.0.dp, defaultHeight =
         677.20703.dp, viewportWidth = 888.0f, viewportHeight = 677.20703f

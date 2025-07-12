@@ -45,16 +45,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.smart.htu.R
 import com.smart.htu.api.module.EvaluationInfo
-import com.smart.htu.api.module.Status
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.InfoBadge
 import com.smart.htu.component.ScaffoldWithHazeLazyColumn
-import com.smart.htu.component.svgVector.DrawableVectors
-import com.smart.htu.component.svgVector.drawablevectors.emptyData
+import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.application.grade.SelectTermBottomSheet
 import com.smart.htu.screens.navigation.Destinations
-import com.smart.htu.utils.Term.termConverter
+import com.smart.htu.utils.TermUtil.termConverter
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Surface
@@ -133,35 +131,32 @@ fun TeacherEvaluation(
                 .overScrollVertical(),
             overscrollEffect = null
         ) {
-            when (uiState.evaluationInfo.status == Status.LOADING || !uiState.isTokenValid) {
-                true ->
-                    item {
-                        CircularProgressIndicator()
-                    }
-
-                false -> {
-                    item {
-                        if (uiState.evaluationInfo.data?.evaluationInfoList?.isEmpty() == true)
-                            EmptyContent(
-                                text = "学期 ${termConverter(uiState.termCode)}\n评价时间 ${uiState.evaluationInfo.data?.msg}",
-                                image = DrawableVectors.emptyData()
-                            )
-                        else
-                            EmptyContent(
-                                text = "学期 ${termConverter(uiState.termCode)}\n评价时间 ${uiState.evaluationInfo.data?.msg}",
-                                modifier = Modifier
-                                    .fillParentMaxWidth()
-                                    .padding(bottom = 4.dp)
-                            )
-                    }
-                    items(uiState.evaluationInfo.data?.evaluationInfoList ?: emptyList()) {
-                        SingleTeacher(
-                            teacher = it,
-                            onClick = { syllabusEvaluateCode, teacherCode ->
-                                if (it.evaluationCode.isEmpty()) navController.navigate(route = "${Destinations.TeacherEvaluationDetail.route}/${syllabusEvaluateCode}/${teacherCode}")
-                            }
+            if (uiState.evaluationInfo == null) {
+                item {
+                    CircularProgressIndicator()
+                }
+            } else {
+                item {
+                    if (uiState.evaluationInfo?.evaluationInfoList?.isEmpty() == true)
+                        EmptyContent(
+                            text = "学期 ${termConverter(uiState.termCode)}\n评价时间 ${uiState.evaluationInfo?.msg}",
+                            image = emptyData()
                         )
-                    }
+                    else
+                        EmptyContent(
+                            text = "学期 ${termConverter(uiState.termCode)}\n评价时间 ${uiState.evaluationInfo?.msg}",
+                            modifier = Modifier
+                                .fillParentMaxWidth()
+                                .padding(bottom = 4.dp)
+                        )
+                }
+                items(uiState.evaluationInfo?.evaluationInfoList ?: emptyList()) {
+                    SingleTeacher(
+                        teacher = it,
+                        onClick = { syllabusEvaluateCode, teacherCode ->
+                            if (it.evaluationCode.isEmpty()) navController.navigate(route = "${Destinations.TeacherEvaluationDetail.route}/${syllabusEvaluateCode}/${teacherCode}")
+                        }
+                    )
                 }
             }
         }

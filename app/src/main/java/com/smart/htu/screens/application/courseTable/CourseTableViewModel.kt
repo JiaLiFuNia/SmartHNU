@@ -10,11 +10,11 @@ import com.smart.htu.api.module.CourseScheduleEntity
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.SingleTerm
 import com.smart.htu.repo.DataStoreRepo
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN_VALIDITY
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.utils.FileUtil.saveTextToFile
-import com.smart.htu.utils.Term.getCurrentTerm
+import com.smart.htu.utils.TermUtil.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -41,9 +41,9 @@ data class CourseTableUiState(
     val termCode: String,
     val termList: List<SingleTerm> = emptyList(),
     val termRange: Pair<Int, Int> = Pair(0, 25),
-    val isTokenValid: Boolean = DEFAULT_TOKEN_VALIDITY,
     val username: String = DEFAULT_USERNAME,
-    val isWriteCalendarEnabled: Boolean = false
+    val isWriteCalendarEnabled: Boolean = false,
+    val loginJWCState: Int = DEFAULT_LOGIN_STATE
 )
 
 @HiltViewModel
@@ -80,10 +80,24 @@ class CourseTableViewModel @Inject constructor(
                 }
             )
 
+    private val loginJWCStateStateFlow = dataStoreRepo.observeLoginJWCState()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeLoginJWCState().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
             usernameStateFlow.collect { value ->
                 _uiState.update { it.copy(username = value) }
+            }
+        }
+        viewModelScope.launch {
+            loginJWCStateStateFlow.collect { value ->
+                _uiState.update { it.copy(loginJWCState = value) }
             }
         }
         viewModelScope.launch {

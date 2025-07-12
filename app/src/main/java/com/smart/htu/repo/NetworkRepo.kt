@@ -11,7 +11,7 @@ import com.smart.htu.api.module.BuyRecords
 import com.smart.htu.api.module.NewsArticleEntity
 import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.Usage
-import com.smart.htu.api.module.WeatherNowData
+import com.smart.htu.api.module.WeatherCurrentData
 import com.smart.htu.api.network.AirConditionService
 import com.smart.htu.api.network.AppLoginService
 import com.smart.htu.api.network.AuthLoginService
@@ -29,7 +29,6 @@ import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import org.jsoup.Jsoup
 import retrofit2.Response
-import retrofit2.awaitResponse
 import java.io.IOException
 import javax.inject.Inject
 
@@ -93,14 +92,12 @@ class NetworkRepo @Inject constructor(
         page: Int? = 1
     ): List<NewsItemEntity> {
         try {
-            val call = newsService.getNewsList(
+            val res = newsService.getNewsList(
                 academic = newsOptionItems.academic,
                 page = page.toString(),
                 type = newsOptionItems.type
             )
-            val res = call.awaitResponse().body()?.string() ?: ""
-            // Log.i("TAG666", "getBannerPicService: $res")
-            return parseHTMLToNewsList(res, newsOptionItems.label)
+            return parseHTMLToNewsList(res.body()?.string().toString(), newsOptionItems.label)
         } catch (e: Exception) {
             Log.e("TAG666", "getB $e")
             return emptyList()
@@ -119,11 +116,10 @@ class NetworkRepo @Inject constructor(
     }
 
     // 获取实时天气
-    suspend fun getWeatherService(): WeatherNowData? {
-        val call = weatherService.getWeather()
-        val res = call.awaitResponse().body()
+    suspend fun getWeatherService(): WeatherCurrentData? {
+        val res = weatherService.getWeather()
         try {
-            return res?.now
+            return res.now
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
             return null
@@ -240,10 +236,6 @@ class NetworkRepo @Inject constructor(
             Log.i("TAG666", "repo ${pwdEncryptSalt}\n${execution}")
         } catch (e: IOException) {
             Log.e("TAG666", "${e.message}")
-            throw e
-        } catch (e: Exception) {
-            Log.e("TAG666", "${e.message}")
-            throw IOException("error")
         }
     }
 

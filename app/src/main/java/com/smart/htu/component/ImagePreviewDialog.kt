@@ -1,4 +1,4 @@
-package com.smart.htu.screens.news.newsView
+package com.smart.htu.component
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box

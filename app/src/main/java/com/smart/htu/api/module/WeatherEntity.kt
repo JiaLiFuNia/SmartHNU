@@ -5,10 +5,10 @@ import android.content.Context
 import com.google.gson.annotations.SerializedName
 
 data class WeatherResponse(
-    @SerializedName("now") val now: WeatherNowData
+    @SerializedName("now") val now: WeatherCurrentData
 )
 
-data class WeatherNowData(
+data class WeatherCurrentData(
     @SerializedName("temp") val temperature: String, //温度
     @SerializedName("feelsLike") val feelsLike: String, //体感温度
     @SerializedName("text") val weather: String,//多云

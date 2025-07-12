@@ -1,11 +1,10 @@
-package com.smart.htu.screens.news.newsView
+package com.smart.htu.component
 
 import android.os.Environment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
-import com.smart.htu.component.BasicDialog
 import com.smart.htu.utils.FileUtil.downloadFile
 import kotlinx.coroutines.launch
 

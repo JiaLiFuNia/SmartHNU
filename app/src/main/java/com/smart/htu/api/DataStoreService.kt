@@ -3,7 +3,7 @@ package com.smart.htu.api
 import com.smart.htu.api.module.ACCookie
 import com.smart.htu.api.module.AIModelConfigEntity
 import com.smart.htu.api.module.LibraryDetailEntity
-import com.smart.htu.screens.application.entity.ApplicationEntity
+import com.smart.htu.screens.application.ApplicationEntity
 import kotlinx.coroutines.flow.Flow
 import okhttp3.Cookie
 
@@ -14,11 +14,10 @@ interface DataStoreService {
     suspend fun changeDarkTheme(isDarkTheme: Int)
     suspend fun changeBlurState(state: Boolean)
     suspend fun setCommonApp(appList: List<ApplicationEntity>)
-    suspend fun changeQQNumber(qqNumber: String)
     suspend fun changeUsername(name: String)
     suspend fun changeLoginState(state: Int)
     suspend fun changeLoginJWCState(state: Int)
-    suspend fun saveCookies(cookies: List<Cookie>)
+    suspend fun saveAuthCookie(cookies: List<Cookie>)
     suspend fun addWaitingBorrowedBookList(waitingBorrowedBookList: List<LibraryDetailEntity>)
     suspend fun saveStudentId(id: String)
     suspend fun changeBuildingId(id: String)
@@ -28,7 +27,6 @@ interface DataStoreService {
     suspend fun changeBookSearchHistoryList(list: List<String>)
     suspend fun setJWCToken(token: String)
     suspend fun addReadNoticeId(id: List<Int>)
-    suspend fun setTokenValidity(valid: Boolean)
     suspend fun setGlobalTermCode(term: String)
     suspend fun saveMobileCode(mobileCode: String)
     suspend fun setIsWriteCalendarPermissionGranted(enable: Boolean)
@@ -41,10 +39,9 @@ interface DataStoreService {
     fun observeDarkTheme(): Flow<Int>
     fun observerBlurState(): Flow<Boolean>
     fun observeCommonAppList(): Flow<List<ApplicationEntity>>
-    fun observeQQNumber(): Flow<String>
     fun observeUsername(): Flow<String>
     fun observeLoginState(): Flow<Int>
-    fun observeCookies(): Flow<List<Cookie>>
+    fun observeAuthCookie(): Flow<List<Cookie>>
     fun observeWaitingBorrowedBookList(): Flow<List<LibraryDetailEntity>>
     fun observeStudentId(): Flow<String>
     fun observeBuildingId(): Flow<String>
@@ -55,7 +52,6 @@ interface DataStoreService {
     fun observeJWCToken(): Flow<String>
     fun observeLoginJWCState(): Flow<Int>
     fun observeReadNoticeIdList(): Flow<List<Int>>
-    fun observeTokenValidity(): Flow<Boolean>
     fun observeGlobalTermCode(): Flow<String>
     fun observeMobileCode(): Flow<String>
     fun observeIsWriteCalendarPermissionGranted(): Flow<Boolean>

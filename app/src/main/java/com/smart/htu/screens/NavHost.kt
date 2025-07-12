@@ -16,11 +16,14 @@ import com.smart.htu.screens.application.airCondition.AirConditionSetting
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.application.classroom.ClassroomSearchScreen
 import com.smart.htu.screens.application.courseTable.CourseTable
-import com.smart.htu.screens.application.entity.ApplicationEntity.RouteType
+import com.smart.htu.screens.application.ApplicationEntity.RouteType
 import com.smart.htu.screens.application.grade.Grade
 import com.smart.htu.screens.application.librarySearch.LibrarySearchDetail
 import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
 import com.smart.htu.screens.application.librarySearch.LibrarySearchViewModel
+import com.smart.htu.screens.application.messageBoard.MessageBoard
+import com.smart.htu.screens.application.messageBoard.MessageBoardDetail
+import com.smart.htu.screens.application.messageBoard.MessageBoardViewModel
 import com.smart.htu.screens.application.physicalTest.PhysicalTest
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluation
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluationDetail
@@ -42,7 +45,7 @@ import com.smart.htu.screens.setting.About
 import com.smart.htu.screens.setting.License
 import com.smart.htu.screens.setting.SettingScreen
 import com.smart.htu.screens.setting.feedback.Feedback
-import com.smart.htu.screens.webview.SharedWebView
+import com.smart.htu.screens.application.webview.ApplicationWebView
 import com.smart.htu.utils.startAppUrl
 import com.smart.htu.utils.startLaunchAPK
 
@@ -86,7 +89,7 @@ fun NavHostScreen() {
             ClassroomSearchScreen(navController = navController)
         }
         animatedComposable(
-            route = "${Destinations.SharedWebView.route}/{url}/{title}",
+            route = "${Destinations.ApplicationWebView.route}/{url}/{title}",
             arguments = listOf(
                 navArgument(name = "url") {
                     type = NavType.StringType
@@ -97,7 +100,7 @@ fun NavHostScreen() {
             )
         ) { webview ->
             val url = Uri.decode(webview.arguments?.getString("url") ?: "")
-            SharedWebView(
+            ApplicationWebView(
                 url = url,
                 title = webview.arguments?.getString("title") ?: "",
                 navController = navController,
@@ -246,10 +249,26 @@ fun NavHostScreen() {
                 title = webview.arguments?.getString("title") ?: ""
             )
         }
+        animatedComposable(Destinations.MessageBoard.route) {
+            MessageBoard(navController)
+        }
+        animatedComposable(
+            route = "${Destinations.MessageBoardDetail.route}/{postID}",
+            arguments = listOf(
+                navArgument(name = "postID") {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            MessageBoardDetail(
+                postID = it.arguments?.getString("postID").toString(),
+                navController = navController
+            )
+        }
     }
 }
 
-fun NavController.navigateWithAuthCheck(
+fun NavController.navigateWithCheckLoginState(
     isGuest: Boolean = false,
     route: String? = null,
     routeType: RouteType? = null,
@@ -282,10 +301,10 @@ fun NavController.navigateWithAuthCheck(
             else -> {
             }
         }
-    } else {
+    } else {/*
         this.currentBackStackEntry?.savedStateHandle?.set("original_route", route)
         this.currentBackStackEntry?.savedStateHandle?.set("original_url", route)
-        this.currentBackStackEntry?.savedStateHandle?.set("original_label", label)
+        this.currentBackStackEntry?.savedStateHandle?.set("original_label", label)*/
         this.navigate(loginRoute)
     }
 }
@@ -294,5 +313,5 @@ fun NavController.navigateToWebView(
     url: String,
     label: String
 ) {
-    this.navigate("${Destinations.SharedWebView.route}/${Uri.encode(url)}/${label}")
+    this.navigate("${Destinations.ApplicationWebView.route}/${Uri.encode(url)}/${label}")
 }

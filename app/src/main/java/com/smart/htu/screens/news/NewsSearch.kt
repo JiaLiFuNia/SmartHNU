@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -45,8 +46,7 @@ import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
-import com.smart.htu.component.svgVector.DrawableVectors
-import com.smart.htu.component.svgVector.drawablevectors.emptyData
+import com.smart.htu.component.imageVectors.emptyData
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -65,6 +65,8 @@ fun NewsSearch(
     val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    val isSearching = remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -124,6 +126,7 @@ fun NewsSearch(
                     state = textFieldState,
                     onSearch = {
                         scope.launch {
+                            isSearching.value = true
                             viewModel.searchNews(it)
                         }
                     },
@@ -165,29 +168,38 @@ fun NewsSearch(
                     .overScrollVertical(),
                 overscrollEffect = null
             ) {
-                if (uiState.searchList == null) {
+                if (!isSearching.value) {
                     item {
-                        CircularProgressIndicator()
+                        EmptyContent(
+                            text = "输入关键词进行搜索",
+                            image = Icons.Outlined.Search
+                        )
                     }
                 } else {
-                    if (uiState.searchList!!.isEmpty() == true) {
+                    if (uiState.searchList == null) {
                         item {
-                            EmptyContent(
-                                text = "没有相关新闻或通知",
-                                image = DrawableVectors.emptyData()
-                            )
+                            CircularProgressIndicator()
                         }
                     } else {
-                        items(uiState.searchList ?: emptyList()) {
-                            NewsItem(
-                                news = it,
-                                onClick = {
-                                    navController.navigateToNewsDetail(
-                                        url = it.url,
-                                        label = context.getString(it.label.label)
-                                    )
-                                }
-                            )
+                        if (uiState.searchList!!.isEmpty() == true) {
+                            item {
+                                EmptyContent(
+                                    text = "没有相关新闻或通知",
+                                    image = emptyData()
+                                )
+                            }
+                        } else {
+                            items(uiState.searchList ?: emptyList()) {
+                                NewsItem(
+                                    news = it,
+                                    onClick = {
+                                        navController.navigateToNewsDetail(
+                                            url = it.url,
+                                            label = context.getString(it.label.label)
+                                        )
+                                    }
+                                )
+                            }
                         }
                     }
                 }

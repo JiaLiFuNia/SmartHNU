@@ -1,11 +1,13 @@
 package com.smart.htu.component.card
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,36 +27,45 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.smart.htu.screens.application.entity.ApplicationEntity
-import com.smart.htu.screens.application.entity.ApplicationEntity.RouteType
+import com.smart.htu.screens.application.ApplicationEntity
+import com.smart.htu.screens.application.ApplicationEntity.RouteType
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SmallCardDisplay(
     enabled: Boolean,
     content: ApplicationEntity,
-    onCLick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enableContainerColor: Color = MiuixTheme.colorScheme.surface,
+    disableContainerColor: Color = MiuixTheme.colorScheme.disabledSecondaryVariant,
+    onClick: () -> Unit
 ) {
     val showDialog = remember { mutableStateOf(false) }
-    Card(
-        modifier = Modifier
-            .width(70.dp)
-            .height(70.dp)
-            .clip(RoundedCornerShape(10.dp)),
+    Surface(
         onClick = {
             if (content.routeType == RouteType.ALIPAY) {
                 showDialog.value = true
             } else {
-                onCLick()
+                onClick()
             }
         },
-        colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        )
+        modifier = modifier
+            .size(70.dp)
+            .semantics { role = Role.Button }
+            .animateContentSize(),
+        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        color = if (enabled) enableContainerColor
+        else disableContainerColor
     ) {
         Column(
             modifier = Modifier
@@ -69,10 +80,10 @@ fun SmallCardDisplay(
             ) {
                 Icon(
                     painter = painterResource(id = content.icon),
-                    contentDescription = "",
+                    contentDescription = "icon",
                     modifier = Modifier.size(35.dp),
-                    tint = if (enabled) colorScheme.primary
-                    else colorScheme.primary.copy(0.38f)
+                    tint = if (enabled) MiuixTheme.colorScheme.primary
+                    else MiuixTheme.colorScheme.primary.copy(0.38f)
                 )
             }
             Text(
@@ -84,8 +95,8 @@ fun SmallCardDisplay(
                     .basicMarquee(
                         repeatDelayMillis = 2_000,
                     ),
-                color = if (enabled) colorScheme.onBackground
-                else colorScheme.onBackground.copy(0.38f),
+                color = if (enabled) MiuixTheme.colorScheme.onSurface
+                else MiuixTheme.colorScheme.onSurfaceContainerVariant,
                 textAlign = TextAlign.Center
             )
         }
@@ -93,7 +104,7 @@ fun SmallCardDisplay(
     JumpToAlipayDialog(
         showDialog = showDialog,
         onConfirmClick = {
-            onCLick()
+            onClick()
         }
     )
 }

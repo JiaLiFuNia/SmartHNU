@@ -40,8 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.smart.htu.App.Companion.context
 import com.smart.htu.R
-import com.smart.htu.component.svgVector.DrawableVectors
-import com.smart.htu.component.svgVector.drawablevectors.appIcon
+import com.smart.htu.component.imageVectors.appIcon
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.GITHUB_PERSON_URL
@@ -140,7 +139,7 @@ fun About(
                             .size(160.dp)
                     ) {
                         Image(
-                            imageVector = DrawableVectors.appIcon(),
+                            imageVector = appIcon(),
                             contentDescription = "app_logo",
                             modifier = Modifier
                                 .size(160.dp)

@@ -8,10 +8,10 @@ import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.SingleTerm
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN_VALIDITY
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.SharedDataRepository
-import com.smart.htu.utils.Term.getCurrentTerm
+import com.smart.htu.utils.TermUtil.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,7 +30,7 @@ data class GradeUiState(
     val termCode: String,
     val globalTermCode: String,
     val termList: List<SingleTerm> = emptyList(),
-    val isTokenValid: Boolean = DEFAULT_TOKEN_VALIDITY,
+    val loginJWCState: Int = DEFAULT_LOGIN_STATE,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
 
@@ -58,12 +58,12 @@ class GradeViewModel @Inject constructor(
             }
         )
 
-    private val tokenValidStateFlow = dataStoreRepo.observeTokenValidity()
+    private val loginJWCStateStateFlow = dataStoreRepo.observeLoginJWCState()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
-                dataStoreRepo.observeTokenValidity().first()
+                dataStoreRepo.observeLoginJWCState().first()
             }
         )
 
@@ -74,8 +74,8 @@ class GradeViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            tokenValidStateFlow.collect { value ->
-                _uiState.update { it.copy(isTokenValid = value) }
+            loginJWCStateStateFlow.collect { value ->
+                _uiState.update { it.copy(loginJWCState = value) }
             }
         }
         viewModelScope.launch {
@@ -101,12 +101,15 @@ class GradeViewModel @Inject constructor(
     }
 
     suspend fun getCourseGrade() {
-        _uiState.update { it.copy(courseGrade = null) }
         jwcNetworkRepo.getCourseGradeService(
-            GlobalTerm(_uiState.value.termCode)
-        ).onSuccess { res ->
-            _uiState.update { it.copy(courseGrade = res.gradeData) }
-        }
+            termCode = GlobalTerm(_uiState.value.termCode)
+        )
+            .onSuccess { res ->
+                _uiState.update { it.copy(courseGrade = res.gradeData) }
+            }
+            .onFailure {
+                _uiState.update { it.copy(courseGrade = null) }
+            }
     }
 
     suspend fun getCourseGradeDetail(gradeCode: String) {

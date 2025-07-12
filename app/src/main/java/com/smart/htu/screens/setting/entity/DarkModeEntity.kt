@@ -1,4 +1,4 @@
-package com.smart.htu.screens.main.entity
+package com.smart.htu.screens.setting.entity
 
 
 enum class DarkMode {

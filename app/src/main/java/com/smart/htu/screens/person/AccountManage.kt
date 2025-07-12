@@ -95,7 +95,9 @@ fun AccountManage(
                     TextField(
                         backgroundColor = MiuixTheme.colorScheme.surface,
                         value = uiState.token,
-                        onValueChange = {},
+                        onValueChange = {
+                            viewModel.setJWCLogToken(it)
+                        },
                         label = "token",
                         enabled = editable,
                         modifier = Modifier

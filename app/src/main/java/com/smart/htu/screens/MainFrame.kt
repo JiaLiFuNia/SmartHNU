@@ -92,7 +92,7 @@ fun MainFrame(
             badge = 0
         ),
         BottomNavigationItem(
-            enabled = loginUiState.isLogSuccess || loginUiState.loginJWCState == 1,
+            enabled = loginUiState.loginJWCState == 1,
             title = R.string.my,
             selectedIcon = R.drawable.ic_filled_person,
             unselectedIcon = R.drawable.ic_outline_person,

@@ -242,8 +242,8 @@ fun ClassroomSearchScreen(
                             )
                         }
                     }
-                    Log.i("TAG666", "${uiState.isLoading} ${uiState.isTokenValid}")
-                    if (uiState.isLoading || !uiState.isTokenValid || uiState.buildingsOccupation[selectedRoomIndex] == null) {
+                    Log.i("TAG666", "${uiState.isLoading}")
+                    if (uiState.isLoading || uiState.buildingsOccupation[selectedRoomIndex] == null) {
                         CircularProgressIndicator()
                     } else {
                         Column(
