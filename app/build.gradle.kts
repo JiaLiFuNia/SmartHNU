@@ -12,7 +12,7 @@ plugins {
 
 android {
     namespace = "com.smart.htu"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.smart.htu"
@@ -76,7 +76,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.core)
-    // implementation(libs.androidx.material.icons.extended)
+
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
@@ -86,11 +86,16 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    implementation(libs.androidx.material3.adaptive.navigation.suite)
-    implementation(libs.androidx.adaptive.navigation.android)
-    implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+
+    implementation(libs.androidx.adaptive)
+    implementation(libs.androidx.adaptive.layout)
+    implementation(libs.androidx.adaptive.navigation)
 
     // miuix
     implementation(libs.miuix)
