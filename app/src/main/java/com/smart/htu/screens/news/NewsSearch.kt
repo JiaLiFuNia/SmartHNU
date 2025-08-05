@@ -172,7 +172,7 @@ fun NewsSearch(
                     item {
                         EmptyContent(
                             text = "输入关键词进行搜索",
-                            image = Icons.Outlined.Search
+                            image = emptyData()
                         )
                     }
                 } else {
@@ -184,7 +184,7 @@ fun NewsSearch(
                         if (uiState.searchList!!.isEmpty() == true) {
                             item {
                                 EmptyContent(
-                                    text = "没有相关新闻或通知",
+                                    text = "\"${textFieldState.text}\"\n没有相关新闻或通知",
                                     image = emptyData()
                                 )
                             }

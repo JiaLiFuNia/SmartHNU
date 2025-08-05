@@ -187,14 +187,14 @@ fun LibrarySearchDetail(
                                         .data(uiState.libraryBookDetail?.imageUrl)
                                         .crossfade(true)
                                         .addHeader("User-Agent", "Mozilla/5.0")
-                                        .error(R.drawable.book_failure)
                                         .build(),
                                     contentDescription = "picture",
                                     contentScale = ContentScale.FillWidth,
                                     modifier = Modifier
                                         .fillMaxHeight(),
                                     alignment = Alignment.Center,
-                                    placeholder = painterResource(id = R.drawable.book_failure)
+                                    error = painterResource(id = R.drawable.ic_placeholder_vertical_error),
+                                    placeholder = painterResource(id = R.drawable.ic_placeholder_vertical_loading)
                                 )
                             }
                             Column(

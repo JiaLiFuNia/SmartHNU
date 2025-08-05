@@ -1,7 +1,6 @@
 package com.smart.htu.screens.news
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -268,11 +267,8 @@ fun NewsItem(
                             .width(90.dp)
                             .aspectRatio(16 / 10f)
                             .clip(RoundedCornerShape(8.dp)),
-                        placeholder = painterResource(id = R.drawable.image_placeholder),
-                        error = painterResource(id = R.drawable.image_placeholder),
-                        onError = {
-                            Log.e("TAG666", "Error ${it.result.throwable.message}")
-                        }
+                        placeholder = painterResource(id = R.drawable.ic_loading_placeholder_horizontal),
+                        error = painterResource(id = R.drawable.ic_loading_placeholder_horizontal)
                     )
                 }
             }
@@ -308,7 +304,7 @@ fun HorizontalBanner(
                     .data(bannerPicUrl[index])
                     .crossfade(true)
                     .addHeader("User-Agent", "Mozilla/5.0")
-                    .error(R.drawable.image_placeholder)
+                    .error(R.drawable.ic_placeholder_large)
                     .build(),
                 contentDescription = "picture",
                 contentScale = ContentScale.FillBounds,
@@ -316,7 +312,8 @@ fun HorizontalBanner(
                     .fillMaxWidth()
                     .aspectRatio(16 / 9f)
                     .maskClip(MaterialTheme.shapes.extraLarge),
-                placeholder = painterResource(id = R.drawable.image_placeholder)
+                error = painterResource(id = R.drawable.ic_placeholder_large),
+                placeholder = painterResource(id = R.drawable.ic_placeholder_large)
             )
             Text(
                 text = bannerTitle[index],

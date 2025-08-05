@@ -402,14 +402,14 @@ fun WaitingBorrowedBookList(
                                     .data(it.imageUrl)
                                     .crossfade(true)
                                     .addHeader("User-Agent", "Mozilla/5.0")
-                                    .error(R.drawable.book_failure)
                                     .build(),
                                 contentDescription = "picture",
                                 contentScale = ContentScale.FillHeight,
                                 modifier = Modifier
                                     .height(120.dp)
                                     .clip(RoundedCornerShape(10.dp)),
-                                placeholder = painterResource(id = R.drawable.book_failure)
+                                error = painterResource(id = R.drawable.ic_placeholder_vertical_error),
+                                placeholder = painterResource(id = R.drawable.ic_placeholder_vertical_loading)
                             )
                             Text(
                                 text = it.title.toString(),
@@ -483,14 +483,14 @@ fun HistoricalBorrowedBookList(
                                     .data(it.imageUrl)
                                     .crossfade(true)
                                     .addHeader("User-Agent", "Mozilla/5.0")
-                                    .error(R.drawable.book_failure)
                                     .build(),
                                 contentDescription = "picture",
                                 contentScale = ContentScale.FillHeight,
                                 modifier = Modifier
                                     .height(120.dp)
                                     .clip(RoundedCornerShape(10.dp)),
-                                placeholder = painterResource(id = R.drawable.book_failure)
+                                error = painterResource(id = R.drawable.ic_placeholder_vertical_error),
+                                placeholder = painterResource(id = R.drawable.ic_placeholder_vertical_loading)
                             )
                             Text(
                                 text = it.title.toString(),
@@ -544,7 +544,6 @@ fun LibrarySingleBook(
                     .data(bookContent.imageUrl)
                     .crossfade(true)
                     .addHeader("User-Agent", "Mozilla/5.0")
-                    .error(R.drawable.book_failure)
                     .build(),
                 contentDescription = "picture",
                 contentScale = ContentScale.Crop,
@@ -553,7 +552,8 @@ fun LibrarySingleBook(
                     .width(70.dp)
                     .aspectRatio(10 / 15f)
                     .clip(RoundedCornerShape(10.dp)),
-                placeholder = painterResource(id = R.drawable.book_failure)
+                error = painterResource(id = R.drawable.ic_placeholder_vertical_error),
+                placeholder = painterResource(id = R.drawable.ic_placeholder_vertical_loading)
             )
             Column(
                 modifier = Modifier
