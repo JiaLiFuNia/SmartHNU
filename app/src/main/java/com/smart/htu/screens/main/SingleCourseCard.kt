@@ -161,7 +161,7 @@ fun CourseDetailDialog(
             message = listOf(
                 SingleInfo(
                     label = "教师",
-                    content = message.teacherName.ifEmpty { "暂无" },
+                    content = message.teacherName ?: "暂无",
                     leadingIcon = R.drawable.ic_outline_person
                 ),
                 SingleInfo(

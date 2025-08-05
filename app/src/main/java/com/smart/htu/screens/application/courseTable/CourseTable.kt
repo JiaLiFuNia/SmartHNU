@@ -422,7 +422,7 @@ fun CourseTableSingleCourseCard(
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = course.teacherName,
+                text = course.teacherName ?: "",
                 style = MaterialTheme.typography.labelSmall,
                 textAlign = TextAlign.Start,
                 color = Color.DarkGray.copy(alpha = 0.6f),

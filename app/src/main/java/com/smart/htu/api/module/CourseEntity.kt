@@ -30,7 +30,7 @@ data class CourseEntity(
     @SerializedName("jxhjmc") val teachingEnvironment: String, // 理论 实验
     @SerializedName("kcmc") val courseName: String, // 课程名称
     @SerializedName("kcywmc") val courseEnglishName: String? = null, // 课程英文名称
-    @SerializedName("teaxms") val teacherName: String, // 教师
+    @SerializedName("teaxms") val teacherName: String? = null, // 教师
     @SerializedName("jxbmc") val className: String, // 上课班级
     @SerializedName("jxcdmc") val classroomName: String? = null, // 上课地点
     @SerializedName("jcdm") val classTimeCode: String, // 节次代码
@@ -81,7 +81,7 @@ data class CourseScheduleEntity(
     @SerializedName("curDay") private val weekday: String,
     @SerializedName("xnxqdm") val termCode: String,
     @SerializedName("kbList") private val courseTableString: String,
-    @SerializedName("rq") private val dateString: String,
+    @SerializedName("rq") private val dateString: String? = "",
 ) {
     val courseTable: CourseTable
         get() = try {
