@@ -49,6 +49,8 @@ import androidx.navigation.NavController
 import com.smart.htu.MainActivity
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseEntity
+import com.smart.htu.component.CircularProgressIndicator
+import com.smart.htu.component.EmptyContent
 import com.smart.htu.screens.main.CourseDetailDialog
 import com.smart.htu.utils.CourseColorUtil.getColorByCourseName
 import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
@@ -307,67 +309,75 @@ fun CourseTable(
                         modifier = Modifier.weight(7F),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        if (uiState.currentWeekCourseTable.data != null) {
-                            // 遍历星期一到星期日的数据
-                            (0..6).forEach { dayIndex ->
-                                Column(
-                                    modifier = Modifier
-                                        .weight(1F)
-                                        .padding(horizontal = 2.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Top
-                                ) {
-                                    val dayClasses =
-                                        uiState.currentWeekCourseTable.data?.getOrNull(dayIndex)
-                                            ?: emptyList()
-                                    // 用于记录每个时间段是否有课程
-                                    val timeSlots = Array(10) { slot ->
-                                        dayClasses.find { course ->
-                                            course.sectionList.firstOrNull() == (slot + 1)
-                                        }
-                                    }
-                                    // 标记哪些时间段已经被占用
-                                    val occupied = BooleanArray(10) { false }
-                                    // 遍历所有时间段
-                                    for (slot in 0 until 10) {
-                                        if (occupied[slot]) continue // 如果该时间段已被占用，跳过
-                                        val course = timeSlots[slot]
-                                        if (course != null) {
-                                            // 计算这节课占用的时间段数量
-                                            val slotsOccupied = course.sectionList.size
-                                            // 标记已占用
-                                            for (i in 0 until slotsOccupied) {
-                                                if (slot + i < 10) {
-                                                    occupied[slot + i] = true
-                                                }
-                                            }
-                                            CourseTableSingleCourseCard(
-                                                course = course,
-                                                minHeight = minHeight,
-                                                slotsOccupied = slotsOccupied
-                                            )
-                                        } else {
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(minHeight.dp)
-                                                    .padding(vertical = 2.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
+                        if (uiState.currentWeekCourseTable == null) {
                             Box(
                                 modifier = Modifier
                                     .weight(7F)
                                     .height((minHeight * 10).dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = "暂无课表数据",
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
+                                CircularProgressIndicator()
+                            }
+                        } else {
+                            if (uiState.currentWeekCourseTable?.any { it.isNotEmpty() } == true) {
+                                // 遍历星期一到星期日的数据
+                                (0..6).forEach { dayIndex ->
+                                    Column(
+                                        modifier = Modifier
+                                            .weight(1F)
+                                            .padding(horizontal = 2.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Top
+                                    ) {
+                                        val dayClasses =
+                                            uiState.currentWeekCourseTable?.getOrNull(dayIndex)
+                                                ?: emptyList()
+                                        // 用于记录每个时间段是否有课程
+                                        val timeSlots = Array(10) { slot ->
+                                            dayClasses.find { course ->
+                                                course.sectionList.firstOrNull() == (slot + 1)
+                                            }
+                                        }
+                                        // 标记哪些时间段已经被占用
+                                        val occupied = BooleanArray(10) { false }
+                                        // 遍历所有时间段
+                                        for (slot in 0 until 10) {
+                                            if (occupied[slot]) continue // 如果该时间段已被占用，跳过
+                                            val course = timeSlots[slot]
+                                            if (course != null) {
+                                                // 计算这节课占用的时间段数量
+                                                val slotsOccupied = course.sectionList.size
+                                                // 标记已占用
+                                                for (i in 0 until slotsOccupied) {
+                                                    if (slot + i < 10) {
+                                                        occupied[slot + i] = true
+                                                    }
+                                                }
+                                                CourseTableSingleCourseCard(
+                                                    course = course,
+                                                    minHeight = minHeight,
+                                                    slotsOccupied = slotsOccupied
+                                                )
+                                            } else {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .height(minHeight.dp)
+                                                        .padding(vertical = 2.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(7F)
+                                        .height((minHeight * 10).dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    EmptyContent("暂无课表数据")
+                                }
                             }
                         }
                     }

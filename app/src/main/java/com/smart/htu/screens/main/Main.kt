@@ -52,9 +52,9 @@ import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.component.card.SmallCardDisplay
+import com.smart.htu.screens.application.ApplicationEntity.RouteType
 import com.smart.htu.screens.application.airCondition.AirConditionUiState
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
-import com.smart.htu.screens.application.ApplicationEntity.RouteType
 import com.smart.htu.screens.login.LoginUiState
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateToWebView
@@ -243,7 +243,7 @@ fun FocusCard(
                     trailingContent = {
                     },
                     title = "${today.format(formatter)} " + if (mainUiState.holidayEntity?.holiday != null) mainUiState.holidayEntity.holiday.holiday else "",
-                    content = "第 ${mainUiState.courseSchedule.data?.week ?: "-"} 周 $dayOfWeek",
+                    content = "第 ${mainUiState.courseSchedule?.week ?: "-"} 周 $dayOfWeek",
                     onClick = { startCalendar() },
                     modifier = Modifier.weight(0.5f)
                 )

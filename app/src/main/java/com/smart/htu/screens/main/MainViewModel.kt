@@ -41,7 +41,7 @@ data class AppUiState(
     val todayCourseList: List<CourseEntity>? = null,
     val currentWeather: ResultWithStatus<WeatherCurrentData> = ResultWithStatus(),
     val newsList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
-    val courseSchedule: ResultWithStatus<CourseScheduleEntity> = ResultWithStatus(),
+    val courseSchedule: CourseScheduleEntity? = null,
     val holidayEntity: HolidayEntity? = null,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val username: String = DEFAULT_USERNAME,
@@ -172,9 +172,11 @@ class MainViewModel @Inject constructor(
 
     fun getCurrentWeek() = viewModelScope.launch {
         try {
-            val res = jwcNetworkRepo.getCourseScheduleService()
-            _uiState.update { it.copy(courseSchedule = ResultWithStatus(res)) }
-            Log.i("TAG666 main", "getCurrentWeek: $res")
+            jwcNetworkRepo.getCourseScheduleService()
+                .onSuccess { res ->
+                    Log.i("TAG666 main", "getCurrentWeek: $res")
+                    _uiState.update { it.copy(courseSchedule = res) }
+                }
         } catch (e: Exception) {
             Log.i("TAG666 main", "getCurrentWeek: $e")
         }

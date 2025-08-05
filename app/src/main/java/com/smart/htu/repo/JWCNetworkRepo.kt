@@ -79,11 +79,16 @@ class JWCNetworkRepo @Inject constructor(
     suspend fun getCourseScheduleService(
         week: String = "",
         section: String = ""
-    ): CourseScheduleEntity? {
-        val res = jwcService.getCourseSchedule(CourseSchedulePost(week, section))
-        return when (res.code) {
-            200 -> res
-            else -> null
+    ): Result<CourseScheduleEntity> {
+        try {
+            val res = jwcService.getCourseSchedule(CourseSchedulePost(week, section))
+            return when (res.code) {
+                200 -> Result.success(res)
+                else -> Result.failure(Exception(res.message))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(e)
         }
     }
 

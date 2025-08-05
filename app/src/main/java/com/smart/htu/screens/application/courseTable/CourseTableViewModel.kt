@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.api.module.CourseScheduleEntity
-import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.SingleTerm
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
@@ -32,7 +31,7 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 data class CourseTableUiState(
-    val currentWeekCourseTable: ResultWithStatus<List<List<CourseEntity>>> = ResultWithStatus(),
+    val currentWeekCourseTable: List<List<CourseEntity>>? = null,
     val allCourseTable: MutableList<List<MutableList<CourseEntity>>> =
         MutableList(25) { List(7) { mutableListOf() } },
     val startDatePerWeek: LocalDate? = null,
@@ -112,30 +111,34 @@ class CourseTableViewModel @Inject constructor(
 
     suspend fun getCourseSchedule(week: Int): CourseScheduleEntity? {
         try {
-            val res = jwcNetworkRepo.getCourseScheduleService(
+            jwcNetworkRepo.getCourseScheduleService(
                 week = when (week) {
                     -1 -> "all"
                     in 1.._uiState.value.termRange.second -> week.toString()
                     else -> ""
                 }
-            )
-            Log.i("TAG666", "getCourseSchedule: $res")
-            return res
+            ).onSuccess {
+                Log.i("TAG666", "getCourseSchedule: $it")
+                return it
+            }
         } catch (e: Exception) {
             Log.i("TAG666", "getCourseSchedule: $e")
             return null
         }
+        return null
     }
 
     suspend fun getCurrentWeekCourseSchedule(week: Int) {
         try {
+            _uiState.update { it.copy(currentWeekCourseTable = null) }
             val res = getCourseSchedule(week)
             val processedCourses = res?.courseTable?.map { weekMap ->
                 weekMap.values.flatten()
             } ?: emptyList()
+            Log.i("TAG666", "getCurrentWeekCourseSchedule: $processedCourses")
             _uiState.update {
                 it.copy(
-                    currentWeekCourseTable = ResultWithStatus(processedCourses),
+                    currentWeekCourseTable = processedCourses,
                     termCode = res?.termCode ?: getCurrentTerm(),
                     termRange = Pair(res?.minWeek?.toInt() ?: 0, res?.maxWeek?.toInt() ?: 0),
                     week = res?.week ?: 0,

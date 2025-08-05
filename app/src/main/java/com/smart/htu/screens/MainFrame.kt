@@ -199,12 +199,6 @@ fun MainFrame(
                                 contentDescription = "eye"
                             )
                         }
-                        IconButton(onClick = { navController.navigate(Destinations.AccountManage.route) }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.key_24px),
-                                contentDescription = "key"
-                            )
-                        }
                     }
                 )
             }

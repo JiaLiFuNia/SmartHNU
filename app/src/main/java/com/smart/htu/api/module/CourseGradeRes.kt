@@ -11,7 +11,7 @@ data class CourseGradeRes(
         @SerializedName("zcjfs") val gradeDouble: Double, // 总成绩
         @SerializedName("zcj") val gradeString: String, // 成绩
         @SerializedName("cjjd") val gradePoint: Double, // 绩点
-        @SerializedName("xf") val gradeCredits: Int, // 学分
+        @SerializedName("xf") val gradeCredits: Double, // 学分
         @SerializedName("cjdm") val gradeCode: String, // 成绩代码
         @SerializedName("cjfsmc") val gradeTypeCode: String, // 成绩类型
         @SerializedName("kcmc") val courseName: String, // 课程名称
