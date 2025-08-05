@@ -143,6 +143,7 @@ class NewsViewModel @Inject constructor(
 
     suspend fun searchNews(keyword: String, page: Int = 1) {
         try {
+            _uiState.update { it.copy(searchList = null) }
             val searchInfo =
                 """[{"field":"pageIndex","value":${page}},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$keyword"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
             val searchInfoEncode = Base64.encodeToString(searchInfo.toByteArray(), 0)
