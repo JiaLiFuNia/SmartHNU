@@ -1,7 +1,6 @@
 package com.smart.htu.screens.application.webview
 
 import android.content.Intent
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -67,7 +66,7 @@ fun ApplicationWebView(
     val showDropDownMenu = remember { mutableStateOf(false) }
 
     val showLoginDialog = remember { mutableStateOf(false) }
-    val loggingState = remember { mutableStateOf(true) }
+    val loggingState = remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,

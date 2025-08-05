@@ -22,7 +22,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -137,7 +136,11 @@ fun PersonScreen(
                 LargeCardDisplay(
                     modifier = Modifier,
                     title = "账号管理",
-                    leadingIconPainting = R.drawable.circle_admin
+                    leadingIconPainting = R.drawable.circle_admin,
+                    actionText = "详情",
+                    navigateTo = {
+                        navController.navigate(Destinations.AccountManage.route)
+                    }
                 ) {
                     PersonalMessage(
                         label = "统一身份认证系统",
@@ -198,7 +201,7 @@ fun PersonScreen(
         showDialog = showLoginDialog,
         summary = "统一身份认证系统",
         onConfirmClick = {},
-        onLogin = { _, _,_ ->
+        onLogin = { _, _, _ ->
         }
     )
 }

@@ -74,7 +74,7 @@ fun LazyItemScope.EmptyContent(
 fun EmptyContent(
     text: String,
     image: ImageVector? = null,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier,
