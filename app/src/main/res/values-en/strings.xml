@@ -77,7 +77,7 @@
     <string name="no_message">No Message</string>
     <string name="message_center">Message Center</string>
     <string name="book_search">Book Search</string>
-    <string name="live_service">Life Services</string>
+    <string name="campus_life">Life Services</string>
     <string name="participate">Participate and Contribute</string>
     <string name="class_name">Class</string>
     <string name="political_outlook">Political Outlook</string>
@@ -142,5 +142,13 @@
     <string name="academic_affairs">Academic Affairs</string>
     <string name="message_board">留言板</string>
     <string name="detail">详情</string>
+    <string name="tool">工具</string>
+    <string name="life">生活</string>
+    <string name="study">学习</string>
+    <string name="exam">考试</string>
+    <string name="theme">主题</string>
+    <string name="display">样式</string>
+    <string name="pinduoduo">拼多多取件码</string>
+    <string name="logging_in">登录中</string>
 
 </resources>

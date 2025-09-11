@@ -2,7 +2,6 @@ package com.smart.htu.screens.setting.feedback
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,7 +38,7 @@ import androidx.navigation.NavController
 import com.smart.htu.R
 import com.smart.htu.api.module.FeedbackType
 import com.smart.htu.component.TabRow
-import com.smart.htu.screens.login.TextWithProgressIndicatorButton
+import com.smart.htu.component.TextButtonWithProgressIndicator
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TextField
@@ -62,7 +61,6 @@ fun Feedback(
 
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -86,89 +84,52 @@ fun Feedback(
             SnackbarHost(snackBarHostState)
         }
     ) {
-        LazyColumn(
+        Column(
             modifier = Modifier
-                .padding(it)
                 .fillMaxSize()
-                .overScrollVertical(),
-            overscrollEffect = null,
-            contentPadding = PaddingValues(16.dp, 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .padding(top = it.calculateTopPadding() + 8.dp)
         ) {
-            item {
-                TabRow(
-                    tabs = FeedbackType.entries.map { it.type },
-                    selectedTabIndex = selectedTabIndex,
-                    onTabSelected = {
+            TabRow(
+                tabs = FeedbackType.entries.map { it.type },
+                selectedTabIndex = selectedTabIndex,
+                onTabSelected = {
+                    scope.launch {
+                        pagerState.animateScrollToPage(it)
+                        viewModel.changeFeedbackType(
+                            when (it) {
+                                0 -> FeedbackType.FEEDBACK
+                                else -> FeedbackType.SUGGESTION
+                            }
+                        )
+                    }
+                },
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                pageSpacing = 12.dp
+            ) { page ->
+                FeedbackContent(
+                    page = page,
+                    uiState = uiState,
+                    viewModel = viewModel,
+                    onSuccess = {
                         scope.launch {
-                            pagerState.animateScrollToPage(it)
-                            viewModel.changeType(
-                                when (it) {
-                                    0 -> FeedbackType.FEEDBACK
-                                    else -> FeedbackType.SUGGESTION
-                                }
-                            )
+                            snackBarHostState.showSnackbar(it)
+                            navController.popBackStack()
+                        }
+                    },
+                    onError = {
+                        scope.launch {
+                            snackBarHostState.showSnackbar(it)
                         }
                     }
                 )
-            }
-            item {
-                HorizontalPager(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    pageSpacing = 12.dp,
-                    state = pagerState,
-                    verticalAlignment = Alignment.Top,
-                    userScrollEnabled = false
-                ) { page ->
-                    when (page) {
-                        0 -> FeedbackContent(
-                            page = page,
-                            uiState = uiState,
-                            viewModel = viewModel,
-                            onSuccess = {
-                                scope.launch {
-                                    snackBarHostState.showSnackbar(it)
-                                    navController.popBackStack()
-                                }
-                            },
-                            onError = {
-                                scope.launch {
-                                    snackBarHostState.showSnackbar(it)
-                                }
-                            },
-                            modifier = Modifier.fillMaxSize(),
-                            onMessageIsEmpty = {
-                                scope.launch {
-                                    snackBarHostState.showSnackbar("请输入反馈内容")
-                                }
-                            }
-                        )
-
-                        1 -> FeedbackContent(
-                            page = page,
-                            uiState = uiState,
-                            viewModel = viewModel,
-                            onSuccess = {
-                                scope.launch {
-                                    snackBarHostState.showSnackbar(it)
-                                    navController.popBackStack()
-                                }
-                            },
-                            onError = {
-                                scope.launch {
-                                    snackBarHostState.showSnackbar(it)
-                                }
-                            },
-                            modifier = Modifier.fillMaxSize(),
-                            onMessageIsEmpty = {
-                                scope.launch {
-                                    snackBarHostState.showSnackbar("请输入建议内容")
-                                }
-                            }
-                        )
-                    }
-                }
             }
         }
     }
@@ -180,59 +141,68 @@ fun PagerScope.FeedbackContent(
     uiState: FeedbackUiState,
     viewModel: FeedbackViewModel,
     onSuccess: (String) -> Unit,
-    onError: (String) -> Unit,
-    onMessageIsEmpty: () -> Unit,
-    modifier: Modifier
+    onError: (String) -> Unit
 ) {
-    Column(
-        modifier = modifier,
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .overScrollVertical(),
+        overscrollEffect = null,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        TextField(
-            value = uiState.message,
-            label = if (page == 0) "请详细描述你遇到的问题：\n1、当前设备的网络状态\n2、打开了某个页面\n3、其他" else "请详细描述你在使用师韵(SmartHNU)时的建议：",
-            onValueChange = {
-                viewModel.changeMessage(it)
-            },
-            useLabelAsPlaceholder = true,
-            backgroundColor = MiuixTheme.colorScheme.surface,
-            modifier = Modifier.height(140.dp)
-        )
-        TextField(
-            value = uiState.functionModule,
-            label = "功能模块",
-            onValueChange = {
-                viewModel.changeFunctionModule(it)
-            },
-            useLabelAsPlaceholder = true,
-            backgroundColor = MiuixTheme.colorScheme.surface
-        )
-        TextField(
-            value = uiState.email,
-            label = "邮箱(可空)",
-            onValueChange = {
-                viewModel.changeEmail(it)
-            },
-            useLabelAsPlaceholder = true,
-            backgroundColor = MiuixTheme.colorScheme.surface
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        TextWithProgressIndicatorButton(
-            text = if (uiState.isSubmitting) "正在提交..." else "提交",
-            onClick = {
-                if (uiState.message.isEmpty()) {
-                    onMessageIsEmpty()
-                } else {
-                    viewModel.submitFeedback(
-                        onSuccess = onSuccess,
-                        onError = onError
-                    )
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth(),
-            enabled = !uiState.isSubmitting,
-        )
+        item {
+            TextField(
+                value = uiState.detailMessage,
+                label = if (page == 0) "请详细描述你遇到的问题：\n1、当前设备的网络状态\n2、打开了某个页面\n3、其他" else "请详细描述你在使用师韵(SmartHNU)时的建议：",
+                onValueChange = {
+                    viewModel.changeDetailMessage(it)
+                },
+                useLabelAsPlaceholder = true,
+                backgroundColor = MiuixTheme.colorScheme.surface,
+                minLines = 4
+            )
+        }
+        item {
+            TextField(
+                value = uiState.functionalModule,
+                label = "功能模块",
+                onValueChange = {
+                    viewModel.changeFunctionalModule(it)
+                },
+                useLabelAsPlaceholder = true,
+                backgroundColor = MiuixTheme.colorScheme.surface
+            )
+        }
+        item {
+            TextField(
+                value = uiState.submitterEmail,
+                label = "邮箱(可空)",
+                onValueChange = {
+                    viewModel.changeSubmitterEmail(it)
+                },
+                useLabelAsPlaceholder = true,
+                backgroundColor = MiuixTheme.colorScheme.surface
+            )
+        }
+        item {
+            Spacer(modifier = Modifier.height(4.dp))
+            TextButtonWithProgressIndicator(
+                text = if (uiState.isSubmitting) "正在提交..." else "提交",
+                onClick = {
+                    if (uiState.detailMessage.isEmpty()) {
+                        onError("内容不能为空")
+                    } else {
+                        viewModel.submitFeedback(
+                            onSuccess = onSuccess,
+                            onError = onError
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth(),
+                isLoading = uiState.isSubmitting,
+            )
+        }
     }
 }

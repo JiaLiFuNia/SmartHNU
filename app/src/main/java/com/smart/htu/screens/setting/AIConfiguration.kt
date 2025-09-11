@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -37,7 +36,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.smart.htu.screens.login.TextWithProgressIndicatorButton
+import com.smart.htu.component.TextButtonWithProgressIndicator
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Card
@@ -63,7 +62,6 @@ fun AIConfigurationScreen(
 
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -90,11 +88,16 @@ fun AIConfigurationScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier
-                .padding(it)
                 .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .overScrollVertical(),
             overscrollEffect = null,
-            contentPadding = PaddingValues(16.dp, 8.dp),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                top = it.calculateTopPadding() + 8.dp,
+                end = 12.dp,
+                bottom = 16.dp
+            ),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
@@ -146,7 +149,7 @@ fun AIConfigurationScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         SmallTitle(
-                            text = "配置 API (*目前仅支持预置的 API)",
+                            text = "配置 API",
                             insideMargin = PaddingValues(start = 12.dp, top = 8.dp)
                         )
                         TextField(
@@ -183,7 +186,7 @@ fun AIConfigurationScreen(
                                 Text(text = "如何申请 Key?")
                             }
                         }
-                        TextWithProgressIndicatorButton(
+                        TextButtonWithProgressIndicator(
                             text = "测试",
                             onClick = {
                                 viewModel.testAIService(
@@ -196,7 +199,7 @@ fun AIConfigurationScreen(
                             },
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            enabled = !uiState.isTestLoading
+                            isLoading = uiState.isTestLoading
                         )
                     }
                 }

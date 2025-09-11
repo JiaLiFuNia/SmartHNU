@@ -14,10 +14,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class FeedbackUiState(
-    val type: FeedbackType = FeedbackType.FEEDBACK,
-    val functionModule: String = "",
-    val message: String = "",
-    val email: String = "",
+    val feedbackType: FeedbackType = FeedbackType.FEEDBACK,
+    val functionalModule: String = "",
+    val detailMessage: String = "",
+    val submitterEmail: String = "",
     val isSubmitting: Boolean = false
 )
 
@@ -36,34 +36,35 @@ class FeedbackViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmitting = true) }
             val feedbackEntity = FeedbackEntity(
-                type = _uiState.value.type.type,
-                functionModule = _uiState.value.functionModule,
-                message = _uiState.value.message,
-                email = _uiState.value.email
+                type = _uiState.value.feedbackType.type,
+                functionModule = _uiState.value.functionalModule,
+                message = _uiState.value.detailMessage,
+                email = _uiState.value.submitterEmail
             )
-            appNetworkRepo.feedbackService(feedbackEntity).onSuccess {
-                onSuccess(it.message)
-            }.onFailure {
-                onError(it.message ?: "Unknown error")
-            }
+            appNetworkRepo.feedbackService(feedbackEntity)
+                .onSuccess {
+                    onSuccess(it.message)
+                }.onFailure {
+                    onError(it.message ?: "Unknown error")
+                }
             _uiState.update { it.copy(isSubmitting = false) }
         }
     }
 
-    fun changeType(type: FeedbackType) {
-        _uiState.update { it.copy(type = type) }
+    fun changeFeedbackType(type: FeedbackType) {
+        _uiState.update { it.copy(feedbackType = type) }
     }
 
-    fun changeFunctionModule(functionModule: String) {
-        _uiState.update { it.copy(functionModule = functionModule) }
+    fun changeFunctionalModule(functionModule: String) {
+        _uiState.update { it.copy(functionalModule = functionModule) }
     }
 
-    fun changeMessage(message: String) {
-        _uiState.update { it.copy(message = message) }
+    fun changeDetailMessage(message: String) {
+        _uiState.update { it.copy(detailMessage = message) }
     }
 
-    fun changeEmail(email: String) {
-        _uiState.update { it.copy(email = email) }
+    fun changeSubmitterEmail(email: String) {
+        _uiState.update { it.copy(submitterEmail = email) }
     }
 
 }

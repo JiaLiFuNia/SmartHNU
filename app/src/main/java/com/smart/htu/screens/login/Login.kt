@@ -8,18 +8,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -44,9 +41,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalAutofillManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentType
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
@@ -55,27 +50,23 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.smart.htu.R
 import com.smart.htu.component.EmptyContent
+import com.smart.htu.component.TextButtonWithProgressIndicator
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.HENAN_NORMAL_UNIVERSITY
 import com.smart.htu.utils.startLaunchAPK
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
-import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
-import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Rename
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     navController: NavController,
@@ -139,7 +130,7 @@ fun LoginScreen(
             item {
                 top.yukonga.miuix.kmp.basic.Card(
                     modifier = Modifier.padding(top = 44.dp, bottom = 56.dp),
-                    color = Color.Transparent
+                    colors = CardDefaults.defaultColors(color = Color.Transparent)
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.school_logo),
@@ -203,7 +194,7 @@ fun LoginScreen(
             }
             item {
                 Spacer(modifier = Modifier.height(20.dp))
-                TextWithProgressIndicatorButton(
+                TextButtonWithProgressIndicator(
                     text = if (uiState.isLoading) "正在登录..." else "登录",
                     onClick = {
                         if (uiState.studentID == "admin")
@@ -219,7 +210,7 @@ fun LoginScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth(),
-                    enabled = !uiState.isLoading
+                    isLoading = uiState.isLoading
                 )
             }
             item {
@@ -289,43 +280,4 @@ fun LoginScreen(
             viewModel.showSnackBar("请前往河南师大智慧教务微信公众号进行密码重置")
         }
     )
-}
-
-
-@Composable
-fun TextWithProgressIndicatorButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    cornerRadius: Dp = ButtonDefaults.CornerRadius,
-    minHeight: Dp = ButtonDefaults.MinHeight,
-    insideMargin: PaddingValues = ButtonDefaults.InsideMargin,
-) {
-    Surface(
-        onClick = {
-            onClick()
-        },
-        enabled = enabled,
-        modifier = modifier.semantics { role = Role.Button },
-        shape = SmoothRoundedCornerShape(cornerRadius),
-        color = if (enabled) MiuixTheme.colorScheme.primaryContainer else MiuixTheme.colorScheme.disabledPrimaryButton
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .defaultMinSize(minHeight = minHeight)
-                .padding(insideMargin),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (!enabled) InfiniteProgressIndicator(size = 16.dp)
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                textAlign = TextAlign.Center,
-                text = text,
-                color = if (enabled) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.disabledOnPrimaryButton
-            )
-        }
-    }
 }

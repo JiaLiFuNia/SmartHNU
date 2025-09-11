@@ -7,11 +7,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -19,21 +20,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.smart.htu.R
-import com.smart.htu.component.ScaffoldWithHazeLazyColumn
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.screens.login.LoginViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TextField
-import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -47,32 +45,39 @@ fun AccountManage(
 
     val (editable, onEditable) = remember { mutableStateOf(false) }
 
-    val scope = rememberCoroutineScope()
-    val onRefresh: () -> Unit = {
-        scope.launch {
-            delay(0)
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    Scaffold(
+        containerColor = MiuixTheme.colorScheme.background,
+        topBar = {
+            MediumTopAppBar(
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = MiuixTheme.colorScheme.background,
+                ),
+                title = { Text(text = stringResource(R.string.account_manage)) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "back"
+                        )
+                    }
+                }
+            )
         }
-    }
-
-    ScaffoldWithHazeLazyColumn(
-        scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
-        isMediumTopAppBar = true,
-        blurEnabledState = uiState.blurEffect,
-        title = { Text(text = stringResource(R.string.account_manage)) },
-        actions = { },
-        navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
-            }
-        },
-        refreshState = rememberPullToRefreshState(),
-        onRefresh = { onRefresh() }
     ) {
         LazyColumn(
-            contentPadding = PaddingValues(16.dp, 12.dp),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                top = it.calculateTopPadding() + 8.dp,
+                end = 12.dp,
+                bottom = 16.dp
+            ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .overScrollVertical(),
             overscrollEffect = null
         ) {

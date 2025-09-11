@@ -1,7 +1,6 @@
 package com.smart.htu.screens.application.classroom
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,27 +14,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -60,33 +54,32 @@ import androidx.navigation.NavController
 import androidx.window.core.layout.WindowSizeClass
 import com.smart.htu.R
 import com.smart.htu.component.CircularProgressIndicator
+import com.smart.htu.component.DatePickerDialog
 import com.smart.htu.component.TabRow
-import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.utils.Constants.Companion.COURSE_PERIOD
-import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
-import com.smart.htu.utils.getCurrentDates
-import com.smart.htu.utils.timeStamp2DateStr
-import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
+import network.chaintech.kmp_date_time_picker.utils.now
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.PullToRefresh
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.extra.SpinnerEntry
+import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.extra.SuperSpinner
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
-import java.time.LocalDate
+import kotlin.math.ceil
 
 @SuppressLint("UnrememberedMutableState")
 @OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalHazeMaterialsApi::class,
-    ExperimentalMaterial3ExpressiveApi::class
+    ExperimentalHazeMaterialsApi::class
 )
 @Composable
 fun ClassroomSearchScreen(
@@ -94,7 +87,8 @@ fun ClassroomSearchScreen(
     viewModel: ClassroomSearchViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val hazeState = remember { HazeState() }
+    val hazeState = rememberHazeState()
+    val coroutineScope = rememberCoroutineScope()
 
     val (selectedRoomIndex, onSelectedRoomIndex) = rememberSaveable { mutableIntStateOf(0) }
     val (selectedTimeIndex, onSelectedTimeIndex) = rememberSaveable {
@@ -103,32 +97,17 @@ fun ClassroomSearchScreen(
 
     val showTooltip = remember { mutableStateOf(false) }
 
-    val (selectedDate, onSelectedDate) = remember { mutableStateOf(getCurrentDates()) }
-    val (showDatePicker, onShowDatePicker) = remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState(
-        yearRange = LocalDate.now().year - 1..LocalDate.now().year + 1,
-    )
-    val confirmEnabled = derivedStateOf { datePickerState.selectedDateMillis != null }
-
-    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
-    val coroutineScope = rememberCoroutineScope()
-    val onRefresh: () -> Unit = {
-        coroutineScope.launch {
-            pullToRefreshState.completeRefreshing {
-                viewModel.getClassroomOccupation(selectedDate, selectedRoomIndex)
-            }
-        }
-    }
+    val selectedDate = remember { mutableStateOf(kotlinx.datetime.LocalDate.now()) }
+    val showDatePicker = remember { mutableStateOf(false) }
 
     LaunchedEffect(selectedRoomIndex, selectedDate) {
-        viewModel.getClassroomOccupation(selectedDate, selectedRoomIndex)
+        viewModel.getClassroomOccupation(selectedDate.value.toString(), selectedRoomIndex)
     }
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     top.yukonga.miuix.kmp.basic.Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -151,16 +130,6 @@ fun ClassroomSearchScreen(
                         )
                     }
                 },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            onShowDatePicker(true)
-                            Log.i("TAG666", "ClassroomSearchScreen: $showDatePicker")
-                        }
-                    ) {
-                        Icon(Icons.Default.DateRange, contentDescription = "date")
-                    }
-                },
                 modifier = Modifier.hazeEffect(
                     state = hazeState,
                     style = HazeMaterials.regular()
@@ -171,192 +140,211 @@ fun ClassroomSearchScreen(
             )
         }
     ) {
-        PullToRefresh(
-            pullToRefreshState = pullToRefreshState,
-            onRefresh = onRefresh,
-            refreshTexts = PULL_TO_REFRESH_TEXT,
-            modifier = Modifier.padding(it)
+        LazyColumn(
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = it.calculateTopPadding() + 8.dp,
+                bottom = 12.dp
+            ),
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .overScrollVertical(),
+            overscrollEffect = null,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                modifier = Modifier
-                    .hazeSource(state = hazeState)
-                    .fillMaxSize()
-                    .overScrollVertical(),
-                overscrollEffect = null
-            ) {
-                item {
-                    SmallTitle(
-                        text = stringResource(id = R.string.building),
-                        insideMargin = PaddingValues(start = 12.dp, top = 4.dp, bottom = 8.dp)
+            item {
+                SmallTitle(
+                    text = "选择教学楼和时间",
+                    insideMargin = PaddingValues(start = 12.dp, top = 4.dp, bottom = 8.dp)
+                )
+                Card {
+                    SuperArrow(
+                        title = "选择日期",
+                        rightText = selectedDate.value.toString(),
+                        onClick = {
+                            showDatePicker.value = true
+                        },
+                        enabled = false
                     )
-                    LazyVerticalGridCustom(
-                        modifier = Modifier.fillMaxSize(),
-                        list = uiState.buildingsList,
-                        columnSize = if (windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)) 3 else 4
-                    ) { index, building ->
-                        FilterChip(
-                            selected = index == selectedRoomIndex,
-                            onClick = { onSelectedRoomIndex(index) },
-                            label = { Text(text = building.buildingName) },
-                            modifier = Modifier.padding(horizontal = 4.dp)
-                        )
-                    }
+                    SuperSpinner(
+                        items = COURSE_PERIOD.keys.toList()
+                            .map { SpinnerEntry(title = stringResource(it)) },
+                        selectedIndex = selectedTimeIndex,
+                        title = "选择时间段",
+                        onSelectedIndexChange = {
+                            onSelectedTimeIndex(it)
+                        },
+                        dialogButtonString = "取消"
+                    )
                 }
-                item {
-                    SmallTitle(
+                Spacer(modifier = Modifier.height(8.dp))
+                Card {
+                    SuperSpinner(
+                        items = uiState.buildingsList.map { SpinnerEntry(title = it.buildingName) },
+                        selectedIndex = selectedRoomIndex,
+                        title = "选择教学楼",
+                        onSelectedIndexChange = {
+                            onSelectedRoomIndex(it)
+                        },
+                        dialogButtonString = "取消"
+                    )
+                }
+                /*LazyVerticalGridCustom(
+                    modifier = Modifier.fillMaxSize(),
+                    list = uiState.buildingsList,
+                    columnSize = if (windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)) 4 else 3
+                ) { index, building ->
+                    FilterChip(
+                        selected = index == selectedRoomIndex,
+                        onClick = { onSelectedRoomIndex(index) },
+                        label = { Text(text = building.buildingName) },
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+                }*/
+            }
+            item {
+                /*SmallTitle(
                         text = stringResource(id = R.string.time),
-                        insideMargin = PaddingValues(start = 12.dp, top = 12.dp, bottom = 8.dp)
+                insideMargin = PaddingValues(start = 12.dp, top = 12.dp, bottom = 8.dp)
+                )*/
+                /*LazyVerticalGridCustom(
+                    modifier = Modifier.fillMaxSize(),
+                    list = COURSE_PERIOD.keys.toList(),
+                    columnSize = if (windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)) 5 else 3
+                ) { currentIndex, timeLabel ->
+                    FilterChip(
+                        selected = currentIndex == selectedTimeIndex,
+                        onClick = { onSelectedTimeIndex(currentIndex) },
+                        label = { Text(text = stringResource(id = timeLabel)) },
+                        modifier = Modifier.padding(horizontal = 4.dp)
                     )
-                    LazyVerticalGridCustom(
-                        modifier = Modifier.fillMaxSize(),
-                        list = COURSE_PERIOD.keys.toList(),
-                        columnSize = if (windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)) 3 else 5
-                    ) { currentIndex, timeLabel ->
-                        FilterChip(
-                            selected = currentIndex == selectedTimeIndex,
-                            onClick = { onSelectedTimeIndex(currentIndex) },
-                            label = { Text(text = stringResource(id = timeLabel)) },
-                            modifier = Modifier.padding(horizontal = 4.dp)
+                }*/
+            }
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    SmallTitle(
+                        text = stringResource(id = R.string.occupy),
+                        insideMargin = PaddingValues(start = 12.dp)
+                    )
+                    IconButton(
+                        onClick = { showTooltip.value = true },
+                        modifier = Modifier.size(20.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.help_24px),
+                            contentDescription = "help",
+                            tint = MiuixTheme.colorScheme.onBackground
                         )
                     }
                 }
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                if (uiState.isLoading || uiState.buildingsOccupation[selectedRoomIndex] == null) {
+                    CircularProgressIndicator()
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        SmallTitle(
-                            text = stringResource(id = R.string.occupy),
-                            insideMargin = PaddingValues(start = 12.dp, top = 12.dp, bottom = 8.dp)
+                        val singleBuildingRoomOccupation =
+                            uiState.buildingsOccupation[selectedRoomIndex]
+                        val allRoomListGroupByFloor =
+                            singleBuildingRoomOccupation?.allRoomList?.groupBy {
+                                it.floorNumber
+                            }?.values?.toList() ?: emptyList()
+                        val busyRoomListFilterByPeriod =
+                            singleBuildingRoomOccupation?.busyRoomList?.filter {
+                                COURSE_PERIOD.values.toList()[selectedTimeIndex] in it.busyPeriodCode || it.busyPeriodCode in COURSE_PERIOD.values.toList()[selectedTimeIndex]
+                            }
+                        val floorPagerState = rememberPagerState(
+                            pageCount = { allRoomListGroupByFloor.size }
                         )
-                        IconButton(
-                            onClick = { showTooltip.value = true },
-                            modifier = Modifier.size(20.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.help_24px),
-                                contentDescription = "help",
-                                tint = MiuixTheme.colorScheme.onBackground
+                        val selectFloorIndex =
+                            remember { derivedStateOf { floorPagerState.currentPage } }
+                        val tabRowItem = allRoomListGroupByFloor.map {
+                            stringResource(
+                                id = when (it.first().floorNumber) {
+                                    1 -> R.string.first_floor
+                                    2 -> R.string.second_floor
+                                    3 -> R.string.third_floor
+                                    4 -> R.string.fourth_floor
+                                    5 -> R.string.fifth_floor
+                                    else -> R.string.other
+                                }
                             )
                         }
-                    }
-                    Log.i("TAG666", "${uiState.isLoading}")
-                    if (uiState.isLoading || uiState.buildingsOccupation[selectedRoomIndex] == null) {
-                        CircularProgressIndicator()
-                    } else {
-                        Column(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            val singleBuildingRoomOccupation =
-                                uiState.buildingsOccupation[selectedRoomIndex]
-                            val allRoomListGroupByFloor =
-                                singleBuildingRoomOccupation?.allRoomList?.groupBy {
-                                    it.floorNumber
-                                }?.values?.toList() ?: emptyList()
-                            val busyRoomListFilterByPeriod =
-                                singleBuildingRoomOccupation?.busyRoomList?.filter {
-                                    COURSE_PERIOD.values.toList()[selectedTimeIndex] in it.busyPeriodCode || it.busyPeriodCode in COURSE_PERIOD.values.toList()[selectedTimeIndex]
+                        TabRow(
+                            tabs = tabRowItem,
+                            selectedTabIndex = selectFloorIndex.value,
+                            onTabSelected = {
+                                coroutineScope.launch {
+                                    floorPagerState.animateScrollToPage(it)
                                 }
-                            val floorPagerState = rememberPagerState(
-                                pageCount = { allRoomListGroupByFloor.size }
-                            )
-                            val selectFloorIndex =
-                                remember { derivedStateOf { floorPagerState.currentPage } }
-                            val tabRowItem = allRoomListGroupByFloor.map {
-                                stringResource(
-                                    id = when (it.first().floorNumber) {
-                                        1 -> R.string.first_floor
-                                        2 -> R.string.second_floor
-                                        3 -> R.string.third_floor
-                                        4 -> R.string.fourth_floor
-                                        5 -> R.string.fifth_floor
-                                        else -> R.string.other
-                                    }
-                                )
                             }
-                            TabRow(
-                                tabs = tabRowItem,
-                                selectedTabIndex = selectFloorIndex.value,
-                                onTabSelected = {
-                                    coroutineScope.launch {
-                                        floorPagerState.animateScrollToPage(it)
-                                    }
-                                }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        val columns = if (windowSizeClass.isWidthAtLeastBreakpoint(
+                                WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            HorizontalPager(
-                                verticalAlignment = Alignment.Top,
-                                state = floorPagerState,
-                                modifier = Modifier.fillMaxSize()
+                        ) 4 else 3
+                        HorizontalPager(
+                            verticalAlignment = Alignment.Top,
+                            state = floorPagerState,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            val currentRoomList = allRoomListGroupByFloor[it]
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(columns),
+                                modifier = Modifier.height((ceil(currentRoomList.size / columns.toFloat()) * 58).dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                val currentRoomList = allRoomListGroupByFloor[it]
-                                LazyVerticalGridCustom(
-                                    modifier = Modifier.fillMaxSize(),
-                                    list = currentRoomList,
-                                    columnSize =
-                                        if (windowSizeClass.isHeightAtLeastBreakpoint(
-                                                WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
-                                            )
-                                        ) 3 else 4,
-                                    ifEqualWeight = true
-                                ) { _, room ->
+                                items(currentRoomList) {
                                     SingleRoom(
-                                        label = room.roomName,
-                                        state = !busyRoomListFilterByPeriod?.map { it.roomName }
-                                            ?.contains(room.roomName)!!,
+                                        label = it.roomName,
+                                        state = !busyRoomListFilterByPeriod?.map { it.roomCode }
+                                            ?.contains(it.roomCode)!!,
                                         onClick = {},
                                         modifier = Modifier
                                     )
                                 }
                             }
+                            /*LazyVerticalGridCustom(
+                                modifier = Modifier.fillMaxSize(),
+                                list = currentRoomList,
+                                columnSize =
+                                    if (windowSizeClass.isWidthAtLeastBreakpoint(
+                                            WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
+                                        )
+                                    ) 4 else 3,
+                                ifEqualWeight = true
+                            ) { _, room ->
+                                SingleRoom(
+                                    label = room.roomName,
+                                    state = !busyRoomListFilterByPeriod?.map { it.roomName }
+                                        ?.contains(room.roomName)!!,
+                                    onClick = {},
+                                    modifier = Modifier
+                                )
+                            }*/
                         }
                     }
-
                 }
+
             }
         }
-    }
 
-    if (showDatePicker) {
         DatePickerDialog(
-            colors = DatePickerDefaults.colors(
-                containerColor = MiuixTheme.colorScheme.background
-            ),
-            onDismissRequest = {
-                onShowDatePicker(false)
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onSelectedDate(
-                            timeStamp2DateStr(datePickerState.selectedDateMillis ?: 0)
-                        )
-                        onShowDatePicker(false)
-                    },
-                    enabled = confirmEnabled.value
-                ) {
-                    Text(stringResource(id = R.string.confirm))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        onShowDatePicker(false)
-                    }
-                ) {
-                    Text(stringResource(id = R.string.cancel))
-                }
-            }
-        ) {
-            DatePicker(
-                state = datePickerState,
-                colors = DatePickerDefaults.colors(containerColor = MiuixTheme.colorScheme.background)
-            )
-        }
+            showDatePicker = showDatePicker,
+            onConfirmClick = { selectedDate.value = it }
+        )
+        TipDialog(showTooltip)
     }
-    TipDialog(showTooltip)
 }
 
 @Composable
@@ -381,10 +369,12 @@ fun <T> LazyVerticalGridCustom(
                     val currentIndex = rowIndex * columnSize + columnIndex
                     Box(
                         modifier = if (ifEqualWeight) Modifier
-                            .weight(1f / columnSize)
-                            .padding(horizontal = 4.dp) else Modifier
+                            .weight(1f / columnSize) else Modifier
                     ) {
                         content(currentIndex, timeLabel)
+                        if (columnIndex <= columnSize - 2) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
                     }
                 }
                 if (singleRowButtons.size < columnSize) {
@@ -408,6 +398,7 @@ fun TipDialog(
     SuperDialog(
         show = showDialog,
         title = "说明",
+        summary = "若当天教学楼为考场，请以实际为准",
         onDismissRequest = {
             showDialog.value = false
         }
@@ -429,7 +420,7 @@ fun TipDialog(
                     ) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            color = MiuixTheme.colorScheme.background
+                            colors = CardDefaults.defaultColors(color = MiuixTheme.colorScheme.background)
                         ) {
                             Box(
                                 modifier = Modifier
@@ -457,21 +448,13 @@ fun TipDialog(
                     }
                 }
             }
-            Text(
-                text = "若当天教学楼为考场，请以实际为准",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    color = MiuixTheme.colorScheme.onBackground
-                ),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Start
-            )
             Spacer(modifier = Modifier.height(12.dp))
             top.yukonga.miuix.kmp.basic.TextButton(
                 text = "我知道了",
                 onClick = {
                     showDialog.value = false
                 },
-                colors = ButtonDefaults.textButtonPrimaryColors(),
+                colors = ButtonDefaults.textButtonColors(),
                 modifier = Modifier
                     .fillMaxWidth()
             )

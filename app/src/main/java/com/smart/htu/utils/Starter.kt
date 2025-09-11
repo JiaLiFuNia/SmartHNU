@@ -13,31 +13,30 @@ fun startCalendar() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
         context.startActivity(calendarIntent)
-    } catch (_: Exception) {
-        sendToast(context, "无法启动应用")
+    } catch (e: Exception) {
+        ToastUtil.showToast(context, "$e")
     }
 }
 
 // 传入网页URL打开
 fun startWebUrl(url: String) {
     try {
-        val it = Intent(Intent.ACTION_VIEW, url.toUri())
-        it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(it)
-    } catch (_: Exception) {
-        sendToast(context, "启动浏览器失败")
+        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        ToastUtil.showToast(context, "$e")
     }
 }
 
 //通过包名启动第三方应用
 @SuppressLint("QueryPermissionsNeeded")
-fun startLaunchAPK(packageName: String, appName: String = "应用") {
+fun startLaunchAPK(packageName: String) {
     try {
         val intent = context.packageManager.getLaunchIntentForPackage(packageName)
-        if (intent == null) sendToast(context, "未安装${appName}")
-        else context.startActivity(intent)
-    } catch (_: Exception) {
-        sendToast(context, "启动外部应用失败")
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        ToastUtil.showToast(context, "$e")
     }
 }
 
@@ -47,7 +46,25 @@ fun startAppUrl(url: String) {
         val intent = Intent(Intent.ACTION_DEFAULT, url.toUri())
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(intent)
-    } catch (_: Exception) {
-        sendToast(context, "打开支付宝失败")
+    } catch (e: Exception) {
+        ToastUtil.showToast(context, "$e")
+    }
+}
+
+// 通过包名和Activity 启动 activity
+fun startActivityWithUri(
+    packageName: String,
+    activityName: String,
+    uri: String? = null
+) {
+    try {
+        val intent = Intent().apply {
+            setClassName(packageName, activityName)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            uri?.let { data = it.toUri() }
+        }
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        ToastUtil.showToast(context, "$e")
     }
 }

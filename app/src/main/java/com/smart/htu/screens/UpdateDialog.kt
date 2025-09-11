@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.smart.htu.api.module.UpdateEntity
 import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.utils.FileUtil.downloadFile
-import com.smart.htu.utils.sendToast
+import com.smart.htu.utils.ToastUtil
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.extra.SuperDialog
@@ -74,7 +74,7 @@ fun UpdateDialog(
                                 )
                             }
                             showDialog.value = false
-                            sendToast(context, "下拉通知栏，查看进度")
+                            ToastUtil.showToast(context, "下拉通知栏，查看进度")
                         }
                     },
                     modifier = Modifier.weight(1f),

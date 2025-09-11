@@ -1,4 +1,4 @@
-package com.smart.htu.screens.application.physicalTest
+package com.smart.htu.screens.application.campusLife
 
 import androidx.lifecycle.ViewModel
 import com.smart.htu.repo.DataStoreRepo
@@ -8,19 +8,19 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
-data class PhysicalTestUiState(
+data class CampusLifeUiState(
     val userUrl: String = "",
     val isUrlValidity: Boolean = true
 )
 
 @HiltViewModel
-class PhysicalTestViewModel @Inject constructor(
+class CampusLifeViewModel @Inject constructor(
     private val dataStoreRepo: DataStoreRepo
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(PhysicalTestUiState())
+    private val _uiState = MutableStateFlow(CampusLifeUiState())
 
-    val uiState: StateFlow<PhysicalTestUiState> = _uiState.asStateFlow()
+    val uiState: StateFlow<CampusLifeUiState> = _uiState.asStateFlow()
 
 
 }

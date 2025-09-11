@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -33,10 +32,11 @@ import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.screens.application.ApplicationEntity
 import com.smart.htu.screens.application.ApplicationEntity.RouteType
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 
 @Composable
 fun MediumCardDisplay(
@@ -58,7 +58,7 @@ fun MediumCardDisplay(
             .semantics { role = Role.Button }
             .fillMaxWidth()
             .animateContentSize(),
-        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
         color = if (enabled) MiuixTheme.colorScheme.surface
         else MiuixTheme.colorScheme.disabledSecondaryVariant
     ) {
@@ -108,7 +108,6 @@ fun MediumCardDisplay(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun JumpToAlipayDialog(
     showDialog: MutableState<Boolean>,

@@ -23,6 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
@@ -79,14 +80,14 @@ fun LargeCardDisplay(
         if (onClick != null) {
             top.yukonga.miuix.kmp.basic.Card(
                 modifier = modifier.fillMaxWidth(),
-                color = containerColor
+                colors = CardDefaults.defaultColors(color = containerColor)
             ) {
                 content()
             }
         } else {
             top.yukonga.miuix.kmp.basic.Card(
                 modifier = modifier.fillMaxWidth(),
-                color = containerColor
+                colors = CardDefaults.defaultColors(color = containerColor)
             ) {
                 content()
             }

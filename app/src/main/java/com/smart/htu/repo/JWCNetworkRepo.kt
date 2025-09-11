@@ -198,7 +198,7 @@ class JWCNetworkRepo @Inject constructor(
     // 成绩查询
     suspend fun getCourseGradeService(termCode: GlobalTerm): Result<CourseGradeRes> {
         try {
-            val res = jwcService.grade(termCode)
+            val res = jwcService.getCourseGrade(termCode)
             return when (res.code) {
                 200 -> Result.success(res)
                 else -> Result.failure(Exception(res.msg))
@@ -214,7 +214,7 @@ class JWCNetworkRepo @Inject constructor(
         gradeCode: String
     ): Result<CourseGradeDetailRes> {
         try {
-            val res = jwcService.gradeDetail(CourseGradeDetailPost(gradeCode))
+            val res = jwcService.getGradeDetail(CourseGradeDetailPost(gradeCode))
             return when (res.code) {
                 200 -> Result.success(res)
                 else -> Result.failure(Exception(res.msg))

@@ -23,6 +23,7 @@ data class ClassroomOccupationEntity(
 @Serializable
 data class BusyRoom(
     @SerializedName("jxcdmc") val roomName: String,
+    @SerializedName("jxcddm") val roomCode: String,
     @SerializedName("xnxqdm") val shortTermCode: String,
     @SerializedName("jcdm") val busyPeriodCode: String,
     @SerializedName("jcdm2") val busyPeriodListString: String,
@@ -33,5 +34,6 @@ data class BusyRoom(
 @Serializable
 data class AllRoom(
     @SerializedName("lch") val floorNumber: Int,
-    @SerializedName("jxcdmc") val roomName: String
+    @SerializedName("jxcdmc") val roomName: String,
+    @SerializedName("jxcddm") val roomCode: String
 )

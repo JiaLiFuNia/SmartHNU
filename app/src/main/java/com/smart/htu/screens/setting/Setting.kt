@@ -20,7 +20,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -30,6 +29,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,12 +41,12 @@ import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.setting.entity.DarkMode
 import com.smart.htu.utils.APPVersion.getVersionCode
 import com.smart.htu.utils.APPVersion.getVersionName
-import com.smart.htu.utils.TermUtil
-import dev.chrisbanes.haze.HazeState
+import com.smart.htu.utils.ToastUtil.showToast
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Scaffold
@@ -56,7 +56,7 @@ import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
@@ -66,23 +66,23 @@ fun SettingScreen(
     viewModel: SettingViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val hazeState = remember { HazeState() }
+    val hazeState = rememberHazeState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
+    val context = LocalContext.current
 
     val showUpdateDialog = remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = if (uiState.blurEnabled) Color.Transparent else MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = if (uiState.blurEnabled) Color.Transparent else MiuixTheme.colorScheme.background
                 ),
                 title = { Text(text = stringResource(id = R.string.setting)) },
                 navigationIcon = {
@@ -96,10 +96,10 @@ fun SettingScreen(
                 },
                 modifier = Modifier.hazeEffect(
                     state = hazeState,
-                    style = HazeMaterials.regular()
+                    style = HazeMaterials.thick()
                 ) {
                     blurRadius = 30.dp
-                    blurEnabled = uiState.blurEffect
+                    blurEnabled = uiState.blurEnabled
                 }
             )
         },
@@ -110,28 +110,23 @@ fun SettingScreen(
         LazyColumn(
             state = listState,
             modifier = Modifier
-                .padding(it)
                 .hazeSource(state = hazeState)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .fillMaxSize()
                 .overScrollVertical(),
             overscrollEffect = null,
-            contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 8.dp, bottom = 16.dp)
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                top = it.calculateTopPadding() + 8.dp,
+                end = 12.dp,
+                bottom = 16.dp
+            )
         ) {
             item {
                 SettingItemCard(
                     label = "通用",
                     modifier = Modifier
                 ) {
-                    val termString = TermUtil.termConverter(uiState.termCode).split("-")
-                    SuperArrow(
-                        title = "学期",
-                        summary = "当前学期 ${termString[0]}-${termString[1]} 学年第 ${termString[2]} 学期",
-                        onClick = {
-                            scope.launch {
-                                snackBarHostState.showSnackbar("全局学期不能修改")
-                            }
-                        }
-                    )
                     SuperArrow(
                         title = "AI 功能",
                         summary = "使用大模型为应用注入新活力",
@@ -142,7 +137,7 @@ fun SettingScreen(
                     SuperSwitch(
                         checked = !uiState.loadImgEnabled,
                         title = "无图模式",
-                        summary = "关闭加载文章和列表图片，节省流量",
+                        summary = "关闭加载文章和列表图片，节省储存和流量",
                         onCheckedChange = {
                             viewModel.changeLoadImgEnabled(!it)
                         }
@@ -151,17 +146,35 @@ fun SettingScreen(
             }
             item {
                 SettingItemCard(
-                    label = stringResource(id = R.string.display_color),
+                    label = stringResource(R.string.display),
                     modifier = Modifier
                 ) {
-                    val themeModes = mapOf(
-                        0 to "动态",
-                        1 to "师大"
+                    SuperArrow(
+                        title = "自定义聚焦",
+                        summary = "设置首页聚焦板块的内容",
+                        onClick = {
+                            showToast(context, "开发中...")
+                        }
                     )
+                    SuperArrow(
+                        title = "文章样式",
+                        summary = "调整文章字体以及字体大小",
+                        onClick = {
+                            navController.navigate(Destinations.ArticleStyle.route)
+                        }
+                    )
+                }
+            }
+            item {
+                SettingItemCard(
+                    label = stringResource(id = R.string.theme),
+                    modifier = Modifier
+                ) {
+                    val themeModes = listOf("动态", "师大青")
                     SuperDropdown(
                         title = stringResource(id = R.string.theme_color),
                         summary = stringResource(id = R.string.theme_color_description),
-                        items = themeModes.values.toList(),
+                        items = themeModes,
                         selectedIndex = uiState.themeMode,
                         mode = DropDownMode.AlwaysOnRight,
                         onSelectedIndexChange = { mode ->
@@ -199,31 +212,6 @@ fun SettingScreen(
                     )*/
                 }
             }
-            /*item {
-                SettingItemCard(
-                    label = stringResource(id = R.string.screen_style),
-                    modifier = Modifier
-                ) {
-                    SuperArrow(
-                        title = stringResource(id = R.string.main_screen),
-                        onClick = {
-                            navController.navigate(Destinations.MainSetting.route)
-                        }
-                    )
-                    SuperArrow(
-                        title = stringResource(id = R.string.application_screen),
-                        onClick = {
-                            navController.navigate(Destinations.AppSetting.route)
-                        }
-                    )
-                    SuperArrow(
-                        title = stringResource(id = R.string.news_screen),
-                        onClick = {
-                            navController.navigate(Destinations.NewsSetting.route)
-                        }
-                    )
-                }
-            }*/
             item {
                 SettingItemCard(
                     label = stringResource(id = R.string.application),
@@ -308,7 +296,7 @@ fun UpdateCard(
         Surface(
             modifier = Modifier
                 .fillMaxWidth(),
-            shape = SmoothRoundedCornerShape(top.yukonga.miuix.kmp.basic.ButtonDefaults.CornerRadius),
+            shape = G2RoundedCornerShape(top.yukonga.miuix.kmp.basic.CardDefaults.CornerRadius),
             color = MiuixTheme.colorScheme.surface,
             onClick = {
 
@@ -344,7 +332,7 @@ fun UpdateCard(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     ),
-                    shape = SmoothRoundedCornerShape(8.dp)
+                    shape = G2RoundedCornerShape(8.dp)
                 ) {
                     Text(
                         text = "立即更新",

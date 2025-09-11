@@ -3,6 +3,7 @@ package com.smart.htu.component
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
+import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -27,13 +28,14 @@ import com.kevinnzou.web.LoadingState
 import com.kevinnzou.web.WebView
 import com.kevinnzou.web.WebViewNavigator
 import com.kevinnzou.web.WebViewState
+import com.kevinnzou.web.rememberWebViewNavigator
 import com.kevinnzou.web.rememberWebViewState
 import com.smart.htu.screens.news.newsView.JavaScriptInterface
 import com.smart.htu.utils.FileUtil.downloadFile
 import com.smart.htu.utils.getHtml
 import com.smart.htu.utils.setDefaultSettings
 import kotlinx.coroutines.launch
-import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.Cookie
 import org.jsoup.Jsoup
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -42,20 +44,19 @@ import org.jsoup.Jsoup
 fun WebView(
     url: String,
     headers: Map<String, String> = emptyMap(),
+    cookie: List<Cookie> = emptyList(),
     webViewState: WebViewState = rememberWebViewState(url, headers),
-    onHtml: (String) -> Unit? = { },
     onError: (String) -> Unit = { },
     onFinished: (Boolean) -> Unit = { },
     onLogin: (Boolean) -> Unit = { },
     onCurrentUrl: (String) -> Unit = { },
     onImageClick: (imgUrl: String) -> Unit = { },
     isShowLinearProgressIndicator: Boolean = true,
-    snackBarHostState: SnackbarHostState,
-    navigator: WebViewNavigator
+    snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    navigator: WebViewNavigator = rememberWebViewNavigator(),
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-
     val webClient = remember {
         object : AccompanistWebViewClient() {
             override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
@@ -76,9 +77,8 @@ fun WebView(
                     try {
                         val html = view.getHtml()
                         val document = Jsoup.parse(html)
-                        val errorMessage = document.select("div.wp_error_msg").text()
+                        val errorMessage = document.select("div.wp_error_msg span").text()
                         onError(errorMessage)
-                        onHtml(html)
                     } catch (e: Exception) {
                         snackBarHostState.showSnackbar("获取网页内容失败：${e.message}")
                     }
@@ -181,6 +181,7 @@ fun WebView(
 
         }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -196,7 +197,15 @@ fun WebView(
                     )
             }
 
-            else -> {}
+            is LoadingState.Initializing -> {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+            }
+
+            else -> {
+            }
         }
         WebView(
             state = webViewState,
@@ -217,8 +226,19 @@ fun WebView(
                         onImageClick(imgUrl ?: "")
                     }
                 }, JavaScriptInterface.NAME)
+
+                updateWebViewCookies(url, cookie)
             },
             client = webClient
         )
     }
+}
+
+fun updateWebViewCookies(url: String, cookie: List<Cookie>) {
+    val cookieManager = CookieManager.getInstance()
+    cookieManager.setAcceptCookie(true)
+    cookie.forEach { cookie ->
+        cookieManager.setCookie(url, "${cookie.name}=${cookie.value}")
+    }
+    cookieManager.flush()
 }

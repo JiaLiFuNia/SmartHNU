@@ -69,7 +69,6 @@ fun NewsSearch(
     val isSearching = remember { mutableStateOf(false) }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -112,6 +111,7 @@ fun NewsSearch(
     ) {
         Column(
             modifier = Modifier.padding(it)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
             Row(
                 modifier = Modifier
@@ -195,6 +195,7 @@ fun NewsSearch(
                                     onClick = {
                                         navController.navigateToNewsDetail(
                                             url = it.url,
+                                            title = it.title,
                                             label = context.getString(it.label.label)
                                         )
                                     }

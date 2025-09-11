@@ -2,7 +2,6 @@ package com.smart.htu.screens.news.newsView
 
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -12,6 +11,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -62,6 +61,7 @@ import com.kevinnzou.web.rememberWebViewState
 import com.kevinnzou.web.rememberWebViewStateWithHTMLData
 import com.smart.htu.R
 import com.smart.htu.api.module.AttachmentEntity
+import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.component.BasicDialog
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.DownloadDialog
@@ -71,17 +71,18 @@ import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.news.newsView.NewsStyle.HORIZONTAL_MARGIN
 import com.smart.htu.utils.FileUtil.downloadFile
+import com.smart.htu.utils.ToastUtil
 import com.smart.htu.utils.copyContent
 import com.smart.htu.utils.getCurrentDates
-import com.smart.htu.utils.sendToast
 import com.smart.htu.utils.startWebUrl
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.FloatingToolbar
 import top.yukonga.miuix.kmp.basic.ListPopup
@@ -89,17 +90,17 @@ import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
-import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.ToolbarPosition
 import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import java.time.LocalDate
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun NewsDetail(
     url: String,
     title: String,
+    source: String,
     newsViewModel: NewsViewModel = hiltViewModel(),
     navController: NavController
 ) {
@@ -119,7 +120,6 @@ fun NewsDetail(
     val isHTUNews = remember { mutableStateOf(url.toUri().host == "www.htu.edu.cn") }
 
     val newsViewMode = remember { mutableIntStateOf(0) }
-    val newsDetailHTML = remember { mutableStateOf("") }
     val newsLoading = remember { mutableStateOf(true) }
     val errorMessage = remember { mutableStateOf("") }
     val showErrorMessageDialog = remember { mutableStateOf(false) }
@@ -144,17 +144,21 @@ fun NewsDetail(
         }
     }
 
+    LaunchedEffect(errorMessage) {
+        showErrorMessageDialog.value = errorMessage.value.isNotEmpty()
+    }
+
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background
+                    containerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background
                 ),
                 title = {
                     Text(
-                        text = title,
+                        text = source,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,
@@ -166,8 +170,7 @@ fun NewsDetail(
                         stringResource(R.string.share),
                         stringResource(R.string.copy_url),
                         stringResource(R.string.open_outside),
-                        stringResource(R.string.forward),
-                        "显示解析后的html"
+                        stringResource(R.string.forward)
                     )
                     ListPopup(
                         show = showDropDownMenu,
@@ -212,10 +215,6 @@ fun NewsDetail(
                                             3 -> {
                                                 if (navigator.canGoForward) navigator.navigateForward()
                                             }
-
-                                            4 -> {
-                                                showHtml.value = !showHtml.value
-                                            }
                                         }
                                     },
                                     index = index
@@ -231,6 +230,13 @@ fun NewsDetail(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "close")
                     }
+                },
+                modifier = Modifier.hazeEffect(
+                    state = hazeState,
+                    style = HazeMaterials.thick()
+                ) {
+                    blurRadius = 40.dp
+                    blurEnabled = uiState.blurEffect
                 }
             )
         },
@@ -245,8 +251,8 @@ fun NewsDetail(
                 ) {
                     Row(
                         modifier = Modifier
-                            .background(Color.Transparent)
-                            .hazeEffect(state = hazeState)
+                            .background(MiuixTheme.colorScheme.surfaceContainer)
+                        // .hazeEffect(state = hazeState)
                     ) {
                         IconButton(
                             onClick = {
@@ -265,9 +271,25 @@ fun NewsDetail(
                                 tint = MiuixTheme.colorScheme.onSurface
                             )
                         }
-                        IconButton(onClick = { /* 操作 2 */ }) {
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    newsViewModel.addNewsFavorite(
+                                        NewsMarkEntity(
+                                            title = title,
+                                            url = url,
+                                            time = LocalDate.now().toString(),
+                                            source = source
+                                        )
+                                    )
+                                }
+                            }
+                        ) {
                             Icon(
-                                painter = painterResource(R.drawable.star_24px),
+                                painter = painterResource(id = if (uiState.newsFavoriteList.map {
+                                        it.title
+                                    }
+                                        .contains(title)) R.drawable.star_24px_filled else R.drawable.star_24px),
                                 contentDescription = "star",
                                 tint = MiuixTheme.colorScheme.onSurface
                             )
@@ -286,7 +308,8 @@ fun NewsDetail(
                         }
                         IconButton(
                             onClick = {
-                                newsViewModel.changeBionicReadingEnabled(!uiState.bionicReadingEnabled)
+                                // newsViewModel.changeBionicReadingEnabled(!uiState.bionicReadingEnabled)
+                                navController.navigate(Destinations.ArticleStyle.route)
                             }
                         ) {
                             Icon(
@@ -309,8 +332,8 @@ fun NewsDetail(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .hazeSource(state = hazeState)
-                .padding(it),
+                .hazeSource(state = hazeState),
+            contentPadding = PaddingValues(top = it.calculateTopPadding())
         ) {
             if (newsViewMode.intValue == 0 && uiState.newsArticle == null && newsLoading.value) {
                 item { CircularProgressIndicator() }
@@ -343,7 +366,7 @@ fun NewsDetail(
                             webViewState = rememberWebViewStateWithHTMLData(
                                 data = NewsHTML.HTML.format(
                                     NewsStyle.get(
-                                        fontSize = 17,
+                                        fontSize = uiState.newsFontSize,
                                         lineHeight = 1.0F,
                                         letterSpacing = 0.5F,
                                         textMargin = HORIZONTAL_MARGIN,
@@ -370,12 +393,8 @@ fun NewsDetail(
                                 ),
                                 baseUrl = url
                             ),
-                            onHtml = {
-                                newsDetailHTML.value = it
-                            },
                             onError = {
                                 errorMessage.value = it
-                                if (it.isNotEmpty()) showErrorMessageDialog.value = true
                             },
                             onFinished = {
                                 newsLoading.value = !it
@@ -392,9 +411,6 @@ fun NewsDetail(
                         else -> WebView(
                             url = url,
                             webViewState = rememberWebViewState(url),
-                            onHtml = {
-                                // newsDetailHTML.value = it
-                            },
                             navigator = navigator,
                             snackBarHostState = snackBarHostState
                         )
@@ -433,9 +449,9 @@ fun NewsDetail(
             onDismiss = { showImagePreview.value = false },
             onDownload = {
                 scope.launch {
-                    sendToast(context, "正在下载图片：$title.jpg")
+                    ToastUtil.showToast(context, "正在下载图片：$title.jpg")
                     downloadFile(context, selectedImageData.value, "$title.jpg")
-                    sendToast(context, "下载成功")
+                    ToastUtil.showToast(context, "下载成功")
                 }
             }
         )

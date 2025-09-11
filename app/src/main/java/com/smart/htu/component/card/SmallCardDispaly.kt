@@ -1,29 +1,20 @@
 package com.smart.htu.component.card
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -36,10 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.smart.htu.screens.application.ApplicationEntity
 import com.smart.htu.screens.application.ApplicationEntity.RouteType
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 
 @Composable
 fun SmallCardDisplay(
@@ -63,7 +53,7 @@ fun SmallCardDisplay(
             .size(70.dp)
             .semantics { role = Role.Button }
             .animateContentSize(),
-        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        shape = G2RoundedCornerShape(top.yukonga.miuix.kmp.basic.CardDefaults.CornerRadius),
         color = if (enabled) enableContainerColor
         else disableContainerColor
     ) {

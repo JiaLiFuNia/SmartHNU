@@ -29,7 +29,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,7 +52,7 @@ import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.copyContent
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.PullToRefresh
@@ -71,14 +73,14 @@ fun LibrarySearchDetail(
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val lazyListState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
-    val pullToRefreshState = rememberPullToRefreshState()
 
-    val onRefresh: () -> Unit = {
-        scope.launch {
-            pullToRefreshState.completeRefreshing {
-                viewModel.libraryBookDetail(bookId)
-            }
+    var isRefreshing by rememberSaveable { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            delay(500)
+            viewModel.libraryBookDetail(bookId)
+            isRefreshing = false
         }
     }
 
@@ -88,7 +90,6 @@ fun LibrarySearchDetail(
 
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = {
             SnackbarHost(hostState = snackBarHostState)
         },
@@ -150,14 +151,20 @@ fun LibrarySearchDetail(
     ) {
         PullToRefresh(
             pullToRefreshState = pullToRefreshState,
-            onRefresh = onRefresh,
+            onRefresh = { isRefreshing = true },
+            isRefreshing = isRefreshing,
             refreshTexts = PULL_TO_REFRESH_TEXT,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            contentPadding = it
         ) {
             LazyColumn(
-                contentPadding = PaddingValues(16.dp, 12.dp),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = it.calculateTopPadding() + 8.dp
+                ),
                 state = lazyListState,
                 modifier = Modifier
                     .fillMaxSize()

@@ -17,8 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 
 @Composable
 fun SuggestChip(
@@ -30,7 +30,7 @@ fun SuggestChip(
     icon: Any? = Icons.Outlined.Close,
 ) {
     top.yukonga.miuix.kmp.basic.Surface(
-        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
         color = if (type == SuggestChipType.ERROR) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer,
         onClick = onClick,
         modifier = modifier

@@ -1,7 +1,9 @@
 package com.smart.htu.api.module
 
 import com.smart.htu.screens.news.entity.NewsType
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class NewsItemEntity(
     val label: NewsType,
     val title: String,
@@ -21,3 +23,11 @@ data class NewsItemEntity(
     val imgUrl: String
         get() = if (imgUrlWithoutHttp?.startsWith("http") == true) imgUrlWithoutHttp else "https://www.htu.edu.cn$imgUrlWithoutHttp"
 }
+
+@Serializable
+data class NewsMarkEntity(
+    val title: String,
+    val url: String,
+    val time: String,
+    val source: String
+)

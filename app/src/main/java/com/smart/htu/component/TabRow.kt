@@ -21,17 +21,17 @@ import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.TabRowDefaults
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
-
+import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 
 @Composable
 fun TabRow(
     tabs: List<String>,
     selectedTabIndex: Int,
     modifier: Modifier = Modifier,
-    height: Dp = TabRowDefaults.TabRowHeight,
+    height: Dp = 48.dp,
     onTabSelected: ((Int) -> Unit)? = null,
 ) {
+    // TabRow()
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -41,7 +41,7 @@ fun TabRow(
     ) {
         tabs.forEachIndexed { index, tabText ->
             Surface(
-                shape = SmoothRoundedCornerShape(TabRowDefaults.TabRowCornerRadius),
+                shape = G2RoundedCornerShape(TabRowDefaults.TabRowCornerRadius),
                 onClick = { onTabSelected?.invoke(index) },
                 enabled = onTabSelected != null,
                 color = if (selectedTabIndex == index) MiuixTheme.colorScheme.surface else MiuixTheme.colorScheme.background,

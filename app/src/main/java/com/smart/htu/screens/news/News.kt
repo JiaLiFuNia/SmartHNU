@@ -19,15 +19,20 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
@@ -36,8 +41,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,26 +64,71 @@ import coil.request.ImageRequest
 import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.api.module.NewsItemEntity
+import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.formatDateToFriendly
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import java.time.LocalDate
+
+/*@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+@Composable
+fun NewsScreenNavigation(
+    contentPadding: PaddingValues,
+    navController: NavController,
+    viewModel: NewsViewModel
+) {
+    val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator<NewsItemEntity>()
+    val scope = rememberCoroutineScope()
+
+    val navigator = rememberListDetailPaneScaffoldNavigator<NewsItemEntity>()
+    ListDetailPaneScaffold(
+        directive = navigator.scaffoldDirective,
+        value = navigator.scaffoldValue,
+        listPane = {
+            AnimatedPane {
+                NewsScreen(
+                    contentPadding = contentPadding,
+                    navController = navController,
+                    viewModel = viewModel,
+                    onNewsItemClick = {
+                        scope.launch {
+                            scaffoldNavigator.navigateTo(ListDetailPaneScaffoldRole.Detail, it)
+                        }
+                    }
+                )
+            }
+        },
+        detailPane = {
+            AnimatedPane {
+                scaffoldNavigator.currentDestination?.contentKey?.let {
+                    NewsDetail(
+                        url = it.url,
+                        title = stringResource(it.label.label),
+                        navController = navController
+                    )
+                }
+            }
+        },
+    )
+}*/
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun NewsScreen(
     contentPadding: PaddingValues,
     navController: NavController,
-    viewModel: NewsViewModel
+    viewModel: NewsViewModel,
+    // onNewsItemClick: (NewsItemEntity) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -87,13 +140,13 @@ fun NewsScreen(
     val selectedTabIndex = remember { derivedStateOf { newsPagerState.currentPage } }
 
     val scope = rememberCoroutineScope()
+    var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
-    val onRefresh: () -> Unit = {
-        scope.launch {
-            pullToRefreshState.completeRefreshing {
-                viewModel.getBannerImgList()
-                viewModel.getNewsList(selectedTabIndex.value)
-            }
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            viewModel.getBannerImgList()
+            viewModel.getNewsList(selectedTabIndex.value)
+            isRefreshing = false
         }
     }
 
@@ -105,8 +158,25 @@ fun NewsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(contentPadding)
     ) {
+        TopAppBar(
+            colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
+            title = { Text(text = stringResource(R.string.news)) },
+            actions = {
+                IconButton(onClick = { navController.navigate(Destinations.NewsHistory.route) }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.bookmark_24px),
+                        contentDescription = "history"
+                    )
+                }
+                IconButton(onClick = { navController.navigate(Destinations.NewsSearch.route) }) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "search"
+                    )
+                }
+            }
+        )
         PrimaryScrollableTabRow(
             containerColor = Color.Transparent,
             selectedTabIndex = newsPagerState.currentPage,
@@ -137,6 +207,7 @@ fun NewsScreen(
                 }
             }
         }
+
         val bannerPicUrl = uiState.bannerPicList.map { it.imgUrl }
         val bannerTitle = uiState.bannerPicList.map { it.title }
         val bannerUrl = uiState.bannerPicList.map { it.url }
@@ -144,9 +215,11 @@ fun NewsScreen(
         PullToRefresh(
             pullToRefreshState = pullToRefreshState,
             refreshTexts = PULL_TO_REFRESH_TEXT,
-            onRefresh = onRefresh,
+            onRefresh = { isRefreshing = true },
+            isRefreshing = isRefreshing,
             modifier = Modifier
                 .fillMaxSize()
+                .padding(bottom = contentPadding.calculateBottomPadding())
         ) {
             HorizontalPager(
                 state = newsPagerState,
@@ -176,10 +249,10 @@ fun NewsScreen(
                                         bannerUrl = bannerUrl,
                                         bannerTitle = bannerTitle
                                     ) { url, label ->
-                                        navController.navigateToNewsDetail(
+                                        /*navController.navigateToNewsDetail(
                                             url = url,
                                             label = label
-                                        )
+                                        )*/
                                     }
                                     Spacer(modifier = Modifier.height(8.dp))
                                 }
@@ -191,8 +264,18 @@ fun NewsScreen(
                                     news = news,
                                     imageLoadEnabled = uiState.loadImgEnabled,
                                     onClick = {
+                                        // onNewsItemClick(news)
+                                        viewModel.addNewsHistory(
+                                            NewsMarkEntity(
+                                                title = news.title,
+                                                url = news.url,
+                                                time = LocalDate.now().toString(),
+                                                source = context.getString(news.label.label)
+                                            )
+                                        )
                                         navController.navigateToNewsDetail(
                                             url = news.url,
+                                            title = news.title,
                                             label = context.getString(news.label.label)
                                         )
                                     }
@@ -238,7 +321,7 @@ fun NewsItem(
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize(),
-        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        shape =  G2RoundedCornerShape(CardDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surface,
     ) {
         ListItem(
@@ -337,7 +420,8 @@ fun HorizontalBanner(
 
 fun NavController.navigateToNewsDetail(
     url: String,
+    title: String,
     label: String
 ) {
-    this.navigate("${Destinations.NewsDetail.route}/${Uri.encode(url)}/${label}")
+    this.navigate("${Destinations.NewsDetail.route}/${Uri.encode(url)}/${title}/${label}")
 }

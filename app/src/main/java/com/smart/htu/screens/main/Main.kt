@@ -19,18 +19,29 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.window.core.layout.WindowSizeClass
 import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseEntity
@@ -65,7 +77,6 @@ import com.smart.htu.screens.news.navigateToNewsDetail
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.Constants.Companion.SECOND_CLASS_URL
 import com.smart.htu.utils.startCalendar
-import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -93,68 +104,177 @@ fun Main(
     val loginState = remember {
         derivedStateOf { loginUiState.loginJWCState != 1 && loginUiState.loginJWCState != -2 }
     }
-    val pullToRefreshState = rememberPullToRefreshState()
+    val messageCount = remember {
+        derivedStateOf { uiState.noticeIdList.size - uiState.readNoticeIdList.size }
+    }
 
-    val coroutineScope = rememberCoroutineScope()
-    val onRefresh: () -> Unit = {
-        coroutineScope.launch {
-            pullToRefreshState.completeRefreshing {
-                mainViewModel.getCurrentWeather()
-                mainViewModel.refreshNoticeAndUpdate()
-                mainViewModel.getNewsList()
-                mainViewModel.getTodayCourse()
-                mainViewModel.getCurrentWeek()
-            }
+    var isRefreshing by rememberSaveable { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            mainViewModel.getCurrentWeather()
+            mainViewModel.refreshNoticeAndUpdate()
+            mainViewModel.getNewsList()
+            mainViewModel.getTodayCourse()
+            mainViewModel.getCurrentWeek()
+            isRefreshing = false
         }
     }
 
-    PullToRefresh(
-        pullToRefreshState = pullToRefreshState,
-        refreshTexts = PULL_TO_REFRESH_TEXT,
-        onRefresh = onRefresh,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding)
-    ) {
-        LazyColumn(
-            contentPadding = PaddingValues(16.dp, 12.dp),
-            modifier = Modifier
-                .overScrollVertical()
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-            overscrollEffect = null
-        ) {
-            if (loginState.value) {
-                item {
-                    SuggestChip(
-                        onClick = { navController.navigate(Destinations.Login.route) },
-                        onActionClick = { navController.navigate(Destinations.Login.route) },
-                        text = "暂未登录，登录后即可体验全部功能",
-                        type = SuggestChipType.ERROR,
-                        icon = Icons.AutoMirrored.Filled.ArrowForward
-                    )
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+
+    Column {
+        TopAppBar(
+            colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
+            title = { Text(text = "欢迎！${uiState.username}") },
+            actions = {
+                IconButton(
+                    onClick = {
+                        navController.navigate(
+                            route = Destinations.Message.route
+                        )
+                    }
+                ) {
+                    BadgedBox(
+                        badge = {
+                            if (messageCount.value > 0)
+                                Badge(
+                                    content = {
+                                        Text(text = messageCount.value.toString())
+                                    }
+                                )
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Email,
+                            contentDescription = null
+                        )
+                    }
+                }
+                IconButton(
+                    onClick = {
+                        navController.navigate(Destinations.Setting.route)
+                    }
+                ) {
+                    BadgedBox(
+                        badge = { if (uiState.updateEntity.isNeedUpdate == true) Badge() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Settings,
+                            contentDescription = "setting"
+                        )
+                    }
                 }
             }
-            item {
-                FocusCard(navController, loginUiState, airConditionUiState, uiState)
-            }
-            item {
-                TodayCourseCard(uiState.todayCourseList, loginState.value, navController)
-            }
-            item {
-                CommonAppsCard(
-                    uiState = uiState,
-                    navController = navController,
-                    loginUiState = loginUiState,
-                    loginState = loginState.value
-                )
-            }
-            item {
-                NewsCard(
-                    navController = navController,
-                    newsListStatus = uiState.newsList
-                )
-            }
+        )
+        PullToRefresh(
+            pullToRefreshState = pullToRefreshState,
+            refreshTexts = PULL_TO_REFRESH_TEXT,
+            onRefresh = { isRefreshing = true },
+            isRefreshing = isRefreshing,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = contentPadding.calculateBottomPadding())
+        ) {
+            if (windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND))
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp, 12.dp),
+                        modifier = Modifier
+                            .weight(0.5f)
+                            .overScrollVertical()
+                            .fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(20.dp),
+                        overscrollEffect = null
+                    ) {
+                        if (loginState.value) {
+                            item {
+                                SuggestChip(
+                                    onClick = { navController.navigate(Destinations.Login.route) },
+                                    onActionClick = { navController.navigate(Destinations.Login.route) },
+                                    text = "暂未登录，登录后即可体验全部功能",
+                                    type = SuggestChipType.ERROR,
+                                    icon = Icons.AutoMirrored.Filled.ArrowForward
+                                )
+                            }
+                        }
+                        item {
+                            FocusCard(navController, loginUiState, airConditionUiState, uiState)
+                        }
+                        item {
+                            NewsCard(
+                                navController = navController,
+                                newsListStatus = uiState.newsList
+                            )
+                        }
+                    }
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp, 12.dp),
+                        modifier = Modifier
+                            .weight(0.5f)
+                            .overScrollVertical()
+                            .fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(20.dp),
+                        overscrollEffect = null
+                    ) {
+                        item {
+                            TodayCourseCard(
+                                uiState.todayCourseList,
+                                loginState.value,
+                                navController
+                            )
+                        }
+                        item {
+                            CommonAppsCard(
+                                uiState = uiState,
+                                navController = navController,
+                                loginUiState = loginUiState,
+                                loginState = loginState.value
+                            )
+                        }
+                    }
+                }
+            else
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp, 12.dp),
+                    modifier = Modifier
+                        .overScrollVertical()
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
+                    overscrollEffect = null
+                ) {
+                    if (loginState.value) {
+                        item {
+                            SuggestChip(
+                                onClick = { navController.navigate(Destinations.Login.route) },
+                                onActionClick = { navController.navigate(Destinations.Login.route) },
+                                text = "暂未登录，登录后即可体验全部功能",
+                                type = SuggestChipType.ERROR,
+                                icon = Icons.AutoMirrored.Filled.ArrowForward
+                            )
+                        }
+                    }
+                    item {
+                        FocusCard(navController, loginUiState, airConditionUiState, uiState)
+                    }
+                    item {
+                        TodayCourseCard(uiState.todayCourseList, loginState.value, navController)
+                    }
+                    item {
+                        CommonAppsCard(
+                            uiState = uiState,
+                            navController = navController,
+                            loginUiState = loginUiState,
+                            loginState = loginState.value
+                        )
+                    }
+                    item {
+                        NewsCard(
+                            navController = navController,
+                            newsListStatus = uiState.newsList
+                        )
+                    }
+                }
         }
     }
 
@@ -183,7 +303,9 @@ fun NewsCard(
                         Status.SUCCESS -> {
                             if (newsListStatus.data.isNullOrEmpty()) {
                                 EmptyContent(
-                                    modifier = Modifier.fillMaxSize(),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .height(300.dp),
                                     text = "获取失败"
                                 )
                             } else {
@@ -191,6 +313,7 @@ fun NewsCard(
                                     NewsItem(news = news, maxLines = 2) {
                                         navController.navigateToNewsDetail(
                                             url = news.url,
+                                            title = news.title,
                                             label = context.getString(news.label.label)
                                         )
                                     }
@@ -375,8 +498,8 @@ fun TodayCourseCard(
         leadingIconPainting = R.drawable.today_24px,
         content = {
             Column(
-                modifier = Modifier
-                    .height(86.dp)
+                modifier = if (todayCourseList == null || todayCourseList.isEmpty()) Modifier
+                    .height(86.dp) else Modifier
             ) {
                 if (todayCourseList == null) {
                     if (loginState) {

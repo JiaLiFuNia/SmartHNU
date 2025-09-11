@@ -10,8 +10,8 @@ import com.smart.htu.api.module.AIModulePostEntity
 import com.smart.htu.api.module.AIRole
 import com.smart.htu.api.module.NewsArticleEntity
 import com.smart.htu.api.module.NewsItemEntity
+import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.repo.DataStoreRepo
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.screens.news.entity.NewsCategoryEntity
 import com.smart.htu.screens.news.entity.NewsType
@@ -28,7 +28,7 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class NewsUiState(
-    val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
+    val blurEffect: Boolean = true,
     val newsOptionItems: List<NewsCategoryEntity> = emptyList(),
     val bannerPicList: List<NewsItemEntity> = emptyList(),
     val newsList: List<MutableList<NewsItemEntity>?> = List(newsOptionItems.size) { null },
@@ -37,7 +37,10 @@ data class NewsUiState(
     val aiModelKey: String = "",
     val newsArticle: NewsArticleEntity? = null,
     val bionicReadingEnabled: Boolean = true,
-    val loadImgEnabled: Boolean = true
+    val loadImgEnabled: Boolean = true,
+    val newsHistoryList: List<NewsMarkEntity> = emptyList(),
+    val newsFavoriteList: List<NewsMarkEntity> = emptyList(),
+    val newsFontSize: Int = 17,
 )
 
 @HiltViewModel
@@ -115,6 +118,33 @@ class NewsViewModel @Inject constructor(
             }
         )
 
+    private val newsHistoryListStateFlow = dataStoreRepo.observeNewsHistoryList()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeNewsHistoryList().first()
+            }
+        )
+
+    private val newsFavoriteListStateFlow = dataStoreRepo.observeNewsFavoriteList()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeNewsFavoriteList().first()
+            }
+        )
+
+    private val newsFontSizeStateFlow = dataStoreRepo.observeNewsFontSize()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeNewsFontSize().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
             _blurStateFlow.collect { value ->
@@ -134,6 +164,21 @@ class NewsViewModel @Inject constructor(
         viewModelScope.launch {
             loadImgEnabledStateFlow.collect { value ->
                 _uiState.update { it.copy(loadImgEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
+            newsHistoryListStateFlow.collect { value ->
+                _uiState.update { it.copy(newsHistoryList = value) }
+            }
+        }
+        viewModelScope.launch {
+            newsFavoriteListStateFlow.collect { value ->
+                _uiState.update { it.copy(newsFavoriteList = value) }
+            }
+        }
+        viewModelScope.launch {
+            newsFontSizeStateFlow.collect { value ->
+                _uiState.update { it.copy(newsFontSize = value) }
             }
         }
         viewModelScope.launch {
@@ -226,9 +271,15 @@ class NewsViewModel @Inject constructor(
             }
         }
 
-    fun changeBionicReadingEnabled(enable: Boolean) {
+    fun addNewsHistory(newsItem: NewsMarkEntity) {
         viewModelScope.launch {
-            dataStoreRepo.changeBionicReadingEnabled(enable)
+            dataStoreRepo.changeNewsHistoryList(newsItem)
+        }
+    }
+
+    fun addNewsFavorite(newsItem: NewsMarkEntity) {
+        viewModelScope.launch {
+            dataStoreRepo.addNewsFavoriteList(newsItem)
         }
     }
 

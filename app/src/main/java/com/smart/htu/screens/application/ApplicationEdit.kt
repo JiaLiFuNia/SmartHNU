@@ -47,7 +47,6 @@ fun ApplicationEdit(
     val snackBarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -75,25 +74,42 @@ fun ApplicationEdit(
         }
     ) {
         LazyColumn(
-            contentPadding = PaddingValues(16.dp, 12.dp),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = it.calculateTopPadding() + 8.dp,
+                bottom = 12.dp
+            ),
             modifier = Modifier
-                .padding(it)
                 .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .overScrollVertical(),
             overscrollEffect = null
         ) {
             stickyHeader {
                 StickyHeader(text = "已添加应用")
             }
-            items(uiState.appList.filter { it in uiState.appListIsCommonList }) {
+            items(uiState.appList.filter { it in uiState.commonAppList }) {
                 Card {
                     SuperCheckbox(
                         checkboxLocation = CheckboxLocation.Right,
                         title = stringResource(it.label),
                         summary = stringResource(it.category.category),
-                        checked = it in uiState.appListIsCommonList,
+                        checked = it in uiState.commonAppList,
                         onCheckedChange = { value ->
                             viewModel.changeCommonAppListState(it, value)
+                        },
+                        rightActions = {
+                            /*IconButton(
+                                onClick = {},
+                                modifier = Modifier
+                                    .clearAndSetSemantics { },
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.drag_handle_24px),
+                                    contentDescription = null
+                                )
+                            }*/
                         }
                     )
                 }
@@ -102,13 +118,13 @@ fun ApplicationEdit(
             stickyHeader {
                 StickyHeader(text = "未添加应用")
             }
-            items(uiState.appList.filter { it !in uiState.appListIsCommonList }) {
+            items(uiState.appList.filter { it !in uiState.commonAppList }) {
                 Card {
                     SuperCheckbox(
                         checkboxLocation = CheckboxLocation.Right,
                         title = stringResource(it.label),
                         summary = stringResource(it.category.category),
-                        checked = it in uiState.appListIsCommonList,
+                        checked = it in uiState.commonAppList,
                         onCheckedChange = { value ->
                             viewModel.changeCommonAppListState(it, value)
                         }

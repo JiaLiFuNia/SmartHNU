@@ -7,8 +7,10 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,6 +29,7 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -34,6 +37,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,14 +67,15 @@ import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.GradeDivideUtil.divideGrade
 import com.smart.htu.utils.TermUtil.termConverter
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,25 +87,25 @@ fun Grade(
     val uiState by viewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    val pullToRefreshState = rememberPullToRefreshState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     val isBottomSheetShow = remember { mutableStateOf(false) }
     val isGradeDetailBottomSheetShow = remember { mutableStateOf(false) }
     val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
 
-    val onRefresh: () -> Unit = {
-        scope.launch {
-            pullToRefreshState.completeRefreshing {
-                viewModel.refreshTermList()
-                viewModel.getCourseGrade()
-            }
+    var isRefreshing by rememberSaveable { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+    LaunchedEffect(isRefreshing, uiState.loginJWCState) {
+        if (isRefreshing) {
+            delay(500)
+            viewModel.refreshTermList()
+            viewModel.getCourseGrade()
+            isRefreshing = false
         }
     }
 
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -144,15 +150,20 @@ fun Grade(
         PullToRefresh(
             pullToRefreshState = pullToRefreshState,
             refreshTexts = PULL_TO_REFRESH_TEXT,
-            onRefresh = onRefresh,
+            onRefresh = { isRefreshing = true },
+            isRefreshing = isRefreshing,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(it)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .fillMaxSize(),
+            contentPadding = it
         ) {
             LazyColumn(
                 state = lazyListState,
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = it.calculateTopPadding() + 8.dp
+                ),
                 modifier = Modifier
                     .fillMaxSize()
                     .overScrollVertical(),
@@ -181,30 +192,31 @@ fun Grade(
                                     }
                                 }
                             )
+                            Spacer(modifier = Modifier.height(12.dp))
                         }
                     }
                 }
             }
         }
-    }
 
-    SelectTermBottomSheet(
-        globalTermCode = uiState.globalTermCode,
-        termSelectedCode = uiState.termCode,
-        termList = uiState.termList,
-        isBottomSheetShow = isBottomSheetShow,
-        onClick = {
-            scope.launch {
-                viewModel.changeTermCode(it)
-                viewModel.getCourseGrade()
+        SelectTermBottomSheet(
+            globalTermCode = uiState.globalTermCode,
+            termSelectedCode = uiState.termCode,
+            termList = uiState.termList,
+            isBottomSheetShow = isBottomSheetShow,
+            onClick = {
+                scope.launch {
+                    viewModel.changeTermCode(it)
+                    isRefreshing = true
+                }
             }
-        }
-    )
+        )
 
-    CourseGradeDetailDialog(
-        message = uiState.courseGradeDetail,
-        showGradeDetailBottomSheet = isGradeDetailBottomSheetShow
-    )
+        CourseGradeDetailDialog(
+            message = uiState.courseGradeDetail,
+            showGradeDetailBottomSheet = isGradeDetailBottomSheetShow
+        )
+    }
 }
 
 
@@ -219,7 +231,7 @@ fun SingleCourseGrade(
             .semantics { role = Role.Button }
             .fillMaxWidth()
             .animateContentSize(),
-        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surface
     ) {
         ListItem(

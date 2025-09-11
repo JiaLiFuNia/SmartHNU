@@ -40,7 +40,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,6 +61,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -90,19 +90,17 @@ import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import kotlin.math.ceil
 
 @OptIn(
-    ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3ExpressiveApi::class
+    ExperimentalMaterial3Api::class
 )
 @Composable
 fun LibrarySearchScreen(
@@ -112,7 +110,6 @@ fun LibrarySearchScreen(
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
-    val pullToRefreshState = rememberPullToRefreshState()
 
     val (expand, onExpand) = rememberSaveable { mutableStateOf(false) }
     val (isSearching, onSearch) = rememberSaveable { mutableStateOf(false) }
@@ -120,11 +117,12 @@ fun LibrarySearchScreen(
 
     val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
 
-    val onRefresh: () -> Unit = {
-        scope.launch {
-            pullToRefreshState.completeRefreshing {
-                delay(500)
-            }
+    var isRefreshing by rememberSaveable { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            delay(500)
+            isRefreshing = false
         }
     }
 
@@ -140,7 +138,6 @@ fun LibrarySearchScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = {
             SnackbarHost(hostState = snackBarHostState)
         },
@@ -197,13 +194,19 @@ fun LibrarySearchScreen(
     ) {
         PullToRefresh(
             pullToRefreshState = pullToRefreshState,
-            onRefresh = onRefresh,
+            onRefresh = { isRefreshing = true },
+            isRefreshing = isRefreshing,
             refreshTexts = PULL_TO_REFRESH_TEXT,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            contentPadding = it
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = it.calculateTopPadding() + 8.dp)
+            ) {
                 DockedSearchBar(
                     colors = SearchBarDefaults.colors(containerColor = MiuixTheme.colorScheme.surfaceContainerHigh),
                     modifier = Modifier
@@ -528,7 +531,7 @@ fun LibrarySingleBook(
     onClick: () -> Unit = {}
 ) {
     Surface(
-        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        shape = G2RoundedCornerShape(top.yukonga.miuix.kmp.basic.CardDefaults.CornerRadius),
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
         color = MiuixTheme.colorScheme.surface

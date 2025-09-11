@@ -11,25 +11,26 @@ import androidx.navigation.navArgument
 import com.smart.htu.component.PdfReaderView
 import com.smart.htu.component.animation.animatedComposable
 import com.smart.htu.screens.application.ApplicationEdit
+import com.smart.htu.screens.application.ApplicationEntity.RouteType
 import com.smart.htu.screens.application.airCondition.AirCondition
 import com.smart.htu.screens.application.airCondition.AirConditionSetting
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
+import com.smart.htu.screens.application.campusLife.CampusLife
 import com.smart.htu.screens.application.classroom.ClassroomSearchScreen
 import com.smart.htu.screens.application.courseTable.CourseTable
-import com.smart.htu.screens.application.ApplicationEntity.RouteType
+import com.smart.htu.screens.application.examSchedule.ExamSchedule
 import com.smart.htu.screens.application.grade.Grade
 import com.smart.htu.screens.application.librarySearch.LibrarySearchDetail
 import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
 import com.smart.htu.screens.application.librarySearch.LibrarySearchViewModel
 import com.smart.htu.screens.application.messageBoard.MessageBoard
 import com.smart.htu.screens.application.messageBoard.MessageBoardDetail
-import com.smart.htu.screens.application.messageBoard.MessageBoardViewModel
-import com.smart.htu.screens.application.physicalTest.PhysicalTest
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluation
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluationDetail
 import com.smart.htu.screens.application.textbook.Textbook
 import com.smart.htu.screens.application.textbook.TextbookSelect
 import com.smart.htu.screens.application.websiteNavigation.WebsiteNavigation
+import com.smart.htu.screens.application.webview.ApplicationWebView
 import com.smart.htu.screens.login.LoginScreen
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.MainViewModel
@@ -42,10 +43,10 @@ import com.smart.htu.screens.news.newsView.NewsDetail
 import com.smart.htu.screens.person.AccountManage
 import com.smart.htu.screens.setting.AIConfigurationScreen
 import com.smart.htu.screens.setting.About
+import com.smart.htu.screens.setting.ArticleStyle
 import com.smart.htu.screens.setting.License
 import com.smart.htu.screens.setting.SettingScreen
 import com.smart.htu.screens.setting.feedback.Feedback
-import com.smart.htu.screens.application.webview.ApplicationWebView
 import com.smart.htu.utils.startAppUrl
 import com.smart.htu.utils.startLaunchAPK
 
@@ -199,12 +200,15 @@ fun NavHostScreen() {
             NewsMark(navController = navController)
         }
         animatedComposable(
-            route = "${Destinations.NewsDetail.route}/{url}/{title}",
+            route = "${Destinations.NewsDetail.route}/{url}/{title}/{source}",
             arguments = listOf(
                 navArgument(name = "url") {
                     type = NavType.StringType
                 },
                 navArgument(name = "title") {
+                    type = NavType.StringType
+                },
+                navArgument(name = "source") {
                     type = NavType.StringType
                 }
             )
@@ -213,7 +217,8 @@ fun NavHostScreen() {
             NewsDetail(
                 navController = navController,
                 url = Uri.decode(url),
-                title = webview.arguments?.getString("title") ?: ""
+                title = webview.arguments?.getString("title") ?: "",
+                source = webview.arguments?.getString("source") ?: ""
             )
         }
         animatedComposable(Destinations.CourseTable.route) {
@@ -229,7 +234,7 @@ fun NavHostScreen() {
             AIConfigurationScreen(navController = navController)
         }
         animatedComposable(Destinations.PhysicalTest.route) {
-            PhysicalTest(navController = navController)
+            CampusLife(navController = navController)
         }
         animatedComposable(
             route = "${Destinations.PdfReaderView.route}/{url}/{title}",
@@ -265,6 +270,15 @@ fun NavHostScreen() {
                 navController = navController
             )
         }
+        animatedComposable(Destinations.CampusLife.route) {
+            CampusLife(navController)
+        }
+        animatedComposable(Destinations.ArticleStyle.route) {
+            ArticleStyle(navController)
+        }
+        animatedComposable(Destinations.ExamSchedule.route) {
+            ExamSchedule(navController)
+        }
     }
 }
 
@@ -295,7 +309,7 @@ fun NavController.navigateWithCheckLoginState(
             }
 
             RouteType.APP -> {
-                startLaunchAPK(route!!, context.getString(label))
+                startLaunchAPK(route!!)
             }
 
             else -> {

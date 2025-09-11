@@ -1,7 +1,7 @@
 package com.smart.htu.screens.navigation
 
-import kotlinx.serialization.Serializable
 import androidx.navigation3.runtime.NavKey
+import kotlinx.serialization.Serializable
 
 sealed class Destinations(
     val route: String
@@ -39,6 +39,9 @@ sealed class Destinations(
     data object PdfReaderView : Destinations("pdf_viewer")
     data object MessageBoard : Destinations("message_board")
     data object MessageBoardDetail : Destinations("message_board_detail")
+    data object CampusLife : Destinations("campus_life")
+    data object ArticleStyle : Destinations("article_style")
+    data object ExamSchedule: Destinations("exam_schedule")
 }
 
 @Serializable

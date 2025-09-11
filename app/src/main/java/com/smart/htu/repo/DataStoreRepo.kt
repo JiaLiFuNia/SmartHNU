@@ -14,6 +14,7 @@ import com.smart.htu.api.DataStoreService
 import com.smart.htu.api.module.ACCookie
 import com.smart.htu.api.module.AIModelConfigEntity
 import com.smart.htu.api.module.LibraryDetailEntity
+import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.screens.application.ApplicationEntity
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import com.smart.htu.utils.TermUtil
@@ -59,6 +60,9 @@ class DataStoreRepo @Inject constructor(
         val AI_MODEL_KEY = stringPreferencesKey("AI_MODEL_KEY")
         val BIONIC_READING_ENABLED = booleanPreferencesKey("BIONIC_READING_ENABLED")
         val LOAD_IMG_ENABLED = booleanPreferencesKey("LOAD_IMG_ENABLED")
+        val NEWS_HISTORY_LIST = stringPreferencesKey("NEWS_HISTORY_LIST")
+        val NEWS_FAVORITE_LIST = stringPreferencesKey("NEWS_FAVORITE_LIST")
+        val NEWS_FONT_SIZE = intPreferencesKey("NEWS_FONT_SIZE")
 
         const val DEFAULT_COOKIES = "[]"
         const val DEFAULT_MESSAGE_READ_ID = "[]"
@@ -78,6 +82,9 @@ class DataStoreRepo @Inject constructor(
         const val DEFAULT_WRITE_CALENDAR_PERMISSION_GRANTED = false
         const val DEFAULT_LOAD_IMG_ENABLED = true
         const val DEFAULT_BOOK_SEARCH_HISTORY_LIST = "[]"
+        const val DEFAULT_NEWS_HISTORY_LIST = "[]"
+        const val DEFAULT_NEWS_FAVORITE_LIST = "[]"
+        const val DEFAULT_NEWS_FONT_SIZE = 17
         const val DEFAULT_AIR_CONDITION_USER_COOKIE = """{"shiroJID":"", "ymId":""}"""
         const val DEFAULT_AIR_CONDITION_COOKIE_TYPE = 0
         const val DEFAULT_BIONIC_READING_ENABLED = true
@@ -179,6 +186,39 @@ class DataStoreRepo @Inject constructor(
 
     override suspend fun changeLoadImgEnabled(enable: Boolean) {
         context.dataStore.edit { it[LOAD_IMG_ENABLED] = enable }
+    }
+
+    override suspend fun changeNewsHistoryList(newsItem: NewsMarkEntity) {
+        context.dataStore.edit {
+            val currentList = Json.decodeFromString<List<NewsMarkEntity>>(
+                it[NEWS_HISTORY_LIST] ?: DEFAULT_NEWS_HISTORY_LIST
+            ).toMutableList()
+            if (currentList.map { it.title }.contains(newsItem.title))
+                currentList.removeIf { it.title == newsItem.title }
+            currentList.add(0, newsItem)
+            if (currentList.size > 100) {
+                currentList.removeLastOrNull()
+            }
+            it[NEWS_HISTORY_LIST] = Json.encodeToString(currentList)
+        }
+    }
+
+    override suspend fun addNewsFavoriteList(newsItem: NewsMarkEntity) {
+        context.dataStore.edit {
+            val currentList = Json.decodeFromString<List<NewsMarkEntity>>(
+                it[NEWS_FAVORITE_LIST] ?: DEFAULT_NEWS_FAVORITE_LIST
+            ).toMutableList()
+            if (currentList.find { item -> item.url == newsItem.url } == null) {
+                currentList.add(0, newsItem)
+            } else {
+                currentList.removeIf { item -> item.url == newsItem.url }
+            }
+            it[NEWS_FAVORITE_LIST] = Json.encodeToString(currentList)
+        }
+    }
+
+    override suspend fun changeNewsFontSize(size: Int) {
+        context.dataStore.edit { it[NEWS_FONT_SIZE] = size }
     }
 
 
@@ -312,5 +352,25 @@ class DataStoreRepo @Inject constructor(
 
     override fun observeLoadImgEnabled(): Flow<Boolean> {
         return context.dataStore.data.map { it[LOAD_IMG_ENABLED] ?: DEFAULT_LOAD_IMG_ENABLED }
+    }
+
+    override fun observeNewsHistoryList(): Flow<List<NewsMarkEntity>> {
+        return context.dataStore.data.map {
+            Json.decodeFromString<List<NewsMarkEntity>>(
+                it[NEWS_HISTORY_LIST] ?: DEFAULT_NEWS_HISTORY_LIST
+            )
+        }
+    }
+
+    override fun observeNewsFavoriteList(): Flow<List<NewsMarkEntity>> {
+        return context.dataStore.data.map {
+            Json.decodeFromString<List<NewsMarkEntity>>(
+                it[NEWS_FAVORITE_LIST] ?: DEFAULT_NEWS_FAVORITE_LIST
+            )
+        }
+    }
+
+    override fun observeNewsFontSize(): Flow<Int> {
+        return context.dataStore.data.map { it[NEWS_FONT_SIZE] ?: DEFAULT_NEWS_FONT_SIZE }
     }
 }

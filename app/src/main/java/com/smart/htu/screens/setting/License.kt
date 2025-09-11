@@ -15,18 +15,16 @@ import androidx.navigation.NavController
 import com.mikepenz.aboutlibraries.ui.compose.LibraryDefaults
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.m3.libraryColors
-import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun License(
     navController: NavController
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MiuixTheme.colorScheme.background,
         topBar = {
             MediumTopAppBar(
@@ -50,7 +48,7 @@ fun License(
         }
     ) {
         LibrariesContainer(
-            modifier = Modifier,
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             contentPadding = it,
             colors = LibraryDefaults.libraryColors(
                 backgroundColor = MiuixTheme.colorScheme.background

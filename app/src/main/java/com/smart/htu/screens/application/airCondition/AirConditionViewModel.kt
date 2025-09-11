@@ -31,14 +31,15 @@ data class AirConditionUiState(
     val customConfig: AreaData? = null,
     val buildingCode: String = "",
     val roomCode: String = "",
-    val setCookieType: Int = 0,
+    val cookieType: Int = 0,
     val billData: BillDetail? = null,
     val billRecords: BillRecords? = null,
     val buyRecords: BuyRecords? = null,
-    val isLoadingBillRecords: Boolean = true,
-    val isCookieValid: Boolean = false
+    val isCheckingConfig: Boolean = false,
+    val isCookieValid: Boolean = true
 )
 
+// 西
 @HiltViewModel
 class AirConditionViewModel @Inject constructor(
     private val networkRepo: NetworkRepo,
@@ -114,7 +115,7 @@ class AirConditionViewModel @Inject constructor(
         }
         viewModelScope.launch {
             cookieTypeStateFlow.collect { value ->
-                _uiState.update { it.copy(setCookieType = value) }
+                _uiState.update { it.copy(cookieType = value) }
             }
         }
         viewModelScope.launch {
@@ -124,67 +125,65 @@ class AirConditionViewModel @Inject constructor(
         }
         viewModelScope.launch {
             getRemoteLoginCookie()
-            changeLoadingState(false)
+            getAirConditionConfig(onSuccess = {}, onFailure = {})
+            getCurrentBillData()
         }
     }
 
     suspend fun getRemoteLoginCookie() {
         appNetworkRepo.configService()
-            .onSuccess {
-                setRemoteLoginCookie(it.acCookieValue)
+            .onSuccess { res ->
+                _uiState.update { it.copy(remoteLoginCookie = res.acCookieValue) }
             }
     }
 
     // 刷新配置
     suspend fun refreshConfig() {
-        getRemoteLoginCookie()
         Log.i("TAG666 airCookie", getCookieByType().toString())
         if (getCookieByType() != ACCookie()) {
-            getAirConditionConfig()
             if (_uiState.value.buildingCode.isNotEmpty() && _uiState.value.roomCode.isNotEmpty()) {
-                getBillDetailService()
+                getCurrentBillData()
                 getBillRecords()
                 getBuyRecords()
             }
         }
     }
 
-    // 用于获取 areaId
-    suspend fun getAirConditionConfig() {
+    // 用于获取 areaId 验证cookie
+    suspend fun getAirConditionConfig(
+        onSuccess: () -> Unit,
+        onFailure: () -> Unit
+    ) {
         val cookie = getCookieByType()
-        val res = networkRepo.getAirConditionAreaService("shiroJID=${cookie.shiroJID}", cookie.ymId)
-        res.onSuccess {
-            _uiState.update { uiState ->
-                uiState.copy(customConfig = it.rows?.first())
+        networkRepo.getAirConditionAreaService("shiroJID=${cookie.shiroJID}", cookie.ymId)
+            .onSuccess { res ->
+                _uiState.update { it.copy(customConfig = res.rows?.first()) }
+                changeCookieValidState(true)
+                onSuccess()
             }
-            changeCookieValidState(true)
-            showSnackBar("已配置有效 Cookie")
-        }
-        res.onFailure {
-            changeCookieValidState(false)
-            showSnackBar("请重新配置 Cookie")
-        }
-        Log.i("TAG666 air", res.getOrNull().toString())
+            .onFailure { res ->
+                changeCookieValidState(false)
+                onFailure()
+            }
     }
 
     // 当前电量
-    suspend fun getBillDetailService() {
+    suspend fun getCurrentBillData() {
         val cookie = getCookieByType()
         val buildingCode = _uiState.value.buildingCode.takeLast(2)
         val floorCode = buildingCode + _uiState.value.roomCode.take(2)
         val roomCode = buildingCode + _uiState.value.roomCode
-        val billData = networkRepo.getAirConditionBillService(
+        networkRepo.getAirConditionCurrentBillDataService(
             shiroJID = "shiroJID=${cookie.shiroJID}",
             ymId = cookie.ymId,
             areaId = _uiState.value.customConfig?.id ?: "",
             buildingCode = buildingCode,
             floorCode = floorCode,
             roomCode = roomCode
-        )
-        billData.onSuccess {
-            _uiState.update { uiState ->
-                uiState.copy(billData = it)
-            }
+        ).onSuccess { res ->
+            _uiState.update { it.copy(billData = res) }
+        }.onFailure {
+            changeCookieValidState(false)
         }
     }
 
@@ -194,7 +193,7 @@ class AirConditionViewModel @Inject constructor(
         val buildingCode = _uiState.value.buildingCode.takeLast(2)
         val floorCode = buildingCode + _uiState.value.roomCode.take(2)
         val roomCode = buildingCode + _uiState.value.roomCode
-        val billRecords = networkRepo.getAirConditionBillRecords(
+        networkRepo.getAirConditionBillRecordsService(
             shiroJID = "shiroJID=${cookie.shiroJID}",
             ymId = cookie.ymId,
             areaId = _uiState.value.customConfig?.id ?: "",
@@ -202,11 +201,8 @@ class AirConditionViewModel @Inject constructor(
             floorCode = floorCode,
             roomCode = roomCode,
             mdType = _uiState.value.billData?.data?.surplusList?.first()?.mdtype ?: ""
-        )
-        billRecords.onSuccess {
-            _uiState.update { uiState ->
-                uiState.copy(billRecords = it)
-            }
+        ).onSuccess { res ->
+            _uiState.update { it.copy(billRecords = res) }
         }
     }
 
@@ -216,65 +212,53 @@ class AirConditionViewModel @Inject constructor(
         val buildingCode = _uiState.value.buildingCode.takeLast(2)
         val floorCode = buildingCode + _uiState.value.roomCode.take(2)
         val roomCode = buildingCode + _uiState.value.roomCode
-        val buyRecords = networkRepo.getAirConditionBuyRecords(
+        networkRepo.getAirConditionBuyRecordsService(
             shiroJID = "shiroJID=${cookie.shiroJID}",
             ymId = cookie.ymId,
             areaId = _uiState.value.customConfig?.id ?: "",
             buildingCode = buildingCode,
             floorCode = floorCode,
             roomCode = roomCode
-        )
-        buyRecords.onSuccess {
-            _uiState.update { uiState ->
-                uiState.copy(buyRecords = it)
-            }
+        ).onSuccess { res ->
+            _uiState.update { it.copy(buyRecords = res) }
         }
     }
 
-    private fun setRemoteLoginCookie(loginCookie: ACCookie) {
+    // 自定义
+    fun changeUserLoginCookie(shiroJID: String, ymId: String) {
         viewModelScope.launch {
-            _uiState.update { it.copy(remoteLoginCookie = loginCookie) }
-            if (_uiState.value.setCookieType == 0)
-                dataStoreRepo.saveAirConditionUserCookie(loginCookie)
-        }
-    }
-
-    fun changeUserCookieSY(
-        shiroJID: String = _uiState.value.userLoginCookie?.shiroJID ?: "",
-        ymId: String = _uiState.value.userLoginCookie?.ymId ?: ""
-    ) {
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    userLoginCookie = ACCookie(
-                        shiroJID = shiroJID,
-                        ymId = ymId
-                    )
+            dataStoreRepo.saveAirConditionUserCookie(
+                ACCookie(
+                    shiroJID = shiroJID,
+                    ymId = ymId
                 )
-            }
-            dataStoreRepo.saveAirConditionUserCookie(_uiState.value.userLoginCookie!!)
+            )
         }
     }
 
-    fun saveBuildingAndRoomId(buildingId: String, roomId: String) {
+    fun saveACConfig(buildingId: String, roomId: String, shiroJID: String, ymId: String) {
         viewModelScope.launch {
+            _uiState.update { it.copy(isCheckingConfig = true) }
             dataStoreRepo.changeBuildingId(buildingId)
             dataStoreRepo.changeRoomId(roomId)
-            refreshConfig()
-            showSnackBar("配置保存成功")
+            changeUserLoginCookie(shiroJID, ymId)
+            getRemoteLoginCookie()
+            getAirConditionConfig(
+                onSuccess = {
+                    showSnackBar("配置成功")
+                },
+                onFailure = {
+                    showSnackBar("Cookie 无效，请重新填写")
+                }
+            )
+            _uiState.update { it.copy(isCheckingConfig = false) }
         }
     }
 
-    fun changeCookieType(type: Int) {
+    fun changeLoginCookieType(type: Int) {
         viewModelScope.launch {
-            _uiState.update { it.copy(setCookieType = type) }
-            changeCookieValidState(false)
             dataStoreRepo.saveAirConditionCookieType(type)
         }
-    }
-
-    private fun changeLoadingState(state: Boolean) {
-        _uiState.update { it.copy(isLoadingBillRecords = state) }
     }
 
     private fun changeCookieValidState(state: Boolean) {
@@ -288,7 +272,7 @@ class AirConditionViewModel @Inject constructor(
     }
 
     fun getCookieByType(): ACCookie {
-        return when (_uiState.value.setCookieType) {
+        return when (_uiState.value.cookieType) {
             0 -> _uiState.value.remoteLoginCookie ?: ACCookie("", "")
             1 -> _uiState.value.userLoginCookie ?: ACCookie("", "")
             else -> ACCookie("", "")

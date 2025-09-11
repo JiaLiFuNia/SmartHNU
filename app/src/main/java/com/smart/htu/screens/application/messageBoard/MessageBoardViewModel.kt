@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.PostDetailData
 import com.smart.htu.api.module.PostsListData
 import com.smart.htu.api.module.PostsListData.PageData
-import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.MessageBoardRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +22,6 @@ data class MessageBoardUiState(
 
 @HiltViewModel
 class MessageBoardViewModel @Inject constructor(
-    private val dataStoreRepo: DataStoreRepo,
     private val messageBoardRepo: MessageBoardRepo
 ) : ViewModel() {
 
@@ -48,7 +46,7 @@ class MessageBoardViewModel @Inject constructor(
 
     fun getMessageBoardPostDetail(postID: String) {
         viewModelScope.launch {
-            _uiState.update { it.copy(postDetailData = null) }
+            // _uiState.update { it.copy(postDetailData = null) }
             messageBoardRepo.getMessageBoardPostDetailService(postID)
                 .onSuccess { res ->
                     _uiState.update { it.copy(postDetailData = res) }

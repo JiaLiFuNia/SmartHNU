@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -36,15 +37,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.smart.htu.R
-import com.smart.htu.component.textButtonPrimaryColors
-import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import com.smart.htu.component.TextButtonWithProgressIndicator
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
@@ -62,13 +62,16 @@ fun AirConditionSetting(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    val snackBarHostState = viewModel.snackBarHostState
+    var shiroJID by remember { mutableStateOf(uiState.userLoginCookie?.shiroJID ?: "") }
+    var ymId by remember { mutableStateOf(uiState.userLoginCookie?.ymId ?: "") }
     var buildingId by remember { mutableStateOf(uiState.buildingCode) }
     var roomId by remember { mutableStateOf(uiState.roomCode) }
+
+    val snackBarHostState = viewModel.snackBarHostState
     val scope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -96,11 +99,16 @@ fun AirConditionSetting(
         }
     ) {
         LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = it.calculateTopPadding() + 8.dp,
+                bottom = 12.dp
+            ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .overScrollVertical(),
             overscrollEffect = null
         ) {
@@ -146,6 +154,11 @@ fun AirConditionSetting(
                     singleLine = true,
                     maxLines = 1,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            focusManager.clearFocus()
+                        }
+                    ),
                     trailingIcon = {
                         if (roomIdError)
                             top.yukonga.miuix.kmp.basic.Icon(
@@ -175,17 +188,17 @@ fun AirConditionSetting(
                             title = "Cookie 来源",
                             summary = "云端 Cookie 由开发者提供，自定义 Cookie 需用户自行抓包获取",
                             items = dropdownOptions,
-                            selectedIndex = uiState.setCookieType,
+                            selectedIndex = uiState.cookieType,
                             mode = DropDownMode.AlwaysOnRight,
                             onSelectedIndexChange = {
-                                viewModel.changeCookieType(it)
+                                viewModel.changeLoginCookieType(it)
                             }
                         )
                     }
                     AnimatedVisibility(
                         enter = fadeIn() + expandVertically(),
                         exit = fadeOut() + shrinkVertically(),
-                        visible = uiState.setCookieType == 1
+                        visible = uiState.cookieType == 1
                     ) {
                         Column(
                             modifier = Modifier
@@ -195,41 +208,28 @@ fun AirConditionSetting(
                         ) {
                             TextField(
                                 label = "shiroJID",
-                                value = uiState.userLoginCookie?.shiroJID ?: "",
-                                onValueChange = { viewModel.changeUserCookieSY(shiroJID = it) }
+                                value = shiroJID,
+                                onValueChange = { shiroJID = it }
                             )
                             TextField(
                                 label = "ymId",
-                                value = uiState.userLoginCookie?.ymId ?: "",
-                                onValueChange = { viewModel.changeUserCookieSY(ymId = it) }
+                                value = ymId,
+                                onValueChange = { ymId = it }
                             )
                         }
                     }
                 }
             }
             item {
-                Spacer(modifier = Modifier.padding(8.dp))
-                top.yukonga.miuix.kmp.basic.TextButton(
-                    text = "测试",
-                    onClick = {
-                        scope.launch {
-                            viewModel.getAirConditionConfig()
-                        }
-                    },
-                    colors = ButtonDefaults.textButtonColors(),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
-            }
-            item {
-                top.yukonga.miuix.kmp.basic.TextButton(
+                Spacer(modifier = Modifier.height(12.dp))
+                TextButtonWithProgressIndicator(
                     text = "保存",
-                    enabled = uiState.isCookieValid && buildingId.isNotEmpty() && roomId.isNotEmpty(),
+                    enabled = buildingId.isNotEmpty() && roomId.isNotEmpty(),
                     onClick = {
-                        viewModel.saveBuildingAndRoomId(buildingId, roomId)
-                        navController.popBackStack()
+                        focusManager.clearFocus()
+                        viewModel.saveACConfig(buildingId, roomId, shiroJID, ymId)
                     },
-                    colors = ButtonDefaults.textButtonPrimaryColors(),
+                    isLoading = uiState.isCheckingConfig,
                     modifier = Modifier
                         .fillMaxWidth()
                 )

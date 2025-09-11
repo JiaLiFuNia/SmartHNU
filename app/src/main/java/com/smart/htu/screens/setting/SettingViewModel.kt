@@ -11,7 +11,6 @@ import com.smart.htu.api.module.AIModulePostEntity
 import com.smart.htu.api.module.AIRole
 import com.smart.htu.api.module.UpdateEntity
 import com.smart.htu.repo.DataStoreRepo
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_THEME_MODE
 import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.SharedDataRepository
@@ -36,7 +35,7 @@ import javax.inject.Inject
 data class SettingUiState(
     val themeMode: Int = DEFAULT_THEME_MODE,
     val isDarkTheme: Int = 0,
-    val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
+    val blurEnabled: Boolean = true,
     val selectedLanguageIndex: Int = 0,
     val updateInfo: UpdateEntity = UpdateEntity(),
     val aiFunctionEnabled: Boolean = false,
@@ -46,6 +45,8 @@ data class SettingUiState(
     val termCode: String,
     val cacheSize: String = "计算中...",
     val loadImgEnabled: Boolean = true,
+    val newsFontSize: Float = 17f,
+    val bionicReadingEnabled: Boolean = true,
 )
 
 @HiltViewModel
@@ -90,7 +91,7 @@ class SettingViewModel @Inject constructor(
             }
         )
 
-    private val blurStateFlow = dataStoreRepo.observerBlurState()
+    private val blurEnabledStateFlow = dataStoreRepo.observerBlurState()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -126,6 +127,24 @@ class SettingViewModel @Inject constructor(
             }
         )
 
+    private val newsFontSizeStateFlow = dataStoreRepo.observeNewsFontSize()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeNewsFontSize().first()
+            }
+        )
+
+    private val bionicReadingEnabledStateFlow = dataStoreRepo.observeBionicReadingEnabled()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeBionicReadingEnabled().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
             themeModeStateFlow.collect { value ->
@@ -138,8 +157,8 @@ class SettingViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            blurStateFlow.collect { value ->
-                _uiState.update { it.copy(blurEffect = value) }
+            blurEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(blurEnabled = value) }
             }
         }
         viewModelScope.launch {
@@ -155,6 +174,16 @@ class SettingViewModel @Inject constructor(
         viewModelScope.launch {
             loadImgEnabledStateFlow.collect { value ->
                 _uiState.update { it.copy(loadImgEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
+            newsFontSizeStateFlow.collect { value ->
+                _uiState.update { it.copy(newsFontSize = value.toFloat()) }
+            }
+        }
+        viewModelScope.launch {
+            bionicReadingEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(bionicReadingEnabled = value) }
             }
         }
         viewModelScope.launch {
@@ -225,6 +254,18 @@ class SettingViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             _uiState.update { it.copy(aiModuleConfig = AIModelConfigEntity(url, module, key)) }
+        }
+    }
+
+    fun changeNewsFontSize(size: Int) {
+        viewModelScope.launch {
+            dataStoreRepo.changeNewsFontSize(size)
+        }
+    }
+
+    fun changeBionicReadingEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            dataStoreRepo.changeBionicReadingEnabled(enabled)
         }
     }
 

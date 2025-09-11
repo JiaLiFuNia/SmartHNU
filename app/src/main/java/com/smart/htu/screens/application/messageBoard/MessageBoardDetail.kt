@@ -7,23 +7,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
@@ -33,9 +28,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -47,28 +44,27 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.api.module.PostDetailData
 import com.smart.htu.api.module.PostDetailData.CommentData
 import com.smart.htu.api.module.PostDetailData.ReplyData
-import com.smart.htu.api.module.PostsListData.PostsEntity
 import com.smart.htu.component.CircularProgressIndicator
-import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.ImagePreviewDialog
 import com.smart.htu.component.InfoBadge
-import com.smart.htu.component.imageVectors.emptyData
+import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.FileUtil.downloadFile
-import com.smart.htu.utils.sendToast
+import com.smart.htu.utils.ToastUtil
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
+import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
-import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,11 +76,19 @@ fun MessageBoardDetail(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    // val scope = rememberCoroutineScope()
-    val snackBarHostState = remember { SnackbarHostState() }
-    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
     val showImagePreview = remember { mutableStateOf(false) }
     val selectedImageData = remember { mutableStateOf("") }
+
+    var isRefreshing by rememberSaveable { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            delay(500)
+            viewModel.getMessageBoardPostDetail(postID)
+            isRefreshing = false
+        }
+    }
 
     LaunchedEffect(postID) {
         viewModel.getMessageBoardPostDetail(postID)
@@ -92,7 +96,6 @@ fun MessageBoardDetail(
 
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -113,53 +116,76 @@ fun MessageBoardDetail(
             )
         }
     ) {
-        LazyColumn(
-            state = listState,
+        PullToRefresh(
+            pullToRefreshState = pullToRefreshState,
+            refreshTexts = PULL_TO_REFRESH_TEXT,
+            onRefresh = { isRefreshing = true },
+            isRefreshing = isRefreshing,
             modifier = Modifier
-                .padding(it)
-                .fillMaxSize()
-                .overScrollVertical(),
-            overscrollEffect = null,
-            contentPadding = PaddingValues(16.dp, 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .fillMaxSize(),
+            contentPadding = it
         ) {
-            if (uiState.postDetailData == null) {
-                item {
-                    CircularProgressIndicator()
-                }
-            } else {
-                item {
-                    PostCard(
-                        post = uiState.postDetailData!!,
-                        onImgClick = {
-                            selectedImageData.value = it
-                            showImagePreview.value = true
-                        }
-                    )
-                }
-                item {
-                    HorizontalDivider()
-                    SmallTitle(text = "回复", insideMargin = PaddingValues(12.dp, 8.dp))
-                    ReplyCard(
-                        replyList = uiState.postDetailData!!.replyList,
-                        onImgClick = {
-                            selectedImageData.value = it
-                            showImagePreview.value = true
-                        }
-                    )
-                }
-                item {
-                    SmallTitle(text = "评价", insideMargin = PaddingValues(12.dp, 8.dp))
-                    CommentCard(uiState.postDetailData!!.comment)
+            LazyColumn(
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = it.calculateTopPadding() + 8.dp
+                ),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .overScrollVertical(),
+                overscrollEffect = null
+            ) {
+                if (uiState.postDetailData == null) {
+                    item {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    item {
+                        PostCard(
+                            post = uiState.postDetailData!!,
+                            onImgClick = {
+                                selectedImageData.value = it
+                                showImagePreview.value = true
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                    item {
+                        HorizontalDivider()
+                        SmallTitle(text = "回复", insideMargin = PaddingValues(12.dp, 8.dp))
+                        ReplyCard(
+                            replyList = uiState.postDetailData!!.replyList,
+                            onImgClick = {
+                                selectedImageData.value = it
+                                showImagePreview.value = true
+                            }
+                        )
+                    }
+                    item {
+                        SmallTitle(text = "评价", insideMargin = PaddingValues(12.dp, 8.dp))
+                        CommentCard(uiState.postDetailData!!.comment)
+                    }
                 }
             }
         }
     }
+
     if (showImagePreview.value) {
         ImagePreviewDialog(
             imageUrl = selectedImageData.value,
             onDismiss = { showImagePreview.value = false },
             onDownload = {
+                scope.launch {
+                    ToastUtil.showToast(context, "正在下载图片")
+                    downloadFile(
+                        context = context,
+                        url = selectedImageData.value,
+                        fileName = "${uiState.postDetailData!!.title}.jpg"
+                    )
+                    ToastUtil.showToast(context, "下载成功")
+                }
             }
         )
     }
@@ -200,7 +226,7 @@ fun PostCard(
                 style = MiuixTheme.textStyles.title3
             )
             Text(
-                text = post.content,
+                text = post.content.replace("<br/>", "\n"),
                 style = MiuixTheme.textStyles.body1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
@@ -283,7 +309,7 @@ fun ReplyCard(
                         .padding(bottom = 12.dp)
                 ) {
                     Text(
-                        text = it.content,
+                        text = it.content.replace("<br/>", "\n"),
                         style = MiuixTheme.textStyles.body2,
                         overflow = TextOverflow.Ellipsis
                     )

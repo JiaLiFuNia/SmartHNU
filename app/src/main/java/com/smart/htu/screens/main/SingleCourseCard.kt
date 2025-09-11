@@ -36,10 +36,10 @@ import com.smart.htu.component.BasicDialog
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
 import com.smart.htu.utils.CourseColorUtil.getColorByCourseName
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +52,7 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: CourseEnt
             isBottomSheetShow.value = true
         },
         color = Color.Transparent,
-        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius)
+        shape = G2RoundedCornerShape(CardDefaults.CornerRadius)
     ) {
         Row(
             modifier = Modifier

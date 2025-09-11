@@ -3,6 +3,7 @@ package com.smart.htu.api
 import com.smart.htu.api.module.ACCookie
 import com.smart.htu.api.module.AIModelConfigEntity
 import com.smart.htu.api.module.LibraryDetailEntity
+import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.screens.application.ApplicationEntity
 import kotlinx.coroutines.flow.Flow
 import okhttp3.Cookie
@@ -34,6 +35,9 @@ interface DataStoreService {
     suspend fun saveAIModelConfig(config: AIModelConfigEntity)
     suspend fun changeBionicReadingEnabled(enabled: Boolean)
     suspend fun changeLoadImgEnabled(enable: Boolean)
+    suspend fun changeNewsHistoryList(newsItem: NewsMarkEntity)
+    suspend fun addNewsFavoriteList(newsItem: NewsMarkEntity)
+    suspend fun changeNewsFontSize(size: Int)
 
     fun observeThemeMode(): Flow<Int>
     fun observeDarkTheme(): Flow<Int>
@@ -59,5 +63,8 @@ interface DataStoreService {
     fun observeAIModelConfig(): Flow<String>
     fun observeBionicReadingEnabled(): Flow<Boolean>
     fun observeLoadImgEnabled(): Flow<Boolean>
+    fun observeNewsHistoryList(): Flow<List<NewsMarkEntity>>
+    fun observeNewsFavoriteList(): Flow<List<NewsMarkEntity>>
+    fun observeNewsFontSize(): Flow<Int>
 
 }

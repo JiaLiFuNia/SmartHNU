@@ -1,10 +1,14 @@
 package com.smart.htu.screens.application.messageBoard
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,6 +16,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MediumTopAppBar
@@ -19,10 +24,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -34,11 +47,16 @@ import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.navigation.Destinations
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,12 +67,23 @@ fun MessageBoard(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    // val scope = rememberCoroutineScope()
-    val listState = rememberLazyListState()
+    val lazyListState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+
+    val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
+
+    var isRefreshing by rememberSaveable { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            delay(500)
+            viewModel.getMessageBoardPosts()
+            isRefreshing = false
+        }
+    }
 
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -73,35 +102,69 @@ fun MessageBoard(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            AnimatedVisibility(
+                modifier = Modifier,
+                visible = !fabVisible,
+                enter = slideInVertically(initialOffsetY = { it * 2 }),
+                exit = slideOutVertically(targetOffsetY = { it * 2 }),
+            ) {
+                FloatingActionButton(
+                    onClick = { scope.launch { lazyListState.scrollToItem(0) } }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_arrow_upward_24),
+                        contentDescription = "up"
+                    )
+                }
+            }
         }
     ) {
-        LazyColumn(
-            state = listState,
+        PullToRefresh(
+            pullToRefreshState = pullToRefreshState,
+            refreshTexts = PULL_TO_REFRESH_TEXT,
+            onRefresh = { isRefreshing = true },
+            isRefreshing = isRefreshing,
             modifier = Modifier
-                .padding(it)
-                .fillMaxSize()
-                .overScrollVertical(),
-            overscrollEffect = null,
-            contentPadding = PaddingValues(16.dp, 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .fillMaxSize(),
+            contentPadding = it
         ) {
-            if (uiState.postsListData == null) {
-                item {
-                    CircularProgressIndicator()
-                }
-            } else {
-                if (uiState.postsListData?.list.isNullOrEmpty()) {
+            LazyColumn(
+                state = lazyListState,
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = it.calculateTopPadding() + 8.dp
+                ),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .overScrollVertical(),
+                overscrollEffect = null
+            ) {
+                if (uiState.postsListData == null) {
                     item {
-                        EmptyContent(text = "暂无内容", image = emptyData())
+                        CircularProgressIndicator()
                     }
                 } else {
-                    items(uiState.postsListData?.list ?: emptyList()) {
-                        PostsCard(
-                            post = it,
-                            onClick = {
-                                navController.navigate("${Destinations.MessageBoardDetail.route}/${it}")
-                            }
-                        )
+                    if (uiState.postsListData?.list.isNullOrEmpty()) {
+                        item {
+                            EmptyContent(text = "暂无内容", image = emptyData())
+                        }
+                    } else {
+                        items(uiState.postsListData?.list ?: emptyList()) {
+                            PostsCard(
+                                post = it,
+                                onClick = {
+                                    navController.navigate("${Destinations.MessageBoardDetail.route}/${it}")
+                                }
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                        item {
+                            // load more
+                        }
                     }
                 }
             }
@@ -116,7 +179,7 @@ fun PostsCard(
 ) {
     Surface(
         onClick = { onClick(post.postID) },
-        shape = SmoothRoundedCornerShape(ButtonDefaults.CornerRadius),
+        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surface,
         modifier = Modifier.fillMaxWidth()
     ) {

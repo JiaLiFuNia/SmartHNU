@@ -54,6 +54,7 @@ import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -89,7 +90,6 @@ fun About(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -112,13 +112,15 @@ fun About(
     ) {
         LazyColumn(
             contentPadding = PaddingValues(
-                horizontal = 16.dp,
-                vertical = 12.dp
+                start = 16.dp,
+                top = it.calculateTopPadding() + 8.dp,
+                end = 12.dp,
+                bottom = 16.dp
             ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .overScrollVertical(),
             overscrollEffect = null
         ) {
@@ -134,7 +136,7 @@ fun About(
                         pressFeedbackType = PressFeedbackType.Tilt,
                         showIndication = true,
                         cornerRadius = 40.dp,
-                        color = Color.Transparent,
+                        colors = CardDefaults.defaultColors(color = Color.Transparent),
                         modifier = Modifier
                             .size(160.dp)
                     ) {

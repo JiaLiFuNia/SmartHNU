@@ -20,7 +20,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -28,10 +28,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -39,18 +44,22 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.smart.htu.R
-import com.smart.htu.api.module.ResultWithStatus
-import com.smart.htu.api.module.Status
 import com.smart.htu.api.module.Textbook
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
-import com.smart.htu.component.ScaffoldWithHazeLazyColumn
 import com.smart.htu.component.TabRow
 import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.component.textButtonPrimaryColors
+import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
+import com.smart.htu.utils.ToastUtil.showToast
 import com.smart.htu.utils.copyContent
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.PullToRefresh
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,16 +71,18 @@ fun TextbookSelect(
     termCode: String
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
-
     val coroutineScope = rememberCoroutineScope()
-    val onRefresh: () -> Unit = {
-        coroutineScope.launch {
-            pullToRefreshState.completeRefreshing {
-                viewModel.refreshTermList()
-                viewModel.getSelectableTextbookService(courseTaskCode, termCode)
-                viewModel.getSelectedTextbookService(courseTaskCode, termCode)
-            }
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    var isRefreshing by rememberSaveable { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+    LaunchedEffect(isRefreshing, uiState.loginJWCState) {
+        if (isRefreshing) {
+            delay(1000)
+            viewModel.refreshTermList()
+            viewModel.getSelectableTextbookService(courseTaskCode, termCode)
+            viewModel.getSelectedTextbookService(courseTaskCode, termCode)
+            isRefreshing = false
         }
     }
 
@@ -84,45 +95,65 @@ fun TextbookSelect(
     val selectIndex by remember { derivedStateOf { pagerState.currentPage } }
     val tabItem = listOf("可选教材", "已选教材")
 
-    ScaffoldWithHazeLazyColumn(
-        snackBarHost = { SnackbarHost(hostState = viewModel.snackBarHostState) },
-        isMediumTopAppBar = true,
-        scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
-        blurEnabledState = uiState.blurEffect,
-        title = { Text(text = stringResource(id = R.string.textbook_select)) },
-        actions = { },
-        navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "back"
-                )
-            }
-        },
-        refreshState = pullToRefreshState,
-        onRefresh = { onRefresh() }
-    ) {
-        TabRow(
-            tabs = tabItem,
-            selectedTabIndex = selectIndex,
-            onTabSelected = {
-                coroutineScope.launch {
-                    pagerState.animateScrollToPage(it)
+    Scaffold(
+        containerColor = MiuixTheme.colorScheme.background,
+        topBar = {
+            MediumTopAppBar(
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = MiuixTheme.colorScheme.background,
+                ),
+                title = { Text(text = stringResource(id = R.string.textbook_select)) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "back"
+                        )
+                    }
                 }
-            },
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier
-                .fillMaxSize(),
-            pageSpacing = 12.dp
-        ) {
-            SelectTextbook(
-                textbook = if (it == 0) uiState.selectableList else uiState.selectedList,
-                viewModel = viewModel
             )
+        }
+    ) {
+        PullToRefresh(
+            pullToRefreshState = pullToRefreshState,
+            refreshTexts = PULL_TO_REFRESH_TEXT,
+            onRefresh = { isRefreshing = true },
+            isRefreshing = isRefreshing,
+            modifier = Modifier
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .fillMaxSize(),
+            contentPadding = it
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(top = it.calculateTopPadding())
+                    .fillMaxSize()
+            ) {
+                TabRow(
+                    tabs = tabItem,
+                    selectedTabIndex = selectIndex,
+                    onTabSelected = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(it)
+                        }
+                    },
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    pageSpacing = 12.dp
+                ) {
+                    SelectTextbook(
+                        textbook = if (it == 0) uiState.selectableList else uiState.selectedList,
+                        viewModel = viewModel
+                    )
+                }
+            }
         }
     }
 }
@@ -133,8 +164,7 @@ fun PagerScope.SelectTextbook(
     viewModel: TextbookViewModel
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp),
         modifier = Modifier
             .fillMaxSize()
             .overScrollVertical(),
@@ -155,6 +185,7 @@ fun PagerScope.SelectTextbook(
             } else {
                 items(textbook) {
                     SingleCourseTextbook(viewModel, it)
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
             }
         }
@@ -166,6 +197,7 @@ fun SingleCourseTextbook(
     viewModel: TextbookViewModel,
     textbook: Textbook
 ) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     top.yukonga.miuix.kmp.basic.Card {
         Row(
@@ -202,7 +234,7 @@ fun SingleCourseTextbook(
             }
         }
         top.yukonga.miuix.kmp.basic.TextButton(
-            onClick = { /*TODO*/ },
+            onClick = { showToast(context, "开发中") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp)

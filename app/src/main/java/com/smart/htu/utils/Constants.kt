@@ -13,6 +13,7 @@ class Constants {
         const val GITHUB_PROJECT_URL_CN = "https://gitee.com/JiaLiFuNia/SmartHNU"
 
         const val AUTH_BASE_URL = "https://authserver2.htu.edu.cn/"
+        const val AUTH_LOGIN_URL = AUTH_BASE_URL + "authserver/login?service="
         const val RETRIEVE_PASSWORD = AUTH_BASE_URL + "retrieve-password/passwordMobile/index.html"
         const val EHALL_APP_BASE_URL = "https://ehall2.htu.edu.cn/appShow?appId="
 
@@ -24,11 +25,13 @@ class Constants {
         const val SMH_URL = "https://xhand.edu.deal/"
             // "https://shtu.xubohan04.tk/"
 
-
         const val SHOWER_ALIPAY_URL =
             "alipays://platformapi/startapp?appId=20000067&url=https://ur.alipay.com/_3Zz793BHBpUQsAf6r8hLXZ"
         const val HOT_WATER_WASHER_ALIPAY_URL =
             "alipays://platformapi/startapp?appId=20000067&url=https://ur.alipay.com/_5vgVGlXsaUEmCUjnaEvLJL"
+        const val PINDUODUO_URL = "pinduoduo://com.xunmeng.pinduoduo/mdkd/package?tab=ID_CODE&entry_source=11&refer_page_name=login&refer_page_id=10169_1751901995470_3gdprcfjhr&refer_page_sn=10169"
+        const val TAOBAO_URL = "https://pages-fast.m.taobao.com/wow/z/uniapp/1011717/last-mile-fe/end-collect-platform/identity-code?x-ssr=true"
+
         val PULL_TO_REFRESH_TEXT = listOf("下拉刷新", "松开刷新", "正在刷新...", "刷新成功")
 
         val COURSE_PERIOD = mapOf(
@@ -54,7 +57,7 @@ class Constants {
                 icon = R.drawable.apartment_24px,
                 routeType = RouteType.SCREEN,
                 route = Destinations.ClassroomSearch.route,
-                category = ApplicationCategory.ACADEMIC_AFFAIRS
+                category = ApplicationCategory.STUDY
             ),
             ApplicationEntity(
                 guestMode = true,
@@ -62,7 +65,7 @@ class Constants {
                 icon = R.drawable.book_4_24px,
                 routeType = RouteType.SCREEN,
                 route = Destinations.LibrarySearch.route,
-                category = ApplicationCategory.OTHERS
+                category = ApplicationCategory.STUDY
             ),
             ApplicationEntity(
                 guestMode = false,
@@ -75,9 +78,9 @@ class Constants {
             ApplicationEntity(
                 guestMode = true,
                 icon = R.drawable.near_me_24px,
-                label = R.string.live_service,
-                routeType = null,
-                route = "",
+                label = R.string.campus_life,
+                routeType = RouteType.SCREEN,
+                route = Destinations.CampusLife.route,
                 category = ApplicationCategory.CAMPUS
             ),
             /*ApplicationEntity(
@@ -106,7 +109,7 @@ class Constants {
                 label = R.string.second_class,
                 routeType = RouteType.URL,
                 route = SECOND_CLASS_URL,
-                category = ApplicationCategory.OTHERS
+                category = ApplicationCategory.CAMPUS
             ),
             ApplicationEntity(
                 guestMode = false,
@@ -130,7 +133,7 @@ class Constants {
                 label = R.string.school_card,
                 routeType = RouteType.URL,
                 route = EHALL_APP_BASE_URL + "6548421524823376",
-                category = ApplicationCategory.CAMPUS
+                category = ApplicationCategory.TOOLS
             ),
             ApplicationEntity(
                 guestMode = false,
@@ -154,16 +157,16 @@ class Constants {
                 label = R.string.htu_helper,
                 routeType = RouteType.URL,
                 route = AUTH_BASE_URL + "authserver/login?service=https://ai.htu.edu.cn/api/cas",
-                category = ApplicationCategory.AI
+                category = ApplicationCategory.TOOLS
             ),
-            ApplicationEntity(
+            /*ApplicationEntity(
                 guestMode = false,
                 icon = R.drawable.support_agent_24px,
                 label = R.string.campus_helper,
                 routeType = RouteType.URL,
                 route = EHALL_APP_BASE_URL + "6225347137673201",
                 category = ApplicationCategory.AI
-            ),/*
+            ),
             ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.zju_logo,
@@ -177,7 +180,7 @@ class Constants {
                 icon = R.drawable.captive_portal_24px,
                 label = R.string.one_stop_service,
                 routeType = RouteType.URL,
-                route = "http://ehall2.htu.edu.cn/login?service=http://ehall2.htu.edu.cn/ywtb-mobile/index.html",
+                route = AUTH_LOGIN_URL + "http://ehall2.htu.edu.cn/ywtb-mobile/index.html",
                 category = ApplicationCategory.CAMPUS
             ),
             ApplicationEntity(
@@ -186,7 +189,7 @@ class Constants {
                 label = R.string.course_table,
                 routeType = RouteType.SCREEN,
                 route = Destinations.CourseTable.route,
-                category = ApplicationCategory.ACADEMIC_AFFAIRS
+                category = ApplicationCategory.STUDY
             ),
             ApplicationEntity(
                 guestMode = true,
@@ -194,7 +197,7 @@ class Constants {
                 label = R.string.website_navigation,
                 routeType = RouteType.SCREEN,
                 route = Destinations.WebsiteNavigation.route,
-                category = ApplicationCategory.CAMPUS
+                category = ApplicationCategory.TOOLS
             ),
             ApplicationEntity(
                 guestMode = true,
@@ -204,6 +207,14 @@ class Constants {
                 route = Destinations.MessageBoard.route,
                 category = ApplicationCategory.CAMPUS
             ),
+            ApplicationEntity(
+                guestMode = false,
+                icon = R.drawable.speaker_notes_24px,
+                label = R.string.exam,
+                routeType = RouteType.SCREEN,
+                route = Destinations.ExamSchedule.route,
+                category = ApplicationCategory.STUDY
+            )
             /*ApplicationEntity(
                 guestEnable = false,
                 icon = R.drawable.sports_handball_24px,

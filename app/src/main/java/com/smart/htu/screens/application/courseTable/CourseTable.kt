@@ -17,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -56,6 +55,7 @@ import com.smart.htu.utils.CourseColorUtil.getColorByCourseName
 import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
 import com.smart.htu.utils.CourseTimeRange.summerOrWinterTimeInterval
 import com.smart.htu.utils.Permission
+import com.smart.htu.utils.ToastUtil
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
@@ -77,7 +77,7 @@ import java.time.format.DateTimeFormatter
  */
 
 @SuppressLint("ConfigurationScreenWidthHeight")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CourseTable(
     navController: NavController,
@@ -85,15 +85,16 @@ fun CourseTable(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
+    val context = LocalContext.current
+
     val nodeColumnWeight = 0.65F
     val screenHeight = LocalConfiguration.current.screenHeightDp
     val minHeight = max((screenHeight - 180) / 12, 70)
-    val scope = rememberCoroutineScope()
-    val scrollState = rememberScrollState()
     val showDropDownMenu = remember { mutableStateOf(false) }
-    val context = LocalContext.current
+
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -127,7 +128,7 @@ fun CourseTable(
                             DropdownImpl(
                                 text = "切换到上一周",
                                 isSelected = false,
-                                optionSize = 4,
+                                optionSize = 5,
                                 onSelectedIndexChange = {
                                     showDropDownMenu.value = false
                                     scope.launch {
@@ -139,7 +140,7 @@ fun CourseTable(
                             DropdownImpl(
                                 text = "切换到下一周",
                                 isSelected = false,
-                                optionSize = 4,
+                                optionSize = 5,
                                 onSelectedIndexChange = {
                                     showDropDownMenu.value = false
                                     scope.launch {
@@ -151,11 +152,11 @@ fun CourseTable(
                             DropdownImpl(
                                 text = "同步到日历",
                                 isSelected = false,
-                                optionSize = 4,
+                                optionSize = 5,
                                 onSelectedIndexChange = {
                                     showDropDownMenu.value = false
                                     if (Permission.hasCalendarPermissions(context)) {
-                                        viewModel.showSnackBar("已同步到日历")
+                                        viewModel.showSnackBar("开发中...")
                                     } else {
                                         if (context is MainActivity) {
                                             context.requestCalendarPermissions()
@@ -167,12 +168,22 @@ fun CourseTable(
                             DropdownImpl(
                                 text = "导出为ICS日历文件",
                                 isSelected = false,
-                                optionSize = 4,
+                                optionSize = 5,
                                 onSelectedIndexChange = {
                                     showDropDownMenu.value = false
                                     viewModel.exportToICS()
                                 },
                                 index = 3
+                            )
+                            DropdownImpl(
+                                text = "修改课表背景",
+                                isSelected = false,
+                                optionSize = 5,
+                                onSelectedIndexChange = {
+                                    showDropDownMenu.value = false
+                                    ToastUtil.showToast(context, "该功能正在开发中")
+                                },
+                                index = 4
                             )
                         }
                     }
@@ -193,8 +204,9 @@ fun CourseTable(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .padding(top = it.calculateTopPadding())
                 .padding(horizontal = 4.dp)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
             // 年份 星期 日期
             Row(
@@ -227,13 +239,9 @@ fun CourseTable(
                         stringResource(R.string.saturday),
                         stringResource(R.string.sunday),
                     ).forEachIndexed { index, week ->
-                        Box(
-                            modifier = Modifier
-                                .weight(1F)
-                        ) {
-                            val color =
-                                if (uiState.todayWeekday == index + 1) MiuixTheme.colorScheme.onBackground
-                                else Color.Gray
+                        Box(modifier = Modifier.weight(1F)) {
+                            val color = if (uiState.todayWeekday == index + 1)
+                                MiuixTheme.colorScheme.onBackground else Color.Gray
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier.align(Alignment.Center)

@@ -141,7 +141,7 @@ class NetworkRepo @Inject constructor(
     }
 
     // 获取空调电量
-    suspend fun getAirConditionBillService(
+    suspend fun getAirConditionCurrentBillDataService(
         shiroJID: String,
         ymId: String,
         areaId: String,
@@ -170,7 +170,7 @@ class NetworkRepo @Inject constructor(
     }
 
     // 获取空调电量记录
-    suspend fun getAirConditionBillRecords(
+    suspend fun getAirConditionBillRecordsService(
         shiroJID: String,
         ymId: String,
         areaId: String,
@@ -200,7 +200,7 @@ class NetworkRepo @Inject constructor(
     }
 
     // 获取空调充值记录
-    suspend fun getAirConditionBuyRecords(
+    suspend fun getAirConditionBuyRecordsService(
         shiroJID: String,
         ymId: String,
         areaId: String,

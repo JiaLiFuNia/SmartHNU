@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -34,6 +33,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.smart.htu.R
+import com.smart.htu.component.TextButtonWithProgressIndicator
 import com.smart.htu.component.textButtonPrimaryColors
 import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -103,8 +103,8 @@ fun LoginDialog(
     title: String = stringResource(R.string.login),
     summary: String? = null,
     isNeedVerifyCode: Boolean = false,
-    onConfirmClick: () -> Unit,
-    onLogin: (String, String, String) -> Unit
+    onLogin: (String, String, String) -> Unit,
+    logState: Int
 ) {
     val account = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
@@ -201,25 +201,26 @@ fun LoginDialog(
                         .fillMaxWidth()
                 )
             }
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween
+            Column(
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
             ) {
+                TextButtonWithProgressIndicator(
+                    text = stringResource(id = R.string.login),
+                    onClick = {
+                        onLogin(account.value, password.value, verifyCode.value)
+                    },
+                    isLoading = logState == 2,
+                    enabled = password.value.isNotEmpty() && account.value.isNotEmpty(),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(12.dp))
                 TextButton(
                     text = stringResource(id = R.string.cancel),
                     onClick = {
                         showDialog.value = false
                     },
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(Modifier.width(20.dp))
-                TextButton(
-                    text = stringResource(id = R.string.login),
-                    onClick = {
-                        onLogin(account.value, password.value, verifyCode.value)
-                        showDialog.value = false
-                    },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.textButtonPrimaryColors()
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }

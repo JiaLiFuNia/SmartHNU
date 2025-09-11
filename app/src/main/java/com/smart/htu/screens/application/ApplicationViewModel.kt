@@ -1,11 +1,9 @@
 package com.smart.htu.screens.application
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
-import com.smart.htu.screens.application.ApplicationEntity
 import com.smart.htu.utils.Constants.Companion.ALL_APP_LIST
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +20,7 @@ import javax.inject.Inject
 
 data class ApplicationUiState(
     val appList: List<ApplicationEntity>,
-    val appListIsCommonList: List<ApplicationEntity>,
+    val commonAppList: List<ApplicationEntity>,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
 
@@ -34,12 +32,12 @@ class ApplicationViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(
         ApplicationUiState(
             appList = ALL_APP_LIST.sortedBy { it.category },
-            appListIsCommonList = INIT_COMMON_APP_LIST
+            commonAppList = INIT_COMMON_APP_LIST
         )
     )
     val uiState: StateFlow<ApplicationUiState> = _uiState.asStateFlow()
 
-    private val _appListIsCommonListStateFlow = dataStoreRepo.observeCommonAppList()
+    private val commonAppListStateFlow = dataStoreRepo.observeCommonAppList()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -48,35 +46,23 @@ class ApplicationViewModel @Inject constructor(
             }
         )
 
-    private val _blurStateFlow = dataStoreRepo.observerBlurState()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            runBlocking { dataStoreRepo.observerBlurState().first() }
-        )
-
     init {
         viewModelScope.launch {
-            _appListIsCommonListStateFlow.collect { value ->
-                _uiState.update { it.copy(appListIsCommonList = value) }
-            }
-        }
-        viewModelScope.launch {
-            _blurStateFlow.collect { value ->
-                _uiState.update { it.copy(blurEffect = value) }
+            commonAppListStateFlow.collect { value ->
+                _uiState.update { it.copy(commonAppList = value) }
             }
         }
     }
 
     fun changeCommonAppListState(app: ApplicationEntity, add: Boolean = true) {
         viewModelScope.launch {
-            val currentListState = _uiState.value.appListIsCommonList.toMutableList()
+            val currentList = _uiState.value.commonAppList.toMutableList()
             if (add)
-                currentListState.apply { add(app) }
+                currentList.apply { add(app) }
             else
-                currentListState.apply { remove(app) }
-            dataStoreRepo.setCommonApp(currentListState)
-            _uiState.update { it.copy(appListIsCommonList = currentListState) }
+                currentList.apply { remove(app) }
+            dataStoreRepo.setCommonApp(currentList)
+            _uiState.update { it.copy(commonAppList = currentList) }
         }
     }
 }

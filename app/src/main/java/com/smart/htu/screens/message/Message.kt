@@ -1,35 +1,31 @@
 package com.smart.htu.screens.message
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -42,21 +38,25 @@ import androidx.navigation.NavHostController
 import com.smart.htu.R
 import com.smart.htu.api.module.NoticeEntity
 import com.smart.htu.api.module.NoticeType
+import com.smart.htu.component.BasicDialog
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.startWebUrl
-import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
-import kotlinx.coroutines.launch
+import dev.chrisbanes.haze.rememberHazeState
+import kotlinx.coroutines.delay
+import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.SmoothRoundedCornerShape
+import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
@@ -66,21 +66,21 @@ fun MessageScreen(
     viewModel: MessageViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val hazeState = remember { HazeState() }
-    val scope = rememberCoroutineScope()
+    val hazeState = rememberHazeState()
 
-    val pullToRefreshState = top.yukonga.miuix.kmp.basic.rememberPullToRefreshState()
-    val onRefresh: () -> Unit = {
-        scope.launch {
-            pullToRefreshState.completeRefreshing {
-                viewModel.refreshNoticeData()
-            }
+    var isRefreshing by rememberSaveable { mutableStateOf(false) }
+    val pullToRefreshState = rememberPullToRefreshState()
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            delay(500)
+            viewModel.refreshNoticeData()
+            isRefreshing = false
         }
     }
+
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     top.yukonga.miuix.kmp.basic.Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -123,19 +123,24 @@ fun MessageScreen(
         PullToRefresh(
             pullToRefreshState = pullToRefreshState,
             refreshTexts = PULL_TO_REFRESH_TEXT,
-            onRefresh = onRefresh,
+            onRefresh = { isRefreshing = true },
+            isRefreshing = isRefreshing,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(it)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .fillMaxSize(),
+            contentPadding = it
         ) {
             LazyColumn(
-                contentPadding = PaddingValues(16.dp, 12.dp),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = it.calculateTopPadding() + 8.dp,
+                    bottom = 12.dp
+                ),
                 modifier = Modifier
                     .fillMaxSize()
-                    .hazeSource(state = hazeState)
                     .overScrollVertical(),
-                overscrollEffect = null,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                overscrollEffect = null
             ) {
                 if (uiState.noticeList.isNotEmpty()) {
                     items(uiState.noticeList.sortedByDescending { it.id }) { notice ->
@@ -147,6 +152,7 @@ fun MessageScreen(
                             notice = notice,
                             navController = navController
                         )
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 } else {
                     item {
@@ -199,10 +205,20 @@ fun SingleMessage(
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize(),
-        shape = SmoothRoundedCornerShape(top.yukonga.miuix.kmp.basic.ButtonDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surface,
+        shape = G2RoundedCornerShape(CardDefaults.CornerRadius)
     ) {
-        ListItem(
+        Card { }
+        BasicComponent(
+            title = notice.title,
+            summary = notice.content,
+            rightActions = {
+                if (!isRead) {
+                    Badge()
+                }
+            }
+        )
+        /*ListItem(
             colors = ListItemDefaults.colors(containerColor = MiuixTheme.colorScheme.surface),
             leadingContent = {
                 BadgedBox(
@@ -267,6 +283,24 @@ fun SingleMessage(
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
-        )
+        )*/
+    }
+}
+
+@Composable
+fun MessageDialog(
+    showDialog: MutableState<Boolean>,
+    title: String,
+    content: String? = null,
+    onConfirmClick: (() -> Unit)? = null,
+) {
+    BasicDialog(
+        showDialog = showDialog,
+        title = title,
+        onConfirmClick = onConfirmClick,
+        dismissRequestText = "取消",
+        confirmRequestText = "确认"
+    ) {
+
     }
 }

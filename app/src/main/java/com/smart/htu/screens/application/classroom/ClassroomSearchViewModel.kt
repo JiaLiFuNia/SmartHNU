@@ -44,7 +44,11 @@ class ClassroomSearchViewModel @Inject constructor(
         BuildingEntity("104", "启智楼"),
         BuildingEntity("107", "新五五四楼"),
         BuildingEntity("102", "文渊楼"),
-        BuildingEntity("310", "文昌楼（东综）")
+        BuildingEntity("310", "文昌楼（东综）"),
+        BuildingEntity("302", "求是西楼"),
+        BuildingEntity("307", "求是东楼"),
+        BuildingEntity("301", "求是中楼"),
+        BuildingEntity("119", "新联楼"),
     )
 
     private val _uiState = MutableStateFlow(
@@ -102,6 +106,7 @@ class ClassroomSearchViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(buildingsOccupation = it.buildingsOccupation + (index to res))
                     }
+                    Log.i("TAG666", "getClassroomOccupation: $date $res")
                 }.onFailure {
                     sharedDataRepo.setJWCLoginState(-2)
                 }

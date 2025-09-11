@@ -1,6 +1,7 @@
 package com.smart.htu.screens.login
 
 import android.util.Log
+import android.webkit.CookieManager
 import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,7 +36,7 @@ import okhttp3.Cookie
 import javax.inject.Inject
 
 data class LoginUiState(
-    val loginState: Int = DEFAULT_LOGIN_STATE, // -1 失败   0 未登录   1 登录成功
+    val loginState: Int = DEFAULT_LOGIN_STATE, // -1 失败   0 未登录   1 登录成功 2 登录中
     val loginJWCState: Int = DEFAULT_LOGIN_STATE, // 0 未登录 1 登录成功 -1 登录失败 -2 token过期
     val isGuestModeEnable: Boolean = false,
     val isLoading: Boolean = false,
@@ -165,7 +166,7 @@ class LoginViewModel @Inject constructor(
         }
         viewModelScope.launch {
             cookieStateFlow.collect { value ->
-                _uiState.update { it.copy(cookies = value) }
+                _uiState.update { it.copy(cookies = value + networkCookieJar.loadAllCookies()) }
             }
         }
         viewModelScope.launch {
@@ -199,22 +200,30 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun authLogin() {
+    suspend fun authLogin(
+        studentID: String = _uiState.value.studentID,
+        password: String = _uiState.value.password,
+        onSuccess: () -> Unit = {},
+        onFailure: () -> Unit = {}
+    ) {
         try {
+            changeLoginAuthState(2) // 登录中
             clearCookies()
             val logState = networkRepo.authLogin(
-                studentId = _uiState.value.studentID,
-                password = _uiState.value.password
+                studentId = studentID,
+                password = password
             )
             logState.onSuccess {
+                onSuccess()
                 changeLoginAuthState(1)
                 passwordRepo.savePassword(_uiState.value.password, PASSWORD)
             }
             logState.onFailure {
+                onFailure()
                 changeLoginAuthState(-1)
             }
-        } catch (_: Exception) {
-            Log.i("TAG666 viewModel", "Failed to login")
+        } catch (e: Exception) {
+            Log.i("TAG666 viewModel", "Failed $e")
         }
     }
 
@@ -283,6 +292,7 @@ class LoginViewModel @Inject constructor(
         changeUsername("HNUer")
     }
 
+    //
     private fun changeLoginAuthState(state: Int) {
         viewModelScope.launch {
             dataStoreRepo.changeLoginState(state)
@@ -323,9 +333,9 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun clearCookies() {
-        viewModelScope.launch {
-            networkCookieJar.clearCookies()
-        }
+        val cookieManager = CookieManager.getInstance()
+        cookieManager.removeAllCookies(null)
+        networkCookieJar.clearCookies()
     }
 
     fun showSnackBar(message: String) {
@@ -341,7 +351,6 @@ class LoginViewModel @Inject constructor(
         changeUsername(DEFAULT_USERNAME)
         setJWCLogToken(DEFAULT_TOKEN)
         passwordRepo.clearPassword()
-        dataStoreRepo.saveAuthCookie(emptyList())
         dataStoreRepo.changeRoomId(DEFAULT_BUILDING_ID)
         dataStoreRepo.changeBuildingId(DEFAULT_ROOM_ID)
     }

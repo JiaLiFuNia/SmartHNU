@@ -1,9 +1,9 @@
 package com.smart.htu.screens.application.websiteNavigation
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -19,10 +19,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
@@ -37,7 +40,6 @@ import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
-import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.PullToRefresh
@@ -55,22 +57,20 @@ fun WebsiteNavigation(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val scope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
-
+    var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
-    val onRefresh: () -> Unit = {
-        scope.launch {
-            pullToRefreshState.completeRefreshing {
-                viewModel.getWebsiteNavigation()
-            }
+
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            viewModel.getWebsiteNavigation()
+            isRefreshing = false
         }
     }
 
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -97,19 +97,24 @@ fun WebsiteNavigation(
         PullToRefresh(
             pullToRefreshState = pullToRefreshState,
             refreshTexts = PULL_TO_REFRESH_TEXT,
-            onRefresh = onRefresh,
+            onRefresh = { isRefreshing = true },
+            isRefreshing = isRefreshing,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(it)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .fillMaxSize(),
+            contentPadding = it
         ) {
             LazyColumn(
-                state = listState,
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = it.calculateTopPadding() + 8.dp,
+                    bottom = 12.dp
+                ),
                 modifier = Modifier
                     .fillMaxSize()
                     .overScrollVertical(),
-                overscrollEffect = null,
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(16.dp, 12.dp)
+                overscrollEffect = null
             ) {
                 when (uiState.websiteList.status) {
                     Status.LOADING -> {
@@ -134,6 +139,7 @@ fun WebsiteNavigation(
                                     },
                                     websiteNavigation = it
                                 )
+                                Spacer(modifier = Modifier.height(12.dp))
                             }
                         }
                     }

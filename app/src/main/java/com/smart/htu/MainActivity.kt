@@ -1,6 +1,5 @@
 package com.smart.htu
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,8 +27,6 @@ class MainActivity : ComponentActivity() {
     private val courseTableViewModel: CourseTableViewModel by viewModels()
     private lateinit var calendarPermissionLauncher: ActivityResultLauncher<Array<String>>
 
-
-    @SuppressLint("FlowOperatorInvokedInComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
@@ -41,7 +38,6 @@ class MainActivity : ComponentActivity() {
                 Surface { NavHostScreen() }
             }
         }
-
 
         calendarPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()

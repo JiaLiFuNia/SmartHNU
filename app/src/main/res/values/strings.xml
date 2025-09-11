@@ -74,9 +74,9 @@
     <string name="tip">提示</string>
     <string name="confirm_logout">确定要退出登录吗？</string>
     <string name="no_message">暂无消息</string>
-    <string name="message_center">消息中心</string>
+    <string name="message_center">通知中心</string>
     <string name="book_search">图书</string>
-    <string name="live_service">校园生活</string>
+    <string name="campus_life">校园生活</string>
     <string name="participate">参与贡献</string>
     <string name="class_name">班级</string>
     <string name="political_outlook">政治面貌</string>
@@ -142,4 +142,12 @@
     <string name="academic_affairs">教务</string>
     <string name="message_board">留言板</string>
     <string name="detail">详情</string>
+    <string name="tool">工具</string>
+    <string name="life">生活</string>
+    <string name="study">学习</string>
+    <string name="exam">考试</string>
+    <string name="theme">主题</string>
+    <string name="display">样式</string>
+    <string name="pinduoduo">拼多多取件码</string>
+    <string name="logging_in">登录中</string>
 </resources>

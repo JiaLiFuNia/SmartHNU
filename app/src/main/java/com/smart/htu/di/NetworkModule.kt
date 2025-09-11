@@ -243,66 +243,43 @@ class NetworkCookieJar @Inject constructor(
 
     init {
         scope.launch {
-            try {
-                val cookies = dataStoreRepo.observeAuthCookie().first()
-                cookies.forEach { cookie ->
-                    cookie.toHttpCookie()?.let { httpCookie ->
-                        cookieManager.cookieStore.add(URI.create(cookie.domain), httpCookie)
-                    }
+            val cookies = dataStoreRepo.observeAuthCookie().first()
+            cookies.forEach { cookie ->
+                cookie.toHttpCookie()?.let { httpCookie ->
+                    cookieManager.cookieStore.add(URI.create(cookie.domain), httpCookie)
                 }
-            } catch (e: Exception) {
-                Log.e("NetworkCookieJar", "Error initializing cookies: ${e.message}")
             }
         }
     }
 
     fun loadAllCookies(): List<Cookie> {
-        return try {
-            cookieManager.cookieStore.cookies.mapNotNull { it.toOkHttpCookie() }
-        } catch (e: Exception) {
-            Log.e("NetworkCookieJar", "Error loading all cookies: ${e.message}")
-            emptyList()
-        }
+        return cookieManager.cookieStore.cookies.mapNotNull { it.toOkHttpCookie() }
     }
 
     override fun loadForRequest(url: HttpUrl): List<Cookie> {
-        return try {
-            val cookies = cookieManager.cookieStore.get(url.toUri())
-            cookies.mapNotNull { it.toOkHttpCookie() }
-        } catch (e: Exception) {
-            Log.e("NetworkCookieJar", "Error loading cookies: ${e.message}")
-            emptyList()
-        }
+        val cookies = cookieManager.cookieStore.get(url.toUri())
+        return cookies.mapNotNull { it.toOkHttpCookie() }
     }
 
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-        try {
-            cookies.forEach { cookie ->
-                cookie.toHttpCookie()?.let { httpCookie ->
-                    cookieManager.cookieStore.add(url.toUri(), httpCookie)
-                }
+        cookies.forEach { cookie ->
+            cookie.toHttpCookie()?.let { httpCookie ->
+                cookieManager.cookieStore.add(url.toUri(), httpCookie)
             }
-            scope.launch {
-                val allCookies = cookieManager.cookieStore.cookies
-                    .mapNotNull { it.toOkHttpCookie() }
-                dataStoreRepo.saveAuthCookie(allCookies)
-            }
-        } catch (e: Exception) {
-            Log.e("NetworkCookieJar", "Error saving cookies: ${e.message}")
+        }
+        scope.launch {
+            val allCookies = cookieManager.cookieStore.cookies
+                .mapNotNull { it.toOkHttpCookie() }
+            dataStoreRepo.saveAuthCookie(allCookies)
         }
     }
 
     private fun Cookie.toHttpCookie(): HttpCookie? {
-        return try {
-            HttpCookie(name, value).apply {
-                domain = this@toHttpCookie.domain
-                path = this@toHttpCookie.path
-                secure = this@toHttpCookie.secure
-                isHttpOnly = this@toHttpCookie.httpOnly
-            }
-        } catch (e: Exception) {
-            Log.e("NetworkCookieJar", "Error converting to HttpCookie: ${e.message}")
-            null
+        return HttpCookie(name, value).apply {
+            domain = this@toHttpCookie.domain
+            path = this@toHttpCookie.path
+            secure = this@toHttpCookie.secure
+            isHttpOnly = this@toHttpCookie.httpOnly
         }
     }
 
@@ -331,9 +308,11 @@ class NetworkCookieJar @Inject constructor(
         }
     }
 
-    suspend fun clearCookies() {
-        cookieManager.cookieStore.removeAll()
-        dataStoreRepo.saveAuthCookie(emptyList())
+    fun clearCookies() {
+        scope.launch {
+            cookieManager.cookieStore.removeAll()
+            dataStoreRepo.saveAuthCookie(emptyList())
+        }
     }
 
 }

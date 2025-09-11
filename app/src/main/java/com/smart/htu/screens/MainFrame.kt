@@ -4,23 +4,18 @@ import android.app.Activity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationItemIconPosition
+import androidx.compose.material3.ShortNavigationBar
+import androidx.compose.material3.ShortNavigationBarItem
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
@@ -37,6 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
+import androidx.window.core.layout.WindowSizeClass
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.animation.SlideTransition
@@ -46,15 +41,13 @@ import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.Main
 import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.navigation.BottomNavigationItem
-import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsScreen
 import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.person.PersonScreen
 import com.smart.htu.utils.DoubleBackToExitApp
-import com.smart.htu.utils.startLaunchAPK
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainFrame(
     navController: NavController,
@@ -67,7 +60,6 @@ fun MainFrame(
     val loginUiState by loginViewModel.uiState.collectAsState()
     val mainUiState by mainViewModel.uiState.collectAsState()
     val savableStateHolder = rememberSaveableStateHolder()
-    val scope = rememberCoroutineScope()
     val (selectedItemIndex, onSelectedItemIndex) = rememberSaveable { mutableIntStateOf(0) }
     val messageCount = remember {
         derivedStateOf { mainUiState.noticeIdList.size - mainUiState.readNoticeIdList.size }
@@ -100,148 +92,91 @@ fun MainFrame(
         )
     )
 
-    val isShowPrivateMessage = remember { mutableStateOf(true) }
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
     top.yukonga.miuix.kmp.basic.Scaffold(
         modifier = Modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackBarHostState) },
-        topBar = {
-            when (selectedItemIndex) {
-                0 -> TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
-                    title = { Text(text = "欢迎！${mainUiState.username}") },
-                    actions = {
-                        IconButton(
-                            onClick = {
-                                navController.navigate(
-                                    route = Destinations.Message.route
-                                )
-                            }
-                        ) {
-                            BadgedBox(
-                                badge = {
-                                    if (messageCount.value > 0)
-                                        Badge(
-                                            content = {
-                                                Text(text = messageCount.value.toString())
-                                            }
-                                        )
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Email,
-                                    contentDescription = null
-                                )
-                            }
-                        }
-                        IconButton(
-                            onClick = {
-                                navController.navigate(Destinations.Setting.route)
-                            }
-                        ) {
-                            BadgedBox(
-                                badge = { if (mainUiState.updateEntity.isNeedUpdate == true) Badge() }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Settings,
-                                    contentDescription = "setting"
-                                )
-                            }
-                        }
-                    }
-                )
-
-                1 -> TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
-                    title = { Text(text = stringResource(R.string.application)) },
-                    actions = {
-                        TextButton(
-                            onClick = {
-                                startLaunchAPK(
-                                    packageName = "com.autewifi.sd.enroll",
-                                    appName = "i 师大"
-                                )
-                            }
-                        ) { Text(text = "i 师大") }
-                    }
-                )
-
-                2 -> TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
-                    title = { Text(text = stringResource(R.string.news)) },
-                    actions = {
-                        IconButton(onClick = { navController.navigate(Destinations.NewsHistory.route) }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.bookmark_24px),
-                                contentDescription = "history"
-                            )
-                        }
-                        IconButton(onClick = { navController.navigate(Destinations.NewsSearch.route) }) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "search"
-                            )
-                        }
-                    }
-                )
-
-                3 -> TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
-                    title = { Text(text = stringResource(R.string.my)) },
-                    actions = {
-                        IconButton(
-                            onClick = {
-                                isShowPrivateMessage.value = !isShowPrivateMessage.value
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(id = if (isShowPrivateMessage.value) R.drawable.visibility_24px else R.drawable.visibility_off_24px),
-                                contentDescription = "eye"
-                            )
-                        }
-                    }
-                )
-            }
-        },
         bottomBar = {
-            NavigationBar(
-                containerColor = MiuixTheme.colorScheme.surfaceContainer
-            ) {
-                navigationItem.filter { it.enabled }.forEachIndexed { index, item ->
-                    NavigationBarItem(
-                        icon = {
-                            BadgedBox(
-                                badge = {
-                                    if (item.badge > 0) {
-                                        Badge {
-                                            Text(text = item.badge.toString())
+            if (windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND))
+                ShortNavigationBar(
+                    containerColor = MiuixTheme.colorScheme.surfaceContainer
+                ) {
+                    navigationItem.filter { it.enabled }.forEachIndexed { index, item ->
+                        ShortNavigationBarItem(
+                            icon = {
+                                BadgedBox(
+                                    badge = {
+                                        if (item.badge > 0) {
+                                            Badge {
+                                                Text(text = item.badge.toString())
+                                            }
                                         }
                                     }
+                                ) {
+                                    Icon(
+                                        painter = painterResource(
+                                            id = if (index == selectedItemIndex) {
+                                                item.selectedIcon
+                                            } else {
+                                                item.unselectedIcon
+                                            }
+                                        ),
+                                        contentDescription = "icon"
+                                    )
                                 }
-                            ) {
-                                Icon(
-                                    painter = painterResource(
-                                        id = if (index == selectedItemIndex) {
-                                            item.selectedIcon
-                                        } else {
-                                            item.unselectedIcon
-                                        }
-                                    ),
-                                    contentDescription = "icon"
-                                )
-                            }
-                        },
-                        label = {
-                            Text(text = stringResource(id = item.title))
-                        },
-                        selected = selectedItemIndex == index,
-                        onClick = {
-                            onSelectedItemIndex(index)
-                        },
-                        modifier = Modifier
-                    )
+                            },
+                            label = {
+                                Text(text = stringResource(id = item.title))
+                            },
+                            selected = selectedItemIndex == index,
+                            onClick = {
+                                onSelectedItemIndex(index)
+                            },
+                            iconPosition = NavigationItemIconPosition.Start,
+                            modifier = Modifier
+                        )
+                    }
                 }
-            }
+            else
+                NavigationBar(
+                    containerColor = MiuixTheme.colorScheme.surfaceContainer
+                ) {
+                    navigationItem.filter { it.enabled }.forEachIndexed { index, item ->
+                        NavigationBarItem(
+                            icon = {
+                                BadgedBox(
+                                    badge = {
+                                        if (item.badge > 0) {
+                                            Badge {
+                                                Text(text = item.badge.toString())
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        painter = painterResource(
+                                            id = if (index == selectedItemIndex) {
+                                                item.selectedIcon
+                                            } else {
+                                                item.unselectedIcon
+                                            }
+                                        ),
+                                        contentDescription = "icon"
+                                    )
+                                }
+                            },
+                            label = {
+                                Text(text = stringResource(id = item.title))
+                            },
+                            selected = selectedItemIndex == index,
+                            onClick = {
+                                onSelectedItemIndex(index)
+                            },
+                            modifier = Modifier
+                        )
+                    }
+                }
         }
     ) {
         AnimatedContent(
@@ -281,8 +216,7 @@ fun MainFrame(
                         3 -> PersonScreen(
                             navController = navController,
                             viewModel = loginViewModel,
-                            contentPadding = it,
-                            isShowPrivateMessage = isShowPrivateMessage
+                            contentPadding = it
                         )
                     }
                 }

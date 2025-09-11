@@ -18,8 +18,8 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 35
-        versionCode = 202506251
-        versionName = "3.0.9"
+        versionCode = 202509111
+        versionName = "3.0.9.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -142,7 +142,7 @@ dependencies {
     // About Screen
     implementation(libs.aboutlibraries.compose.m3)
 
-    // vico
+    // chart
     implementation(libs.vico)
 
     // JWT
@@ -150,5 +150,11 @@ dependencies {
 
     // pdf
     implementation(libs.pdf.viewer)
+
+    // reorderable
+    implementation(libs.reorderable)
+
+    // date time
+    implementation("network.chaintech:kmp-date-time-picker:1.1.1")
 
 }
