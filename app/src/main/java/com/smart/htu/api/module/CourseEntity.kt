@@ -103,7 +103,7 @@ data class CourseScheduleEntity(
 
     // 今天周几，若非本周返回0
     val todayWeekday: Int
-        get() = weekday.toIntOrNull() ?: 0
+        get() = weekday.toIntOrNull() ?: 1
 }
 
 typealias CourseTable = ArrayList<Map<String, List<CourseEntity>>>

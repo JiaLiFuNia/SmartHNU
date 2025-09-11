@@ -143,7 +143,7 @@ class CourseTableViewModel @Inject constructor(
                     termRange = Pair(res?.minWeek?.toInt() ?: 0, res?.maxWeek?.toInt() ?: 0),
                     week = res?.week ?: 0,
                     todayWeekday = res?.todayWeekday,
-                    startDatePerWeek = res?.date?.minusDays(res.todayWeekday.toLong()) // 往前推res?.todayWeekday天
+                    startDatePerWeek = res?.date?.minusDays(res.todayWeekday.toLong() - 1) // 往前推res?.todayWeekday - 1天
                 )
             }
         } catch (e: Exception) {
