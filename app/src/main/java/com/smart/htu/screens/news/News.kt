@@ -118,7 +118,7 @@ fun NewsScreenNavigation(
                     )
                 }
             }
-        },
+        }
     )
 }*/
 
