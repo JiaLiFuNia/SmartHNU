@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
@@ -83,8 +84,8 @@ fun LoginScreen(
 
     val showLoginInfoDialog = remember { mutableStateOf(false) }
 
-    LaunchedEffect(uiState.loginJWCState) {
-        if (uiState.loginJWCState == 1) {
+    LaunchedEffect(uiState.jwcLoginState) {
+        if (uiState.jwcLoginState == 1) {
             navController.popBackStack()
         }
     }
@@ -174,6 +175,17 @@ fun LoginScreen(
                         singleLine = true,
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                focusManager.clearFocus()
+                                viewModel.login(
+                                    onSuccess = {
+                                        focusManager.clearFocus()
+                                        autofillManager?.commit()
+                                    }
+                                )
+                            }
+                        ),
                         trailingIcon = {
                             IconButton(
                                 onClick = { passwordVisible = !passwordVisible },

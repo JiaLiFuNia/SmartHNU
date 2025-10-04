@@ -1,9 +1,8 @@
 package com.smart.htu.api.module
 
-import com.smart.htu.utils.convertDateToDouble
+import com.smart.htu.utils.DateUtil.convertStringDateToLocalDate
+import com.smart.htu.utils.DateUtil.dateFormatter
 import kotlinx.serialization.Serializable
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 @Serializable
 data class ACCookie(
@@ -51,12 +50,13 @@ data class BillRecords(
 )
 
 data class BillRecordsData(
-    val datetime: String,
+    val datetime: String, // 2025-9-10
     val used: String
 ) {
-    val dateTimeDouble: String
+    val easyDateTime: String
         get() {
-            return convertDateToDouble(datetime, "yyyy-MM-dd")
+            val date = convertStringDateToLocalDate(datetime, "yyyy-M-d")
+            return String.format("%d-%d", date.monthValue, date.dayOfMonth)
         }
 }
 
@@ -68,19 +68,17 @@ data class BuyRecords(
 )
 
 data class BuyRecordsData(
-    private val datetime: String,
+    private val datetime: String, // 2025-9-8 12:11:56
     val money: String,
 ) {
     val dateTime: String
         get() {
-            val inputFormatter = DateTimeFormatter.ofPattern("yyyy-M-d H:mm:ss")
-            val outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-            val parsedDateTime = LocalDateTime.parse(datetime, inputFormatter)
-            return parsedDateTime.format(outputFormatter)
+            return dateFormatter(datetime, "yyyy-M-d H:mm:ss", "yyyy-MM-dd HH:mm")
         }
 
-    val dateTimeDouble: String
+    val easyDateTime: String
         get() {
-            return convertDateToDouble(dateTime, "yyyy-MM-dd HH:mm")
+            val date = convertStringDateToLocalDate(datetime, "yyyy-M-d H:mm:ss")
+            return String.format("%d-%d", date.monthValue, date.dayOfMonth)
         }
 }

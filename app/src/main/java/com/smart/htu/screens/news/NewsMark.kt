@@ -44,7 +44,7 @@ import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.TabRow
 import com.smart.htu.component.imageVectors.emptyData
-import com.smart.htu.utils.formatDateToFriendly
+import com.smart.htu.utils.DateUtil.formatDateToFriendly
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Scaffold

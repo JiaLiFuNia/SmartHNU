@@ -45,6 +45,7 @@ import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.login.LogoutDialog
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
+import com.smart.htu.utils.ToastUtil.showToast
 import com.smart.htu.utils.copyContent
 import dev.chrisbanes.haze.hazeEffect
 import kotlinx.coroutines.launch
@@ -64,14 +65,15 @@ fun PersonScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
-    var showLogoutDialog = remember { mutableStateOf(false) }
+    val context = navController.context
+    val showLogoutDialog = remember { mutableStateOf(false) }
     val showLoginDialog = remember { mutableStateOf(false) }
     val isShowPrivateMessage = remember { mutableStateOf(true) }
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
-    LaunchedEffect(isRefreshing, uiState.loginJWCState) {
+    LaunchedEffect(isRefreshing, uiState.jwcLoginState) {
         if (isRefreshing) {
             viewModel.getPersonalMessage()
             isRefreshing = false
@@ -187,16 +189,16 @@ fun PersonScreen(
                             ) {
                                 PersonalMessage(
                                     label = "统一身份认证系统",
-                                    trailingText = stringResource(id = loginStateString(uiState.loginState)),
+                                    trailingText = stringResource(id = loginStateString(uiState.authLoginState)),
                                     onClick = {
                                         showLoginDialog.value = true
                                     }
                                 )
                                 PersonalMessage(
                                     label = "河南师大智慧教务",
-                                    trailingText = stringResource(id = loginStateString(uiState.loginJWCState)),
+                                    trailingText = stringResource(id = loginStateString(uiState.jwcLoginState)),
                                     onClick = {
-                                        if (uiState.loginJWCState != 1) navController.navigate(
+                                        if (uiState.jwcLoginState != 1) navController.navigate(
                                             Destinations.Login.route
                                         )
                                     }
@@ -304,23 +306,23 @@ fun PersonScreen(
                         ) {
                             PersonalMessage(
                                 label = "统一身份认证系统",
-                                trailingText = stringResource(id = loginStateString(uiState.loginState)),
+                                trailingText = stringResource(id = loginStateString(uiState.authLoginState)),
                                 onClick = {
-                                    if (uiState.loginState != 1) showLoginDialog.value = true
+                                    if (uiState.authLoginState != 1) showLoginDialog.value = true
                                 }
                             )
                             PersonalMessage(
                                 label = "河南师大智慧教务",
-                                trailingText = stringResource(id = loginStateString(uiState.loginJWCState)),
+                                trailingText = stringResource(id = loginStateString(uiState.jwcLoginState)),
                                 onClick = {
-                                    if (uiState.loginJWCState != 1) navController.navigate(
+                                    if (uiState.jwcLoginState != 1) navController.navigate(
                                         Destinations.Login.route
                                     )
                                 }
                             )
                             PersonalMessage(
                                 label = "第二课堂管理系统",
-                                trailingText = stringResource(id = loginStateString(0)),
+                                trailingText = stringResource(id = loginStateString(uiState.scLoginState)),
                                 onClick = {
                                 }
                             )
@@ -363,10 +365,20 @@ fun PersonScreen(
             summary = "统一身份认证系统",
             onLogin = { studentID, password, _ ->
                 scope.launch {
-                    viewModel.authLogin(studentID, password)
+                    viewModel.authLogin(
+                        studentID = studentID,
+                        password = password,
+                        onSuccess = {
+                            showLoginDialog.value = false
+                            showToast(context, "登录成功!")
+                        },
+                        onFailure = {
+                            showToast(context, "登录失败！请检查账号密码是否正确")
+                        }
+                    )
                 }
             },
-            logState = uiState.loginState
+            logState = uiState.authLoginState
         )
     }
 }

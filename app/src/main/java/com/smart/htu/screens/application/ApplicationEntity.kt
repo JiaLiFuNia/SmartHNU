@@ -7,6 +7,7 @@ import com.smart.htu.R
 @kotlinx.serialization.Serializable
 data class ApplicationEntity(
     val guestMode: Boolean = true,
+    val loginMode: LoginMode = LoginMode.NONE,
     val label: Int,
     val description: String? = null,
     @DrawableRes val icon: Int,
@@ -28,6 +29,14 @@ data class ApplicationEntity(
         SCREEN, // 页面
         ALIPAY, // 支付宝
         APP // 应用
+    }
+
+    enum class LoginMode {
+        NONE, // 不需要登录
+        COMMON, // 通用登录
+        AUTH_SERVER, // 统一认证登录
+        SECOND_CLASS, // 二课登录
+        LIBRARY // 图书馆登录
     }
 
 }

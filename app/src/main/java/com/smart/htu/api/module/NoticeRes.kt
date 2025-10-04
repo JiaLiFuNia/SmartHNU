@@ -7,7 +7,7 @@ data class NoticeRes(
 )
 
 data class NoticeEntity(
-    val id: Int,
+    val id: String,
     val time: String,
     val title: String,
     val content: String,

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,7 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
@@ -32,6 +35,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.smart.htu.R
 import com.smart.htu.component.TextButtonWithProgressIndicator
 import com.smart.htu.component.textButtonPrimaryColors
@@ -103,6 +108,7 @@ fun LoginDialog(
     title: String = stringResource(R.string.login),
     summary: String? = null,
     isNeedVerifyCode: Boolean = false,
+    verifyCodeModel: ImageRequest? = null,
     onLogin: (String, String, String) -> Unit,
     logState: Int
 ) {
@@ -186,42 +192,72 @@ fun LoginDialog(
                     ),
                     keyboardActions = KeyboardActions(onNext = { focusManager.clearFocus() }),
                     trailingIcon = {
-                        IconButton(
-                            onClick = { passwordVisible = !passwordVisible },
-                            modifier = Modifier.padding(end = 6.dp)
-                        ) {
-                            Icon(
-                                imageVector = MiuixIcons.Useful.Rename,
-                                tint = if (passwordVisible) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.onSecondaryContainer,
-                                contentDescription = if (passwordVisible) "隐藏密码" else "显示密码"
-                            )
-                        }
+                        AsyncImage(
+                            model = verifyCodeModel,
+                            contentDescription = "verifyCode",
+                            contentScale = ContentScale.FillWidth,
+                            modifier = Modifier
+                                .width(100.dp)
+                                .aspectRatio(3 / 1f)
+                                .padding(end = 12.dp),
+                            placeholder = painterResource(id = R.drawable.ic_loading_placeholder_horizontal),
+                            error = painterResource(id = R.drawable.ic_loading_placeholder_horizontal)
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                 )
             }
-            Column(
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                TextButtonWithProgressIndicator(
-                    text = stringResource(id = R.string.login),
-                    onClick = {
-                        onLogin(account.value, password.value, verifyCode.value)
-                    },
-                    isLoading = logState == 2,
-                    enabled = password.value.isNotEmpty() && account.value.isNotEmpty(),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Spacer(Modifier.height(12.dp))
-                TextButton(
-                    text = stringResource(id = R.string.cancel),
-                    onClick = {
-                        showDialog.value = false
-                    },
+            if (isNeedVerifyCode) {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxWidth()
-                )
+                ) {
+                    TextButtonWithProgressIndicator(
+                        text = stringResource(id = R.string.login),
+                        onClick = {
+                            onLogin(account.value, password.value, verifyCode.value)
+                        },
+                        isLoading = logState == 2,
+                        enabled = password.value.isNotEmpty() && account.value.isNotEmpty(),
+                        modifier = Modifier
+                            .weight(0.5f)
+                            .fillMaxWidth(),
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    TextButton(
+                        text = stringResource(id = R.string.cancel),
+                        onClick = {
+                            showDialog.value = false
+                        },
+                        modifier = Modifier
+                            .weight(0.5f)
+                            .fillMaxWidth()
+                    )
+                }
+            } else {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    TextButtonWithProgressIndicator(
+                        text = stringResource(id = R.string.login),
+                        onClick = {
+                            onLogin(account.value, password.value, verifyCode.value)
+                        },
+                        isLoading = logState == 2,
+                        enabled = password.value.isNotEmpty() && account.value.isNotEmpty(),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    TextButton(
+                        text = stringResource(id = R.string.cancel),
+                        onClick = {
+                            showDialog.value = false
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
     }

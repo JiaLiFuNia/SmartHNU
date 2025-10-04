@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.core.net.toUri
 import com.smart.htu.api.module.AttachmentEntity
 import com.smart.htu.api.module.NewsArticleEntity
+import com.smart.htu.utils.DateUtil.extractDateFromString
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements

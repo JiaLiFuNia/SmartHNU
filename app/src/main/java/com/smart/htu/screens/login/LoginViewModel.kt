@@ -22,6 +22,8 @@ import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.PasswordRepo
 import com.smart.htu.repo.PasswordRepo.Companion.JWC_PASSWORD
 import com.smart.htu.repo.PasswordRepo.Companion.PASSWORD
+import com.smart.htu.repo.PasswordRepo.Companion.SC_PASSWORD
+import com.smart.htu.repo.SecondClassRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -36,8 +38,9 @@ import okhttp3.Cookie
 import javax.inject.Inject
 
 data class LoginUiState(
-    val loginState: Int = DEFAULT_LOGIN_STATE, // -1 失败   0 未登录   1 登录成功 2 登录中
-    val loginJWCState: Int = DEFAULT_LOGIN_STATE, // 0 未登录 1 登录成功 -1 登录失败 -2 token过期
+    val authLoginState: Int = DEFAULT_LOGIN_STATE, // -1 失败   0 未登录   1 登录成功 2 登录中
+    val jwcLoginState: Int = DEFAULT_LOGIN_STATE, // 0 未登录 1 登录成功 -1 登录失败 -2 token过期
+    val scLoginState: Int = DEFAULT_LOGIN_STATE, // 0 未登录 1 登录成功 -1 登录失败 -2 token过期
     val isGuestModeEnable: Boolean = false,
     val isLoading: Boolean = false,
     val username: String = DEFAULT_USERNAME,
@@ -47,6 +50,7 @@ data class LoginUiState(
     val mobileCode: String = DEFAULT_MOBILE_CODE,
     val personalMessage: PersonalMessageEntity? = null,
     val cookies: List<Cookie> = emptyList(),
+    val secondClassSid: String = "",
     val token: String = DEFAULT_TOKEN,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
@@ -54,6 +58,7 @@ data class LoginUiState(
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val jwcNetworkRepo: JWCNetworkRepo,
+    private val scNetworkRepo: SecondClassRepo,
     private val networkRepo: NetworkRepo,
     private val dataStoreRepo: DataStoreRepo,
     private val networkCookieJar: NetworkCookieJar,
@@ -137,6 +142,24 @@ class LoginViewModel @Inject constructor(
             }
         )
 
+    private val secondClassSidStateFlow = dataStoreRepo.observeSecondClassSid()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeSecondClassSid().first()
+            }
+        )
+
+    private val loginSCStateStateFlow = dataStoreRepo.observeLoginSCState()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeLoginSCState().first()
+            }
+        )
+
     init {
         _uiState.update {
             it.copy(
@@ -151,12 +174,12 @@ class LoginViewModel @Inject constructor(
         }
         viewModelScope.launch {
             loginStateStateFlow.collect { value ->
-                _uiState.update { it.copy(loginState = value) }
+                _uiState.update { it.copy(authLoginState = value) }
             }
         }
         viewModelScope.launch {
             loginJWCStateStateFlow.collect { value ->
-                _uiState.update { it.copy(loginJWCState = value) }
+                _uiState.update { it.copy(jwcLoginState = value) }
             }
         }
         viewModelScope.launch {
@@ -185,8 +208,18 @@ class LoginViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
+            secondClassSidStateFlow.collect { value ->
+                _uiState.update { it.copy(secondClassSid = value) }
+            }
+        }
+        viewModelScope.launch {
+            loginSCStateStateFlow.collect { value ->
+                _uiState.update { it.copy(scLoginState = value) }
+            }
+        }
+        viewModelScope.launch {
             checkJWCToken()
-            if (_uiState.value.loginJWCState == 1)
+            if (_uiState.value.jwcLoginState == 1)
                 getPersonalMessage()
         }
     }
@@ -194,7 +227,7 @@ class LoginViewModel @Inject constructor(
     fun login(onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            if (_uiState.value.loginJWCState != 1) jwcLogin(onSuccess) // 智慧教务
+            if (_uiState.value.jwcLoginState != 1) jwcLogin(onSuccess) // 智慧教务
             // if (_uiState.value.loginState != 1) authLogin() // 统一认证登录
             _uiState.update { it.copy(isLoading = false) }
         }
@@ -221,6 +254,40 @@ class LoginViewModel @Inject constructor(
             logState.onFailure {
                 onFailure()
                 changeLoginAuthState(-1)
+            }
+        } catch (e: Exception) {
+            Log.i("TAG666 viewModel", "Failed $e")
+        }
+    }
+
+    suspend fun loadSecondClassSid() {
+        val sid = scNetworkRepo.getSCLoginPage()
+        _uiState.update { it.copy(secondClassSid = sid) }
+    }
+
+    suspend fun secondClassLogin(
+        studentID: String = _uiState.value.studentID,
+        password: String = _uiState.value.password,
+        verifyCode: String,
+        onSuccess: () -> Unit = {},
+        onFailure: (String) -> Unit = {}
+    ) {
+        try {
+            changeLoginSCState(2) // 登录中
+            clearCookies()
+            scNetworkRepo.scLogin(
+                studentID = studentID,
+                password = password,
+                verifyCode = verifyCode,
+                sid = _uiState.value.secondClassSid
+            ).onSuccess {
+                onSuccess()
+                changeLoginSCState(1)
+                passwordRepo.savePassword(_uiState.value.password, SC_PASSWORD)
+            }.onFailure {
+                loadSecondClassSid()
+                onFailure(it.message.toString())
+                changeLoginSCState(-1)
             }
         } catch (e: Exception) {
             Log.i("TAG666 viewModel", "Failed $e")
@@ -292,7 +359,6 @@ class LoginViewModel @Inject constructor(
         changeUsername("HNUer")
     }
 
-    //
     private fun changeLoginAuthState(state: Int) {
         viewModelScope.launch {
             dataStoreRepo.changeLoginState(state)
@@ -305,6 +371,12 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    private fun changeLoginSCState(state: Int) {
+        viewModelScope.launch {
+            dataStoreRepo.changeLoginSCState(state = state)
+        }
+    }
+
     fun setJWCLogToken(token: String) {
         viewModelScope.launch {
             dataStoreRepo.setJWCToken(token = token)
@@ -312,17 +384,17 @@ class LoginViewModel @Inject constructor(
     }
 
     fun changeStudentID(studentID: String) {
-        _uiState.update { it.copy(loginJWCState = 0) }
+        _uiState.update { it.copy(jwcLoginState = 0) }
         _uiState.update { it.copy(studentID = studentID) }
     }
 
     fun changePassword(password: String) {
-        _uiState.update { it.copy(loginState = 0) }
+        _uiState.update { it.copy(authLoginState = 0) }
         _uiState.update { it.copy(password = password) }
     }
 
     fun changeJWCPassword(password: String) {
-        _uiState.update { it.copy(loginJWCState = 0) }
+        _uiState.update { it.copy(jwcLoginState = 0) }
         _uiState.update { it.copy(jwcPassword = password) }
     }
 

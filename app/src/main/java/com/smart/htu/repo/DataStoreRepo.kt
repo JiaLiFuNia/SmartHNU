@@ -13,6 +13,7 @@ import com.google.gson.reflect.TypeToken
 import com.smart.htu.api.DataStoreService
 import com.smart.htu.api.module.ACCookie
 import com.smart.htu.api.module.AIModelConfigEntity
+import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.screens.application.ApplicationEntity
@@ -38,6 +39,8 @@ class DataStoreRepo @Inject constructor(
         val USERNAME = stringPreferencesKey("USERNAME")
         val LOGIN_STATE = intPreferencesKey("LOGIN_STATE")
         val LOGIN_JWC_STATE = intPreferencesKey("LOGIN_JWC_STATE")
+        val LOGIN_SC_STATE = intPreferencesKey("LOGIN_SC_STATE")
+        val SECOND_CLASS_SID = stringPreferencesKey("SECOND_CLASS_SID")
         val TOKEN = stringPreferencesKey("TOKEN")
         val DARK_THEME = intPreferencesKey("DARK_THEME")
         val THEME_MODE = intPreferencesKey("THEME_MODE")
@@ -63,10 +66,12 @@ class DataStoreRepo @Inject constructor(
         val NEWS_HISTORY_LIST = stringPreferencesKey("NEWS_HISTORY_LIST")
         val NEWS_FAVORITE_LIST = stringPreferencesKey("NEWS_FAVORITE_LIST")
         val NEWS_FONT_SIZE = intPreferencesKey("NEWS_FONT_SIZE")
+        val EXAM_SCHEDULE_LIST = stringPreferencesKey("EXAM_SCHEDULE_LIST")
+        val PHYSICAL_TEST_CODE = stringPreferencesKey("PHYSICAL_TEST_CODE")
 
         const val DEFAULT_COOKIES = "[]"
         const val DEFAULT_MESSAGE_READ_ID = "[]"
-        const val DEFAULT_THEME_MODE = 0
+        const val DEFAULT_THEME_MODE = 1
         const val DEFAULT_BLUR_EFFECT = false
         const val DEFAULT_AI_FUNCTION_ENABLED = false
         const val DEFAULT_AI_MODEL_KEY = ""
@@ -79,9 +84,11 @@ class DataStoreRepo @Inject constructor(
         const val DEFAULT_BUILDING_ID = ""
         const val DEFAULT_ROOM_ID = ""
         const val DEFAULT_MOBILE_CODE = ""
+        const val DEFAULT_PHYSICAL_TEST_CODE = ""
         const val DEFAULT_WRITE_CALENDAR_PERMISSION_GRANTED = false
         const val DEFAULT_LOAD_IMG_ENABLED = true
         const val DEFAULT_BOOK_SEARCH_HISTORY_LIST = "[]"
+        const val DEFAULT_EXAM_SCHEDULE_LIST = "[]"
         const val DEFAULT_NEWS_HISTORY_LIST = "[]"
         const val DEFAULT_NEWS_FAVORITE_LIST = "[]"
         const val DEFAULT_NEWS_FONT_SIZE = 17
@@ -152,11 +159,19 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[LOGIN_JWC_STATE] = state }
     }
 
+    override suspend fun changeLoginSCState(state: Int) {
+        context.dataStore.edit { it[LOGIN_SC_STATE] = state }
+    }
+
+    override suspend fun saveSecondClassSid(sid: String) {
+        context.dataStore.edit { it[SECOND_CLASS_SID] = sid }
+    }
+
     override suspend fun setJWCToken(token: String) {
         context.dataStore.edit { it[TOKEN] = token }
     }
 
-    override suspend fun addReadNoticeId(id: List<Int>) {
+    override suspend fun addReadNoticeId(id: List<String>) {
         context.dataStore.edit { it[NOTICE_READ_ID_LIST] = Json.encodeToString(id) }
     }
 
@@ -219,6 +234,14 @@ class DataStoreRepo @Inject constructor(
 
     override suspend fun changeNewsFontSize(size: Int) {
         context.dataStore.edit { it[NEWS_FONT_SIZE] = size }
+    }
+
+    override suspend fun saveExamScheduleList(examList: List<ExamEntity>) {
+        context.dataStore.edit { it[EXAM_SCHEDULE_LIST] = Json.encodeToString(examList) }
+    }
+
+    override suspend fun savePhysicalTestCode(code: String) {
+        context.dataStore.edit { it[PHYSICAL_TEST_CODE] = code }
     }
 
 
@@ -310,13 +333,21 @@ class DataStoreRepo @Inject constructor(
         return context.dataStore.data.map { it[LOGIN_JWC_STATE] ?: DEFAULT_LOGIN_STATE }
     }
 
+    override fun observeLoginSCState(): Flow<Int> {
+        return context.dataStore.data.map { it[LOGIN_SC_STATE] ?: DEFAULT_LOGIN_STATE }
+    }
+
+    override fun observeSecondClassSid(): Flow<String> {
+        return context.dataStore.data.map { it[SECOND_CLASS_SID] ?: "" }
+    }
+
     override fun observeJWCToken(): Flow<String> {
         return context.dataStore.data.map { it[TOKEN] ?: DEFAULT_TOKEN }
     }
 
-    override fun observeReadNoticeIdList(): Flow<List<Int>> {
+    override fun observeReadNoticeIdList(): Flow<List<String>> {
         return context.dataStore.data.map {
-            Json.decodeFromString<List<Int>>(
+            Json.decodeFromString<List<String>>(
                 it[NOTICE_READ_ID_LIST] ?: DEFAULT_MESSAGE_READ_ID
             )
         }
@@ -372,5 +403,17 @@ class DataStoreRepo @Inject constructor(
 
     override fun observeNewsFontSize(): Flow<Int> {
         return context.dataStore.data.map { it[NEWS_FONT_SIZE] ?: DEFAULT_NEWS_FONT_SIZE }
+    }
+
+    override fun observeExamScheduleList(): Flow<List<ExamEntity>> {
+        return context.dataStore.data.map {
+            Json.decodeFromString<List<ExamEntity>>(
+                it[EXAM_SCHEDULE_LIST] ?: DEFAULT_EXAM_SCHEDULE_LIST
+            )
+        }
+    }
+
+    override fun observePhysicalTestCode(): Flow<String> {
+        return context.dataStore.data.map { it[PHYSICAL_TEST_CODE] ?: DEFAULT_PHYSICAL_TEST_CODE }
     }
 }

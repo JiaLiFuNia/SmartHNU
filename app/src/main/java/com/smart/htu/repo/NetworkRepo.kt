@@ -10,8 +10,9 @@ import com.smart.htu.api.module.BillRecords
 import com.smart.htu.api.module.BuyRecords
 import com.smart.htu.api.module.NewsArticleEntity
 import com.smart.htu.api.module.NewsItemEntity
+import com.smart.htu.api.module.NowWeatherData
 import com.smart.htu.api.module.Usage
-import com.smart.htu.api.module.WeatherCurrentData
+import com.smart.htu.api.module.WarningWeatherData
 import com.smart.htu.api.network.AirConditionService
 import com.smart.htu.api.network.AppLoginService
 import com.smart.htu.api.network.AuthLoginService
@@ -116,13 +117,26 @@ class NetworkRepo @Inject constructor(
     }
 
     // 获取实时天气
-    suspend fun getWeatherService(): WeatherCurrentData? {
-        val res = weatherService.getWeather()
+    suspend fun getWeatherService(): NowWeatherData? {
+        val res = weatherService.getNowWeather()
         try {
             return res.now
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
             return null
+        }
+    }
+
+    // 天气预警
+    suspend fun getWarningWeatherService(): Result<List<WarningWeatherData>> {
+        val res = weatherService.getWarningWeather()
+        return try {
+            if (res.code == 200) Result.success(res.warning)
+            // Log.e("TAG666", "getWarningWeatherService ${res.body()?.string()}")
+            else Result.failure(Exception("获取失败"))
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            Result.failure(Exception("获取失败"))
         }
     }
 
@@ -228,7 +242,7 @@ class NetworkRepo @Inject constructor(
     }
 
     // 解析登录参数
-    private suspend fun getLoginPage() {
+    private suspend fun getAuthLoginPage() {
         try {
             networkCookieJar.clearCookies()
             val loginPage = authServerService.authServer()
@@ -246,7 +260,7 @@ class NetworkRepo @Inject constructor(
         captcha: String? = ""
     ): Result<String> {
         try {
-            getLoginPage()
+            getAuthLoginPage()
             val response = authServerService.authLogin(
                 username = studentId,
                 password = AESUtils.encryptPassword(password, pwdEncryptSalt),
@@ -262,7 +276,7 @@ class NetworkRepo @Inject constructor(
                 Log.i("TAG666", "获取到 mobile_code: $mobileCode")
                 dataStoreRepo.saveMobileCode(mobileCode)
             }
-            getAppTokenService(mobileCode)
+            // getAppTokenService(mobileCode)
             return when (response.code()) {
                 401 -> Result.failure(Exception("状态码：${response.code()} $errorTip"))
                 200 -> {

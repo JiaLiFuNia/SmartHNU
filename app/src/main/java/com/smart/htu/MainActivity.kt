@@ -10,9 +10,11 @@ import androidx.activity.viewModels
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.remember
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.smart.htu.App.Companion.context
 import com.smart.htu.screens.NavHostScreen
 import com.smart.htu.screens.application.courseTable.CourseTableViewModel
 import com.smart.htu.ui.theme.SmartHNUTheme
+import com.smart.htu.utils.Calendar.createCalendar
 import com.smart.htu.utils.Permission.Companion.checkRequestCalendarPermissions
 import dagger.hilt.android.AndroidEntryPoint
 import top.yukonga.miuix.kmp.basic.Surface
@@ -44,6 +46,7 @@ class MainActivity : ComponentActivity() {
         ) { permissions ->
             val allGranted = permissions.entries.all { it.value }
             if (allGranted) {
+                createCalendar(context)
                 courseTableViewModel.setIsWriteCalendarPermissionGranted(true)
             }
         }

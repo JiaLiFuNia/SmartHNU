@@ -2,6 +2,7 @@ package com.smart.htu.api
 
 import com.smart.htu.api.module.ACCookie
 import com.smart.htu.api.module.AIModelConfigEntity
+import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.screens.application.ApplicationEntity
@@ -18,7 +19,9 @@ interface DataStoreService {
     suspend fun changeUsername(name: String)
     suspend fun changeLoginState(state: Int)
     suspend fun changeLoginJWCState(state: Int)
-    suspend fun saveAuthCookie(cookies: List<Cookie>)
+    suspend fun changeLoginSCState(state: Int)
+    suspend fun saveSecondClassSid(sid: String)
+    suspend fun saveAuthCookie(cookie: List<Cookie>)
     suspend fun addWaitingBorrowedBookList(waitingBorrowedBookList: List<LibraryDetailEntity>)
     suspend fun saveStudentId(id: String)
     suspend fun changeBuildingId(id: String)
@@ -27,7 +30,7 @@ interface DataStoreService {
     suspend fun saveAirConditionUserCookie(cookie: ACCookie)
     suspend fun changeBookSearchHistoryList(list: List<String>)
     suspend fun setJWCToken(token: String)
-    suspend fun addReadNoticeId(id: List<Int>)
+    suspend fun addReadNoticeId(id: List<String>)
     suspend fun setGlobalTermCode(term: String)
     suspend fun saveMobileCode(mobileCode: String)
     suspend fun setIsWriteCalendarPermissionGranted(enable: Boolean)
@@ -38,6 +41,8 @@ interface DataStoreService {
     suspend fun changeNewsHistoryList(newsItem: NewsMarkEntity)
     suspend fun addNewsFavoriteList(newsItem: NewsMarkEntity)
     suspend fun changeNewsFontSize(size: Int)
+    suspend fun saveExamScheduleList(examList: List<ExamEntity>)
+    suspend fun savePhysicalTestCode(code: String)
 
     fun observeThemeMode(): Flow<Int>
     fun observeDarkTheme(): Flow<Int>
@@ -55,7 +60,9 @@ interface DataStoreService {
     fun observeBookSearchHistoryList(): Flow<List<String>>
     fun observeJWCToken(): Flow<String>
     fun observeLoginJWCState(): Flow<Int>
-    fun observeReadNoticeIdList(): Flow<List<Int>>
+    fun observeLoginSCState(): Flow<Int>
+    fun observeSecondClassSid(): Flow<String>
+    fun observeReadNoticeIdList(): Flow<List<String>>
     fun observeGlobalTermCode(): Flow<String>
     fun observeMobileCode(): Flow<String>
     fun observeIsWriteCalendarPermissionGranted(): Flow<Boolean>
@@ -66,5 +73,7 @@ interface DataStoreService {
     fun observeNewsHistoryList(): Flow<List<NewsMarkEntity>>
     fun observeNewsFavoriteList(): Flow<List<NewsMarkEntity>>
     fun observeNewsFontSize(): Flow<Int>
+    fun observeExamScheduleList(): Flow<List<ExamEntity>>
+    fun observePhysicalTestCode(): Flow<String>
 
 }

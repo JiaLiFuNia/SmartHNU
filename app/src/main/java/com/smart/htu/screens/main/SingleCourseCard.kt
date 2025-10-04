@@ -144,7 +144,9 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: CourseEnt
 @Composable
 fun CourseDetailDialog(
     message: CourseEntity,
-    isBottomSheetShow: MutableState<Boolean>
+    isBottomSheetShow: MutableState<Boolean>,
+    overlapCourseList: List<CourseEntity>? = null,
+    onSelectOverlapCourse: (Int) -> Unit = {}
 ) {
     BasicDialog(
         showDialog = isBottomSheetShow,
@@ -191,5 +193,12 @@ fun CourseDetailDialog(
                 )
             )
         )
+        overlapCourseList?.size?.let {
+            if (it > 2) {
+                overlapCourseList.forEach {
+                    Text(it.courseName)
+                }
+            }
+        }
     }
 }

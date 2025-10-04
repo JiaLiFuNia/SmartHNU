@@ -11,7 +11,7 @@ import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.SharedDataRepository
-import com.smart.htu.utils.getCurrentDates
+import com.smart.htu.utils.DateUtil.getCurrentDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -88,7 +88,7 @@ class ClassroomSearchViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            getClassroomOccupation(getCurrentDates())
+            getClassroomOccupation(getCurrentDate())
         }
     }
 

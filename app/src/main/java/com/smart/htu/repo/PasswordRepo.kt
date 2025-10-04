@@ -19,6 +19,7 @@ class PasswordRepo @Inject constructor(
     companion object {
         const val JWC_PASSWORD = "jwc_password"
         const val PASSWORD = "password"
+        const val SC_PASSWORD = "sc_password"
     }
 
     fun savePassword(password: String, key: String) {

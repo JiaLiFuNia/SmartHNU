@@ -85,8 +85,8 @@ fun ApplicationWebView(
         isLoadingCookie.value = false
     }
 
-    LaunchedEffect(loginUiState.loginState) {
-        if (loginUiState.loginState == 1) {
+    LaunchedEffect(loginUiState.authLoginState) {
+        if (loginUiState.authLoginState == 1) {
             showLoginDialog.value = false
             updateWebViewCookies(url, cookie.value)
             navigator.reload()
@@ -222,7 +222,7 @@ fun ApplicationWebView(
                     onLogin = {
                         scope.launch {
                             delay(1000)
-                            showLoginDialog.value = it
+                            if (it) showLoginDialog.value = true
                         }
                     },
                     onCurrentUrl = {
@@ -250,7 +250,7 @@ fun ApplicationWebView(
                     )
                 }
             },
-            logState = loginUiState.loginState
+            logState = loginUiState.authLoginState
         )
 
         /*BottomCircularProgressIndicator(

@@ -8,6 +8,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.component.PdfReaderView
 import com.smart.htu.component.animation.animatedComposable
 import com.smart.htu.screens.application.ApplicationEdit
@@ -18,6 +19,7 @@ import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.application.campusLife.CampusLife
 import com.smart.htu.screens.application.classroom.ClassroomSearchScreen
 import com.smart.htu.screens.application.courseTable.CourseTable
+import com.smart.htu.screens.application.examSchedule.AddExamSchedule
 import com.smart.htu.screens.application.examSchedule.ExamSchedule
 import com.smart.htu.screens.application.grade.Grade
 import com.smart.htu.screens.application.librarySearch.LibrarySearchDetail
@@ -25,6 +27,7 @@ import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
 import com.smart.htu.screens.application.librarySearch.LibrarySearchViewModel
 import com.smart.htu.screens.application.messageBoard.MessageBoard
 import com.smart.htu.screens.application.messageBoard.MessageBoardDetail
+import com.smart.htu.screens.application.physicalTest.PhysicalTest
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluation
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluationDetail
 import com.smart.htu.screens.application.textbook.Textbook
@@ -49,6 +52,7 @@ import com.smart.htu.screens.setting.SettingScreen
 import com.smart.htu.screens.setting.feedback.Feedback
 import com.smart.htu.utils.startAppUrl
 import com.smart.htu.utils.startLaunchAPK
+import kotlinx.serialization.json.Json
 
 @Composable
 fun NavHostScreen() {
@@ -234,7 +238,7 @@ fun NavHostScreen() {
             AIConfigurationScreen(navController = navController)
         }
         animatedComposable(Destinations.PhysicalTest.route) {
-            CampusLife(navController = navController)
+            PhysicalTest(navController = navController)
         }
         animatedComposable(
             route = "${Destinations.PdfReaderView.route}/{url}/{title}",
@@ -278,6 +282,23 @@ fun NavHostScreen() {
         }
         animatedComposable(Destinations.ExamSchedule.route) {
             ExamSchedule(navController)
+        }
+        animatedComposable(
+            route = "${Destinations.AddExamSchedule.route}/{exam}",
+            arguments = listOf(
+                navArgument(name = "exam") {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            )
+        ) {
+            val examString = it.arguments?.getString("exam")
+            val exam = if (examString.isNullOrEmpty() || examString == "null") {
+                null
+            } else {
+                Json.decodeFromString<ExamEntity>(examString)
+            }
+            AddExamSchedule(navController = navController, exam = exam)
         }
     }
 }

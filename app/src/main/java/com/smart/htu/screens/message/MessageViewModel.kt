@@ -3,8 +3,10 @@ package com.smart.htu.screens.message
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.NoticeEntity
+import com.smart.htu.api.module.WarningWeatherData
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
+import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.SharedDataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,15 +21,17 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class MessageUiState(
+    val warningWeatherData: List<WarningWeatherData> = emptyList(),
     val noticeList: List<NoticeEntity> = emptyList(),
-    val readNoticeIdList: List<Int> = emptyList(),
+    val readNoticeIdList: List<String> = emptyList(),
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
 
 @HiltViewModel
 class MessageViewModel @Inject constructor(
     private val dataStoreRepo: DataStoreRepo,
-    private val sharedDataRepository: SharedDataRepository
+    private val sharedDataRepository: SharedDataRepository,
+    private val networkRepo: NetworkRepo
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MessageUiState())
@@ -68,6 +72,14 @@ class MessageViewModel @Inject constructor(
                 _uiState.update { it.copy(readNoticeIdList = value) }
             }
         }
+        getWarningWeather()
+    }
+
+    fun getWarningWeather() = viewModelScope.launch {
+        networkRepo.getWarningWeatherService()
+            .onSuccess { res ->
+                _uiState.update { it.copy(warningWeatherData = res) }
+            }
     }
 
     fun readAllNotice() = viewModelScope.launch {
@@ -76,7 +88,7 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-    fun addReadNoticeId(id: Int) = viewModelScope.launch {
+    fun addReadNoticeId(id: String) = viewModelScope.launch {
         if (!_uiState.value.readNoticeIdList.contains(id)) {
             _uiState.update { it.copy(readNoticeIdList = it.readNoticeIdList + id) }
             dataStoreRepo.addReadNoticeId(_uiState.value.readNoticeIdList)

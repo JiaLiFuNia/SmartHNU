@@ -69,7 +69,7 @@ fun MainFrame(
             title = R.string.main,
             selectedIcon = R.drawable.baseline_home_24,
             unselectedIcon = R.drawable.outline_home_24,
-            badge = messageCount.value + if (mainUiState.updateEntity.isNeedUpdate == true) 1 else 0
+            badge = messageCount.value + if (mainUiState.update.isNeedUpdate) 1 else 0
         ),
         BottomNavigationItem(
             title = R.string.application,
@@ -84,7 +84,7 @@ fun MainFrame(
             badge = 0
         ),
         BottomNavigationItem(
-            enabled = loginUiState.loginJWCState == 1,
+            enabled = loginUiState.jwcLoginState == 1,
             title = R.string.my,
             selectedIcon = R.drawable.ic_filled_person,
             unselectedIcon = R.drawable.ic_outline_person,
@@ -226,8 +226,8 @@ fun MainFrame(
 
     // val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val showUpdateDialog = rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(mainUiState.updateEntity.isNeedUpdate, mainUiState.isShowUpdateDialog) {
-        if (mainUiState.updateEntity.isNeedUpdate == true && mainUiState.isShowUpdateDialog.value) {
+    LaunchedEffect(mainUiState.update.isNeedUpdate, mainUiState.isShowUpdateDialog) {
+        if (mainUiState.update.isNeedUpdate == true && mainUiState.isShowUpdateDialog.value) {
             showUpdateDialog.value = true
         } else {
             showUpdateDialog.value = false
@@ -238,8 +238,8 @@ fun MainFrame(
         onDismissRequest = {
             mainViewModel.changeUpdateDialogState(false)
         },
-        isForceUpdate = mainUiState.updateEntity.isForceUpdate,
-        updateEntity = mainUiState.updateEntity
+        isForceUpdate = mainUiState.update.isForceUpdate,
+        updateEntity = mainUiState.update
     )
 
     DoubleBackToExitApp(

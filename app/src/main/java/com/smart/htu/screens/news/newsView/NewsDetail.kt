@@ -70,10 +70,10 @@ import com.smart.htu.component.WebView
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.news.newsView.NewsStyle.HORIZONTAL_MARGIN
+import com.smart.htu.utils.DateUtil.getCurrentDate
 import com.smart.htu.utils.FileUtil.downloadFile
 import com.smart.htu.utils.ToastUtil
 import com.smart.htu.utils.copyContent
-import com.smart.htu.utils.getCurrentDates
 import com.smart.htu.utils.startWebUrl
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -349,7 +349,7 @@ fun NewsDetail(
                     item {
                         TittleContent(
                             title = uiState.newsArticle?.title ?: "无标题",
-                            publishDate = uiState.newsArticle?.publishDate ?: getCurrentDates(),
+                            publishDate = uiState.newsArticle?.publishDate ?: getCurrentDate(),
                             visitCount = uiState.newsArticle?.visitCount ?: "10",
                             modifier = Modifier
                                 .fillMaxWidth()

@@ -68,7 +68,7 @@ import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
-import com.smart.htu.utils.formatDateToFriendly
+import com.smart.htu.utils.DateUtil.formatDateToFriendly
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.CardDefaults

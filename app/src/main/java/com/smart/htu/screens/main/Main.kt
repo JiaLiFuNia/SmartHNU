@@ -1,6 +1,7 @@
 package com.smart.htu.screens.main
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -8,18 +9,22 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -44,20 +49,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.window.core.layout.WindowSizeClass
-import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseEntity
-import com.smart.htu.api.module.NewsItemEntity
-import com.smart.htu.api.module.ResultWithStatus
-import com.smart.htu.api.module.Status
+import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.SuggestChip
@@ -72,16 +76,18 @@ import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigateWithCheckLoginState
 import com.smart.htu.screens.navigation.Destinations
-import com.smart.htu.screens.news.NewsItem
-import com.smart.htu.screens.news.navigateToNewsDetail
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.Constants.Companion.SECOND_CLASS_URL
+import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
 import com.smart.htu.utils.startCalendar
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -102,7 +108,10 @@ fun Main(
     val airConditionUiState by airConditionViewModel.uiState.collectAsState()
 
     val loginState = remember {
-        derivedStateOf { loginUiState.loginJWCState != 1 && loginUiState.loginJWCState != -2 }
+        derivedStateOf { loginUiState.jwcLoginState != 1 && loginUiState.jwcLoginState != -2 }
+    }
+    val holidayState = remember {
+        derivedStateOf { uiState.holiday != null }
     }
     val messageCount = remember {
         derivedStateOf { uiState.noticeIdList.size - uiState.readNoticeIdList.size }
@@ -113,8 +122,7 @@ fun Main(
     LaunchedEffect(isRefreshing) {
         if (isRefreshing) {
             mainViewModel.getCurrentWeather()
-            mainViewModel.refreshNoticeAndUpdate()
-            mainViewModel.getNewsList()
+            mainViewModel.refreshNoticeAndUpdateMessage()
             mainViewModel.getTodayCourse()
             mainViewModel.getCurrentWeek()
             isRefreshing = false
@@ -157,7 +165,7 @@ fun Main(
                     }
                 ) {
                     BadgedBox(
-                        badge = { if (uiState.updateEntity.isNeedUpdate == true) Badge() }
+                        badge = { if (uiState.update.isNeedUpdate) Badge() }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Settings,
@@ -198,13 +206,28 @@ fun Main(
                                 )
                             }
                         }
+                        if (holidayState.value) {
+                            item {
+                                uiState.holiday.let {
+                                    SuggestChip(
+                                        onClick = { },
+                                        onActionClick = { },
+                                        text = if (it?.isLieu == true) "今天是${it.holiday}，放假调休" else "今天是${it?.holiday}，放假愉快",
+                                        type = SuggestChipType.INFO,
+                                        icon = Icons.Outlined.Info
+                                    )
+                                }
+                            }
+                        }
                         item {
                             FocusCard(navController, loginUiState, airConditionUiState, uiState)
                         }
                         item {
-                            NewsCard(
+                            CommonAppsCard(
+                                uiState = uiState,
                                 navController = navController,
-                                newsListStatus = uiState.newsList
+                                loginUiState = loginUiState,
+                                loginState = loginState.value
                             )
                         }
                     }
@@ -218,18 +241,13 @@ fun Main(
                         overscrollEffect = null
                     ) {
                         item {
+                            ExamScheduleCard(uiState.examScheduleList, navController)
+                        }
+                        item {
                             TodayCourseCard(
                                 uiState.todayCourseList,
                                 loginState.value,
                                 navController
-                            )
-                        }
-                        item {
-                            CommonAppsCard(
-                                uiState = uiState,
-                                navController = navController,
-                                loginUiState = loginUiState,
-                                loginState = loginState.value
                             )
                         }
                     }
@@ -243,15 +261,29 @@ fun Main(
                     verticalArrangement = Arrangement.spacedBy(20.dp),
                     overscrollEffect = null
                 ) {
-                    if (loginState.value) {
+                    if (loginState.value || holidayState.value) {
                         item {
-                            SuggestChip(
-                                onClick = { navController.navigate(Destinations.Login.route) },
-                                onActionClick = { navController.navigate(Destinations.Login.route) },
-                                text = "暂未登录，登录后即可体验全部功能",
-                                type = SuggestChipType.ERROR,
-                                icon = Icons.AutoMirrored.Filled.ArrowForward
-                            )
+                            if (loginState.value) {
+                                SuggestChip(
+                                    onClick = { navController.navigate(Destinations.Login.route) },
+                                    onActionClick = { navController.navigate(Destinations.Login.route) },
+                                    text = "暂未登录，登录后即可体验全部功能",
+                                    type = SuggestChipType.ERROR,
+                                    icon = Icons.AutoMirrored.Filled.ArrowForward
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                            }
+                            if (holidayState.value) {
+                                uiState.holiday.let {
+                                    SuggestChip(
+                                        onClick = { },
+                                        onActionClick = { },
+                                        text = if (it?.isLieu == true) "今天是${it.holiday}，放假调休" else "今天是${it?.holiday}假期，放假愉快",
+                                        type = SuggestChipType.INFO,
+                                        icon = if (it?.isLieu == true) Icons.Outlined.Info else R.drawable.celebration_24px
+                                    )
+                                }
+                            }
                         }
                     }
                     item {
@@ -261,6 +293,9 @@ fun Main(
                         TodayCourseCard(uiState.todayCourseList, loginState.value, navController)
                     }
                     item {
+                        ExamScheduleCard(uiState.examScheduleList, navController)
+                    }
+                    item {
                         CommonAppsCard(
                             uiState = uiState,
                             navController = navController,
@@ -268,73 +303,10 @@ fun Main(
                             loginState = loginState.value
                         )
                     }
-                    item {
-                        NewsCard(
-                            navController = navController,
-                            newsListStatus = uiState.newsList
-                        )
-                    }
                 }
         }
     }
 
-}
-
-@Composable
-fun NewsCard(
-    navController: NavController,
-    newsListStatus: ResultWithStatus<List<NewsItemEntity>>
-) {
-    LargeCardDisplay(
-        modifier = Modifier,
-        title = "学术预告",
-        leadingIconPainting = R.drawable.ic_outline_article,
-        content = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    when (newsListStatus.status) {
-                        Status.SUCCESS -> {
-                            if (newsListStatus.data.isNullOrEmpty()) {
-                                EmptyContent(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .height(300.dp),
-                                    text = "获取失败"
-                                )
-                            } else {
-                                newsListStatus.data.take(4).forEach { news ->
-                                    NewsItem(news = news, maxLines = 2) {
-                                        navController.navigateToNewsDetail(
-                                            url = news.url,
-                                            title = news.title,
-                                            label = context.getString(news.label.label)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        else -> {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .height(300.dp)
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        navigateTo = {},
-        containerColor = MiuixTheme.colorScheme.surface
-    )
 }
 
 @Composable
@@ -365,7 +337,7 @@ fun FocusCard(
                     },
                     trailingContent = {
                     },
-                    title = "${today.format(formatter)} " + if (mainUiState.holidayEntity?.holiday != null) mainUiState.holidayEntity.holiday.holiday else "",
+                    title = "${today.format(formatter)}",
                     content = "第 ${mainUiState.courseSchedule?.week ?: "-"} 周 $dayOfWeek",
                     onClick = { startCalendar() },
                     modifier = Modifier.weight(0.5f)
@@ -420,7 +392,7 @@ fun FocusCard(
                             isGuest = false,
                             route = Destinations.AirCondition.route,
                             routeType = RouteType.SCREEN,
-                            logState = loginUiState.loginJWCState == 1,
+                            logState = loginUiState.jwcLoginState == 1,
                             label = R.string.dorm_air_conditioner
                         )
                     },
@@ -596,4 +568,165 @@ fun CommonAppsCard(
             navController.navigate(Destinations.ApplicationEdit.route)
         }
     )
+}
+
+@Composable
+fun ExamScheduleCard(
+    examScheduleList: List<ExamEntity>,
+    navController: NavController
+) {
+    LargeCardDisplay(
+        containerColor = MiuixTheme.colorScheme.surface,
+        modifier = Modifier,
+        title = "考试安排",
+        actionText = "全部",
+        navigateTo = {
+            navController.navigate(Destinations.ExamSchedule.route)
+        },
+        leadingIconPainting = R.drawable.lab_profile_24px,
+        content = {
+            Column(
+                modifier = if (examScheduleList.isEmpty()) Modifier
+                    .height(86.dp) else Modifier
+            ) {
+                if (examScheduleList.isEmpty()) {
+                    EmptyContent(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        text = "暂无考试安排"
+                    )
+                } else {
+                    examScheduleList.filter { it.date.isEqual(LocalDate.now()) }.forEach { exam ->
+                        ExamScheduleCard(
+                            exam = exam,
+                            isInProgress = LocalDateTime.now().isBefore(
+                                LocalDateTime.of(exam.date, exam.endTime) // 结束之前
+                            ) && LocalDateTime.now().isAfter(
+                                LocalDateTime.of(exam.date, exam.startTime) // 开始之后
+                            ),
+                            isPassed = LocalDateTime.now().isAfter(
+                                LocalDateTime.of(exam.date, exam.endTime) // 结束之后
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun ExamScheduleCard(
+    exam: ExamEntity,
+    isInProgress: Boolean,
+    isPassed: Boolean
+) {
+    Card(
+        modifier = Modifier,
+        colors = CardDefaults.defaultColors(
+            color = if (isPassed) MiuixTheme.colorScheme.surface
+            else MiuixTheme.colorScheme.surface
+        )
+    ) {
+        val textColor = if (isPassed) MiuixTheme.colorScheme.disabledOnSecondaryVariant
+        else MiuixTheme.colorScheme.onSurface
+        val iconColor = if (isPassed) MiuixTheme.colorScheme.primary.copy(0.6f)
+        else MiuixTheme.colorScheme.primary
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 15.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .height(32.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(exam.examType.color))
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = exam.examName,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = MiuixTheme.colorScheme.onBackground
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(0.5f)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.schedule_24px),
+                            contentDescription = "time",
+                            modifier = Modifier
+                                .size(22.dp)
+                                .padding(end = 4.dp),
+                            tint = iconColor
+                        )
+                        Text(
+                            text = "${
+                                convertLocalTimeToStringTime(
+                                    time = exam.startTime,
+                                    pattern = "HH:mm"
+                                )
+                            } - ${
+                                convertLocalTimeToStringTime(
+                                    time = exam.endTime,
+                                    pattern = "HH:mm"
+                                )
+                            }",
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = textColor
+                            ),
+                            textAlign = TextAlign.Start
+                        )
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(0.5f)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.location_on_24px),
+                            contentDescription = "building",
+                            modifier = Modifier
+                                .size(22.dp)
+                                .padding(end = 4.dp),
+                            tint = iconColor
+                        )
+                        Text(
+                            text = exam.examRoom,
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Start,
+                            maxLines = 1,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = textColor
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+    }
 }

@@ -7,11 +7,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.api.module.CourseScheduleEntity
-import com.smart.htu.api.module.HolidayEntity
+import com.smart.htu.api.module.ExamEntity
+import com.smart.htu.api.module.HolidayData
 import com.smart.htu.api.module.NewsItemEntity
+import com.smart.htu.api.module.NowWeatherData
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.UpdateEntity
-import com.smart.htu.api.module.WeatherCurrentData
 import com.smart.htu.repo.AppNetworkRepo
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
@@ -21,10 +22,8 @@ import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.screens.application.ApplicationEntity
-import com.smart.htu.screens.news.entity.NewsCategoryEntity
-import com.smart.htu.screens.news.entity.NewsType
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
-import com.smart.htu.utils.getCurrentDates
+import com.smart.htu.utils.DateUtil.getCurrentDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -39,15 +38,16 @@ import javax.inject.Inject
 
 data class AppUiState(
     val todayCourseList: List<CourseEntity>? = null,
-    val currentWeather: ResultWithStatus<WeatherCurrentData> = ResultWithStatus(),
+    val currentWeather: ResultWithStatus<NowWeatherData> = ResultWithStatus(),
     val newsList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
     val courseSchedule: CourseScheduleEntity? = null,
-    val holidayEntity: HolidayEntity? = null,
+    val examScheduleList: List<ExamEntity> = emptyList(),
+    val holiday: HolidayData? = null,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
     val username: String = DEFAULT_USERNAME,
-    val readNoticeIdList: List<Int> = emptyList(),
-    val noticeIdList: List<Int> = emptyList(),
-    val updateEntity: UpdateEntity = UpdateEntity(),
+    val readNoticeIdList: List<String> = emptyList(),
+    val noticeIdList: List<String> = emptyList(),
+    val update: UpdateEntity = UpdateEntity(),
     val isShowUpdateDialog: MutableState<Boolean> = mutableStateOf(false),
     val commonAppList: List<ApplicationEntity> = INIT_COMMON_APP_LIST,
     val loginJWCState: Int = DEFAULT_LOGIN_STATE
@@ -106,6 +106,15 @@ class MainViewModel @Inject constructor(
             }
         )
 
+    private val examScheduleStateFlow = dataStoreRepo.observeExamScheduleList()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeExamScheduleList().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
             loginJWCStateStateFlow.collect { value ->
@@ -133,12 +142,17 @@ class MainViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
+            examScheduleStateFlow.collect { value ->
+                _uiState.update { it.copy(examScheduleList = value) }
+            }
+        }
+        viewModelScope.launch {
             sharedDataRepository.getUpdate()
             sharedDataRepository.update
                 .collect { config ->
                     _uiState.update { uiState ->
                         uiState.copy(
-                            updateEntity = config ?: UpdateEntity(),
+                            update = config ?: UpdateEntity(),
                             isShowUpdateDialog = mutableStateOf(config?.isNeedUpdate == true)
                         )
                     }
@@ -158,23 +172,23 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             sharedDataRepository.getTermIndex()
         }
-        viewModelScope.launch { getNewsList() }
-        viewModelScope.launch { getCurrentWeather() }
-        viewModelScope.launch { getHoliday() }
-        viewModelScope.launch { getTodayCourse() }
-        viewModelScope.launch { getCurrentWeek() }
+        viewModelScope.launch {
+            getCurrentWeather()
+            getHoliday()
+            getTodayCourse()
+            getCurrentWeek()
+        }
     }
 
-    suspend fun refreshNoticeAndUpdate() {
+    suspend fun refreshNoticeAndUpdateMessage() {
         sharedDataRepository.getNotice()
         sharedDataRepository.getUpdate()
     }
 
-    fun getCurrentWeek() = viewModelScope.launch {
+    suspend fun getCurrentWeek() {
         try {
             jwcNetworkRepo.getCourseScheduleService()
                 .onSuccess { res ->
-                    Log.i("TAG666 main", "getCurrentWeek: $res")
                     _uiState.update { it.copy(courseSchedule = res) }
                 }
         } catch (e: Exception) {
@@ -182,24 +196,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getNewsList() = viewModelScope.launch {
-        try {
-            val res = networkRepo.getNewsService(
-                newsOptionItems = NewsCategoryEntity(
-                    label = NewsType.RESEARCH,
-                    source = "河南师范大学主页",
-                    academic = "",
-                    type = "xsygcs"
-                ),
-                page = 1
-            )
-            _uiState.update { it.copy(newsList = ResultWithStatus(res)) }
-        } catch (e: Exception) {
-            Log.i("TAG666", "getNewsList: $e")
-        }
-    }
-
-    fun getCurrentWeather() = viewModelScope.launch {
+    suspend fun getCurrentWeather() {
         try {
             val res = networkRepo.getWeatherService()
             _uiState.update {
@@ -210,7 +207,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getTodayCourse() = viewModelScope.launch {
+    suspend fun getTodayCourse() {
         try {
             jwcNetworkRepo.getTodayCourseService()
                 .onSuccess { res ->
@@ -223,13 +220,12 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getHoliday() = viewModelScope.launch {
+    suspend fun getHoliday() {
         try {
-            val today = getCurrentDates()
-            val res = appNetworkRepo.holidayService(today)
+            val res = appNetworkRepo.holidayService(getCurrentDate())
             res.onSuccess {
                 _uiState.update { uiState ->
-                    uiState.copy(holidayEntity = it)
+                    uiState.copy(holiday = it.holiday)
                 }
             }
             Log.i("TAG666", "getHoliday: $res")

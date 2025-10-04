@@ -128,6 +128,9 @@ fun AirConditionSetting(
                         buildingId = it
                         onBuildingError(!buildingIdPattern.matches(it))
                     },
+                    keyboardActions = KeyboardActions {
+                        focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Down)
+                    },
                     useLabelAsPlaceholder = true,
                     singleLine = true,
                     maxLines = 1,
@@ -227,7 +230,19 @@ fun AirConditionSetting(
                     enabled = buildingId.isNotEmpty() && roomId.isNotEmpty(),
                     onClick = {
                         focusManager.clearFocus()
-                        viewModel.saveACConfig(buildingId, roomId, shiroJID, ymId)
+                        viewModel.saveACConfig(
+                            buildingId = buildingId,
+                            roomId = roomId,
+                            shiroJID = shiroJID,
+                            ymId = ymId,
+                            onFailure = {
+                                viewModel.showSnackBar("Cookie 无效，请重新填写")
+                            },
+                            onSuccess = {
+                                navController.popBackStack()
+                                viewModel.showSnackBar("配置成功！下拉刷新获取数据")
+                            }
+                        )
                     },
                     isLoading = uiState.isCheckingConfig,
                     modifier = Modifier

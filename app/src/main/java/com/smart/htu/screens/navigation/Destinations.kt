@@ -42,6 +42,7 @@ sealed class Destinations(
     data object CampusLife : Destinations("campus_life")
     data object ArticleStyle : Destinations("article_style")
     data object ExamSchedule: Destinations("exam_schedule")
+    data object AddExamSchedule: Destinations("add_exam_schedule")
 }
 
 @Serializable

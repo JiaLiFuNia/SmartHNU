@@ -17,9 +17,7 @@ data class CampusLifeUiState(
 class CampusLifeViewModel @Inject constructor(
     private val dataStoreRepo: DataStoreRepo
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(CampusLifeUiState())
-
     val uiState: StateFlow<CampusLifeUiState> = _uiState.asStateFlow()
 
 

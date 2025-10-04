@@ -3,6 +3,7 @@ package com.smart.htu.utils
 import com.smart.htu.R
 import com.smart.htu.screens.application.ApplicationEntity
 import com.smart.htu.screens.application.ApplicationEntity.ApplicationCategory
+import com.smart.htu.screens.application.ApplicationEntity.LoginMode
 import com.smart.htu.screens.application.ApplicationEntity.RouteType
 import com.smart.htu.screens.navigation.Destinations
 
@@ -23,14 +24,16 @@ class Constants {
         const val SECOND_CLASS_URL = "http://dekt.htu.edu.cn/"
 
         const val SMH_URL = "https://xhand.edu.deal/"
-            // "https://shtu.xubohan04.tk/"
+        // "https://shtu.xubohan04.tk/"
 
         const val SHOWER_ALIPAY_URL =
             "alipays://platformapi/startapp?appId=20000067&url=https://ur.alipay.com/_3Zz793BHBpUQsAf6r8hLXZ"
         const val HOT_WATER_WASHER_ALIPAY_URL =
             "alipays://platformapi/startapp?appId=20000067&url=https://ur.alipay.com/_5vgVGlXsaUEmCUjnaEvLJL"
-        const val PINDUODUO_URL = "pinduoduo://com.xunmeng.pinduoduo/mdkd/package?tab=ID_CODE&entry_source=11&refer_page_name=login&refer_page_id=10169_1751901995470_3gdprcfjhr&refer_page_sn=10169"
-        const val TAOBAO_URL = "https://pages-fast.m.taobao.com/wow/z/uniapp/1011717/last-mile-fe/end-collect-platform/identity-code?x-ssr=true"
+        const val PINDUODUO_URL =
+            "pinduoduo://com.xunmeng.pinduoduo/mdkd/package?tab=ID_CODE&entry_source=11&refer_page_name=login&refer_page_id=10169_1751901995470_3gdprcfjhr&refer_page_sn=10169"
+        const val TAOBAO_URL =
+            "https://pages-fast.m.taobao.com/wow/z/uniapp/1011717/last-mile-fe/end-collect-platform/identity-code?x-ssr=true"
 
         val PULL_TO_REFRESH_TEXT = listOf("下拉刷新", "松开刷新", "正在刷新...", "刷新成功")
 
@@ -53,6 +56,7 @@ class Constants {
             ),
             ApplicationEntity(
                 guestMode = false,
+                loginMode = LoginMode.COMMON,
                 label = R.string.classroom_search,
                 icon = R.drawable.apartment_24px,
                 routeType = RouteType.SCREEN,
@@ -69,6 +73,7 @@ class Constants {
             ),
             ApplicationEntity(
                 guestMode = false,
+                loginMode = LoginMode.COMMON,
                 icon = R.drawable.finance_24px,
                 label = R.string.course_grade,
                 routeType = RouteType.SCREEN,
@@ -83,28 +88,9 @@ class Constants {
                 route = Destinations.CampusLife.route,
                 category = ApplicationCategory.CAMPUS
             ),
-            /*ApplicationEntity(
-                guestEnable = true,
-                icon = R.drawable.bathtub_24px,
-                trailingIcon = R.drawable.circle_alipay,
-                description = "支付宝-卡博士",
-                label = R.string.shower_water,
-                routeType = RouteType.ALIPAY,
-                route = SHOWER_ALIPAY_URL,
-                category = ApplicationCategory.QUICK_APP
-            ),
-            ApplicationEntity(
-                guestEnable = true,
-                icon = R.drawable.water_voc_24px,
-                trailingIcon = R.drawable.circle_alipay,
-                description = "支付宝-胖乖生活",
-                label = R.string.water_washer,
-                routeType = RouteType.ALIPAY,
-                route = HOT_WATER_WASHER_ALIPAY_URL,
-                category = ApplicationCategory.QUICK_APP
-            ),*/
             ApplicationEntity(
                 guestMode = false,
+                loginMode = LoginMode.SECOND_CLASS,
                 icon = R.drawable.format_paint_24px,
                 label = R.string.second_class,
                 routeType = RouteType.URL,
@@ -113,6 +99,7 @@ class Constants {
             ),
             ApplicationEntity(
                 guestMode = false,
+                loginMode = LoginMode.COMMON,
                 icon = R.drawable.book_4_24px,
                 label = R.string.textbook_select,
                 routeType = RouteType.SCREEN,
@@ -121,6 +108,7 @@ class Constants {
             ),
             ApplicationEntity(
                 guestMode = false,
+                loginMode = LoginMode.COMMON,
                 icon = R.drawable.person_check_24px,
                 label = R.string.teacher_evaluation,
                 routeType = RouteType.SCREEN,
@@ -129,62 +117,52 @@ class Constants {
             ),
             ApplicationEntity(
                 guestMode = false,
+                loginMode = LoginMode.AUTH_SERVER,
                 icon = R.drawable.credit_card_24px,
                 label = R.string.school_card,
                 routeType = RouteType.URL,
-                route = EHALL_APP_BASE_URL + "6548421524823376",
+                route = "https://ehall2.htu.edu.cn/appShow?appId=6548421524823376",
                 category = ApplicationCategory.TOOLS
             ),
             ApplicationEntity(
                 guestMode = false,
+                loginMode = LoginMode.AUTH_SERVER,
                 icon = R.drawable.school_24px,
                 label = R.string.academic_affairs_system,
                 routeType = RouteType.URL,
-                route = EHALL_APP_BASE_URL + "6468237463782079",
+                route = AUTH_LOGIN_URL + "https://jwc.htu.edu.cn/new/ssoLogin",
                 category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
             ApplicationEntity(
                 guestMode = false,
+                loginMode = LoginMode.AUTH_SERVER,
                 icon = R.drawable.id_card_24px,
                 label = R.string.smart_work,
                 routeType = RouteType.URL,
-                route = EHALL_APP_BASE_URL + "6689155909292538",
+                route = AUTH_LOGIN_URL + "http://ehall2.htu.edu.cn/login?service=http://ehall2.htu.edu.cn/appShow?appId=6689155909292538",
                 category = ApplicationCategory.CAMPUS
             ),
             ApplicationEntity(
                 guestMode = false,
+                loginMode = LoginMode.AUTH_SERVER,
                 icon = R.drawable.psychology_alt_24px,
                 label = R.string.htu_helper,
                 routeType = RouteType.URL,
-                route = AUTH_BASE_URL + "authserver/login?service=https://ai.htu.edu.cn/api/cas",
+                route = AUTH_LOGIN_URL + "https://ai.htu.edu.cn/api/cas",
                 category = ApplicationCategory.TOOLS
             ),
-            /*ApplicationEntity(
-                guestMode = false,
-                icon = R.drawable.support_agent_24px,
-                label = R.string.campus_helper,
-                routeType = RouteType.URL,
-                route = EHALL_APP_BASE_URL + "6225347137673201",
-                category = ApplicationCategory.AI
-            ),
-            ApplicationEntity(
-                guestEnable = false,
-                icon = R.drawable.zju_logo,
-                label = R.string.mr_zhe_da,
-                routeType = RouteType.URL,
-                route = EHALL_APP_BASE_URL + "7416844941162412",
-                category = ApplicationCategory.AI
-            ),*/
             ApplicationEntity(
                 guestMode = false,
+                loginMode = LoginMode.AUTH_SERVER,
                 icon = R.drawable.captive_portal_24px,
                 label = R.string.one_stop_service,
                 routeType = RouteType.URL,
-                route = AUTH_LOGIN_URL + "http://ehall2.htu.edu.cn/ywtb-mobile/index.html",
+                route = AUTH_LOGIN_URL + "https://ehall2.htu.edu.cn/ywtb-mobile/index.html#/OfficeHall",
                 category = ApplicationCategory.CAMPUS
             ),
             ApplicationEntity(
                 guestMode = false,
+                loginMode = LoginMode.COMMON,
                 icon = R.drawable.calendar_month_24px,
                 label = R.string.course_table,
                 routeType = RouteType.SCREEN,
@@ -193,7 +171,7 @@ class Constants {
             ),
             ApplicationEntity(
                 guestMode = true,
-                icon = R.drawable.calendar_month_24px,
+                icon = R.drawable.globe_book_24px,
                 label = R.string.website_navigation,
                 routeType = RouteType.SCREEN,
                 route = Destinations.WebsiteNavigation.route,
@@ -209,20 +187,21 @@ class Constants {
             ),
             ApplicationEntity(
                 guestMode = false,
-                icon = R.drawable.speaker_notes_24px,
+                icon = R.drawable.lab_profile_24px,
                 label = R.string.exam,
                 routeType = RouteType.SCREEN,
                 route = Destinations.ExamSchedule.route,
                 category = ApplicationCategory.STUDY
-            )
-            /*ApplicationEntity(
-                guestEnable = false,
-                icon = R.drawable.sports_handball_24px,
-                label = R.string.physical_test,
-                routeType = RouteType.SCREEN,
-                route = Destinations.PhysicalTest.route,
-                category = ApplicationCategory.CAMPUS
-            )*/
+            ),
+            /*
+                        ApplicationEntity(
+                            guestMode = false,
+                            icon = R.drawable.sports_handball_24px,
+                            label = R.string.physical_test,
+                            routeType = RouteType.APP,
+                            route = Destinations.PhysicalTest.route,
+                            category = ApplicationCategory.CAMPUS
+                        )*/
         )
         val INIT_COMMON_APP_LIST = listOf(
             ALL_APP_LIST[1],

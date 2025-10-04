@@ -187,24 +187,25 @@ fun WebView(
             .fillMaxSize()
     ) {
         val loadingState = webViewState.loadingState
-        when (loadingState) {
-            is LoadingState.Loading -> {
-                if (isShowLinearProgressIndicator)
+        if (isShowLinearProgressIndicator) {
+            when (loadingState) {
+                is LoadingState.Loading -> {
                     LinearProgressIndicator(
                         progress = { loadingState.progress },
                         modifier = Modifier
                             .fillMaxWidth(),
                     )
-            }
+                }
 
-            is LoadingState.Initializing -> {
-                LinearProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
-            }
+                is LoadingState.Initializing -> {
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                }
 
-            else -> {
+                else -> {
+                }
             }
         }
         WebView(

@@ -36,7 +36,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.smart.htu.R
-import com.smart.htu.api.module.NoticeEntity
 import com.smart.htu.api.module.NoticeType
 import com.smart.htu.component.BasicDialog
 import com.smart.htu.component.EmptyContent
@@ -142,14 +141,35 @@ fun MessageScreen(
                     .overScrollVertical(),
                 overscrollEffect = null
             ) {
+                if (uiState.warningWeatherData.isNotEmpty()) {
+                    items(uiState.warningWeatherData) { notice ->
+                        SingleMessage(
+                            isRead = notice.id in uiState.readNoticeIdList,
+                            read = {
+                                viewModel.addReadNoticeId(notice.id)
+                            },
+                            title = notice.title,
+                            content = notice.content,
+                            noticeId = notice.id,
+                            action = "",
+                            type = NoticeType.COMMON,
+                            navController = navController
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                }
                 if (uiState.noticeList.isNotEmpty()) {
                     items(uiState.noticeList.sortedByDescending { it.id }) { notice ->
                         SingleMessage(
                             isRead = notice.id in uiState.readNoticeIdList,
                             read = {
-                                viewModel.addReadNoticeId(it)
+                                viewModel.addReadNoticeId(notice.id)
                             },
-                            notice = notice,
+                            title = notice.title,
+                            content = notice.content,
+                            noticeId = notice.id,
+                            action = notice.action,
+                            type = notice.type,
                             navController = navController
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -170,120 +190,57 @@ fun MessageScreen(
 @Composable
 fun SingleMessage(
     isRead: Boolean,
-    read: (Int) -> Unit,
-    notice: NoticeEntity,
+    read: (String) -> Unit,
+    title: String = "",
+    content: String = "",
+    noticeId: String = "",
+    action: String = "",
+    type: NoticeType = NoticeType.COMMON,
+    color: Color = MiuixTheme.colorScheme.surface,
     navController: NavController
 ) {
     Surface(
         onClick = {
-            read(notice.id)
-            notice.action.let {
-                when (notice.type) {
-                    NoticeType.URL -> {
-                        navController.navigateToWebView(
-                            url = it,
-                            label = notice.title
-                        )
-                    }
+            read(noticeId)
+            when (type) {
+                NoticeType.URL -> {
+                    navController.navigateToWebView(
+                        url = action,
+                        label = title
+                    )
+                }
 
-                    NoticeType.UPDATE -> {
-                    }
+                NoticeType.UPDATE -> {
+                }
 
-                    NoticeType.SCREEN -> {
-                        navController.navigate(it)
-                    }
+                NoticeType.SCREEN -> {
+                    navController.navigate(action)
+                }
 
-                    NoticeType.QUESTIONNAIRE -> {
-                        startWebUrl(it)
-                    }
+                NoticeType.QUESTIONNAIRE -> {
+                    startWebUrl(action)
+                }
 
-                    NoticeType.COMMON -> {
-                    }
+                NoticeType.COMMON -> {
                 }
             }
         },
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize(),
-        color = MiuixTheme.colorScheme.surface,
+        color = color,
         shape = G2RoundedCornerShape(CardDefaults.CornerRadius)
     ) {
         Card { }
         BasicComponent(
-            title = notice.title,
-            summary = notice.content,
+            title = title,
+            summary = content,
             rightActions = {
                 if (!isRead) {
                     Badge()
                 }
             }
         )
-        /*ListItem(
-            colors = ListItemDefaults.colors(containerColor = MiuixTheme.colorScheme.surface),
-            leadingContent = {
-                BadgedBox(
-                    badge = {
-                        if (!isRead) Badge()
-                    }
-                ) {
-                    when (notice.type) {
-                        NoticeType.URL -> {
-                            Icon(
-                                painter = painterResource(id = R.drawable.outline_language_24),
-                                contentDescription = "url"
-                            )
-                        }
-
-                        NoticeType.UPDATE -> {
-                            Icon(
-                                painter = painterResource(id = R.drawable.deployed_code_update_24px),
-                                contentDescription = "url"
-                            )
-                        }
-
-                        NoticeType.SCREEN -> {
-                            Icon(
-                                painter = painterResource(id = R.drawable.circle_add),
-                                contentDescription = "url"
-                            )
-                        }
-
-                        NoticeType.QUESTIONNAIRE -> {
-                            Icon(
-                                painter = painterResource(id = R.drawable.contract_edit_24px),
-                                contentDescription = "url"
-                            )
-                        }
-
-                        else -> {
-                            Icon(
-                                imageVector = Icons.Outlined.Info,
-                                contentDescription = "notice"
-                            )
-                        }
-                    }
-                }
-            },
-            headlineContent = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Text(
-                        text = notice.title,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(text = notice.time, style = MaterialTheme.typography.labelMedium)
-                }
-            },
-            supportingContent = {
-                Text(
-                    text = notice.content,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        )*/
     }
 }
 

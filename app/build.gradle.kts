@@ -18,8 +18,8 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 35
-        versionCode = 202509111
-        versionName = "3.0.9.1"
+        versionCode = 202510041
+        versionName = "3.0.9.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -96,7 +96,6 @@ dependencies {
     implementation(libs.androidx.adaptive)
     implementation(libs.androidx.adaptive.layout)
     implementation(libs.androidx.adaptive.navigation)
-
     // miuix
     implementation(libs.miuix)
 
@@ -154,7 +153,6 @@ dependencies {
     // reorderable
     implementation(libs.reorderable)
 
-    // date time
-    implementation("network.chaintech:kmp-date-time-picker:1.1.1")
-
+    implementation(libs.datetime.wheel.picker)
+    implementation(libs.kotlinx.datetime)
 }

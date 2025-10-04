@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.CourseGradeDetailRes.CourseGradeDetailEntity
 import com.smart.htu.api.module.CourseGradeRes.CourseGradeEntity
+import com.smart.htu.api.module.CreditItemEntity
+import com.smart.htu.api.module.GPAData
 import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.SingleTerm
 import com.smart.htu.repo.DataStoreRepo
@@ -25,11 +27,13 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class GradeUiState(
-    val courseGrade: List<CourseGradeEntity>? = null,
-    val courseGradeDetail: CourseGradeDetailEntity? = null,
     val termCode: String,
     val globalTermCode: String,
     val termList: List<SingleTerm> = emptyList(),
+    val courseGPA: List<GPAData>? = null,
+    val allCredits: List<CreditItemEntity>? = null,
+    val courseGrade: List<CourseGradeEntity>? = null,
+    val courseGradeDetail: CourseGradeDetailEntity? = null,
     val loginJWCState: Int = DEFAULT_LOGIN_STATE,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
@@ -93,6 +97,8 @@ class GradeViewModel @Inject constructor(
         viewModelScope.launch {
             refreshTermList()
             getCourseGrade()
+            getCourseGPA()
+            getAllCredits()
         }
     }
 
@@ -120,6 +126,28 @@ class GradeViewModel @Inject constructor(
             }
             .onFailure {
                 _uiState.update { it.copy(courseGradeDetail = null) }
+            }
+    }
+
+    suspend fun getCourseGPA() {
+        jwcNetworkRepo.getCourseGPAService(
+            "2", "01"
+        )
+            .onSuccess { res ->
+                _uiState.update { it.copy(courseGPA = res) }
+            }
+            .onFailure {
+                _uiState.update { it.copy(courseGPA = null) }
+            }
+    }
+
+    suspend fun getAllCredits() {
+        jwcNetworkRepo.getCourseCreditService()
+            .onSuccess { res ->
+                _uiState.update { it.copy(allCredits = res) }
+            }
+            .onFailure {
+                _uiState.update { it.copy(allCredits = null) }
             }
     }
 

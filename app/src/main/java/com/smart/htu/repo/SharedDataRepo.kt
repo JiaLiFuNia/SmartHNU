@@ -116,6 +116,9 @@ class SharedDataRepoImpl @Inject constructor(
             return when (res.code) {
                 200 -> {
                     termIndex.value = res
+                    termCode.termCode?.let {
+                        dataStoreRepo.setGlobalTermCode(it)
+                    }
                     Result.success(res)
                 }
 

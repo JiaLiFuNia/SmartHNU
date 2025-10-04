@@ -18,7 +18,20 @@ data class ClassroomOccupationEntity(
     @SerializedName("jxcdxxList") val allRoomList: List<AllRoom>,
     @SerializedName("jzwmc") val buildingName: String,
     @SerializedName("jzwdm") val buildingCode: String
-)
+) {
+    fun getBusyState(room: AllRoom): List<Boolean> {
+        val busyTime = List(10) { false }.toMutableList()
+        val busyRoomListGroupByRoomCode = busyRoomList.groupBy { it.roomCode }
+        // Log.d("TAG666 ", "getBusyState: $busyRoomListGroupByRoomCode")
+        busyRoomListGroupByRoomCode[room.roomCode]?.forEach {
+            val busyPeriodList = if (it.busyPeriodListString.contains(","))
+                it.busyPeriodListString.split(",").map { it.toInt() }
+            else listOf(it.busyPeriodListString.toInt())
+            busyPeriodList.forEach { busyTime[it - 1] = true }
+        }
+        return busyTime
+    }
+}
 
 @Serializable
 data class BusyRoom(
