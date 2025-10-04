@@ -20,7 +20,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,7 +36,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.smart.htu.R
 import com.smart.htu.api.module.NoticeType
-import com.smart.htu.component.BasicDialog
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.navigateToWebView
@@ -241,23 +239,5 @@ fun SingleMessage(
                 }
             }
         )
-    }
-}
-
-@Composable
-fun MessageDialog(
-    showDialog: MutableState<Boolean>,
-    title: String,
-    content: String? = null,
-    onConfirmClick: (() -> Unit)? = null,
-) {
-    BasicDialog(
-        showDialog = showDialog,
-        title = title,
-        onConfirmClick = onConfirmClick,
-        dismissRequestText = "取消",
-        confirmRequestText = "确认"
-    ) {
-
     }
 }

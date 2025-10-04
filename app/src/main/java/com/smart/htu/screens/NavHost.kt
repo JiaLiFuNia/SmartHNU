@@ -27,7 +27,6 @@ import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
 import com.smart.htu.screens.application.librarySearch.LibrarySearchViewModel
 import com.smart.htu.screens.application.messageBoard.MessageBoard
 import com.smart.htu.screens.application.messageBoard.MessageBoardDetail
-import com.smart.htu.screens.application.physicalTest.PhysicalTest
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluation
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluationDetail
 import com.smart.htu.screens.application.textbook.Textbook
@@ -236,9 +235,6 @@ fun NavHostScreen() {
         }
         animatedComposable(Destinations.AIConfiguration.route) {
             AIConfigurationScreen(navController = navController)
-        }
-        animatedComposable(Destinations.PhysicalTest.route) {
-            PhysicalTest(navController = navController)
         }
         animatedComposable(
             route = "${Destinations.PdfReaderView.route}/{url}/{title}",

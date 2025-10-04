@@ -236,7 +236,14 @@ class AirConditionViewModel @Inject constructor(
         }
     }
 
-    fun saveACConfig(buildingId: String, roomId: String, shiroJID: String, ymId: String) {
+    fun saveACConfig(
+        buildingId: String,
+        roomId: String,
+        shiroJID: String,
+        ymId: String,
+        onSuccess: () -> Unit,
+        onFailure: () -> Unit
+    ) {
         viewModelScope.launch {
             _uiState.update { it.copy(isCheckingConfig = true) }
             dataStoreRepo.changeBuildingId(buildingId)
@@ -245,10 +252,10 @@ class AirConditionViewModel @Inject constructor(
             getRemoteLoginCookie()
             getAirConditionConfig(
                 onSuccess = {
-                    showSnackBar("配置成功")
+                    onSuccess()
                 },
                 onFailure = {
-                    showSnackBar("Cookie 无效，请重新填写")
+                    onFailure()
                 }
             )
             _uiState.update { it.copy(isCheckingConfig = false) }

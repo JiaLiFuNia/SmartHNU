@@ -5,6 +5,8 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
@@ -61,17 +65,21 @@ import com.smart.htu.component.BasicDialog
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.InfoBadge
+import com.smart.htu.component.TabRow
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
+import com.smart.htu.component.chart.LineChart
 import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.GradeDivideUtil.divideGrade
 import com.smart.htu.utils.TermUtil.termConverter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -92,6 +100,10 @@ fun Grade(
     val isBottomSheetShow = remember { mutableStateOf(false) }
     val isGradeDetailBottomSheetShow = remember { mutableStateOf(false) }
     val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
+
+    val pagerState = rememberPagerState(pageCount = { 2 }, initialPage = 0)
+    val selectIndex by remember { derivedStateOf { pagerState.currentPage } }
+    val tabItem = listOf("成绩", "统计")
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
@@ -157,42 +169,145 @@ fun Grade(
                 .fillMaxSize(),
             contentPadding = it
         ) {
-            LazyColumn(
-                state = lazyListState,
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = it.calculateTopPadding() + 8.dp
-                ),
+            Column(
                 modifier = Modifier
+                    .padding(top = it.calculateTopPadding())
                     .fillMaxSize()
-                    .overScrollVertical(),
-                overscrollEffect = null
             ) {
-                if (uiState.courseGrade == null) {
-                    item {
-                        CircularProgressIndicator()
-                    }
-                } else {
-                    if (uiState.courseGrade?.isEmpty() == true) {
-                        item {
-                            EmptyContent(
-                                text = "学期 ${termConverter(uiState.termCode)}\n暂无数据",
-                                image = emptyData()
-                            )
+                TabRow(
+                    tabs = tabItem,
+                    selectedTabIndex = selectIndex,
+                    onTabSelected = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(it)
                         }
-                    } else {
-                        items(uiState.courseGrade ?: emptyList()) {
-                            SingleCourseGrade(
-                                course = it,
-                                onClick = {
-                                    scope.launch {
-                                        viewModel.getCourseGradeDetail(it)
-                                        isGradeDetailBottomSheetShow.value = true
+                    },
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    pageSpacing = 12.dp
+                ) {
+                    if (it == 0) {
+                        LazyColumn(
+                            state = lazyListState,
+                            contentPadding = PaddingValues(
+                                start = 16.dp,
+                                end = 16.dp
+                            ),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .overScrollVertical(),
+                            overscrollEffect = null
+                        ) {
+                            if (uiState.courseGrade == null) {
+                                item {
+                                    CircularProgressIndicator()
+                                }
+                            } else {
+                                if (uiState.courseGrade?.isEmpty() == true) {
+                                    item {
+                                        EmptyContent(
+                                            text = "学期 ${termConverter(uiState.termCode)}\n暂无数据",
+                                            image = emptyData()
+                                        )
+                                    }
+                                } else {
+                                    items(uiState.courseGrade ?: emptyList()) {
+                                        SingleCourseGrade(
+                                            course = it,
+                                            onClick = {
+                                                scope.launch {
+                                                    viewModel.getCourseGradeDetail(it)
+                                                    isGradeDetailBottomSheetShow.value = true
+                                                }
+                                            }
+                                        )
+                                        Spacer(modifier = Modifier.height(12.dp))
                                     }
                                 }
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            state = lazyListState,
+                            contentPadding = PaddingValues(
+                                start = 16.dp,
+                                end = 16.dp
+                            ),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .overScrollVertical(),
+                            overscrollEffect = null
+                        ) {
+                            if (uiState.courseGPA == null || uiState.allCredits == null) {
+                                item {
+                                    CircularProgressIndicator()
+                                }
+                            } else {
+                                item {
+                                    val xData =
+                                        remember(uiState.courseGPA) {
+                                            mutableStateOf(uiState.courseGPA?.map { it.label }
+                                                ?: listOf("0"))
+                                        }
+                                    val yData =
+                                        remember(uiState.courseGPA) {
+                                            mutableStateOf(uiState.courseGPA?.map { it.gpa.toDouble() }
+                                                ?: listOf(0.0))
+                                        }
+                                    SmallTitle(
+                                        text = "学年绩点",
+                                        insideMargin = PaddingValues(start = 12.dp, bottom = 8.dp)
+                                    )
+                                    Surface(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
+                                        color = MiuixTheme.colorScheme.surface
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(8.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            LineChart(
+                                                xData = xData,
+                                                yData = yData
+                                            )
+                                        }
+                                    }
+                                }
+                                item {
+                                    Spacer(modifier = Modifier.height(20.dp))
+                                    SmallTitle(
+                                        text = "课程大类学分",
+                                        insideMargin = PaddingValues(start = 12.dp, bottom = 8.dp)
+                                    )
+                                    Surface(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
+                                        color = MiuixTheme.colorScheme.surface
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                        ) {
+                                            uiState.allCredits?.forEach {
+                                                BasicComponent(
+                                                    title = it.label,
+                                                    rightActions = {
+                                                        Text(it.credit)
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

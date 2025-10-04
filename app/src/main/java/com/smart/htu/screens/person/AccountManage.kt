@@ -22,7 +22,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.smart.htu.R
@@ -55,7 +54,7 @@ fun AccountManage(
                     containerColor = MiuixTheme.colorScheme.background,
                     scrolledContainerColor = MiuixTheme.colorScheme.background,
                 ),
-                title = { Text(text = stringResource(R.string.account_manage)) },
+                title = { Text(text = "登录信息管理") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(

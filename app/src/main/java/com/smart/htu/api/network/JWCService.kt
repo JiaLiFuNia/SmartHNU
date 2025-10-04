@@ -7,7 +7,10 @@ import com.smart.htu.api.module.CourseGradeDetailRes
 import com.smart.htu.api.module.CourseGradeRes
 import com.smart.htu.api.module.CourseScheduleEntity
 import com.smart.htu.api.module.CourseSchedulePost
+import com.smart.htu.api.module.CreditEntity
 import com.smart.htu.api.module.EvaluationDetail
+import com.smart.htu.api.module.GPAEntity
+import com.smart.htu.api.module.GPAPost
 import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.LoginJWCEntity
 import com.smart.htu.api.module.LoginPost
@@ -67,5 +70,11 @@ interface JWCService {
 
     @POST("dev-api/appapi/Studentpjwj/pjTea")
     suspend fun getTeacherEvaluationDetail(@Body body: TEDetailPost): EvaluationDetail
+
+    @POST("dev-api/appapi/Studentcj/cjjdDatas")
+    suspend fun getCourseGPA(@Body body: GPAPost): GPAEntity
+
+    @POST("dev-api/appapi/Studentcj/kcdlxfDatas")
+    suspend fun getAllCredit(@Body body: Any = Object()): CreditEntity
 
 }

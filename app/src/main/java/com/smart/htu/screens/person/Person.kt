@@ -1,6 +1,5 @@
 package com.smart.htu.screens.person
 
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -402,10 +401,6 @@ fun PersonalMessage(
     isShowPrivateMessage: Boolean = true,
     onClick: (() -> Unit)? = null
 ) {
-    val blurSize by animateDpAsState(
-        targetValue = if (!isShowPrivateMessage) 10.dp else 0.dp,
-        label = ""
-    )
     val scope = rememberCoroutineScope()
     ListItem(
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),

@@ -10,7 +10,10 @@ import com.smart.htu.api.module.CourseGradeDetailRes
 import com.smart.htu.api.module.CourseGradeRes
 import com.smart.htu.api.module.CourseScheduleEntity
 import com.smart.htu.api.module.CourseSchedulePost
+import com.smart.htu.api.module.CreditItemEntity
 import com.smart.htu.api.module.EvaluationQuestion
+import com.smart.htu.api.module.GPAData
+import com.smart.htu.api.module.GPAPost
 import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.LoginJWCEntity
 import com.smart.htu.api.module.LoginPost
@@ -54,6 +57,35 @@ class JWCNetworkRepo @Inject constructor(
                 dataStoreRepo.observeStudentId().first()
             }
         )
+
+    suspend fun getCourseCreditService(): Result<List<CreditItemEntity>> {
+        try {
+            val res = jwcService.getAllCredit()
+            return when (res.code) {
+                200 -> Result.success(res.list)
+                else -> Result.failure(Exception(res.msg))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(e)
+        }
+    }
+
+    suspend fun getCourseGPAService(
+        statisticalMethod: String, //fs
+        type: String,
+    ): Result<List<GPAData>> {
+        try {
+            val res = jwcService.getCourseGPA(GPAPost(statisticalMethod, type))
+            return when (res.code) {
+                200 -> Result.success(res.list)
+                else -> Result.failure(Exception(res.msg))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(e)
+        }
+    }
 
     suspend fun getTEDetailService(
         syllabusEvaluateCode: String,

@@ -1,7 +1,6 @@
 package com.smart.htu.component
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -64,53 +63,6 @@ fun DatePickerDialog(
                     selectedDate.value = it.toJavaLocalDate()
                 }
             )
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                WheelPicker(
-                    items = (2024..2026).toList(),
-                    selectedItem = selectedDate.value.year - 1,
-                    onItemSelected = { year ->
-                        val month = selectedDate.value.monthValue
-                        val day = selectedDate.value.dayOfMonth
-                        val maxDay = LocalDate.of(year, month, 1).lengthOfMonth()
-                        selectedDate.value = LocalDate.of(
-                            year,
-                            month,
-                            day.coerceAtMost(maxDay)
-                        )
-                    },
-                    displayText = { it.toString() },
-                    modifier = Modifier.weight(1f)
-                )
-                WheelPicker(
-                    items = (1..12).toList(),
-                    selectedItem = selectedDate.value.monthValue - 1,
-                    onItemSelected = { month ->
-                        val year = selectedDate.value.year
-                        val day = selectedDate.value.dayOfMonth
-                        val maxDay = LocalDate.of(year, month, 1).lengthOfMonth()
-                        selectedDate.value = LocalDate.of(
-                            year,
-                            month,
-                            day.coerceAtMost(maxDay)
-                        )
-                    },
-                    displayText = { it.toString() },
-                    modifier = Modifier.weight(1f)
-                )
-                WheelPicker(
-                    items = (1..selectedDate.value.lengthOfMonth()).toList(),
-                    selectedItem = selectedDate.value.dayOfMonth - 1,
-                    onItemSelected = { day ->
-                        val year = selectedDate.value.year
-                        val month = selectedDate.value.monthValue
-                        selectedDate.value = LocalDate.of(year, month, day)
-                    },
-                    displayText = { it.toString() },
-                    modifier = Modifier.weight(1f)
-                )
-            }
             Spacer(modifier = Modifier.height(12.dp))
             TextButton(
                 text = "确定",
@@ -168,14 +120,3 @@ fun TimePickerDialog(
         }
     }
 }
-
-@Composable
-fun <T> WheelPicker(
-    items: List<T>,
-    selectedItem: T,
-    onItemSelected: (T) -> Unit,
-    displayText: (T) -> String,
-    modifier: Modifier = Modifier
-) {
-}
-

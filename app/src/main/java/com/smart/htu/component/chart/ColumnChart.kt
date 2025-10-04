@@ -47,8 +47,8 @@ private fun getColumnProvider(positive: LineComponent) =
 fun ColumnChart(
     xData: MutableState<List<String>>,
     yData: MutableState<List<Double>>,
-    verticalAxisItemPlacerStep: Double = 15.0,
-    columnCollectionSpacing: Dp
+    verticalAxisItemPlacerStep: Double, // 纵轴数据间距
+    columnCollectionSpacing: Dp // 每一列的间隔
 ) {
     val columnStyle = rememberLineComponent(
         fill = fill(MiuixTheme.colorScheme.primary),
@@ -85,49 +85,3 @@ fun ColumnChart(
         modelProducer = modelProducer,
     )
 }
-
-/*
-
-@Composable
-fun ColumnChart(
-    xData: List<String>,
-    yData: List<Double>,
-    minValue: Double = 0.0,
-) {
-    val color = Brush.verticalGradient(
-        listOf(
-            Color(0xFF3366FF),
-            Color(0xFF0088FF)
-        )
-    )
-
-    val data = remember {
-        xData.zip(yData).map { (x, y) ->
-            Bars(
-                label = x,
-                values = listOf(
-                    Bars.Data(
-                        value = y,
-                        color = color
-                    )
-                )
-            )
-        }
-    }
-
-    ColumnChart(
-        modifier = Modifier,
-        data = data,
-        barProperties = BarProperties(
-            cornerRadius = Bars.Data.Radius.Rectangle(topRight = 6.dp, topLeft = 6.dp),
-            spacing = 8.dp,
-            thickness = 13.dp
-        ),
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        labelHelperProperties = LabelHelperProperties(enabled = false),
-        minValue = minValue
-    )
-}*/

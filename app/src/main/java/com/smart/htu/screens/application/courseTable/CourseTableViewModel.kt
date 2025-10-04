@@ -174,7 +174,6 @@ class CourseTableViewModel @Inject constructor(
             return courseTable
         } catch (e: Exception) {
             return null
-            Log.i("TAG666", "getAllWeekCourseSchedule: $e")
         }
     }
 
