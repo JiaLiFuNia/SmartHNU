@@ -1,6 +1,7 @@
 package com.smart.htu.api.module
 
 import com.google.gson.annotations.SerializedName
+import com.smart.htu.utils.TermUtil.termConverter
 
 data class GPAPost(
     val ckfs: String,
@@ -14,6 +15,9 @@ data class GPAEntity(
 )
 
 data class GPAData(
-    @SerializedName("mc") val label: String,
+    val mc: String,
     @SerializedName("pjxfjd") val gpa: String,
-)
+) {
+    val label: String
+        get() = if (mc.length == 11) termConverter(mc) else mc
+}

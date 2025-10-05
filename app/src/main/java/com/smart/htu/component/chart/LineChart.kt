@@ -1,9 +1,11 @@
 package com.smart.htu.component.chart
 
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
@@ -16,8 +18,11 @@ import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLa
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
 import com.patrykandpatrick.vico.compose.common.component.rememberShapeComponent
+import com.patrykandpatrick.vico.compose.common.component.rememberTextComponent
+import com.patrykandpatrick.vico.compose.common.component.shapeComponent
 import com.patrykandpatrick.vico.compose.common.fill
-import com.patrykandpatrick.vico.compose.common.shader.verticalGradient
+import com.patrykandpatrick.vico.compose.common.insets
+import com.patrykandpatrick.vico.compose.common.rememberVerticalLegend
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
@@ -26,8 +31,8 @@ import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.core.cartesian.marker.DefaultCartesianMarker
+import com.patrykandpatrick.vico.core.common.LegendItem
 import com.patrykandpatrick.vico.core.common.data.ExtraStore
-import com.patrykandpatrick.vico.core.common.shader.ShaderProvider
 import com.patrykandpatrick.vico.core.common.shape.CorneredShape
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.text.DecimalFormat
@@ -38,6 +43,7 @@ private val YDecimalFormat = DecimalFormat("#.##")
 private val StartAxisValueFormatter = CartesianValueFormatter.decimal(YDecimalFormat)
 private val MarkerValueFormatter = DefaultCartesianMarker.ValueFormatter.default(YDecimalFormat)
 
+private val LegendLabelKey = ExtraStore.Key<Set<String>>()
 private val BottomAxisLabelKey = ExtraStore.Key<List<String>>()
 private val BottomAxisValueFormatter = CartesianValueFormatter { context, x, _ ->
     context.model.extraStore[BottomAxisLabelKey][x.toInt()]
@@ -45,15 +51,16 @@ private val BottomAxisValueFormatter = CartesianValueFormatter { context, x, _ -
 
 @Composable
 fun LineChart(
-    xData: MutableState<List<String>>,
-    yData: MutableState<List<Double>>
+    data: MutableState<Map<String, Pair<List<String>, List<Double>>>>
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
-
-    LaunchedEffect(xData, yData) {
+    val legendItemLabelComponent = rememberTextComponent(color = MiuixTheme.colorScheme.onSurface)
+    val lineColor = listOf(Color(0xff916cda), Color(0xffd877d8))
+    LaunchedEffect(data) {
         modelProducer.runTransaction {
-            lineSeries { series(yData.value) }
-            extras { it[BottomAxisLabelKey] = xData.value }
+            lineSeries { data.value.forEach { (_, map) -> series(map.second) } }
+            extras { data.value.forEach { (_, map) -> it[BottomAxisLabelKey] = map.first } }
+            extras { extraStore -> extraStore[LegendLabelKey] = data.value.keys }
         }
     }
 
@@ -62,27 +69,19 @@ fun LineChart(
             rememberLineCartesianLayer(
                 lineProvider =
                     LineCartesianLayer.LineProvider.series(
-                        LineCartesianLayer.rememberLine(
-                            fill = LineCartesianLayer.LineFill.single(fill(MiuixTheme.colorScheme.primary)),
-                            areaFill = LineCartesianLayer.AreaFill.single(
-                                fill(
-                                    ShaderProvider.verticalGradient(
-                                        arrayOf(
-                                            MiuixTheme.colorScheme.primary.copy(alpha = 0.4f),
-                                            Color.Transparent
+                        lineColor.map {
+                            LineCartesianLayer.rememberLine(
+                                fill = LineCartesianLayer.LineFill.single(fill(it)),
+                                pointProvider = LineCartesianLayer.PointProvider.single(
+                                    LineCartesianLayer.point(
+                                        rememberShapeComponent(
+                                            fill(it),
+                                            CorneredShape.Pill
                                         )
                                     )
                                 )
-                            ),
-                            pointProvider = LineCartesianLayer.PointProvider.single(
-                                LineCartesianLayer.point(
-                                    rememberShapeComponent(
-                                        fill(MiuixTheme.colorScheme.primary),
-                                        CorneredShape.Pill
-                                    )
-                                )
-                            ),
-                        )
+                            )
+                        }
                     ),
                 rangeProvider = RangeProvider,
             ),
@@ -91,8 +90,27 @@ fun LineChart(
                 valueFormatter = BottomAxisValueFormatter,
             ), // 横轴
             layerPadding = { cartesianLayerPadding(scalableStart = 8.dp, scalableEnd = 8.dp) },
-            marker = rememberMarker(MarkerValueFormatter)
+            marker = rememberMarker(MarkerValueFormatter),
+            legend =
+                rememberVerticalLegend(
+                    items = { extraStore ->
+                        extraStore[LegendLabelKey].forEachIndexed { index, label ->
+                            add(
+                                LegendItem(
+                                    icon = shapeComponent(
+                                        fill(lineColor[index]),
+                                        CorneredShape.Pill
+                                    ),
+                                    labelComponent = legendItemLabelComponent,
+                                    label = label
+                                )
+                            )
+                        }
+                    },
+                    padding = insets(start = 12.dp, top = 12.dp),
+                )
         ),
+        modifier = Modifier.height(240.dp),
         modelProducer = modelProducer,
         scrollState = rememberVicoScrollState(scrollEnabled = false),
     )

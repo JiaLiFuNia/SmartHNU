@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.CourseGradeDetailRes.CourseGradeDetailEntity
 import com.smart.htu.api.module.CourseGradeRes.CourseGradeEntity
 import com.smart.htu.api.module.CreditItemEntity
-import com.smart.htu.api.module.GPAData
 import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.SingleTerm
 import com.smart.htu.repo.DataStoreRepo
@@ -30,7 +29,7 @@ data class GradeUiState(
     val termCode: String,
     val globalTermCode: String,
     val termList: List<SingleTerm> = emptyList(),
-    val courseGPA: List<GPAData>? = null,
+    val courseGPA: Map<String, Pair<List<String>, List<Double>>>,
     val allCredits: List<CreditItemEntity>? = null,
     val courseGrade: List<CourseGradeEntity>? = null,
     val courseGradeDetail: CourseGradeDetailEntity? = null,
@@ -49,6 +48,10 @@ class GradeViewModel @Inject constructor(
         GradeUiState(
             termCode = getCurrentTerm(),
             globalTermCode = getCurrentTerm(),
+            courseGPA = mapOf(
+                "专业计划" to Pair(emptyList(), emptyList()),
+                "全部" to Pair(emptyList(), emptyList())
+            )
         )
     )
     val uiState: StateFlow<GradeUiState> = _uiState.asStateFlow()
@@ -129,16 +132,18 @@ class GradeViewModel @Inject constructor(
             }
     }
 
-    suspend fun getCourseGPA() {
-        jwcNetworkRepo.getCourseGPAService(
-            "2", "01"
-        )
-            .onSuccess { res ->
-                _uiState.update { it.copy(courseGPA = res) }
-            }
-            .onFailure {
-                _uiState.update { it.copy(courseGPA = null) }
-            }
+    val type = mapOf("专业计划" to "01", "全部" to "")
+    val statisticalMethod = mapOf("学期" to "1", "学年" to "2")
+    suspend fun getCourseGPA(statisticalMethodIndex: Int = 1) {
+        val currentMap = _uiState.value.courseGPA.toMutableMap()
+        type.forEach { (key, value) ->
+            jwcNetworkRepo.getCourseGPAService(
+                statisticalMethod.values.toList()[statisticalMethodIndex], value
+            ).onSuccess { res ->
+                currentMap[key] = Pair(res.map { it.label }, res.map { it.gpa.toDouble() })
+            }.onFailure { _uiState.update { it.copy(courseGPA = currentMap) } }
+        }
+        _uiState.update { it.copy(courseGPA = currentMap) }
     }
 
     suspend fun getAllCredits() {

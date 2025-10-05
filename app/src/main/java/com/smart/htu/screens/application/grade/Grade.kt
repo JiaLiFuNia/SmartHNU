@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,14 +15,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -38,6 +44,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -104,6 +111,8 @@ fun Grade(
     val pagerState = rememberPagerState(pageCount = { 2 }, initialPage = 0)
     val selectIndex by remember { derivedStateOf { pagerState.currentPage } }
     val tabItem = listOf("成绩", "统计")
+
+    val selectedIndex = remember { mutableIntStateOf(1) }
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
@@ -243,26 +252,19 @@ fun Grade(
                                 .overScrollVertical(),
                             overscrollEffect = null
                         ) {
-                            if (uiState.courseGPA == null || uiState.allCredits == null) {
+                            if (uiState.courseGPA.values.isEmpty() || uiState.allCredits == null) {
                                 item {
                                     CircularProgressIndicator()
                                 }
                             } else {
                                 item {
-                                    val xData =
-                                        remember(uiState.courseGPA) {
-                                            mutableStateOf(uiState.courseGPA?.map { it.label }
-                                                ?: listOf("0"))
-                                        }
-                                    val yData =
-                                        remember(uiState.courseGPA) {
-                                            mutableStateOf(uiState.courseGPA?.map { it.gpa.toDouble() }
-                                                ?: listOf(0.0))
-                                        }
                                     SmallTitle(
-                                        text = "学年绩点",
+                                        text = "绩点",
                                         insideMargin = PaddingValues(start = 12.dp, bottom = 8.dp)
                                     )
+                                    val data = remember(uiState.courseGPA) {
+                                        mutableStateOf(uiState.courseGPA)
+                                    }
                                     Surface(
                                         modifier = Modifier.fillMaxWidth(),
                                         shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
@@ -274,10 +276,41 @@ fun Grade(
                                                 .padding(8.dp),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            LineChart(
-                                                xData = xData,
-                                                yData = yData
-                                            )
+                                            LineChart(data = data)
+                                            Button(
+                                                onClick = {
+                                                    scope.launch {
+                                                        selectedIndex.intValue =
+                                                            (selectedIndex.intValue + 1) % 2
+                                                        viewModel.getCourseGPA(selectedIndex.intValue)
+                                                    }
+                                                },
+                                                colors = ButtonDefaults.buttonColors(
+                                                    containerColor = MiuixTheme.colorScheme.surface,
+                                                    contentColor = MiuixTheme.colorScheme.onSurface
+                                                ),
+                                                border = BorderStroke(
+                                                    1.dp,
+                                                    MiuixTheme.colorScheme.outline
+                                                ),
+                                                contentPadding = PaddingValues(
+                                                    horizontal = 4.dp,
+                                                    vertical = 2.dp
+                                                ),
+                                                modifier = Modifier
+                                                    .align(Alignment.BottomEnd)
+                                                    .size(width = 96.dp, height = 36.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                                    contentDescription = null
+                                                )
+                                                Text(viewModel.statisticalMethod.keys.toList()[selectedIndex.intValue])
+                                                Icon(
+                                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                                    contentDescription = null
+                                                )
+                                            }
                                         }
                                     }
                                 }
