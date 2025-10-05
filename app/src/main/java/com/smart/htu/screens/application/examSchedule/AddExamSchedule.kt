@@ -126,17 +126,19 @@ fun AddExamSchedule(
                                             examEntity.value
                                         )
                                     }
-                                    addEvent(
-                                        context = context,
-                                        title = examEntity.value.examName,
-                                        desc = "考场：${examEntity.value.examRoom}，座位号：${examEntity.value.seatNumber}",
-                                        start = examEntity.value.date.atTime(examEntity.value.startTime)
-                                            .atZone(java.time.ZoneId.systemDefault())
-                                            .toInstant().toEpochMilli(),
-                                        end = examEntity.value.date.atTime(examEntity.value.endTime)
-                                            .atZone(java.time.ZoneId.systemDefault())
-                                            .toInstant().toEpochMilli()
-                                    )
+                                    if (Permission.hasCalendarPermissions(context)) {
+                                        addEvent(
+                                            context = context,
+                                            title = examEntity.value.examName,
+                                            desc = "考场：${examEntity.value.examRoom}，座位号：${examEntity.value.seatNumber}",
+                                            start = examEntity.value.date.atTime(examEntity.value.startTime)
+                                                .atZone(java.time.ZoneId.systemDefault())
+                                                .toInstant().toEpochMilli(),
+                                            end = examEntity.value.date.atTime(examEntity.value.endTime)
+                                                .atZone(java.time.ZoneId.systemDefault())
+                                                .toInstant().toEpochMilli()
+                                        )
+                                    }
                                     navController.popBackStack()
                                     showToast(context, "日程已创建")
                                 }

@@ -82,6 +82,7 @@ import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
 import com.smart.htu.utils.startCalendar
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -240,12 +241,13 @@ fun Main(
                         verticalArrangement = Arrangement.spacedBy(20.dp),
                         overscrollEffect = null
                     ) {
-                        item {
+                        /*item {
                             ExamScheduleCard(uiState.examScheduleList, navController)
-                        }
+                        }*/
                         item {
                             TodayCourseCard(
                                 uiState.todayCourseList,
+                                uiState.examScheduleList,
                                 loginState.value,
                                 navController
                             )
@@ -290,11 +292,16 @@ fun Main(
                         FocusCard(navController, loginUiState, airConditionUiState, uiState)
                     }
                     item {
-                        TodayCourseCard(uiState.todayCourseList, loginState.value, navController)
+                        TodayCourseCard(
+                            uiState.todayCourseList,
+                            uiState.examScheduleList,
+                            loginState.value,
+                            navController
+                        )
                     }
-                    item {
+                    /*item {
                         ExamScheduleCard(uiState.examScheduleList, navController)
-                    }
+                    }*/
                     item {
                         CommonAppsCard(
                             uiState = uiState,
@@ -452,13 +459,14 @@ fun FocusCardItem(
 @Composable
 fun TodayCourseCard(
     todayCourseList: List<CourseEntity>?,
+    examScheduleList: List<ExamEntity>,
     loginState: Boolean,
     navController: NavController
 ) {
     LargeCardDisplay(
         containerColor = MiuixTheme.colorScheme.surface,
         modifier = Modifier,
-        title = stringResource(id = R.string.today_course),
+        title = stringResource(id = R.string.today_task),
         actionText = "课程表",
         navigateTo = {
             navController.navigateWithCheckLoginState(
@@ -502,6 +510,33 @@ fun TodayCourseCard(
                                 message = it
                             )
                         }
+                    }
+                }
+            }
+            val examScheduleList = remember(examScheduleList) {
+                examScheduleList.filter {
+                    it.date.isEqual(LocalDate.now())
+                }.sortedBy {
+                    LocalDateTime.of(it.date, it.startTime)
+                }
+            }
+            if (examScheduleList.isNotEmpty()) HorizontalDivider(modifier = Modifier.fillMaxWidth())
+            Column(
+                modifier = Modifier
+            ) {
+                if (examScheduleList.isNotEmpty()) {
+                    examScheduleList.forEach { exam ->
+                        ExamScheduleCard(
+                            exam = exam,
+                            isInProgress = LocalDateTime.now().isBefore(
+                                LocalDateTime.of(exam.date, exam.endTime) // 结束之前
+                            ) && LocalDateTime.now().isAfter(
+                                LocalDateTime.of(exam.date, exam.startTime) // 开始之后
+                            ),
+                            isPassed = LocalDateTime.now().isAfter(
+                                LocalDateTime.of(exam.date, exam.endTime) // 结束之后
+                            )
+                        )
                     }
                 }
             }
@@ -570,9 +605,8 @@ fun CommonAppsCard(
     )
 }
 
-@Composable
+/*@Composable
 fun ExamScheduleCard(
-    examScheduleList: List<ExamEntity>,
     navController: NavController
 ) {
     LargeCardDisplay(
@@ -585,35 +619,10 @@ fun ExamScheduleCard(
         },
         leadingIconPainting = R.drawable.lab_profile_24px,
         content = {
-            Column(
-                modifier = if (examScheduleList.isEmpty()) Modifier
-                    .height(86.dp) else Modifier
-            ) {
-                if (examScheduleList.isEmpty()) {
-                    EmptyContent(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        text = "暂无考试安排"
-                    )
-                } else {
-                    examScheduleList.filter { it.date.isEqual(LocalDate.now()) }.forEach { exam ->
-                        ExamScheduleCard(
-                            exam = exam,
-                            isInProgress = LocalDateTime.now().isBefore(
-                                LocalDateTime.of(exam.date, exam.endTime) // 结束之前
-                            ) && LocalDateTime.now().isAfter(
-                                LocalDateTime.of(exam.date, exam.startTime) // 开始之后
-                            ),
-                            isPassed = LocalDateTime.now().isAfter(
-                                LocalDateTime.of(exam.date, exam.endTime) // 结束之后
-                            )
-                        )
-                    }
-                }
-            }
+
         }
     )
-}
+}*/
 
 @Composable
 fun ExamScheduleCard(
@@ -649,16 +658,29 @@ fun ExamScheduleCard(
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = exam.examName,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        color = MiuixTheme.colorScheme.onBackground
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = exam.examName,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = MiuixTheme.colorScheme.onBackground
+                        ),
+                        modifier = Modifier
+                    )
+                    Text(
+                        text = "${exam.duration} 分钟",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = Color(exam.examType.color)
+                        ),
+                        modifier = Modifier
+                    )
+                }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Start,
@@ -669,7 +691,7 @@ fun ExamScheduleCard(
                         horizontalArrangement = Arrangement.Start,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(0.5f)
+                            .weight(0.4f)
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.schedule_24px),
@@ -685,12 +707,7 @@ fun ExamScheduleCard(
                                     time = exam.startTime,
                                     pattern = "HH:mm"
                                 )
-                            } - ${
-                                convertLocalTimeToStringTime(
-                                    time = exam.endTime,
-                                    pattern = "HH:mm"
-                                )
-                            }",
+                            } 开考",
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxWidth(),
@@ -705,7 +722,7 @@ fun ExamScheduleCard(
                         horizontalArrangement = Arrangement.Start,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(0.5f)
+                            .weight(0.6f)
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.location_on_24px),
@@ -716,7 +733,7 @@ fun ExamScheduleCard(
                             tint = iconColor
                         )
                         Text(
-                            text = exam.examRoom,
+                            text = "${exam.examRoom} | ${exam.seatNumber}",
                             modifier = Modifier.weight(1f),
                             textAlign = TextAlign.Start,
                             maxLines = 1,
