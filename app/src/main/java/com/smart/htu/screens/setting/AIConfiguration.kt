@@ -39,11 +39,13 @@ import androidx.navigation.NavController
 import com.smart.htu.component.TextButtonWithProgressIndicator
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.TextField
-import top.yukonga.miuix.kmp.extra.SuperArrow
+import top.yukonga.miuix.kmp.extra.DropDownMode
+import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -69,7 +71,7 @@ fun AIConfigurationScreen(
                     containerColor = MiuixTheme.colorScheme.background,
                     scrolledContainerColor = MiuixTheme.colorScheme.background
                 ),
-                title = { Text(text = "AI 功能") },
+                title = { Text(text = "YunAI 配置") },
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() }) {
@@ -103,7 +105,8 @@ fun AIConfigurationScreen(
             item {
                 Card {
                     SuperSwitch(
-                        title = "AI 功能",
+                        title = "YunAI",
+                        summary = "启用 YunAI, 为应用注入新活力",
                         checked = uiState.aiFunctionEnabled,
                         onCheckedChange = {
                             viewModel.changeAiFunctionEnabled(it)
@@ -128,9 +131,9 @@ fun AIConfigurationScreen(
                             insideMargin = PaddingValues(start = 12.dp, top = 8.dp)
                         )
                         Card {
-                            SuperArrow(
+                            BasicComponent(
                                 title = "新闻总结",
-                                summary = "使用 AI 对新闻进行总结，快速获取新闻要点",
+                                summary = "使用 YunAI 对新闻进行总结，快速获取新闻要点"
                             )
                         }
                     }
@@ -154,28 +157,32 @@ fun AIConfigurationScreen(
                         )
                         TextField(
                             label = "URL",
-                            value = uiState.aiModuleConfig.url,
+                            value = "https://api.siliconflow.cn/",
+                            backgroundColor = MiuixTheme.colorScheme.surface,
                             readOnly = true,
                             singleLine = true,
                             onValueChange = {
-                                viewModel.setAIModuleConfig(url = it)
+                                // viewModel.changeAIModel(url = it)
                             }
                         )
-                        TextField(
-                            label = "模型",
-                            value = uiState.aiModuleConfig.module,
-                            readOnly = true,
-                            singleLine = true,
-                            onValueChange = {
-                                viewModel.setAIModuleConfig(module = it)
-                            }
-                        )
+                        Card {
+                            SuperDropdown(
+                                title = "模型",
+                                items = AI_MODEL_LIST.map { it.name },
+                                selectedIndex = uiState.selectedAIModelIndex,
+                                onSelectedIndexChange = {
+                                    viewModel.selectAIModel(it)
+                                },
+                                mode = DropDownMode.AlwaysOnRight,
+                            )
+                        }
                         TextField(
                             label = "Key",
-                            value = uiState.aiModuleConfig.key,
+                            value = uiState.aiModelKey,
+                            backgroundColor = MiuixTheme.colorScheme.surface,
                             singleLine = true,
                             onValueChange = {
-                                viewModel.setAIModuleConfig(key = it)
+                                viewModel.saveAIModelKey(key = it, test = false)
                             }
                         )
                         Row(
@@ -189,13 +196,15 @@ fun AIConfigurationScreen(
                         TextButtonWithProgressIndicator(
                             text = "测试",
                             onClick = {
-                                viewModel.testAIService(
-                                    onResponse = {
-                                        scope.launch {
-                                            snackBarHostState.showSnackbar(it)
+                                scope.launch {
+                                    viewModel.testAIService(
+                                        onResult = {
+                                            scope.launch {
+                                                snackBarHostState.showSnackbar(it)
+                                            }
                                         }
-                                    }
-                                )
+                                    )
+                                }
                             },
                             modifier = Modifier
                                 .fillMaxWidth(),

@@ -3,13 +3,18 @@ package com.smart.htu.screens.news.newsView
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,13 +22,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -36,6 +45,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -45,14 +55,25 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -80,10 +101,12 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
+import dev.jeziellago.compose.markdowntext.MarkdownText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.FloatingToolbar
 import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
@@ -92,6 +115,7 @@ import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ToolbarPosition
 import top.yukonga.miuix.kmp.extra.DropdownImpl
+import top.yukonga.miuix.kmp.extra.SuperBottomSheet
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalDate
 
@@ -126,6 +150,8 @@ fun NewsDetail(
     val showHtml = remember { mutableStateOf(false) }
     val showImagePreview = remember { mutableStateOf(false) }
     val selectedImageData = remember { mutableStateOf("") }
+
+    val showAISummaryBottomSheet = remember { mutableStateOf(false) }
 
     LaunchedEffect(listState) {
         snapshotFlow { listState.firstVisibleItemIndex > 1 || listState.firstVisibleItemScrollOffset > 200 }
@@ -256,13 +282,21 @@ fun NewsDetail(
                     ) {
                         IconButton(
                             onClick = {
-                                if (uiState.aiModelKey.isEmpty()) navController.navigate(
-                                    Destinations.AIConfiguration.route
-                                )
-                                else newsViewModel.aiNewsSummaryService(
-                                    {},
-                                    uiState.newsArticle?.articleContent ?: ""
-                                )
+                                if (uiState.aiModelKey.isEmpty()) {
+                                    navController.navigate(
+                                        Destinations.AIConfiguration.route
+                                    )
+                                } else {
+                                    showAISummaryBottomSheet.value = true
+                                    if (!uiState.isAISummaryReasoning)
+                                        newsViewModel.aiNewsSummaryService(
+                                            articleTitle = uiState.newsArticle?.title ?: "",
+                                            articleContent = uiState.newsArticle?.articleContent
+                                                ?: "",
+                                            publishDate = uiState.newsArticle?.publishDate
+                                                ?: getCurrentDate()
+                                        )
+                                }
                             }
                         ) {
                             Icon(
@@ -462,6 +496,12 @@ fun NewsDetail(
         title = "提示",
         summary = errorMessage.value,
     ) { }
+
+    AISummaryBottomSheet(
+        showDialog = showAISummaryBottomSheet,
+        aiSummaryContent = uiState.aiSummaryContent,
+        aiSummaryReasoningContent = uiState.aiSummaryReasoningContent
+    )
 }
 
 @Composable
@@ -557,6 +597,172 @@ fun AttachmentContent(
                         showDialog = showDownloadDialog,
                         fileName = attachment.fileName,
                         url = attachment.url
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalHazeMaterialsApi::class)
+@Composable
+fun AISummaryBottomSheet(
+    showDialog: MutableState<Boolean>,
+    aiSummaryContent: String? = null,
+    aiSummaryReasoningContent: String? = null
+) {
+    SuperBottomSheet(
+        title = "YunAI 智能摘要",
+        show = showDialog,
+        onDismissRequest = {
+            showDialog.value = false
+        },
+        rightAction = {
+            IconButton(
+                onClick = {
+                    copyContent(aiSummaryContent.toString())
+                },
+                modifier = Modifier
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.content_copy_24px),
+                    contentDescription = null
+                )
+            }
+        },
+        // backgroundColor = Color(0xFF4b6ed4),
+        // insideMargin = DpSize(0.dp, 0.dp)
+    ) {
+        val aiSummaryContentScrollState = rememberScrollState()
+        val aiSummaryReasoningContentScrollState = rememberScrollState()
+
+        LaunchedEffect(aiSummaryContent) {
+            if (!aiSummaryContent.isNullOrEmpty()) {
+                aiSummaryContentScrollState.animateScrollTo(aiSummaryContentScrollState.maxValue)
+            }
+        }
+
+        LaunchedEffect(aiSummaryReasoningContent) {
+            if (!aiSummaryReasoningContent.isNullOrEmpty()) {
+                aiSummaryReasoningContentScrollState.animateScrollTo(
+                    aiSummaryReasoningContentScrollState.maxValue
+                )
+            }
+        }
+
+        // val hazeState = rememberHazeState()
+        if (aiSummaryContent.isNullOrEmpty() && aiSummaryReasoningContent.isNullOrEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(aiSummaryContentScrollState)
+                // .hazeSource(state = hazeState)
+            ) {
+                aiSummaryReasoningContent?.let {
+                    val expandState = remember { mutableStateOf(true) }
+                    val targetMax = if (expandState.value) 150.dp else 500.dp
+                    val animatedMax by animateDpAsState(
+                        targetValue = targetMax,
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                    val iconRotate by animateFloatAsState(if (expandState.value) 0f else -180f)
+                    Card(
+                        colors = CardDefaults.defaultColors(color = MiuixTheme.colorScheme.secondaryVariant),
+                        modifier = Modifier
+                            .heightIn(max = animatedMax)
+                            .fillMaxWidth()
+                        /*.hazeEffect(HazeMaterials.ultraThin()) {
+                            backgroundColor = Color.Transparent
+                            this.blurEnabled = blurEnabled
+                            this.drawContentBehind = drawContentBehind
+                            this.blurRadius = 50.dp
+                        }*/
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(8.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier = Modifier
+                                    .clip(MaterialTheme.shapes.small)
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        expandState.value = !expandState.value
+                                    }
+                                    .semantics {
+                                        role = Role.Button
+                                    },
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.deepthink),
+                                    contentDescription = null,
+                                    tint = MiuixTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                                Text(
+                                    text = "深度思考",
+                                    color = MiuixTheme.colorScheme.onSurface,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    tint = MiuixTheme.colorScheme.onSurface,
+                                    modifier = Modifier.rotate(iconRotate),
+                                )
+                            }
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .graphicsLayer { alpha = 0.99f } // 触发离屏渲染，保证蒙版生效
+                                    .drawWithCache {
+                                        // 创建顶部和底部的渐变蒙版
+                                        val brush = Brush.verticalGradient(
+                                            startY = 0f,
+                                            endY = size.height,
+                                            colorStops = arrayOf(
+                                                0.0f to Color.Transparent,
+                                                (64f / size.height) to Color.Black,
+                                                (1 - 64f / size.height) to Color.Black,
+                                                1.0f to Color.Transparent
+                                            )
+                                        )
+                                        onDrawWithContent {
+                                            drawContent()
+                                            drawRect(
+                                                brush = brush,
+                                                size = Size(size.width, size.height),
+                                                blendMode = BlendMode.DstIn // 用蒙版做透明渐变
+                                            )
+                                        }
+                                    }
+                                    .heightIn(max = animatedMax)
+                                    .verticalScroll(aiSummaryReasoningContentScrollState)
+                            ) {
+                                Text(
+                                    text = it,
+                                    color = MiuixTheme.colorScheme.onSurface,
+                                    fontSize = 13.sp
+                                )
+                            }
+                        }
+                    }
+                }
+                aiSummaryContent?.let {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    MarkdownText(
+                        markdown = it,
+                        isTextSelectable = true,
+                        disableLinkMovementMethod = true
                     )
                 }
             }

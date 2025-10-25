@@ -1,8 +1,6 @@
 package com.smart.htu.repo
 
 import android.util.Log
-import com.smart.htu.api.module.AIModulePostEntity
-import com.smart.htu.api.module.AIResponseEntity
 import com.smart.htu.api.module.AppToken
 import com.smart.htu.api.module.Area
 import com.smart.htu.api.module.BillDetail
@@ -11,12 +9,10 @@ import com.smart.htu.api.module.BuyRecords
 import com.smart.htu.api.module.NewsArticleEntity
 import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.NowWeatherData
-import com.smart.htu.api.module.Usage
 import com.smart.htu.api.module.WarningWeatherData
 import com.smart.htu.api.network.AirConditionService
 import com.smart.htu.api.network.AppLoginService
 import com.smart.htu.api.network.AuthLoginService
-import com.smart.htu.api.network.ChatService
 import com.smart.htu.api.network.EHallService
 import com.smart.htu.api.network.NewsService
 import com.smart.htu.api.network.WeatherService
@@ -40,38 +36,9 @@ class NetworkRepo @Inject constructor(
     private val airConditionService: AirConditionService,
     private val weatherService: WeatherService,
     private val newsService: NewsService,
-    private val chatService: ChatService,
     private val networkCookieJar: NetworkCookieJar,
     private val dataStoreRepo: DataStoreRepo
 ) {
-
-    // ai
-    suspend fun chatService(
-        url: String,
-        key: String,
-        data: AIModulePostEntity
-    ): Result<AIResponseEntity> {
-        return try {
-            val res = chatService.chatService(authorization = "Bearer $key", data = data)
-            when (res.code()) {
-                200 -> Result.success(
-                    res.body() ?: AIResponseEntity(
-                        id = "",
-                        exampleGenerateObject = "",
-                        created = 0L,
-                        model = "",
-                        choices = emptyList(),
-                        usage = Usage(0, 0, 0)
-                    )
-                )
-
-                else -> Result.failure(Exception(res.body()?.detail))
-            }
-        } catch (e: Exception) {
-            Log.e("TAG666", "chatService error: ${e.message}")
-            Result.failure(e)
-        }
-    }
 
     // 搜索新闻
     suspend fun searchNewsService(searchInfo: String): List<NewsItemEntity> {

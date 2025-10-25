@@ -1,11 +1,11 @@
 package com.smart.htu.di
 
 import android.util.Log
+import com.smart.htu.api.network.AIService
 import com.smart.htu.api.network.AirConditionService
 import com.smart.htu.api.network.AppLoginService
 import com.smart.htu.api.network.AppService
 import com.smart.htu.api.network.AuthLoginService
-import com.smart.htu.api.network.ChatService
 import com.smart.htu.api.network.EHallService
 import com.smart.htu.api.network.JWCService
 import com.smart.htu.api.network.LibraryService
@@ -13,7 +13,7 @@ import com.smart.htu.api.network.MessageBoardService
 import com.smart.htu.api.network.NewsService
 import com.smart.htu.api.network.SecondClassService
 import com.smart.htu.api.network.WeatherService
-import com.smart.htu.di.NetworkModule.ApiConstants.CHAT_BASE_URL
+import com.smart.htu.di.NetworkModule.ApiConstants.SILICON_BASE_URL
 import com.smart.htu.repo.DataStoreRepo
 import dagger.Module
 import dagger.Provides
@@ -51,7 +51,6 @@ object NetworkModule {
         const val AUTH_BASE_URL = "https://authserver2.htu.edu.cn/"
         const val APP_BASE_URL = "http://app.htu.edu.cn/appapi/"
         const val EHALL_BASE_URL = "https://ehall2.htu.edu.cn/"
-        const val CHAT_BASE_URL = "https://chat.htu.edu.cn/"
         const val LIBRARY_BASE_URL = "https://opac.htu.edu.cn/"
         const val MESSAGE_BOARD_BASE_URL = "https://yjfk.htu.edu.cn/"
 
@@ -59,6 +58,8 @@ object NetworkModule {
 
         const val AIR_CONDITION_BASE_URL = "https://application.xiaofubao.com/"
         const val WEATHER_BASE_URL = "https://kq5g7ax26n.re.qweatherapi.com/v7/"
+
+        const val SILICON_BASE_URL = "https://api.siliconflow.cn/"
 
         const val SMH_BASE_URL = "https://xhand.edu.deal/api/"
         //"https://shtu.xubohan04.tk/api/"
@@ -203,12 +204,13 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideChatService(): ChatService {
+    fun provideChatService(): AIService {
         val retrofit = Retrofit.Builder()
-            .baseUrl(CHAT_BASE_URL)
+            .baseUrl(SILICON_BASE_URL)
+            // .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-        return retrofit.create(ChatService::class.java)
+        return retrofit.create(AIService::class.java)
     }
 
     @Provides
