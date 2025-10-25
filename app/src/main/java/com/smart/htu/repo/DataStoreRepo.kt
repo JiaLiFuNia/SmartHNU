@@ -12,7 +12,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.smart.htu.api.DataStoreService
 import com.smart.htu.api.module.ACCookie
-import com.smart.htu.api.module.AIModelConfigEntity
 import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.api.module.NewsMarkEntity
@@ -61,6 +60,7 @@ class DataStoreRepo @Inject constructor(
             booleanPreferencesKey("IS_WRITE_CALENDAR_PERMISSION_GRANTED")
         val AI_FUNCTION_ENABLED = booleanPreferencesKey("AI_FUNCTION_ENABLED")
         val AI_MODEL_KEY = stringPreferencesKey("AI_MODEL_KEY")
+        val SELECTED_AI_MODEL = intPreferencesKey("SELECTED_AI_MODEL")
         val BIONIC_READING_ENABLED = booleanPreferencesKey("BIONIC_READING_ENABLED")
         val LOAD_IMG_ENABLED = booleanPreferencesKey("LOAD_IMG_ENABLED")
         val NEWS_HISTORY_LIST = stringPreferencesKey("NEWS_HISTORY_LIST")
@@ -68,6 +68,9 @@ class DataStoreRepo @Inject constructor(
         val NEWS_FONT_SIZE = intPreferencesKey("NEWS_FONT_SIZE")
         val EXAM_SCHEDULE_LIST = stringPreferencesKey("EXAM_SCHEDULE_LIST")
         val PHYSICAL_TEST_CODE = stringPreferencesKey("PHYSICAL_TEST_CODE")
+        val COURSE_TABLE_BACKGROUND_BLUR_RADIUS =
+            intPreferencesKey("COURSE_TABLE_BACKGROUND_BLUR_RADIUS")
+        val WEEKEND_COURSE_SHOW_STATE = booleanPreferencesKey("WEEKEND_COURSE_SHOW_STATE")
 
         const val DEFAULT_COOKIES = "[]"
         const val DEFAULT_MESSAGE_READ_ID = "[]"
@@ -191,8 +194,12 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[AI_FUNCTION_ENABLED] = enabled }
     }
 
-    override suspend fun saveAIModelConfig(config: AIModelConfigEntity) {
-        context.dataStore.edit { it[AI_MODEL_KEY] = config.key }
+    override suspend fun changeSelectedAIModel(index: Int) {
+        context.dataStore.edit { it[SELECTED_AI_MODEL] = index }
+    }
+
+    override suspend fun saveAIModelKey(key: String) {
+        context.dataStore.edit { it[AI_MODEL_KEY] = key }
     }
 
     override suspend fun changeBionicReadingEnabled(enabled: Boolean) {
@@ -242,6 +249,14 @@ class DataStoreRepo @Inject constructor(
 
     override suspend fun savePhysicalTestCode(code: String) {
         context.dataStore.edit { it[PHYSICAL_TEST_CODE] = code }
+    }
+
+    override suspend fun changeCourseTableBackgroundBlurRadius(radius: Int) {
+        context.dataStore.edit { it[COURSE_TABLE_BACKGROUND_BLUR_RADIUS] = radius }
+    }
+
+    override suspend fun changeWeekendCourseShowState(isShow: Boolean) {
+        context.dataStore.edit { it[WEEKEND_COURSE_SHOW_STATE] = isShow }
     }
 
 
@@ -371,7 +386,11 @@ class DataStoreRepo @Inject constructor(
         return context.dataStore.data.map { it[AI_FUNCTION_ENABLED] ?: DEFAULT_AI_FUNCTION_ENABLED }
     }
 
-    override fun observeAIModelConfig(): Flow<String> {
+    override fun observeSelectedAIModel(): Flow<Int> {
+        return context.dataStore.data.map { it[SELECTED_AI_MODEL] ?: 0 }
+    }
+
+    override fun observeAIModelKey(): Flow<String> {
         return context.dataStore.data.map { it[AI_MODEL_KEY] ?: DEFAULT_AI_MODEL_KEY }
     }
 
@@ -415,5 +434,17 @@ class DataStoreRepo @Inject constructor(
 
     override fun observePhysicalTestCode(): Flow<String> {
         return context.dataStore.data.map { it[PHYSICAL_TEST_CODE] ?: DEFAULT_PHYSICAL_TEST_CODE }
+    }
+
+    override fun observeCourseTableBackgroundBlurRadius(): Flow<Int> {
+        return context.dataStore.data.map {
+            it[COURSE_TABLE_BACKGROUND_BLUR_RADIUS] ?: 20
+        }
+    }
+
+    override fun observeWeekendCourseShowState(): Flow<Boolean> {
+        return context.dataStore.data.map {
+            it[WEEKEND_COURSE_SHOW_STATE] ?: true
+        }
     }
 }

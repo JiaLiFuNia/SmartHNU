@@ -1,6 +1,7 @@
 package com.smart.htu.screens.application.courseTable
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -14,10 +15,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -29,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,15 +43,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -56,18 +63,23 @@ import com.smart.htu.R
 import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
+import com.smart.htu.component.SuperSlider
 import com.smart.htu.screens.main.CourseDetailDialog
 import com.smart.htu.utils.CourseColorUtil.getColorByCourseName
 import com.smart.htu.utils.CourseTableBackgroundUtil
 import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
 import com.smart.htu.utils.CourseTimeRange.summerOrWinterTimeInterval
 import com.smart.htu.utils.Permission
+import com.smart.htu.utils.ToastUtil.showToast
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
@@ -75,6 +87,8 @@ import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.extra.DropdownImpl
+import top.yukonga.miuix.kmp.extra.SuperBottomSheet
+import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.lang.Integer.max
 import java.time.format.DateTimeFormatter
@@ -104,16 +118,11 @@ fun CourseTable(
     val screenHeight = LocalConfiguration.current.screenHeightDp
     val minHeight = max((screenHeight - 180) / 12, 70)
     val showDropDownMenu = remember { mutableStateOf(false) }
+    val showBottomSheet = remember { mutableStateOf(false) }
+    val emojiList = listOf("📚", "🎓", "📝", "🏫", "📖", "👩‍🎓", "👨‍🎓", "📆", "🕰️", "🎒", "🏅", "🏆", "🎉")
+    val randomEmoji = remember { mutableStateOf(emojiList.random()) }
 
     var backgroundUri by remember { mutableStateOf(CourseTableBackgroundUtil.getBackground(context)) }
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri ->
-        uri?.let {
-            backgroundUri = CourseTableBackgroundUtil.saveBackground(context, it)
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -137,6 +146,13 @@ fun CourseTable(
                     }
                 },
                 actions = {
+                    IconButton(
+                        onClick = {
+                            showDropDownMenu.value = true
+                        }
+                    ) {
+                        Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "more")
+                    }
                     ListPopup(
                         show = showDropDownMenu,
                         popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
@@ -145,7 +161,7 @@ fun CourseTable(
                             showDropDownMenu.value = false
                         }
                     ) {
-                        val optionSize = if (backgroundUri != null) 6 else 5
+                        val optionSize = 5
                         ListPopupColumn {
                             DropdownImpl(
                                 text = "切换到上一周",
@@ -198,35 +214,16 @@ fun CourseTable(
                                 index = 3
                             )
                             DropdownImpl(
-                                text = "修改课表背景",
+                                text = "更多设置",
                                 isSelected = false,
                                 optionSize = optionSize,
                                 onSelectedIndexChange = {
                                     showDropDownMenu.value = false
-                                    launcher.launch("image/*")
+                                    showBottomSheet.value = true
                                 },
                                 index = 4
                             )
-                            if (backgroundUri != null)
-                                DropdownImpl(
-                                    text = "清除背景",
-                                    isSelected = false,
-                                    optionSize = optionSize,
-                                    onSelectedIndexChange = {
-                                        showDropDownMenu.value = false
-                                        CourseTableBackgroundUtil.clearBackground(context)
-                                        backgroundUri = null
-                                    },
-                                    index = 5
-                                )
                         }
-                    }
-                    IconButton(
-                        onClick = {
-                            showDropDownMenu.value = true
-                        }
-                    ) {
-                        Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "more")
                     }
                 }
             )
@@ -247,11 +244,11 @@ fun CourseTable(
                     modifier = Modifier
                         .fillMaxSize()
                         .hazeSource(state = hazeState)
-                        .hazeEffect(HazeMaterials.ultraThin()) {
+                        .hazeEffect(HazeMaterials.thin()) {
                             backgroundColor = Color.Transparent
                             this.blurEnabled = blurEnabled
                             this.drawContentBehind = drawContentBehind
-                            this.blurRadius = 20.dp
+                            this.blurRadius = uiState.backgroundBlurRadius
                         },
                     contentScale = ContentScale.Crop
                 )
@@ -272,13 +269,16 @@ fun CourseTable(
                         modifier = Modifier
                             .weight(nodeColumnWeight)
                     ) {
-                        Text(
-                            text = "25\n年",
-                            fontFamily = FontFamily.Serif,
-                            textAlign = TextAlign.Center,
-                            color = MiuixTheme.colorScheme.onBackground,
-                            modifier = Modifier.align(Alignment.Center),
-                        )
+                        IconButton(
+                            onClick = {}
+                        ) {
+                            Text(
+                                text = randomEmoji.value,
+                                textAlign = TextAlign.Center,
+                                color = MiuixTheme.colorScheme.onBackground,
+                                modifier = Modifier.align(Alignment.Center),
+                            )
+                        }
                     }
                     Row(
                         modifier = Modifier
@@ -293,30 +293,31 @@ fun CourseTable(
                             stringResource(R.string.friday),
                             stringResource(R.string.saturday),
                             stringResource(R.string.sunday),
-                        ).forEachIndexed { index, week ->
-                            Box(modifier = Modifier.weight(1F)) {
-                                val color = if (uiState.todayWeekday == index + 1)
-                                    MiuixTheme.colorScheme.onBackground else Color.Gray
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    modifier = Modifier.align(Alignment.Center)
-                                ) {
-                                    Text(
-                                        text = week,
-                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                            color = color
+                        ).take(if (uiState.isShowWeekendCourse) 7 else 5)
+                            .forEachIndexed { index, week ->
+                                Box(modifier = Modifier.weight(1F)) {
+                                    val color = if (uiState.todayWeekday == index + 1)
+                                        MiuixTheme.colorScheme.onBackground else Color.Gray
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier.align(Alignment.Center)
+                                    ) {
+                                        Text(
+                                            text = week,
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                color = color
+                                            )
                                         )
-                                    )
-                                    Text(
-                                        text = uiState.startDatePerWeek?.plusDays(index.toLong())
-                                            ?.format(DateTimeFormatter.ofPattern("M-d")) ?: "",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            color = color
+                                        Text(
+                                            text = uiState.startDatePerWeek?.plusDays(index.toLong())
+                                                ?.format(DateTimeFormatter.ofPattern("M-d")) ?: "",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                color = color
+                                            )
                                         )
-                                    )
+                                    }
                                 }
                             }
-                        }
                     }
                 }
                 // 课程
@@ -384,7 +385,7 @@ fun CourseTable(
                             } else {
                                 if (uiState.currentWeekCourseTable?.any { it.isNotEmpty() } == true) {
                                     // 遍历星期一到星期日的数据
-                                    (0..6).forEach { dayIndex ->
+                                    (0..if (uiState.isShowWeekendCourse) 6 else 4).forEach { dayIndex ->
                                         Column(
                                             modifier = Modifier
                                                 .weight(1F)
@@ -429,7 +430,7 @@ fun CourseTable(
                                                         onSelectOverlapCourse = {
                                                             selectedOverlapCourse.value = it
                                                         },
-                                                        modifier = Modifier
+                                                        isShowWeekendCourse = uiState.isShowWeekendCourse
                                                     )
                                                 } else {
                                                     Box(
@@ -459,16 +460,31 @@ fun CourseTable(
             }
         }
     }
+    CourseTableMoreSettingBottomSheet(
+        showBottomSheet = showBottomSheet,
+        isShowWeekendCourse = uiState.isShowWeekendCourse,
+        backgroundBlurState = uiState.backgroundBlurRadius,
+        backgroundUri = backgroundUri,
+        onToggleShowWeekendCourse = {
+            viewModel.changeIsShowWeekendCourse(it)
+        },
+        onBackgroundUriChange = {
+            backgroundUri = it
+        },
+        onBackgroundBluerChange = {
+            viewModel.changeBackgroundBlurRadius(it)
+        }
+    )
 }
 
 @Composable
 fun CourseTableSingleCourseCard(
     overlapCourseList: List<CourseEntity>? = null,
+    isShowWeekendCourse: Boolean,
     onSelectOverlapCourse: (Int) -> Unit = {},
     course: CourseEntity,
     minHeight: Int,
-    slotsOccupied: Int = 1,
-    modifier: Modifier = Modifier
+    slotsOccupied: Int = 1
 ) {
     val isBottomSheetShow = remember { mutableStateOf(false) }
 
@@ -476,7 +492,7 @@ fun CourseTableSingleCourseCard(
         onClick = {
             isBottomSheetShow.value = true
         },
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .height((minHeight * slotsOccupied).dp)
             .padding(vertical = 2.dp),
@@ -493,9 +509,12 @@ fun CourseTableSingleCourseCard(
             overlapCourseList?.size?.let {
                 Text(
                     text = if (it > 2) "[冲突]" else "" + course.courseName,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.DarkGray,
+                    style = MaterialTheme.typography.bodySmall
+                        .copy(
+                            fontSize = if (isShowWeekendCourse) 12.sp else 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.DarkGray,
+                        ),
                     textAlign = TextAlign.Start,
                     maxLines = 3,
                     modifier = Modifier.fillMaxWidth()
@@ -503,18 +522,25 @@ fun CourseTableSingleCourseCard(
             }
             Text(
                 text = "@${if (course.classroomName.isNullOrBlank()) course.projectName else course.classroomName}",
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelSmall
+                    .copy(
+                        fontSize = if (isShowWeekendCourse) 11.sp else 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.DarkGray.copy(alpha = 0.8f),
+                    ),
                 textAlign = TextAlign.Start,
-                fontWeight = FontWeight.Medium,
-                color = Color.DarkGray.copy(alpha = 0.8f),
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = course.teacherName ?: "",
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelSmall
+                    .copy(
+                        fontSize = if (isShowWeekendCourse) 11.sp else 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.DarkGray.copy(alpha = 0.6f),
+                    ),
                 textAlign = TextAlign.Start,
-                color = Color.DarkGray.copy(alpha = 0.6f),
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -525,4 +551,105 @@ fun CourseTableSingleCourseCard(
         overlapCourseList = overlapCourseList,
         onSelectOverlapCourse = onSelectOverlapCourse
     )
+}
+
+@Composable
+fun CourseTableMoreSettingBottomSheet(
+    showBottomSheet: MutableState<Boolean>,
+    isShowWeekendCourse: Boolean,
+    backgroundUri: Uri?,
+    backgroundBlurState: Dp,
+    onToggleShowWeekendCourse: (Boolean) -> Unit,
+    onBackgroundUriChange: (Uri?) -> Unit,
+    onBackgroundBluerChange: (Dp) -> Unit
+) {
+    val context = LocalContext.current
+    SuperBottomSheet(
+        title = "更多设置",
+        show = showBottomSheet,
+        onDismissRequest = {
+            showBottomSheet.value = false
+        }
+    ) {
+        val launcher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent()
+        ) { uri ->
+            uri?.let { CourseTableBackgroundUtil.saveBackground(context, it) }
+        }
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.defaultColors(
+                        color = MiuixTheme.colorScheme.secondaryContainer,
+                    )
+                ) {
+                    BasicComponent(
+                        title = "课表背景",
+                        summary = "更换或清除课表背景",
+                        onClick = {
+                            launcher.launch("image/*")
+                            onBackgroundUriChange(backgroundUri)
+                            showToast(context, "重启生效")
+                        },
+                        rightActions = {
+                            Image(
+                                painter = rememberAsyncImagePainter(backgroundUri),
+                                contentDescription = "背景",
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .size(40.dp),
+                                contentScale = ContentScale.Crop
+                            )
+                            if (backgroundUri != null)
+                                IconButton(
+                                    onClick = {
+                                        CourseTableBackgroundUtil.clearBackground(context)
+                                        onBackgroundUriChange(null)
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = null
+                                    )
+                                }
+                        }
+                    )
+                    if (backgroundUri != null) {
+                        SuperSlider(
+                            title = "模糊程度",
+                            summary = "${((backgroundBlurState.value / 80f) * 100).toInt()} %",
+                            progress = backgroundBlurState.value,
+                            onProgressChange = {
+                                onBackgroundBluerChange(it.toInt().dp)
+                            },
+                            decimalPlaces = 2,
+                            minValue = 0f,
+                            maxValue = 80f
+                        )
+                    }
+                }
+            }
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.defaultColors(
+                        color = MiuixTheme.colorScheme.secondaryContainer,
+                    )
+                ) {
+                    SuperSwitch(
+                        title = "是否显示周末课程",
+                        summary = "开启后，周六、周日的课程将会显示在课表中",
+                        checked = isShowWeekendCourse,
+                        onCheckedChange = {
+                            onToggleShowWeekendCourse(it)
+                        }
+                    )
+                }
+            }
+        }
+    }
 }

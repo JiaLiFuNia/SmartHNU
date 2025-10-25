@@ -1,7 +1,6 @@
 package com.smart.htu.api
 
 import com.smart.htu.api.module.ACCookie
-import com.smart.htu.api.module.AIModelConfigEntity
 import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.api.module.NewsMarkEntity
@@ -35,7 +34,8 @@ interface DataStoreService {
     suspend fun saveMobileCode(mobileCode: String)
     suspend fun setIsWriteCalendarPermissionGranted(enable: Boolean)
     suspend fun changeAIFunctionEnabled(enabled: Boolean)
-    suspend fun saveAIModelConfig(config: AIModelConfigEntity)
+    suspend fun changeSelectedAIModel(index: Int)
+    suspend fun saveAIModelKey(key: String)
     suspend fun changeBionicReadingEnabled(enabled: Boolean)
     suspend fun changeLoadImgEnabled(enable: Boolean)
     suspend fun changeNewsHistoryList(newsItem: NewsMarkEntity)
@@ -43,6 +43,8 @@ interface DataStoreService {
     suspend fun changeNewsFontSize(size: Int)
     suspend fun saveExamScheduleList(examList: List<ExamEntity>)
     suspend fun savePhysicalTestCode(code: String)
+    suspend fun changeCourseTableBackgroundBlurRadius(radius: Int)
+    suspend fun changeWeekendCourseShowState(isShow: Boolean)
 
     fun observeThemeMode(): Flow<Int>
     fun observeDarkTheme(): Flow<Int>
@@ -67,7 +69,8 @@ interface DataStoreService {
     fun observeMobileCode(): Flow<String>
     fun observeIsWriteCalendarPermissionGranted(): Flow<Boolean>
     fun observeAIFunctionEnabled(): Flow<Boolean>
-    fun observeAIModelConfig(): Flow<String>
+    fun observeSelectedAIModel(): Flow<Int>
+    fun observeAIModelKey(): Flow<String>
     fun observeBionicReadingEnabled(): Flow<Boolean>
     fun observeLoadImgEnabled(): Flow<Boolean>
     fun observeNewsHistoryList(): Flow<List<NewsMarkEntity>>
@@ -75,5 +78,7 @@ interface DataStoreService {
     fun observeNewsFontSize(): Flow<Int>
     fun observeExamScheduleList(): Flow<List<ExamEntity>>
     fun observePhysicalTestCode(): Flow<String>
+    fun observeCourseTableBackgroundBlurRadius(): Flow<Int>
+    fun observeWeekendCourseShowState(): Flow<Boolean>
 
 }

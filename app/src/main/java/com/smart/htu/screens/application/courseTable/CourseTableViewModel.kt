@@ -3,6 +3,8 @@ package com.smart.htu.screens.application.courseTable
 import android.util.Log
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.CourseEntity
@@ -35,7 +37,10 @@ data class CourseTableUiState(
     val allCourseTable: MutableList<List<MutableList<CourseEntity>>> =
         MutableList(25) { List(7) { mutableListOf() } },
     val startDatePerWeek: LocalDate? = null,
+    val backgroundBlurRadius: Dp = 20.dp,
+    val isShowWeekendCourse: Boolean = false,
     val week: Int = 0,
+    val maxWeek: String = "",
     val todayWeekday: Int? = 1,
     val termCode: String,
     val termList: List<SingleTerm> = emptyList(),
@@ -88,6 +93,24 @@ class CourseTableViewModel @Inject constructor(
             }
         )
 
+    private val weekendCourseShowState = dataStoreRepo.observeWeekendCourseShowState()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeWeekendCourseShowState().first()
+            }
+        )
+
+    private val backgroundBlurRadiusState = dataStoreRepo.observeCourseTableBackgroundBlurRadius()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeCourseTableBackgroundBlurRadius().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
             usernameStateFlow.collect { value ->
@@ -105,6 +128,16 @@ class CourseTableViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
+            weekendCourseShowState.collect { isShow ->
+                _uiState.update { it.copy(isShowWeekendCourse = isShow) }
+            }
+        }
+        viewModelScope.launch {
+            backgroundBlurRadiusState.collect { radius ->
+                _uiState.update { it.copy(backgroundBlurRadius = radius.dp) }
+            }
+        }
+        viewModelScope.launch {
             getCurrentWeekCourseSchedule(0)
         }
     }
@@ -118,7 +151,7 @@ class CourseTableViewModel @Inject constructor(
                     else -> ""
                 }
             ).onSuccess {
-                Log.i("TAG666", "getCourseSchedule: $it")
+                // Log.i("TAG666", "getCourseSchedule: $it")
                 return it
             }
         } catch (e: Exception) {
@@ -135,13 +168,14 @@ class CourseTableViewModel @Inject constructor(
             val processedCourses = res?.courseTable?.map { weekMap ->
                 weekMap.values.flatten()
             } ?: emptyList()
-            Log.i("TAG666", "getCurrentWeekCourseSchedule: $processedCourses")
+            // Log.i("TAG666", "getCurrentWeekCourseSchedule: $processedCourses")
             _uiState.update {
                 it.copy(
                     currentWeekCourseTable = processedCourses,
                     termCode = res?.termCode ?: getCurrentTerm(),
                     termRange = Pair(res?.minWeek?.toInt() ?: 0, res?.maxWeek?.toInt() ?: 0),
                     week = res?.week ?: 0,
+                    maxWeek = res?.maxWeek.toString(),
                     todayWeekday = res?.todayWeekday,
                     startDatePerWeek = res?.date?.minusDays(res.todayWeekday.toLong() - 1) // 往前推res?.todayWeekday - 1天
                 )
@@ -278,6 +312,18 @@ class CourseTableViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             snackBarHostState.showSnackbar(message, actionLabel, withDismissAction, duration)
+        }
+    }
+
+    fun changeBackgroundBlurRadius(blurRadius: Dp) {
+        viewModelScope.launch {
+            dataStoreRepo.changeCourseTableBackgroundBlurRadius(blurRadius.value.toInt())
+        }
+    }
+
+    fun changeIsShowWeekendCourse(isShow: Boolean) {
+        viewModelScope.launch {
+            dataStoreRepo.changeWeekendCourseShowState(isShow)
         }
     }
 
