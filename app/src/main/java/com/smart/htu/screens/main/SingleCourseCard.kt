@@ -32,12 +32,12 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseEntity
-import com.smart.htu.component.BasicDialog
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
 import com.smart.htu.utils.CourseColorUtil.getColorByCourseName
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.extra.SuperBottomSheet
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 
@@ -148,6 +148,18 @@ fun CourseDetailDialog(
     overlapCourseList: List<CourseEntity>? = null,
     onSelectOverlapCourse: (Int) -> Unit = {}
 ) {
+    SuperBottomSheet(
+        show = isBottomSheetShow,
+        onDismissRequest = {
+            isBottomSheetShow.value = false
+        },
+        title = message.courseName + if (message.classroomName.isNullOrEmpty()) {
+            " - ${message.projectName}"
+        } else {
+            ""
+        } + " ${message.startTime} - ${message.endTime}",
+        insideMargin = DpSize(16.dp, 24.dp)
+    ) { /*}
     BasicDialog(
         showDialog = isBottomSheetShow,
         title = message.courseName + if (message.classroomName.isNullOrEmpty()) {
@@ -157,7 +169,7 @@ fun CourseDetailDialog(
         },
         summary = "上课时间：${message.startTime} - ${message.endTime}",
         insideMargin = DpSize(16.dp, 24.dp)
-    ) {
+    ) {*/
         MessageCardDisplay(
             modifier = Modifier.fillMaxWidth(),
             message = listOf(

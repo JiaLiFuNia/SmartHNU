@@ -13,6 +13,7 @@ import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.NowWeatherData
 import com.smart.htu.api.module.ResultWithStatus
 import com.smart.htu.api.module.UpdateEntity
+import com.smart.htu.api.module.WarningWeatherData
 import com.smart.htu.repo.AppNetworkRepo
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
@@ -25,6 +26,7 @@ import com.smart.htu.screens.application.ApplicationEntity
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import com.smart.htu.utils.DateUtil.getCurrentDate
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -39,6 +41,7 @@ import javax.inject.Inject
 data class AppUiState(
     val todayCourseList: List<CourseEntity>? = null,
     val currentWeather: ResultWithStatus<NowWeatherData> = ResultWithStatus(),
+    val warningWeatherData: List<WarningWeatherData> = emptyList(),
     val newsList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
     val courseSchedule: CourseScheduleEntity? = null,
     val examScheduleList: List<ExamEntity> = emptyList(),
@@ -170,19 +173,33 @@ class MainViewModel @Inject constructor(
                 }
         }
         viewModelScope.launch {
-            sharedDataRepository.getTermIndex()
-        }
-        viewModelScope.launch {
-            getCurrentWeather()
-            getHoliday()
-            getTodayCourse()
-            getCurrentWeek()
+            val currentWeatherDeferred = async { getCurrentWeather() }
+            val holidayDeferred = async { getHoliday() }
+            val getWarningWeatherDeferred = async { getWarningWeather() }
+
+            checkJWCToken()
+            val termIndex = async { sharedDataRepository.getTermIndex() }
+            val todayCourseDeferred = async { getTodayCourse() }
+            val currentWeekDeferred = async { getCurrentWeek() }
+
+            currentWeatherDeferred.await()
+            holidayDeferred.await()
+            getWarningWeatherDeferred.await()
+            termIndex.await()
+            todayCourseDeferred.await()
+            currentWeekDeferred.await()
         }
     }
 
     suspend fun refreshNoticeAndUpdateMessage() {
         sharedDataRepository.getNotice()
         sharedDataRepository.getUpdate()
+    }
+
+    private suspend fun checkJWCToken() {
+        jwcNetworkRepo.checkJWCTokenService()
+            .onSuccess { changeLoginJWCState(1) }
+            .onFailure { changeLoginJWCState(-2) }
     }
 
     suspend fun getCurrentWeek() {
@@ -205,6 +222,13 @@ class MainViewModel @Inject constructor(
         } catch (e: Exception) {
             Log.i("TAG666", "getNowWeather: $e")
         }
+    }
+
+    fun getWarningWeather() = viewModelScope.launch {
+        networkRepo.getWarningWeatherService()
+            .onSuccess { res ->
+                _uiState.update { it.copy(warningWeatherData = res) }
+            }
     }
 
     suspend fun getTodayCourse() {
@@ -236,6 +260,12 @@ class MainViewModel @Inject constructor(
 
     fun changeUpdateDialogState(state: Boolean) {
         _uiState.update { it.copy(isShowUpdateDialog = mutableStateOf(state)) }
+    }
+
+    private fun changeLoginJWCState(state: Int) {
+        viewModelScope.launch {
+            dataStoreRepo.changeLoginJWCState(state = state)
+        }
     }
 
 }

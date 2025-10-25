@@ -1,5 +1,6 @@
 package com.smart.htu.screens.login
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -81,7 +82,7 @@ fun LogoutDialog(
         ) {
             TextButton(
                 enabled = countdown == 0,
-                text = stringResource(id = R.string.confirm) + if (isConfirmEnabled) "" else " ($countdown)",
+                text = stringResource(id = R.string.confirm) + if (isConfirmEnabled) "" else " ($countdown s)",
                 onClick = {
                     onConfirmClick()
                     showDialog.value = false
@@ -110,6 +111,7 @@ fun LoginDialog(
     isNeedVerifyCode: Boolean = false,
     verifyCodeModel: ImageRequest? = null,
     onLogin: (String, String, String) -> Unit,
+    onClickVerifyCode: () -> Unit = {},
     logState: Int
 ) {
     val account = remember { mutableStateOf("") }
@@ -157,7 +159,7 @@ fun LoginDialog(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done
+                    imeAction = if (isNeedVerifyCode) ImeAction.Next else ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(onNext = { focusManager.clearFocus() }),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -197,9 +199,12 @@ fun LoginDialog(
                             contentDescription = "verifyCode",
                             contentScale = ContentScale.FillWidth,
                             modifier = Modifier
+                                .padding(end = 12.dp)
                                 .width(100.dp)
-                                .aspectRatio(3 / 1f)
-                                .padding(end = 12.dp),
+                                .aspectRatio(14 / 5f)
+                                .clickable {
+                                    onClickVerifyCode()
+                                },
                             placeholder = painterResource(id = R.drawable.ic_loading_placeholder_horizontal),
                             error = painterResource(id = R.drawable.ic_loading_placeholder_horizontal)
                         )

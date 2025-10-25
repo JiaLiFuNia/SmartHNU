@@ -33,7 +33,7 @@ enum class ExamType(val type: String, @ColorInt val color: Int) {
     FINAL("期末考试", 0xFF4CAF50.toInt()),
     MIDTERM("期中考试", 0xFFFF9800.toInt()),
     CERTIFICATE("证书考试", 0xFF2196F3.toInt()),
-    OTHER("其他考试", 0xFF9E9E9E.toInt()),
+    POSTGRADUATE("研究生考试", 0xFFE91E63.toInt())
 }
 
 

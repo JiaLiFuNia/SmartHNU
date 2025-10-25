@@ -151,7 +151,7 @@ class LoginViewModel @Inject constructor(
             }
         )
 
-    private val loginSCStateStateFlow = dataStoreRepo.observeLoginSCState()
+    private val scloginStateStateFlow = dataStoreRepo.observeLoginSCState()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -189,7 +189,7 @@ class LoginViewModel @Inject constructor(
         }
         viewModelScope.launch {
             cookieStateFlow.collect { value ->
-                _uiState.update { it.copy(cookies = value + networkCookieJar.loadAllCookies()) }
+                _uiState.update { it.copy(cookies = networkCookieJar.loadAllCookies()) }
             }
         }
         viewModelScope.launch {
@@ -213,24 +213,19 @@ class LoginViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            loginSCStateStateFlow.collect { value ->
+            scloginStateStateFlow.collect { value ->
                 _uiState.update { it.copy(scLoginState = value) }
             }
         }
         viewModelScope.launch {
-            checkJWCToken()
-            if (_uiState.value.jwcLoginState == 1)
-                getPersonalMessage()
+            getPersonalMessage()
         }
     }
 
-    fun login(onSuccess: () -> Unit = {}) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            if (_uiState.value.jwcLoginState != 1) jwcLogin(onSuccess) // 智慧教务
-            // if (_uiState.value.loginState != 1) authLogin() // 统一认证登录
-            _uiState.update { it.copy(isLoading = false) }
-        }
+    suspend fun login(onSuccess: () -> Unit = {}) {
+        _uiState.update { it.copy(isLoading = true) }
+        if (_uiState.value.jwcLoginState != 1) jwcLogin(onSuccess)
+        _uiState.update { it.copy(isLoading = false) }
     }
 
     suspend fun authLogin(
@@ -333,6 +328,10 @@ class LoginViewModel @Inject constructor(
 
     private suspend fun checkJWCToken() {
         try {
+            Log.i(
+                "TAG666 check",
+                "Checking JWC token${_uiState.value.studentID} ${_uiState.value.jwcPassword}"
+            )
             if (_uiState.value.studentID.isNotEmpty() && _uiState.value.jwcPassword.isNotEmpty()) {
                 jwcNetworkRepo.checkJWCTokenService()
                     .onSuccess { changeLoginJWCState(1) }
@@ -359,22 +358,16 @@ class LoginViewModel @Inject constructor(
         changeUsername("HNUer")
     }
 
-    private fun changeLoginAuthState(state: Int) {
-        viewModelScope.launch {
-            dataStoreRepo.changeLoginState(state)
-        }
+    private suspend fun changeLoginAuthState(state: Int) {
+        dataStoreRepo.changeLoginState(state)
     }
 
-    private fun changeLoginJWCState(state: Int) {
-        viewModelScope.launch {
-            dataStoreRepo.changeLoginJWCState(state = state)
-        }
+    private suspend fun changeLoginJWCState(state: Int) {
+        dataStoreRepo.changeLoginJWCState(state = state)
     }
 
-    private fun changeLoginSCState(state: Int) {
-        viewModelScope.launch {
-            dataStoreRepo.changeLoginSCState(state = state)
-        }
+    private suspend fun changeLoginSCState(state: Int) {
+        dataStoreRepo.changeLoginSCState(state = state)
     }
 
     fun setJWCLogToken(token: String) {
@@ -420,6 +413,7 @@ class LoginViewModel @Inject constructor(
         clearCookies()
         changeLoginAuthState(DEFAULT_LOGIN_STATE)
         changeLoginJWCState(DEFAULT_LOGIN_STATE)
+        changeLoginSCState(DEFAULT_LOGIN_STATE)
         changeUsername(DEFAULT_USERNAME)
         setJWCLogToken(DEFAULT_TOKEN)
         passwordRepo.clearPassword()

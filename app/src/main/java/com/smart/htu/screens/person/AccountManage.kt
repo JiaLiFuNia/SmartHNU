@@ -24,11 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.smart.htu.R
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
-import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.screens.login.LoginViewModel
+import com.smart.htu.screens.setting.SettingItemCard
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -73,7 +72,7 @@ fun AccountManage(
                 end = 12.dp,
                 bottom = 16.dp
             ),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -90,12 +89,7 @@ fun AccountManage(
                 )
             }
             item {
-                LargeCardDisplay(
-                    modifier = Modifier,
-                    title = "河南师大智慧教务",
-                    containerColor = MiuixTheme.colorScheme.background,
-                    leadingIconPainting = R.drawable.circle_admin
-                ) {
+                SettingItemCard(label = "河南师大智慧教务", modifier = Modifier) {
                     TextField(
                         backgroundColor = MiuixTheme.colorScheme.surface,
                         value = uiState.token,
@@ -110,12 +104,7 @@ fun AccountManage(
                 }
             }
             item {
-                LargeCardDisplay(
-                    modifier = Modifier,
-                    title = "统一认证登录（i 师大）",
-                    containerColor = MiuixTheme.colorScheme.background,
-                    leadingIconPainting = R.drawable.circle_admin
-                ) {
+                SettingItemCard(label = "Cookies", modifier = Modifier) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth(),
@@ -127,7 +116,7 @@ fun AccountManage(
                                 value = it.value,
                                 onValueChange = {},
                                 label = it.name,
-                                enabled = editable,
+                                enabled = false,
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }

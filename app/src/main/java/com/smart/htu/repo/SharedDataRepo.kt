@@ -4,11 +4,12 @@ import android.util.Log
 import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.NoticeRes
 import com.smart.htu.api.module.TermIndexEntity
-import com.smart.htu.api.module.UpdateEntity
+import com.smart.htu.api.module.UpdateRes
 import com.smart.htu.api.network.AppService
 import com.smart.htu.api.network.JWCService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.StateFlow
@@ -22,12 +23,12 @@ interface SharedDataRepository {
     val loginJWCState: StateFlow<Int>
     val termIndex: StateFlow<TermIndexEntity?>
     val notice: StateFlow<NoticeRes?>
-    val update: StateFlow<UpdateEntity?>
+    val update: StateFlow<UpdateRes?>
 
     suspend fun setJWCLoginState(state: Int)
     suspend fun getTermIndex(termCode: GlobalTerm = GlobalTerm()): Result<TermIndexEntity>
     suspend fun getNotice(): Result<NoticeRes>
-    suspend fun getUpdate(): Result<UpdateEntity>
+    suspend fun getUpdate(): Result<UpdateRes>
 }
 
 @Singleton
@@ -37,7 +38,7 @@ class SharedDataRepoImpl @Inject constructor(
     private val dataStoreRepo: DataStoreRepo
 ) : SharedDataRepository {
 
-    val scope = CoroutineScope(Dispatchers.IO)
+    val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     override val loginJWCState = dataStoreRepo.observeLoginJWCState()
         .stateIn(
@@ -49,22 +50,22 @@ class SharedDataRepoImpl @Inject constructor(
         )
     override val termIndex = MutableStateFlow<TermIndexEntity?>(null)
     override val notice = MutableStateFlow<NoticeRes?>(null)
-    override val update = MutableStateFlow<UpdateEntity?>(null)
+    override val update = MutableStateFlow<UpdateRes?>(null)
 
     override suspend fun setJWCLoginState(state: Int) {
         dataStoreRepo.changeLoginJWCState(state)
     }
 
-    override suspend fun getUpdate(): Result<UpdateEntity> {
+    override suspend fun getUpdate(): Result<UpdateRes> {
         try {
             val res = appService.getUpdate()
             when (res.code()) {
                 200 -> {
                     val updateRes = res.body()
                     if (updateRes != null) {
-                        update.value = updateRes.data
+                        update.value = updateRes
                         Log.i("TAG666", "获取更新成功")
-                        return Result.success(updateRes.data)
+                        return Result.success(updateRes)
                     } else {
                         return Result.failure(Exception("null"))
                     }

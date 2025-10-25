@@ -118,8 +118,8 @@ fun SettingScreen(
             contentPadding = PaddingValues(
                 start = 16.dp,
                 top = it.calculateTopPadding() + 8.dp,
-                end = 12.dp,
-                bottom = 16.dp
+                end = 16.dp,
+                bottom = 12.dp
             )
         ) {
             item {
@@ -128,8 +128,8 @@ fun SettingScreen(
                     modifier = Modifier
                 ) {
                     SuperArrow(
-                        title = "AI 功能",
-                        summary = "使用大模型为应用注入新活力",
+                        title = "YunAI 配置",
+                        summary = "使用 AI 模型为应用注入新活力",
                         onClick = {
                             navController.navigate(Destinations.AIConfiguration.route)
                         }
@@ -150,15 +150,15 @@ fun SettingScreen(
                     modifier = Modifier
                 ) {
                     SuperArrow(
-                        title = "自定义聚焦",
-                        summary = "设置首页聚焦板块的内容",
+                        title = "聚焦",
+                        summary = "设置首页聚焦内容",
                         onClick = {
                             showToast(context, "开发中...")
                         }
                     )
                     SuperArrow(
-                        title = "文章样式",
-                        summary = "调整文章字体以及字体大小",
+                        title = "新闻正文样式",
+                        summary = "调整新闻正文字体样式及大小",
                         onClick = {
                             navController.navigate(Destinations.ArticleStyle.route)
                         }
@@ -226,7 +226,7 @@ fun SettingScreen(
                     )
                     BasicComponent(
                         title = stringResource(id = R.string.check_update),
-                        summary = "当前版本 ${getVersionName()}(${getVersionCode()})",
+                        summary = "当前应用版本 ${getVersionName()}(${getVersionCode()})",
                         rightActions = {
                             if (uiState.isUpdate) {
                                 InfoBadge(text = "新版本", color = MaterialTheme.colorScheme.error)
@@ -264,6 +264,26 @@ fun SettingScreen(
                             viewModel.clearCache()
                         },
                         rightText = uiState.cacheSize
+                    )
+                    BasicComponent(
+                        title = "验证码识别模型",
+                        summary = "当前版本 v1.0.1(101)",
+                        rightActions = {
+                            if (uiState.isUpdate) {
+                                InfoBadge(text = "新版本", color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        onClick = {
+                            // showUpdateDialog.value = true
+                            scope.launch {
+                                val res = viewModel.getCaptchaVersion()
+                                if (res <= 101) {
+                                    showUpdateDialog.value = true
+                                } else {
+                                    snackBarHostState.showSnackbar("当前已是最新版本")
+                                }
+                            }
+                        }
                     )
                 }
             }

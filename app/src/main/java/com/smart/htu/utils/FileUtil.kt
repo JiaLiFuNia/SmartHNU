@@ -43,4 +43,22 @@ object FileUtil {
         }
     }
 
+    fun getFileContent(
+        fileName: String,
+        targetDirectory: String
+    ): String? {
+        try {
+            val downloadsDir =
+                Environment.getExternalStoragePublicDirectory(targetDirectory)
+            val file = File(downloadsDir, fileName)
+            if (!file.exists()) {
+                return null
+            }
+            return file.readText()
+        } catch (e: Exception) {
+            Log.e("TAG666 getFileContent", "${e.message}")
+            return null
+        }
+    }
+
 }

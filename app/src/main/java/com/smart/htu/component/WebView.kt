@@ -28,7 +28,6 @@ import com.kevinnzou.web.LoadingState
 import com.kevinnzou.web.WebView
 import com.kevinnzou.web.WebViewNavigator
 import com.kevinnzou.web.WebViewState
-import com.kevinnzou.web.rememberWebViewNavigator
 import com.kevinnzou.web.rememberWebViewState
 import com.smart.htu.screens.news.newsView.JavaScriptInterface
 import com.smart.htu.utils.FileUtil.downloadFile
@@ -52,8 +51,9 @@ fun WebView(
     onCurrentUrl: (String) -> Unit = { },
     onImageClick: (imgUrl: String) -> Unit = { },
     isShowLinearProgressIndicator: Boolean = true,
+    captureBackPresses: Boolean = true,
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
-    navigator: WebViewNavigator = rememberWebViewNavigator(),
+    navigator: WebViewNavigator,
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -213,6 +213,7 @@ fun WebView(
             modifier = Modifier
                 .fillMaxSize(),
             navigator = navigator,
+            captureBackPresses = captureBackPresses,
             onCreated = { webView ->
                 webView.setDefaultSettings()
                 webView.setBackgroundColor(Color.Transparent.toArgb())

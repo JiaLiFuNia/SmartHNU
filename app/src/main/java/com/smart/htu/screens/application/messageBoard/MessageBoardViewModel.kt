@@ -3,8 +3,8 @@ package com.smart.htu.screens.application.messageBoard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.PostDetailData
-import com.smart.htu.api.module.PostsListData
 import com.smart.htu.api.module.PostsListData.PageData
+import com.smart.htu.api.module.PostsListData.PostsEntity
 import com.smart.htu.repo.MessageBoardRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class MessageBoardUiState(
-    val postsListData: PostsListData? = null,
+    val postsListData: List<PostsEntity>? = null,
     val pageData: PageData? = null,
     val postDetailData: PostDetailData? = null
 )
@@ -37,8 +37,14 @@ class MessageBoardViewModel @Inject constructor(
         viewModelScope.launch {
             messageBoardRepo.getMessageBoardPostsService(page)
                 .onSuccess { res ->
+                    val currentList = _uiState.value.postsListData
+                    val newList = if (page > 1) {
+                        (currentList ?: emptyList()) + res.list
+                    } else {
+                        res.list
+                    }
                     _uiState.update {
-                        it.copy(postsListData = res, pageData = res.page)
+                        it.copy(postsListData = newList, pageData = res.page)
                     }
                 }
         }

@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -40,6 +41,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -56,12 +58,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.window.core.layout.WindowSizeClass
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.api.module.ExamEntity
+import com.smart.htu.api.module.WarningWeatherData
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.SuggestChip
@@ -80,11 +84,14 @@ import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.Constants.Companion.SECOND_CLASS_URL
 import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
 import com.smart.htu.utils.startCalendar
+import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
+import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.extra.SuperBottomSheet
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
@@ -108,7 +115,7 @@ fun Main(
     val loginUiState by loginViewModel.uiState.collectAsState()
     val airConditionUiState by airConditionViewModel.uiState.collectAsState()
 
-    val loginState = remember {
+    val isNotLoggedIn = remember {
         derivedStateOf { loginUiState.jwcLoginState != 1 && loginUiState.jwcLoginState != -2 }
     }
     val holidayState = remember {
@@ -120,7 +127,7 @@ fun Main(
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
-    LaunchedEffect(isRefreshing) {
+    LaunchedEffect(isRefreshing, uiState.loginJWCState) {
         if (isRefreshing) {
             mainViewModel.getCurrentWeather()
             mainViewModel.refreshNoticeAndUpdateMessage()
@@ -196,7 +203,7 @@ fun Main(
                         verticalArrangement = Arrangement.spacedBy(20.dp),
                         overscrollEffect = null
                     ) {
-                        if (loginState.value) {
+                        if (isNotLoggedIn.value) {
                             item {
                                 SuggestChip(
                                     onClick = { navController.navigate(Destinations.Login.route) },
@@ -228,7 +235,7 @@ fun Main(
                                 uiState = uiState,
                                 navController = navController,
                                 loginUiState = loginUiState,
-                                loginState = loginState.value
+                                loginState = isNotLoggedIn.value
                             )
                         }
                     }
@@ -248,7 +255,7 @@ fun Main(
                             TodayCourseCard(
                                 uiState.todayCourseList,
                                 uiState.examScheduleList,
-                                loginState.value,
+                                isNotLoggedIn.value,
                                 navController
                             )
                         }
@@ -263,9 +270,9 @@ fun Main(
                     verticalArrangement = Arrangement.spacedBy(20.dp),
                     overscrollEffect = null
                 ) {
-                    if (loginState.value || holidayState.value) {
+                    if (isNotLoggedIn.value || holidayState.value) {
                         item {
-                            if (loginState.value) {
+                            if (isNotLoggedIn.value) {
                                 SuggestChip(
                                     onClick = { navController.navigate(Destinations.Login.route) },
                                     onActionClick = { navController.navigate(Destinations.Login.route) },
@@ -295,7 +302,7 @@ fun Main(
                         TodayCourseCard(
                             uiState.todayCourseList,
                             uiState.examScheduleList,
-                            loginState.value,
+                            isNotLoggedIn.value,
                             navController
                         )
                     }
@@ -307,7 +314,7 @@ fun Main(
                             uiState = uiState,
                             navController = navController,
                             loginUiState = loginUiState,
-                            loginState = loginState.value
+                            loginState = isNotLoggedIn.value
                         )
                     }
                 }
@@ -324,6 +331,10 @@ fun FocusCard(
     mainUiState: AppUiState
 ) {
     val context = LocalContext.current
+    val isShowWeatherBottomSheet = remember { mutableStateOf(false) }
+    val isWarningWeather = remember {
+        derivedStateOf { mainUiState.warningWeatherData.isNotEmpty() }
+    }
     LargeCardDisplay(
         modifier = Modifier,
         title = "聚焦",
@@ -361,9 +372,16 @@ fun FocusCard(
                             modifier = Modifier.size(24.dp)
                         )
                     },
+                    trailingContent = {
+                        if (isWarningWeather.value) Badge()
+                    },
                     title = "即时天气",
                     content = "${mainUiState.currentWeather.data?.weather ?: "--"} ${mainUiState.currentWeather.data?.temperature ?: "--"} ℃",
-                    onClick = { },
+                    onClick = {
+                        if (isWarningWeather.value) {
+                            isShowWeatherBottomSheet.value = true
+                        }
+                    },
                     modifier = Modifier.weight(0.5f)
                 )
             }
@@ -408,6 +426,10 @@ fun FocusCard(
             }
         }
     }
+    WeatherBottomSheet(
+        isShowWeatherBottomSheet = isShowWeatherBottomSheet,
+        warningWeatherData = mainUiState.warningWeatherData
+    )
 }
 
 
@@ -477,6 +499,32 @@ fun TodayCourseCard(
         },
         leadingIconPainting = R.drawable.today_24px,
         content = {
+            val examScheduleList = remember(examScheduleList) {
+                examScheduleList.filter {
+                    it.date.isEqual(LocalDate.now())
+                }.sortedBy { it.startTime }
+            }
+            if (examScheduleList.isNotEmpty()) {
+                Column {
+                    examScheduleList.forEach { exam ->
+                        ExamScheduleCard(
+                            exam = exam,
+                            isInProgress = LocalDateTime.now().isBefore(
+                                LocalDateTime.of(exam.date, exam.endTime) // 结束之前
+                            ) && LocalDateTime.now().isAfter(
+                                LocalDateTime.of(exam.date, exam.startTime) // 开始之后
+                            ),
+                            isPassed = LocalDateTime.now().isAfter(
+                                LocalDateTime.of(exam.date, exam.endTime) // 结束之后
+                            ),
+                            onClick = {
+                                navController.navigate(Destinations.ExamSchedule.route)
+                            }
+                        )
+                    }
+                }
+                HorizontalDivider(modifier = Modifier.fillMaxWidth())
+            }
             Column(
                 modifier = if (todayCourseList == null || todayCourseList.isEmpty()) Modifier
                     .height(86.dp) else Modifier
@@ -510,33 +558,6 @@ fun TodayCourseCard(
                                 message = it
                             )
                         }
-                    }
-                }
-            }
-            val examScheduleList = remember(examScheduleList) {
-                examScheduleList.filter {
-                    it.date.isEqual(LocalDate.now())
-                }.sortedBy {
-                    LocalDateTime.of(it.date, it.startTime)
-                }
-            }
-            if (examScheduleList.isNotEmpty()) HorizontalDivider(modifier = Modifier.fillMaxWidth())
-            Column(
-                modifier = Modifier
-            ) {
-                if (examScheduleList.isNotEmpty()) {
-                    examScheduleList.forEach { exam ->
-                        ExamScheduleCard(
-                            exam = exam,
-                            isInProgress = LocalDateTime.now().isBefore(
-                                LocalDateTime.of(exam.date, exam.endTime) // 结束之前
-                            ) && LocalDateTime.now().isAfter(
-                                LocalDateTime.of(exam.date, exam.startTime) // 开始之后
-                            ),
-                            isPassed = LocalDateTime.now().isAfter(
-                                LocalDateTime.of(exam.date, exam.endTime) // 结束之后
-                            )
-                        )
                     }
                 }
             }
@@ -605,37 +626,20 @@ fun CommonAppsCard(
     )
 }
 
-/*@Composable
-fun ExamScheduleCard(
-    navController: NavController
-) {
-    LargeCardDisplay(
-        containerColor = MiuixTheme.colorScheme.surface,
-        modifier = Modifier,
-        title = "考试安排",
-        actionText = "全部",
-        navigateTo = {
-            navController.navigate(Destinations.ExamSchedule.route)
-        },
-        leadingIconPainting = R.drawable.lab_profile_24px,
-        content = {
-
-        }
-    )
-}*/
-
 @Composable
 fun ExamScheduleCard(
     exam: ExamEntity,
     isInProgress: Boolean,
-    isPassed: Boolean
+    isPassed: Boolean,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier,
         colors = CardDefaults.defaultColors(
             color = if (isPassed) MiuixTheme.colorScheme.surface
             else MiuixTheme.colorScheme.surface
-        )
+        ),
+        onClick = { onClick() }
     ) {
         val textColor = if (isPassed) MiuixTheme.colorScheme.disabledOnSecondaryVariant
         else MiuixTheme.colorScheme.onSurface
@@ -672,7 +676,7 @@ fun ExamScheduleCard(
                         modifier = Modifier
                     )
                     Text(
-                        text = "${exam.duration} 分钟",
+                        text = if (isInProgress) "考试中" else if (isPassed) "已结束" else "未开始",
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.titleMedium.copy(
@@ -691,7 +695,7 @@ fun ExamScheduleCard(
                         horizontalArrangement = Arrangement.Start,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(0.4f)
+                            .weight(0.45f)
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.schedule_24px),
@@ -722,7 +726,7 @@ fun ExamScheduleCard(
                         horizontalArrangement = Arrangement.Start,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(0.6f)
+                            .weight(0.55f)
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.location_on_24px),
@@ -742,6 +746,42 @@ fun ExamScheduleCard(
                             ),
                         )
                     }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun WeatherBottomSheet(
+    isShowWeatherBottomSheet: MutableState<Boolean>,
+    warningWeatherData: List<WarningWeatherData>
+) {
+    SuperBottomSheet(
+        show = isShowWeatherBottomSheet,
+        title = "天气预警",
+        onDismissRequest = {
+            isShowWeatherBottomSheet.value = false
+        },
+        insideMargin = DpSize(16.dp, 24.dp)
+    ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(warningWeatherData) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MiuixTheme.colorScheme.surface,
+                ) {
+                    BasicComponent(
+                        title = it.title,
+                        summary = it.content,
+                        insideMargin = PaddingValues(horizontal = 0.dp)
+                    )
                 }
             }
         }

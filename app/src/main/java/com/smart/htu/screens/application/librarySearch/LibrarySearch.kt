@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -419,11 +418,9 @@ fun WaitingBorrowedBookList(
                                 style = MaterialTheme.typography.titleMedium,
                                 maxLines = 1,
                                 textAlign = TextAlign.Left,
+                                overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .basicMarquee(
-                                        repeatDelayMillis = 2_000,
-                                    ),
+                                    .fillMaxWidth(),
                                 color = MiuixTheme.colorScheme.onSurface
                             )
                             Text(
@@ -501,10 +498,7 @@ fun HistoricalBorrowedBookList(
                                 maxLines = 1,
                                 textAlign = TextAlign.Left,
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .basicMarquee(
-                                        repeatDelayMillis = 2_000,
-                                    ),
+                                    .fillMaxWidth(),
                                 color = MiuixTheme.colorScheme.onSurface
                             )
                             Text(

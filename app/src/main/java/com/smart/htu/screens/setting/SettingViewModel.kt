@@ -1,21 +1,24 @@
 package com.smart.htu.screens.setting
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.annotation.ExperimentalCoilApi
 import coil.imageLoader
 import com.smart.htu.App.Companion.context
-import com.smart.htu.api.module.AIMessageEntity
-import com.smart.htu.api.module.AIModelConfigEntity
-import com.smart.htu.api.module.AIModulePostEntity
+import com.smart.htu.api.module.AIModelEntity
 import com.smart.htu.api.module.AIRole
+import com.smart.htu.api.module.ChatRequest
+import com.smart.htu.api.module.Message
 import com.smart.htu.api.module.UpdateEntity
+import com.smart.htu.repo.AIChatNetworkRepo
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_THEME_MODE
 import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.utils.CoilUtil.formatFileSize
 import com.smart.htu.utils.CoilUtil.getDirectorySize
+import com.smart.htu.utils.FileUtil.getFileContent
 import com.smart.htu.utils.TermUtil.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -39,9 +42,11 @@ data class SettingUiState(
     val selectedLanguageIndex: Int = 0,
     val updateInfo: UpdateEntity = UpdateEntity(),
     val aiFunctionEnabled: Boolean = false,
-    val aiModuleConfig: AIModelConfigEntity,
+    val selectedAIModelIndex: Int = 0,
+    val aiModelKey: String,
     val isTestLoading: Boolean = false,
     val isUpdate: Boolean = false,
+    val isCaptchaUpdate: Boolean = false,
     val termCode: String,
     val cacheSize: String = "计算中...",
     val loadImgEnabled: Boolean = true,
@@ -49,10 +54,26 @@ data class SettingUiState(
     val bionicReadingEnabled: Boolean = true,
 )
 
+val AI_MODEL_LIST = listOf(
+    AIModelEntity(
+        name = "DeepSeek-R1-0528-Qwen3-8B",
+        model = "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
+    ),
+    AIModelEntity(
+        name = "DeepSeek-R1-Distill-Qwen-7B",
+        model = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"
+    ),
+    AIModelEntity(
+        name = "Qwen3-8B",
+        model = "Qwen/Qwen3-8B"
+    )
+)
+
 @HiltViewModel
 class SettingViewModel @Inject constructor(
     private val dataStoreRepo: DataStoreRepo,
     private val networkRepo: NetworkRepo,
+    private val aiChatNetworkRepo: AIChatNetworkRepo,
     private val sharedDataRepository: SharedDataRepository
 ) : ViewModel() {
 
@@ -64,10 +85,7 @@ class SettingViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(
         SettingUiState(
             termCode = getCurrentTerm(),
-            aiModuleConfig = AIModelConfigEntity(
-                url = "https://chat.htu.edu.cn/api/chat/completions",
-                module = "DeepSeek-R1-Distill-Llama-70B"
-            )
+            aiModelKey = "sk-spvvubnanqwdszsdcyhorkezayflhskjkqquchmxzdiiqtmx"
         )
     )
 
@@ -109,12 +127,21 @@ class SettingViewModel @Inject constructor(
             }
         )
 
-    private val aiModelKeyStateFlow = dataStoreRepo.observeAIModelConfig()
+    private val selectedAIModelStateFlow = dataStoreRepo.observeSelectedAIModel()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
-                dataStoreRepo.observeAIModelConfig().first()
+                dataStoreRepo.observeSelectedAIModel().first()
+            }
+        )
+
+    private val aiModelKeyStateFlow = dataStoreRepo.observeAIModelKey()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeAIModelKey().first()
             }
         )
 
@@ -163,7 +190,12 @@ class SettingViewModel @Inject constructor(
         }
         viewModelScope.launch {
             aiModelKeyStateFlow.collect { value ->
-                _uiState.update { it.copy(aiModuleConfig = AIModelConfigEntity(key = value)) }
+                // _uiState.update { it.copy(aiModelKey = value) }
+            }
+        }
+        viewModelScope.launch {
+            selectedAIModelStateFlow.collect { value ->
+                _uiState.update { it.copy(selectedAIModelIndex = value) }
             }
         }
         viewModelScope.launch {
@@ -199,8 +231,10 @@ class SettingViewModel @Inject constructor(
                 .collect { config ->
                     _uiState.update {
                         it.copy(
-                            updateInfo = config ?: UpdateEntity(),
-                            isUpdate = config?.isNeedUpdate == true
+                            updateInfo = config?.data ?: UpdateEntity(),
+                            isUpdate = config?.data?.isNeedUpdate == true,
+                            isCaptchaUpdate = (config?.captchaVersion?.versionCode
+                                ?: 0) > getLocalCaptchaVersion()
                         )
                     }
                 }
@@ -208,13 +242,20 @@ class SettingViewModel @Inject constructor(
         calculateCacheSize()
     }
 
-
     suspend fun getUpdate(): Boolean {
         sharedDataRepository.getUpdate()
             .onSuccess {
-                return it.isNeedUpdate
+                return it.data.isNeedUpdate
             }
         return false
+    }
+
+    suspend fun getCaptchaVersion(): Int {
+        sharedDataRepository.getUpdate()
+            .onSuccess {
+                return it.captchaVersion.versionCode
+            }
+        return 0
     }
 
     fun changeDynamicTheme(mode: Int) {
@@ -241,19 +282,16 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    fun saveAIModelKey(key: String) {
+    fun saveAIModelKey(key: String, test: Boolean = true) {
         viewModelScope.launch {
-            dataStoreRepo.saveAIModelConfig(AIModelConfigEntity(key = key))
+            if (test) dataStoreRepo.saveAIModelKey(key)
+            else _uiState.update { it.copy(aiModelKey = key) }
         }
     }
 
-    fun setAIModuleConfig(
-        url: String = _uiState.value.aiModuleConfig.url,
-        module: String = _uiState.value.aiModuleConfig.module,
-        key: String = _uiState.value.aiModuleConfig.key
-    ) {
+    fun selectAIModel(index: Int) {
         viewModelScope.launch {
-            _uiState.update { it.copy(aiModuleConfig = AIModelConfigEntity(url, module, key)) }
+            dataStoreRepo.changeSelectedAIModel(index)
         }
     }
 
@@ -269,35 +307,37 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    fun testAIService(onResponse: (String) -> Unit) = viewModelScope.launch {
+    suspend fun testAIService(onResult: (String) -> Unit) {
         _uiState.update { it.copy(isTestLoading = true) }
-        val res = networkRepo.chatService(
-            url = _uiState.value.aiModuleConfig.url,
-            key = _uiState.value.aiModuleConfig.key,
-            data = AIModulePostEntity(
+        val res = aiChatNetworkRepo.chatService(
+            key = _uiState.value.aiModelKey,
+            data = ChatRequest(
                 messages = listOf(
-                    AIMessageEntity(
-                        content = "我通过接收信息来测试API是否正常工作，不需要思考，只需要向用户回复“测试成功”即可。",
+                    Message(
+                        content = "通过接收信息来测试API是否正常工作，不需要思考，只需要向用户回复“测试成功，欢迎使用 YunAI”即可。",
                         role = AIRole.SYSTEM.value
                     ),
-                    AIMessageEntity(
+                    Message(
                         content = "你好",
                         role = AIRole.USER.value
                     )
                 ),
-                model = _uiState.value.aiModuleConfig.module
+                model = AI_MODEL_LIST[_uiState.value.selectedAIModelIndex].model,
+                stream = false
             )
         )
         _uiState.update { it.copy(isTestLoading = false) }
+        Log.i("TAG666 testAIService", "$res")
         res.onSuccess {
-            if (it.choices.first().message.result.contains("测试成功")) {
-                onResponse("测试成功")
-                saveAIModelKey(_uiState.value.aiModuleConfig.key)
+            val content = it.choices.firstOrNull()?.message?.content ?: ""
+            if (content.contains("测试成功")) {
+                onResult(content.replace("\n", ""))
+                saveAIModelKey(_uiState.value.aiModelKey)
             } else {
-                onResponse("测试失败: ${it.choices.first().message.result}")
+                onResult("测试失败: $content")
             }
         }.onFailure {
-            onResponse("测试失败: " + (it.message ?: "请检查API配置"))
+            onResult("测试失败: " + (it.message ?: "请检查API配置"))
         }
     }
 
@@ -360,4 +400,21 @@ class SettingViewModel @Inject constructor(
             }
         }
     }*/
+
+    fun getLocalCaptchaVersion(): Int {
+        try {
+            val versionCode = getFileContent(
+                "captcha_version.txt",
+                android.os.Environment.DIRECTORY_DOWNLOADS
+            )
+            return if (versionCode != null) {
+                versionCode.toIntOrNull() ?: 0
+            } else {
+                0
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666 getLocalCaptchaVersion", "${e.message}")
+            return 0
+        }
+    }
 }

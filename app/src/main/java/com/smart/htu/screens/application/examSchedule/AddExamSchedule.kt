@@ -126,7 +126,7 @@ fun AddExamSchedule(
                                             examEntity.value
                                         )
                                     }
-                                    if (Permission.hasCalendarPermissions(context)) {
+                                    if (Permission.hasCalendarPermissions(context) && examEntity.value.isAddToCalendar) {
                                         addEvent(
                                             context = context,
                                             title = examEntity.value.examName,

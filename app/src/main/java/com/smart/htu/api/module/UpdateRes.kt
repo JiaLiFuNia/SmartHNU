@@ -5,7 +5,8 @@ import com.smart.htu.utils.APPVersion.getVersionCode
 data class UpdateRes(
     val code: Int,
     val message: String,
-    val data: UpdateEntity
+    val data: UpdateEntity,
+    val captchaVersion: CaptchaVersionEntity
 )
 
 data class UpdateEntity(
@@ -19,6 +20,12 @@ data class UpdateEntity(
 data class UpdateData(
     val downloadUrl: String,
     val content: String,
+)
+
+data class CaptchaVersionEntity(
+    val versionName: String,
+    val versionCode: Int = 0,
+    val downloadUrl: String
 )
 
 data class VersionEntity(

@@ -150,5 +150,7 @@
     <string name="display">样式</string>
     <string name="pinduoduo">拼多多取件码</string>
     <string name="logging_in">登录中</string>
+    <string name="repair">报修</string>
+    <string name="login_failed">登录失败</string>
 
 </resources>

@@ -73,7 +73,7 @@ fun ArticleStyle(
                     containerColor = MiuixTheme.colorScheme.background,
                     scrolledContainerColor = MiuixTheme.colorScheme.background
                 ),
-                title = { Text(text = "文章样式") },
+                title = { Text(text = "新闻正文样式") },
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() }) {
@@ -111,6 +111,7 @@ fun ArticleStyle(
                         WebView(
                             navigator = navigator,
                             url = "about:blank",
+                            captureBackPresses = false,
                             webViewState = rememberWebViewStateWithHTMLData(
                                 data = NewsHTML.HTML.format(
                                     NewsStyle.get(
@@ -178,8 +179,8 @@ fun ArticleStyle(
             item {
                 Card {
                     SuperDropdown(
-                        title = "字体",
-                        summary = "更改文章内容字体",
+                        title = "字体样式",
+                        summary = "更改字体样式",
                         items = listOf("系统默认", "Serif", "Sans-serif", "Monospace"),
                         selectedIndex = 0,
                         mode = DropDownMode.AlwaysOnRight,
@@ -193,8 +194,8 @@ fun ArticleStyle(
                 Card {
                     SuperSwitch(
                         checked = uiState.bionicReadingEnabled,
-                        title = "Bionic Reading",
-                        summary = "开启后会对文章内容进行Bionic Reading处理",
+                        title = "字体加粗",
+                        summary = "开启后会对新闻正文部分词语加粗，提升阅读体验",
                         onCheckedChange = {
                             viewModel.changeBionicReadingEnabled(it)
                         }

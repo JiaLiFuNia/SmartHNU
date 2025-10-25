@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,6 +39,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -66,6 +68,7 @@ import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import kotlin.math.ceil
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -130,7 +133,8 @@ fun MessageBoardDetail(
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
-                    top = it.calculateTopPadding() + 8.dp
+                    top = it.calculateTopPadding() + 8.dp,
+                    bottom = 12.dp
                 ),
                 modifier = Modifier
                     .fillMaxSize()
@@ -143,6 +147,13 @@ fun MessageBoardDetail(
                     }
                 } else {
                     item {
+                        Text(
+                            text = uiState.postDetailData!!.title,
+                            color = MiuixTheme.colorScheme.onSurface,
+                            style = MiuixTheme.textStyles.title3,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
                         PostCard(
                             post = uiState.postDetailData!!,
                             onImgClick = {
@@ -196,81 +207,72 @@ fun PostCard(
     post: PostDetailData,
     onImgClick: (String) -> Unit = {}
 ) {
-    Card(
+    BasicComponent(
+        title = "提问人 ${post.userName}",
+        summary = post.createTime,
+        leftAction = {
+            Image(
+                painter = painterResource(R.drawable.ic_avator_poster),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(48.dp)
+                    .padding(end = 8.dp)
+            )
+        },
+        rightActions = {
+            InfoBadge(post.cateName)
+        },
+        insideMargin = PaddingValues(horizontal = 0.dp)
+    )
+    Column(
         modifier = Modifier
+            .padding(bottom = 12.dp)
     ) {
-        BasicComponent(
-            title = "提问人 ${post.userName}",
-            summary = post.createTime,
-            leftAction = {
-                Image(
-                    painter = painterResource(R.drawable.ic_avator_poster),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .padding(end = 8.dp)
-                )
-            },
-            rightActions = {
-                InfoBadge(post.cateName)
-            }
-        )
-        Column(
+        Text(
+            text = post.content.replace("<br/>", "\n"),
+            style = MiuixTheme.textStyles.main,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier
-                .padding(horizontal = 12.dp)
-                .padding(bottom = 12.dp)
+                .padding(vertical = 4.dp)
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = post.title,
-                color = MiuixTheme.colorScheme.onSurface,
-                style = MiuixTheme.textStyles.title3
-            )
-            Text(
-                text = post.content.replace("<br/>", "\n"),
-                style = MiuixTheme.textStyles.body1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .padding(vertical = 4.dp)
-            )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                post.pics.forEach {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(it.url)
-                            .crossfade(true)
-                            .addHeader("User-Agent", "Mozilla/5.0")
-                            .error(R.drawable.book_failure)
-                            .build(),
-                        contentDescription = "picture",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(150.dp)
-                            .clickable {
-                                onImgClick(it.url)
-                            },
-                        alignment = Alignment.Center,
-                        placeholder = painterResource(id = R.drawable.book_failure)
-                    )
-                }
+            post.pics.forEach {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(it.url)
+                        .crossfade(true)
+                        .addHeader("User-Agent", "Mozilla/5.0")
+                        .error(R.drawable.book_failure)
+                        .build(),
+                    contentDescription = "picture",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(150.dp)
+                        .clickable {
+                            onImgClick(it.url)
+                        },
+                    alignment = Alignment.Center,
+                    placeholder = painterResource(id = R.drawable.book_failure)
+                )
             }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "分类：${post.teamName} / ${post.projectName}",
-                style = MiuixTheme.textStyles.body2,
-                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = "责任部门：${post.organizationName}",
-                style = MiuixTheme.textStyles.body2,
-                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                overflow = TextOverflow.Ellipsis
-            )
         }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "分类：${post.teamName} / ${post.projectName}",
+            style = MiuixTheme.textStyles.body2,
+            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text = "责任部门：${post.organizationName}",
+            style = MiuixTheme.textStyles.body2,
+            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -310,7 +312,7 @@ fun ReplyCard(
                 ) {
                     Text(
                         text = it.content.replace("<br/>", "\n"),
-                        style = MiuixTheme.textStyles.body2,
+                        style = MiuixTheme.textStyles.main,
                         overflow = TextOverflow.Ellipsis
                     )
                     Row {
@@ -348,7 +350,20 @@ fun CommentCard(
         BasicComponent(
             title = comment.content,
             rightActions = {
-                InfoBadge(text = "${comment.score}")
+                val score = ceil(comment.score / 20.0)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(score.toInt()) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = MiuixTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
             }
         )
     }

@@ -321,7 +321,7 @@ fun NewsItem(
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize(),
-        shape =  G2RoundedCornerShape(CardDefaults.CornerRadius),
+        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surface,
     ) {
         ListItem(

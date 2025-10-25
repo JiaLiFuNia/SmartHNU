@@ -73,7 +73,7 @@ data class BuyRecordsData(
 ) {
     val dateTime: String
         get() {
-            return dateFormatter(datetime, "yyyy-M-d H:mm:ss", "yyyy-MM-dd HH:mm")
+            return dateFormatter(datetime, "yyyy-M-d H:mm:ss", "yyyy-MM-dd")
         }
 
     val easyDateTime: String

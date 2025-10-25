@@ -1,6 +1,8 @@
 package com.smart.htu.utils
 
+import android.util.Log
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
@@ -24,12 +26,19 @@ object DateUtil {
         return date
     }
 
+    fun convertStringDateTimeToLocalDateTime(dateString: String, pattern: String): LocalDateTime {
+        val formatter = DateTimeFormatter.ofPattern(pattern)
+        val dateTime = LocalDateTime.parse(dateString, formatter)
+        return dateTime
+    }
+
     fun dateFormatter(dateString: String, fromPattern: String, toPattern: String): String {
         return try {
             val date = convertStringDateToLocalDate(dateString, fromPattern)
             val toFormatter = DateTimeFormatter.ofPattern(toPattern)
             date.format(toFormatter)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e("TAG666", "dateFormatter: $e")
             dateString
         }
     }

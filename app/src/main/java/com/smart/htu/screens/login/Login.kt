@@ -30,6 +30,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +58,7 @@ import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.HENAN_NORMAL_UNIVERSITY
 import com.smart.htu.utils.startLaunchAPK
+import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.icon.MiuixIcons
@@ -73,6 +75,7 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
     val autofillManager = LocalAutofillManager.current
+    val scope = rememberCoroutineScope()
 
     val showLoginInfoDialog = remember { mutableStateOf(false) }
 
@@ -170,12 +173,14 @@ fun LoginScreen(
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 focusManager.clearFocus()
-                                viewModel.login(
-                                    onSuccess = {
-                                        focusManager.clearFocus()
-                                        autofillManager?.commit()
-                                    }
-                                )
+                                scope.launch {
+                                    viewModel.login(
+                                        onSuccess = {
+                                            focusManager.clearFocus()
+                                            autofillManager?.commit()
+                                        }
+                                    )
+                                }
                             }
                         ),
                         trailingIcon = {
@@ -204,12 +209,14 @@ fun LoginScreen(
                         if (uiState.studentID == "admin")
                             navController.navigate(Destinations.AccountManage.route)
                         else {
-                            viewModel.login(
-                                onSuccess = {
-                                    focusManager.clearFocus()
-                                    autofillManager?.commit()
-                                }
-                            )
+                            scope.launch {
+                                viewModel.login(
+                                    onSuccess = {
+                                        focusManager.clearFocus()
+                                        autofillManager?.commit()
+                                    }
+                                )
+                            }
                         }
                     },
                     modifier = Modifier

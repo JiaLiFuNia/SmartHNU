@@ -107,18 +107,19 @@ class ExamScheduleViewModel @Inject constructor(
         }
     }
 
-    fun modifyExamSchedule(oldExamEntityId: String, newExamEntity: ExamEntity) {
+    fun modifyExamSchedule(oldExamId: String, newExam: ExamEntity) {
         viewModelScope.launch {
             val newExamList = uiState.value.examScheduleList.toMutableList().apply {
-                val index = this.indexOfFirst { it.id == oldExamEntityId }
+                val index = this.indexOfFirst { it.id == oldExamId }
                 if (index != -1) {
-                    this[index] = newExamEntity.apply {
+                    this[index] = newExam.apply {
                         this.duration =
                             (LocalTime.of(endTime.hour, endTime.minute)
                                 .toSecondOfDay() - LocalTime.of(
                                 startTime.hour,
                                 startTime.minute
                             ).toSecondOfDay()) / 60f
+                        this.id = oldExamId
                     }
                 }
             }

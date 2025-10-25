@@ -44,7 +44,6 @@ fun MessageCardDisplay(
                                     )
                                 }
                             },
-                            onClick = {},
                             modifier = Modifier
                         )
                 }
@@ -65,7 +64,6 @@ fun MessageCardDisplay(
                                     )
                                 }
                             },
-                            onClick = {},
                             modifier = Modifier
                         )
                 }
@@ -87,7 +85,7 @@ fun FocusCardItem(
     trailingContent: (@Composable () -> Unit)? = null,
     title: String,
     content: String,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)? = null,
     modifier: Modifier
 ) {
     ListItem(
@@ -119,8 +117,11 @@ fun FocusCardItem(
             )
         },
         modifier = modifier
-            .clickable {
-                onClick()
-            }
+            .clickable(
+                enabled = onClick != null,
+                onClick = {
+                    onClick?.invoke()
+                }
+            )
     )
 }

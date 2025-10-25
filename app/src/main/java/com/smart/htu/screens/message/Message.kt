@@ -47,7 +47,6 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.BasicComponent
-import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Surface
@@ -55,6 +54,7 @@ import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
@@ -139,25 +139,14 @@ fun MessageScreen(
                     .overScrollVertical(),
                 overscrollEffect = null
             ) {
-                if (uiState.warningWeatherData.isNotEmpty()) {
-                    items(uiState.warningWeatherData) { notice ->
-                        SingleMessage(
-                            isRead = notice.id in uiState.readNoticeIdList,
-                            read = {
-                                viewModel.addReadNoticeId(notice.id)
-                            },
-                            title = notice.title,
-                            content = notice.content,
-                            noticeId = notice.id,
-                            action = "",
-                            type = NoticeType.COMMON,
-                            navController = navController
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-                }
                 if (uiState.noticeList.isNotEmpty()) {
-                    items(uiState.noticeList.sortedByDescending { it.id }) { notice ->
+                    items(uiState.noticeList.sortedByDescending { it.id }.filter { notice ->
+                        val currentDate = LocalDateTime.now()
+                        notice.expireDate.isAfter(currentDate) || notice.expireDate.isEqual(
+                            currentDate
+                        )
+                    }
+                    ) { notice ->
                         SingleMessage(
                             isRead = notice.id in uiState.readNoticeIdList,
                             read = {
@@ -229,7 +218,6 @@ fun SingleMessage(
         color = color,
         shape = G2RoundedCornerShape(CardDefaults.CornerRadius)
     ) {
-        Card { }
         BasicComponent(
             title = title,
             summary = content,

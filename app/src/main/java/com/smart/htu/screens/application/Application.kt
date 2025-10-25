@@ -131,12 +131,12 @@ fun Application(
                                     showAuthLoginDialog.value = true
                                 }
 
-                                /*app.loginMode == ApplicationEntity.LoginMode.SECOND_CLASS && loginUiState.scLoginState != 1 -> {
+                                app.loginMode == ApplicationEntity.LoginMode.SECOND_CLASS && loginUiState.scLoginState != 1 -> {
                                     scope.launch {
                                         loginViewModel.loadSecondClassSid()
                                         showSCLoginDialog.value = true
                                     }
-                                }*/
+                                }
 
                                 else -> {
                                     navController.navigateWithCheckLoginState(
@@ -204,6 +204,9 @@ fun Application(
         summary = "第二课堂登录",
         isNeedVerifyCode = true,
         verifyCodeModel = verifyCodeModel,
+        onClickVerifyCode = {
+            verifyCodeRefreshKey++
+        },
         onLogin = { studentID, password, verifyCode ->
             scope.launch {
                 loginViewModel.secondClassLogin(

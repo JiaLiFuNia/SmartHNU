@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -28,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -46,8 +48,11 @@ import com.smart.htu.api.module.PostsListData.PostsEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
+import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.utils.Constants.Companion.AUTH_LOGIN_URL
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
+import com.smart.htu.utils.DateUtil.dateFormatter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.CardDefaults
@@ -71,6 +76,8 @@ fun MessageBoard(
     val scope = rememberCoroutineScope()
 
     val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
+
+    val pageNumber = remember { mutableIntStateOf(1) }
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
@@ -99,6 +106,18 @@ fun MessageBoard(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "back"
                         )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            navController.navigateToWebView(
+                                url = AUTH_LOGIN_URL + "https://yjfk.htu.edu.cn/h5/pages/ssp/post_edit",
+                                label = "发布留言"
+                            )
+                        }
+                    ) {
+                        Icon(imageVector = Icons.Outlined.Add, contentDescription = "add")
                     }
                 }
             )
@@ -148,12 +167,12 @@ fun MessageBoard(
                         CircularProgressIndicator()
                     }
                 } else {
-                    if (uiState.postsListData?.list.isNullOrEmpty()) {
+                    if (uiState.postsListData.isNullOrEmpty()) {
                         item {
                             EmptyContent(text = "暂无内容", image = emptyData())
                         }
                     } else {
-                        items(uiState.postsListData?.list ?: emptyList()) {
+                        items(uiState.postsListData ?: emptyList()) {
                             PostsCard(
                                 post = it,
                                 onClick = {
@@ -163,7 +182,10 @@ fun MessageBoard(
                             Spacer(modifier = Modifier.height(12.dp))
                         }
                         item {
-                            // load more
+                            LaunchedEffect(Unit) {
+                                pageNumber.intValue = pageNumber.intValue + 1
+                                viewModel.getMessageBoardPosts(pageNumber.intValue)
+                            }
                         }
                     }
                 }
@@ -191,8 +213,16 @@ fun PostsCard(
                 color = MiuixTheme.colorScheme.onSurface,
                 style = MiuixTheme.textStyles.headline1
             )
+            val publishDate = post.createTime.split(" ")[0]
+            val publishTime = post.createTime.split(" ")[1]
             Text(
-                text = "${post.cateName}  ${post.createTime}",
+                text = "${post.cateName}  ${
+                    dateFormatter(
+                        publishDate,
+                        "yyyy/MM/dd",
+                        "yyyy-MM-dd"
+                    )
+                } $publishTime",
                 color = MiuixTheme.colorScheme.disabledOnSecondaryVariant,
                 style = MiuixTheme.textStyles.subtitle,
                 modifier = Modifier.padding(bottom = 3.dp)

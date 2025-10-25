@@ -309,10 +309,11 @@ class JWCNetworkRepo @Inject constructor(
     suspend fun reLogin(): Boolean {
         val password = passwordRepo.getPassword(JWC_PASSWORD) ?: DEFAULT_PASSWORD
         val res = jwcLogin(studentIdStateFlow.value, password)
-        Log.i("TAG666 reLogin", res.toString())
         res.onSuccess {
             dataStoreRepo.changeLoginJWCState(1)
             dataStoreRepo.setJWCToken(it.user?.token ?: DEFAULT_TOKEN)
+        }.onFailure {
+            dataStoreRepo.changeLoginJWCState(-2)
         }
         return res.isSuccess
     }

@@ -1,5 +1,6 @@
 package com.smart.htu.screens.person
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -72,7 +73,7 @@ fun PersonScreen(
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
-    LaunchedEffect(isRefreshing, uiState.jwcLoginState) {
+    LaunchedEffect(isRefreshing) {
         if (isRefreshing) {
             viewModel.getPersonalMessage()
             isRefreshing = false
@@ -250,46 +251,54 @@ fun PersonScreen(
                                 label = stringResource(id = R.string.username),
                                 trailingText = uiState.personalMessage?.username
                             )
-                            PersonalMessage(
-                                label = stringResource(id = R.string.birthday),
-                                trailingText = uiState.personalMessage?.birthday,
-                                isShowPrivateMessage = isShowPrivateMessage.value
-                            )
-                            PersonalMessage(
-                                label = stringResource(id = R.string.student_id),
-                                trailingText = uiState.personalMessage?.studentId,
-                                isShowPrivateMessage = isShowPrivateMessage.value
-                            )
-                            PersonalMessage(
-                                label = stringResource(id = R.string.class_name),
-                                trailingText = uiState.personalMessage?.className,
-                                isShowPrivateMessage = isShowPrivateMessage.value
-                            )
-                            PersonalMessage(
-                                label = stringResource(id = R.string.academic),
-                                trailingText = uiState.personalMessage?.academic,
-                                isShowPrivateMessage = isShowPrivateMessage.value
-                            )
-                            PersonalMessage(
-                                label = stringResource(R.string.campus_name),
-                                trailingText = uiState.personalMessage?.campusName,
-                                isShowPrivateMessage = isShowPrivateMessage.value
-                            )
-                            PersonalMessage(
-                                label = stringResource(id = R.string.political_outlook),
-                                trailingText = uiState.personalMessage?.politicalProfile,
-                                isShowPrivateMessage = isShowPrivateMessage.value
-                            )
-                            PersonalMessage(
-                                label = stringResource(id = R.string.phone),
-                                trailingText = uiState.personalMessage?.phoneNumber,
-                                isShowPrivateMessage = isShowPrivateMessage.value
-                            )
-                            PersonalMessage(
-                                label = stringResource(id = R.string.email),
-                                trailingText = uiState.personalMessage?.emailNumber,
-                                isShowPrivateMessage = isShowPrivateMessage.value
-                            )
+                            Column(
+                                modifier = Modifier
+                                    .animateContentSize()
+                                    .hazeEffect {
+                                        blurEnabled = !isShowPrivateMessage.value
+                                    }
+                            ) {
+                                PersonalMessage(
+                                    label = stringResource(id = R.string.birthday),
+                                    trailingText = uiState.personalMessage?.birthday,
+                                    isShowPrivateMessage = isShowPrivateMessage.value
+                                )
+                                PersonalMessage(
+                                    label = stringResource(id = R.string.student_id),
+                                    trailingText = uiState.personalMessage?.studentId,
+                                    isShowPrivateMessage = isShowPrivateMessage.value
+                                )
+                                PersonalMessage(
+                                    label = stringResource(id = R.string.class_name),
+                                    trailingText = uiState.personalMessage?.className,
+                                    isShowPrivateMessage = isShowPrivateMessage.value
+                                )
+                                PersonalMessage(
+                                    label = stringResource(id = R.string.academic),
+                                    trailingText = uiState.personalMessage?.academic,
+                                    isShowPrivateMessage = isShowPrivateMessage.value
+                                )
+                                PersonalMessage(
+                                    label = stringResource(R.string.campus_name),
+                                    trailingText = uiState.personalMessage?.campusName,
+                                    isShowPrivateMessage = isShowPrivateMessage.value
+                                )
+                                PersonalMessage(
+                                    label = stringResource(id = R.string.political_outlook),
+                                    trailingText = uiState.personalMessage?.politicalProfile,
+                                    isShowPrivateMessage = isShowPrivateMessage.value
+                                )
+                                PersonalMessage(
+                                    label = stringResource(id = R.string.phone),
+                                    trailingText = uiState.personalMessage?.phoneNumber,
+                                    isShowPrivateMessage = isShowPrivateMessage.value
+                                )
+                                PersonalMessage(
+                                    label = stringResource(id = R.string.email),
+                                    trailingText = uiState.personalMessage?.emailNumber,
+                                    isShowPrivateMessage = isShowPrivateMessage.value
+                                )
+                            }
                         }
                         Spacer(modifier = Modifier.height(20.dp))
                     }
@@ -387,7 +396,8 @@ fun loginStateString(state: Int): Int {
         0 -> R.string.no_login
         1 -> R.string.logged
         2 -> R.string.logging_in
-        3 -> R.string.login_expired
+        -2 -> R.string.login_expired
+        -1 -> R.string.login_failed
         else -> R.string.unknown_status
     }
 }
@@ -402,46 +412,45 @@ fun PersonalMessage(
     onClick: (() -> Unit)? = null
 ) {
     val scope = rememberCoroutineScope()
-    ListItem(
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-        headlineContent = {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1
-            )
-        },
-        trailingContent = {
-            if (content != null) {
-                content()
-            } else if (trailingText != null) {
+    if (isShowPrivateMessage) {
+        ListItem(
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            headlineContent = {
                 Text(
-                    text = trailingText,
+                    text = label,
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                    modifier = if (!isShowPrivateMessage) {
-                        Modifier.hazeEffect()
-                    } else {
-                        Modifier
-                    }
+                    maxLines = 1
                 )
-            }
-        },
-        modifier = Modifier.clickable {
-            if (onClick != null) {
-                onClick()
-            } else {
-                if (trailingText != null) {
-                    scope.launch {
-                        if (isShowPrivateMessage) {
-                            copyContent(trailingText)
-                            snackBarHostState.showSnackbar("已复制到剪贴板")
-                        } else {
-                            snackBarHostState.showSnackbar("已开启隐私保护模式，禁止复制信息")
+            },
+            trailingContent = {
+                if (content != null) {
+                    content()
+                } else if (trailingText != null) {
+                    Text(
+                        text = trailingText,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
+                }
+            },
+            modifier = Modifier.clickable(
+                enabled = isShowPrivateMessage
+            ) {
+                if (onClick != null) {
+                    onClick()
+                } else {
+                    if (trailingText != null) {
+                        scope.launch {
+                            if (isShowPrivateMessage) {
+                                copyContent(trailingText)
+                                snackBarHostState.showSnackbar("已复制到剪贴板")
+                            } else {
+                                snackBarHostState.showSnackbar("已开启隐私保护模式，禁止复制信息")
+                            }
                         }
                     }
                 }
             }
-        }
-    )
+        )
+    }
 }

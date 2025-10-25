@@ -193,6 +193,15 @@ class Constants {
                 route = Destinations.ExamSchedule.route,
                 category = ApplicationCategory.STUDY
             ),
+            ApplicationEntity(
+                guestMode = false,
+                loginMode = LoginMode.AUTH_SERVER,
+                icon = R.drawable.construction_24px,
+                label = R.string.repair,
+                routeType = RouteType.URL,
+                route = AUTH_LOGIN_URL + "https://houqin.htu.edu.cn/authserver/caslogin?service=https://houqin.htu.edu.cn/h5/pages/rsp/myDeclare/repairDeclares?plat=weChat&plat=h5",
+                category = ApplicationCategory.CAMPUS
+            ),
             /*
                         ApplicationEntity(
                             guestMode = false,
