@@ -470,7 +470,6 @@ fun SecondClass(
 
 @Composable
 fun SingleContent(
-    modifier: Modifier = Modifier,
     title: String,
     content: Int,
     hour: Double = 0.0
