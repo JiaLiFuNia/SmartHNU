@@ -13,8 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.navigation.NavController
 import com.mikepenz.aboutlibraries.ui.compose.LibraryDefaults
+import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.m3.libraryColors
+import com.smart.htu.R
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -47,11 +49,13 @@ fun License(
             )
         }
     ) {
+        val libs = produceLibraries(R.raw.aboutlibraries)
         LibrariesContainer(
+            libraries = libs.value,
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             contentPadding = it,
             colors = LibraryDefaults.libraryColors(
-                backgroundColor = MiuixTheme.colorScheme.background
+                libraryBackgroundColor = MiuixTheme.colorScheme.background
             )
         )
     }

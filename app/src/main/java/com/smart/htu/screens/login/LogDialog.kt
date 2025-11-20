@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -36,8 +37,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
 import com.smart.htu.R
 import com.smart.htu.component.TextButtonWithProgressIndicator
 import com.smart.htu.component.textButtonPrimaryColors
@@ -82,7 +83,7 @@ fun LogoutDialog(
         ) {
             TextButton(
                 enabled = countdown == 0,
-                text = stringResource(id = R.string.confirm) + if (isConfirmEnabled) "" else " ($countdown s)",
+                text = stringResource(id = R.string.confirm) + if (isConfirmEnabled) "" else " (${countdown}s)",
                 onClick = {
                     onConfirmClick()
                     showDialog.value = false
@@ -108,13 +109,14 @@ fun LoginDialog(
     showDialog: MutableState<Boolean>,
     title: String = stringResource(R.string.login),
     summary: String? = null,
+    initStudentID: String = "",
     isNeedVerifyCode: Boolean = false,
     verifyCodeModel: ImageRequest? = null,
     onLogin: (String, String, String) -> Unit,
     onClickVerifyCode: () -> Unit = {},
     logState: Int
 ) {
-    val account = remember { mutableStateOf("") }
+    val account = remember { mutableStateOf(initStudentID) }
     val password = remember { mutableStateOf("") }
     val verifyCode = remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -202,6 +204,7 @@ fun LoginDialog(
                                 .padding(end = 12.dp)
                                 .width(100.dp)
                                 .aspectRatio(14 / 5f)
+                                .fillMaxHeight()
                                 .clickable {
                                     onClickVerifyCode()
                                 },

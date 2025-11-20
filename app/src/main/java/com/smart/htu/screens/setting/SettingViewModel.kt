@@ -8,18 +8,21 @@ import coil.imageLoader
 import com.smart.htu.App.Companion.context
 import com.smart.htu.api.module.AIModelEntity
 import com.smart.htu.api.module.AIRole
+import com.smart.htu.api.module.CaptchaVersionEntity
 import com.smart.htu.api.module.ChatRequest
 import com.smart.htu.api.module.Message
 import com.smart.htu.api.module.UpdateEntity
+import com.smart.htu.api.module.UpdateRes
 import com.smart.htu.repo.AIChatNetworkRepo
+import com.smart.htu.repo.AppNetworkRepo
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_THEME_MODE
 import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.utils.CoilUtil.formatFileSize
 import com.smart.htu.utils.CoilUtil.getDirectorySize
-import com.smart.htu.utils.FileUtil.getFileContent
 import com.smart.htu.utils.TermUtil.getCurrentTerm
+import com.smart.htu.utils.ToastUtil.showToast
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,13 +43,14 @@ data class SettingUiState(
     val isDarkTheme: Int = 0,
     val blurEnabled: Boolean = true,
     val selectedLanguageIndex: Int = 0,
-    val updateInfo: UpdateEntity = UpdateEntity(),
+    val updateInfo: UpdateRes? = UpdateRes(0, "", UpdateEntity(), CaptchaVersionEntity()),
+    val captchaLocalInfo: CaptchaVersionEntity = CaptchaVersionEntity(),
+    val isUpdate: Boolean = false,
+    val isCaptchaUpdate: Boolean = false,
     val aiFunctionEnabled: Boolean = false,
     val selectedAIModelIndex: Int = 0,
     val aiModelKey: String,
     val isTestLoading: Boolean = false,
-    val isUpdate: Boolean = false,
-    val isCaptchaUpdate: Boolean = false,
     val termCode: String,
     val cacheSize: String = "计算中...",
     val loadImgEnabled: Boolean = true,
@@ -56,16 +60,12 @@ data class SettingUiState(
 
 val AI_MODEL_LIST = listOf(
     AIModelEntity(
-        name = "DeepSeek-R1-0528-Qwen3-8B",
-        model = "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
-    ),
-    AIModelEntity(
-        name = "DeepSeek-R1-Distill-Qwen-7B",
-        model = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"
-    ),
-    AIModelEntity(
         name = "Qwen3-8B",
         model = "Qwen/Qwen3-8B"
+    ),
+    AIModelEntity(
+        name = "DeepSeek-R1-0528-Qwen3-8B",
+        model = "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
     )
 )
 
@@ -73,6 +73,7 @@ val AI_MODEL_LIST = listOf(
 class SettingViewModel @Inject constructor(
     private val dataStoreRepo: DataStoreRepo,
     private val networkRepo: NetworkRepo,
+    private val appNetworkRepo: AppNetworkRepo,
     private val aiChatNetworkRepo: AIChatNetworkRepo,
     private val sharedDataRepository: SharedDataRepository
 ) : ViewModel() {
@@ -172,6 +173,15 @@ class SettingViewModel @Inject constructor(
             }
         )
 
+    private val captchaLocalInfoStateFlow = dataStoreRepo.observeUpdateRes()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeUpdateRes().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
             themeModeStateFlow.collect { value ->
@@ -219,6 +229,16 @@ class SettingViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
+            captchaLocalInfoStateFlow.collect { value ->
+                _uiState.update {
+                    it.copy(
+                        captchaLocalInfo = value,
+                        isCaptchaUpdate = value.versionCode > it.captchaLocalInfo.versionCode
+                    )
+                }
+            }
+        }
+        viewModelScope.launch {
             sharedDataRepository.termIndex
                 .collect { termIndex ->
                     _uiState.update {
@@ -227,35 +247,34 @@ class SettingViewModel @Inject constructor(
                 }
         }
         viewModelScope.launch {
-            sharedDataRepository.update
-                .collect { config ->
-                    _uiState.update {
-                        it.copy(
-                            updateInfo = config?.data ?: UpdateEntity(),
-                            isUpdate = config?.data?.isNeedUpdate == true,
-                            isCaptchaUpdate = (config?.captchaVersion?.versionCode
-                                ?: 0) > getLocalCaptchaVersion()
-                        )
-                    }
-                }
+            getUpdate()
         }
         calculateCacheSize()
     }
 
-    suspend fun getUpdate(): Boolean {
-        sharedDataRepository.getUpdate()
-            .onSuccess {
-                return it.data.isNeedUpdate
+    suspend fun getUpdate(
+        onAppUpdate: ((Boolean) -> Unit) = {},
+        onCaptchaModelUpdate: ((Boolean) -> Unit) = {}
+    ) {
+        appNetworkRepo.updateService()
+            .onSuccess { res ->
+                _uiState.update {
+                    it.copy(
+                        updateInfo = res,
+                        isUpdate = res.data.isNeedUpdate
+                    )
+                }
+                _uiState.update {
+                    it.copy(
+                        isCaptchaUpdate = res.captchaModelVersion.versionCode > it.captchaLocalInfo.versionCode
+                    )
+                }
+                onAppUpdate(_uiState.value.isUpdate)
+                onCaptchaModelUpdate(_uiState.value.isCaptchaUpdate)
             }
-        return false
-    }
-
-    suspend fun getCaptchaVersion(): Int {
-        sharedDataRepository.getUpdate()
-            .onSuccess {
-                return it.captchaVersion.versionCode
+            .onFailure {
+                showToast(context, "获取更新信息失败：${it.message}")
             }
-        return 0
     }
 
     fun changeDynamicTheme(mode: Int) {
@@ -387,6 +406,12 @@ class SettingViewModel @Inject constructor(
             }
         }
     }
+
+
+    suspend fun setLocalCaptchaVersion(update: CaptchaVersionEntity) {
+        dataStoreRepo.saveUpdateRes(update)
+    }
+
     /*fun changeLanguage(index: Int, context: Context) {
         viewModelScope.launch {
             val selectedLanguage = _uiState.value.languageList[index].value
@@ -401,20 +426,4 @@ class SettingViewModel @Inject constructor(
         }
     }*/
 
-    fun getLocalCaptchaVersion(): Int {
-        try {
-            val versionCode = getFileContent(
-                "captcha_version.txt",
-                android.os.Environment.DIRECTORY_DOWNLOADS
-            )
-            return if (versionCode != null) {
-                versionCode.toIntOrNull() ?: 0
-            } else {
-                0
-            }
-        } catch (e: Exception) {
-            Log.e("TAG666 getLocalCaptchaVersion", "${e.message}")
-            return 0
-        }
-    }
 }

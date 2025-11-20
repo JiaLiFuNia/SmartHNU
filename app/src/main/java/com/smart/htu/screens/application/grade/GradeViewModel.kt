@@ -33,6 +33,7 @@ data class GradeUiState(
     val allCredits: List<CreditItemEntity>? = null,
     val courseGrade: List<CourseGradeEntity>? = null,
     val courseGradeDetail: CourseGradeDetailEntity? = null,
+    val isLoadingGPA: Boolean = false,
     val loginJWCState: Int = DEFAULT_LOGIN_STATE,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
@@ -135,6 +136,7 @@ class GradeViewModel @Inject constructor(
     val type = mapOf("专业计划" to "01", "全部" to "")
     val statisticalMethod = mapOf("学期" to "1", "学年" to "2")
     suspend fun getCourseGPA(statisticalMethodIndex: Int = 1) {
+        _uiState.update { it.copy(isLoadingGPA = true) }
         val currentMap = _uiState.value.courseGPA.toMutableMap()
         type.forEach { (key, value) ->
             jwcNetworkRepo.getCourseGPAService(
@@ -144,6 +146,7 @@ class GradeViewModel @Inject constructor(
             }.onFailure { _uiState.update { it.copy(courseGPA = currentMap) } }
         }
         _uiState.update { it.copy(courseGPA = currentMap) }
+        _uiState.update { it.copy(isLoadingGPA = false) }
     }
 
     suspend fun getAllCredits() {

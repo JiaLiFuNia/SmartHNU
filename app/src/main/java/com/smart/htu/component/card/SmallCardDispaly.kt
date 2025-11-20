@@ -25,11 +25,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.screens.application.ApplicationEntity
 import com.smart.htu.screens.application.ApplicationEntity.RouteType
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 
 @Composable
 fun SmallCardDisplay(
@@ -53,7 +53,7 @@ fun SmallCardDisplay(
             .size(70.dp)
             .semantics { role = Role.Button }
             .animateContentSize(),
-        shape = G2RoundedCornerShape(top.yukonga.miuix.kmp.basic.CardDefaults.CornerRadius),
+        shape = ContinuousRoundedRectangle(top.yukonga.miuix.kmp.basic.CardDefaults.CornerRadius),
         color = if (enabled) enableContainerColor
         else disableContainerColor
     ) {

@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -35,25 +36,34 @@ import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
 import com.smart.htu.utils.CourseColorUtil.getColorByCourseName
-import top.yukonga.miuix.kmp.basic.CardDefaults
+import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.extra.SuperBottomSheet
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
+import java.time.LocalTime
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
-fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: CourseEntity) {
-    val isBottomSheetShow = remember { mutableStateOf(false) }
+fun SingleTaskCard(
+    taskName: String,
+    taskDescription: String,
+    taskColor: Color,
+    startTime: LocalTime,
+    endTime: LocalTime,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    val isInProgress = LocalTime.now().isAfter(startTime) && LocalTime.now().isBefore(endTime)
+    val isPassed = LocalTime.now().isAfter(endTime)
     Surface(
         modifier = modifier,
         onClick = {
             onClick()
-            isBottomSheetShow.value = true
         },
-        color = Color.Transparent,
-        shape = G2RoundedCornerShape(CardDefaults.CornerRadius)
+        color = Color.Transparent
     ) {
+        val iconColor = if (isPassed) MiuixTheme.colorScheme.primary.copy(0.6f)
+        else MiuixTheme.colorScheme.primary
         Row(
             modifier = Modifier
                 .fillMaxSize()
@@ -65,31 +75,33 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: CourseEnt
                     .width(4.dp)
                     .height(32.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(getColorByCourseName(message.courseName))
+                    .background(taskColor)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = message.courseName,
+                    text = taskName,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth(),
-                    softWrap = false,
                     style = MaterialTheme.typography.titleMedium.copy(
-                        color = MiuixTheme.colorScheme.onBackground
-                    )
+                        color = if (isPassed) MiuixTheme.colorScheme.onSurfaceVariantSummary else MiuixTheme.colorScheme.onSurface
+                    ),
+                    textDecoration = if (isPassed) TextDecoration.LineThrough else TextDecoration.None,
+                    modifier = Modifier
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.Start,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Start,
-                        modifier = Modifier.weight(0.5f)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(0.5f)
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.schedule_24px),
@@ -97,48 +109,96 @@ fun SingleCourseCard(modifier: Modifier, onClick: () -> Unit, message: CourseEnt
                             modifier = Modifier
                                 .size(22.dp)
                                 .padding(end = 4.dp),
-                            tint = MiuixTheme.colorScheme.primary
+                            tint = iconColor
                         )
                         Text(
-                            text = "${message.startTime}-${message.endTime}".ifEmpty { "暂无" },
-                            modifier = Modifier.weight(4 / 10f),
-                            textAlign = TextAlign.Start,
+                            text =
+                                when {
+                                    isInProgress -> "进行中-${
+                                        convertLocalTimeToStringTime(
+                                            time = endTime,
+                                            pattern = "HH:mm"
+                                        )
+                                    }"
+
+                                    else -> "${
+                                        convertLocalTimeToStringTime(
+                                            time = startTime,
+                                            pattern = "HH:mm"
+                                        )
+                                    }-${
+                                        convertLocalTimeToStringTime(
+                                            time = endTime,
+                                            pattern = "HH:mm"
+                                        )
+                                    }"
+                                },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
                             style = MaterialTheme.typography.bodyLarge.copy(
-                                color = MaterialTheme.colorScheme.onSurface.copy(
-                                    0.7f
-                                )
-                            )
+                                color = when {
+                                    isInProgress -> MiuixTheme.colorScheme.onSurface
+                                    isPassed -> MiuixTheme.colorScheme.onSurfaceVariantSummary
+                                    else -> MiuixTheme.colorScheme.onSurface
+                                }
+                            ),
+                            textDecoration = if (isPassed) TextDecoration.LineThrough else TextDecoration.None,
+                            textAlign = TextAlign.Start
                         )
                     }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Start,
-                        modifier = Modifier.weight(0.5f)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(0.5f)
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.location_on_24px),
-                            contentDescription = "time",
+                            contentDescription = "building",
                             modifier = Modifier
                                 .size(22.dp)
                                 .padding(end = 4.dp),
-                            tint = MiuixTheme.colorScheme.primary
+                            tint = iconColor
                         )
                         Text(
-                            text = message.classroomName ?: "暂无",
-                            modifier = Modifier.weight(4 / 10f),
+                            text = taskDescription.ifEmpty { "暂无" },
+                            modifier = Modifier.weight(1f),
                             textAlign = TextAlign.Start,
+                            maxLines = 1,
                             style = MaterialTheme.typography.bodyLarge.copy(
-                                color = MaterialTheme.colorScheme.onSurface.copy(
-                                    0.7f
-                                )
-                            )
+                                color = when {
+                                    isInProgress -> MiuixTheme.colorScheme.onSurface
+                                    isPassed -> MiuixTheme.colorScheme.onSurfaceVariantSummary
+                                    else -> MiuixTheme.colorScheme.onSurface
+                                }
+                            ),
+                            textDecoration = if (isPassed) TextDecoration.LineThrough else TextDecoration.None,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
             }
         }
     }
-    CourseDetailDialog(message, isBottomSheetShow)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SingleCourseCard(modifier: Modifier, course: CourseEntity) {
+    val isBottomSheetShow = remember { mutableStateOf(false) }
+    SingleTaskCard(
+        taskName = course.courseName,
+        taskDescription = course.classroomName ?: "暂无教室",
+        taskColor = getColorByCourseName(course.courseName),
+        startTime = course.startTime,
+        endTime = course.endTime,
+        modifier = modifier,
+    ) {
+        isBottomSheetShow.value = true
+    }
+    CourseDetailDialog(course, isBottomSheetShow)
 }
 
 @Composable
@@ -159,17 +219,7 @@ fun CourseDetailDialog(
             ""
         } + " ${message.startTime} - ${message.endTime}",
         insideMargin = DpSize(16.dp, 24.dp)
-    ) { /*}
-    BasicDialog(
-        showDialog = isBottomSheetShow,
-        title = message.courseName + if (message.classroomName.isNullOrEmpty()) {
-            " - ${message.projectName}"
-        } else {
-            ""
-        },
-        summary = "上课时间：${message.startTime} - ${message.endTime}",
-        insideMargin = DpSize(16.dp, 24.dp)
-    ) {*/
+    ) {
         MessageCardDisplay(
             modifier = Modifier.fillMaxWidth(),
             message = listOf(

@@ -1,9 +1,11 @@
 package com.smart.htu.api
 
 import com.smart.htu.api.module.ACCookie
+import com.smart.htu.api.module.CaptchaVersionEntity
 import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.api.module.NewsMarkEntity
+import com.smart.htu.api.module.SCHourEntity
 import com.smart.htu.screens.application.ApplicationEntity
 import kotlinx.coroutines.flow.Flow
 import okhttp3.Cookie
@@ -19,11 +21,13 @@ interface DataStoreService {
     suspend fun changeLoginState(state: Int)
     suspend fun changeLoginJWCState(state: Int)
     suspend fun changeLoginSCState(state: Int)
+    suspend fun changeLoginLibraryState(state: Int)
+    suspend fun saveLibrarySession(session: String)
     suspend fun saveSecondClassSid(sid: String)
     suspend fun saveAuthCookie(cookie: List<Cookie>)
     suspend fun addWaitingBorrowedBookList(waitingBorrowedBookList: List<LibraryDetailEntity>)
     suspend fun saveStudentId(id: String)
-    suspend fun changeBuildingId(id: String)
+    suspend fun saveDormRoomId(id: String)
     suspend fun changeRoomId(room: String)
     suspend fun saveAirConditionCookieType(type: Int)
     suspend fun saveAirConditionUserCookie(cookie: ACCookie)
@@ -45,6 +49,8 @@ interface DataStoreService {
     suspend fun savePhysicalTestCode(code: String)
     suspend fun changeCourseTableBackgroundBlurRadius(radius: Int)
     suspend fun changeWeekendCourseShowState(isShow: Boolean)
+    suspend fun saveSecondClassData(data: SCHourEntity)
+    suspend fun saveUpdateRes(result: CaptchaVersionEntity)
 
     fun observeThemeMode(): Flow<Int>
     fun observeDarkTheme(): Flow<Int>
@@ -80,5 +86,10 @@ interface DataStoreService {
     fun observePhysicalTestCode(): Flow<String>
     fun observeCourseTableBackgroundBlurRadius(): Flow<Int>
     fun observeWeekendCourseShowState(): Flow<Boolean>
+    fun observeSecondClassData(): Flow<SCHourEntity?>
+    fun observeUpdateRes(): Flow<CaptchaVersionEntity>
+    fun observeLoginLibraryState(): Flow<Int>
+    fun observeLibrarySession(): Flow<String>
+
 
 }

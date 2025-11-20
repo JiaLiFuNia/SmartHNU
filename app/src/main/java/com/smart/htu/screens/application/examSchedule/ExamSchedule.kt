@@ -44,6 +44,11 @@ import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
 import com.smart.htu.utils.DateUtil.getCurrentDate
 import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.serialization.json.Json
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
@@ -54,7 +59,7 @@ import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDateTime
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun ExamSchedule(
     navController: NavController,
@@ -63,14 +68,14 @@ fun ExamSchedule(
     val uiState by viewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val hazeState = rememberHazeState()
 
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
             MediumTopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
+                    containerColor = Color.Transparent,
                     scrolledContainerColor = MiuixTheme.colorScheme.background,
                 ),
                 title = { Text(text = "考试安排") },
@@ -93,6 +98,13 @@ fun ExamSchedule(
                             contentDescription = "up"
                         )
                     }
+                },
+                modifier = Modifier.hazeEffect(
+                    state = hazeState,
+                    style = HazeMaterials.thick(MiuixTheme.colorScheme.background)
+                ) {
+                    blurRadius = 30.dp
+                    blurEnabled = uiState.blurEnabled
                 }
             )
         }
@@ -108,6 +120,7 @@ fun ExamSchedule(
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .hazeSource(hazeState)
                 .overScrollVertical(),
             overscrollEffect = null
         ) {
@@ -118,7 +131,7 @@ fun ExamSchedule(
             }
             val currentDate = getCurrentDate("yyyy年MM月dd日 E")
             val groupedExams =
-                uiState.examScheduleList.sortedBy { exam -> exam.startTime }.groupBy { exam ->
+                uiState.examScheduleList.sortedBy { it.startTime }.groupBy { exam ->
                     convertLocalDateToStringDate(
                         date = exam.date,
                         pattern = "yyyy年MM月dd日 E"

@@ -43,6 +43,7 @@ sealed class Destinations(
     data object ArticleStyle : Destinations("article_style")
     data object ExamSchedule: Destinations("exam_schedule")
     data object AddExamSchedule: Destinations("add_exam_schedule")
+    data object SecondClass: Destinations("second_class")
 }
 
 @Serializable

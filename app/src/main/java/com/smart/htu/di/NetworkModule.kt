@@ -139,9 +139,22 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideLibraryService(): LibraryService {
+    fun provideLibraryService(
+        dataStoreRepo: DataStoreRepo
+    ): LibraryService {
+        val clientWithInterceptor = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val session = runBlocking { dataStoreRepo.observeLibrarySession().first() }
+                val newRequest = chain.request().newBuilder()
+                    .addHeader("Cookie", "meta-opac.session=${session}")
+                    .build()
+                chain.proceed(newRequest)
+            }
+            .build()
+
         val retrofit = Retrofit.Builder()
             .baseUrl(ApiConstants.LIBRARY_BASE_URL)
+            .client(clientWithInterceptor)
             .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -195,8 +208,15 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideNewsService(): NewsService {
+        val okHttpClient = OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+
         val retrofit = Retrofit.Builder()
             .baseUrl(ApiConstants.HTU_BASE_URL)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(NewsService::class.java)
@@ -237,8 +257,14 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideSecondClassService(): SecondClassService {
+        val okHttpClient = OkHttpClient.Builder()
+            .followRedirects(false)
+            .followSslRedirects(false)
+            .build()
+
         val retrofit = Retrofit.Builder()
             .baseUrl(ApiConstants.SECOND_CLASS_BASE_URL)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(SecondClassService::class.java)
@@ -270,6 +296,12 @@ class NetworkCookieJar @Inject constructor(
         return cookieManager.cookieStore.cookies.mapNotNull { it.toOkHttpCookie() }
     }
 
+    fun loadCookiesForUrl(url: String): List<Cookie> {
+        val uri = URI.create(url)
+        val cookies = cookieManager.cookieStore.get(uri)
+        return cookies.mapNotNull { it.toOkHttpCookie() }
+    }
+
     override fun loadForRequest(url: HttpUrl): List<Cookie> {
         val cookies = cookieManager.cookieStore.get(url.toUri())
         return cookies.mapNotNull { it.toOkHttpCookie() }
@@ -298,28 +330,23 @@ class NetworkCookieJar @Inject constructor(
     }
 
     private fun HttpCookie.toOkHttpCookie(): Cookie? {
-        return try {
-            Cookie.Builder()
-                .name(name)
-                .value(value)
-                .domain(domain ?: return null)
-                .path(path ?: "/")
-                .apply {
-                    if (maxAge > 0) {
-                        expiresAt(System.currentTimeMillis() + maxAge * 1000)
-                    }
-                    if (secure) {
-                        secure()
-                    }
-                    if (isHttpOnly) {
-                        httpOnly()
-                    }
+        return Cookie.Builder()
+            .name(name)
+            .value(value)
+            .domain(domain ?: return null)
+            .path(path ?: "/")
+            .apply {
+                if (maxAge > 0) {
+                    expiresAt(System.currentTimeMillis() + maxAge * 1000)
                 }
-                .build()
-        } catch (e: Exception) {
-            Log.e("NetworkCookieJar", "Error converting to OkHttpCookie: ${e.message}")
-            null
-        }
+                if (secure) {
+                    secure()
+                }
+                if (isHttpOnly) {
+                    httpOnly()
+                }
+            }
+            .build()
     }
 
     fun clearCookies() {

@@ -24,7 +24,11 @@ class AIChatNetworkRepo @Inject constructor(
         coerceInputValues = true
     }
 
-    fun streamChat(key: String, data: ChatRequest): Flow<ChatResponse> = flow {
+    fun streamChat(
+        baseUrl: String = "https://api.siliconflow.cn/",
+        key: String,
+        data: ChatRequest
+    ): Flow<ChatResponse> = flow {
         val client = OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
@@ -36,7 +40,7 @@ class AIChatNetworkRepo @Inject constructor(
             .toRequestBody("application/json".toMediaType())
 
         val request = Request.Builder()
-            .url("https://api.siliconflow.cn/v1/chat/completions")
+            .url("${baseUrl}v1/chat/completions")
             .addHeader("Authorization", "Bearer $key")
             .addHeader("Accept", "text/event-stream")
             .post(requestBody)
@@ -63,7 +67,7 @@ class AIChatNetworkRepo @Inject constructor(
         data: ChatRequest
     ): Result<ChatResponse> {
         try {
-            val response = aiService.chatService("Bearer $key", data)
+            val response = aiService.chat("Bearer $key", data)
             response.body()?.let { body ->
                 val chatResponse = jsonParser.decodeFromString<ChatResponse>(body.string())
                 return Result.success(chatResponse)

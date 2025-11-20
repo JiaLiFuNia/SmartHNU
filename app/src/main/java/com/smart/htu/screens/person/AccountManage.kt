@@ -72,12 +72,12 @@ fun AccountManage(
                 end = 12.dp,
                 bottom = 16.dp
             ),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .overScrollVertical(),
-            overscrollEffect = null
+            overscrollEffect = null,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item {
                 SuggestChip(
@@ -104,21 +104,23 @@ fun AccountManage(
                 }
             }
             item {
-                SettingItemCard(label = "Cookies", modifier = Modifier) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        uiState.cookies.forEach {
-                            TextField(
-                                backgroundColor = MiuixTheme.colorScheme.surface,
-                                value = it.value,
-                                onValueChange = {},
-                                label = it.name,
-                                enabled = false,
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                uiState.cookies.groupBy { it.domain }.forEach {
+                    SettingItemCard(label = "Cookie-${it.key}", modifier = Modifier) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            it.value.forEach {
+                                TextField(
+                                    backgroundColor = MiuixTheme.colorScheme.surface,
+                                    value = it.value,
+                                    onValueChange = {},
+                                    label = it.name,
+                                    enabled = false,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                         }
                     }
                 }

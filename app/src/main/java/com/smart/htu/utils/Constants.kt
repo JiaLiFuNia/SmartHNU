@@ -93,8 +93,8 @@ class Constants {
                 loginMode = LoginMode.SECOND_CLASS,
                 icon = R.drawable.format_paint_24px,
                 label = R.string.second_class,
-                routeType = RouteType.URL,
-                route = SECOND_CLASS_URL,
+                routeType = RouteType.SCREEN,
+                route = Destinations.SecondClass.route,
                 category = ApplicationCategory.CAMPUS
             ),
             ApplicationEntity(
@@ -201,6 +201,16 @@ class Constants {
                 routeType = RouteType.URL,
                 route = AUTH_LOGIN_URL + "https://houqin.htu.edu.cn/authserver/caslogin?service=https://houqin.htu.edu.cn/h5/pages/rsp/myDeclare/repairDeclares?plat=weChat&plat=h5",
                 category = ApplicationCategory.CAMPUS
+            ),
+            ApplicationEntity(
+                canBeUsed = false,
+                guestMode = false,
+                loginMode = LoginMode.AUTH_SERVER,
+                icon = R.drawable.construction_24px,
+                label = R.string.select_course_assistance,
+                routeType = null,
+                route = null,
+                category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
             /*
                         ApplicationEntity(

@@ -6,6 +6,7 @@ import com.smart.htu.R
 
 @kotlinx.serialization.Serializable
 data class ApplicationEntity(
+    val canBeUsed: Boolean = true,
     val guestMode: Boolean = true,
     val loginMode: LoginMode = LoginMode.NONE,
     val label: Int,

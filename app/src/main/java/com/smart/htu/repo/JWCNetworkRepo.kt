@@ -58,6 +58,15 @@ class JWCNetworkRepo @Inject constructor(
             }
         )
 
+    private val tokenStateFlow = dataStoreRepo.observeJWCToken()
+        .stateIn(
+            scope = scope,
+            started = Eagerly,
+            initialValue = runBlocking {
+                dataStoreRepo.observeJWCToken().first()
+            }
+        )
+
     suspend fun getCourseCreditService(): Result<List<CreditItemEntity>> {
         try {
             val res = jwcService.getAllCredit()
@@ -289,13 +298,17 @@ class JWCNetworkRepo @Inject constructor(
 
     suspend fun checkJWCTokenService(): Result<Boolean> {
         try {
+            if (tokenStateFlow.value.isEmpty())
+                return Result.success(false)
             val res = jwcService.checkToken()
             return when (res.code) {
                 200 -> {
+                    Log.i("TAG666 check token", "valid")
                     Result.success(true)
                 }
 
                 else -> {
+                    Log.i("TAG666 check token", "invalid, try reLogin")
                     if (reLogin()) Result.success(true)
                     else Result.failure(Exception(res.msg))
                 }
@@ -310,9 +323,11 @@ class JWCNetworkRepo @Inject constructor(
         val password = passwordRepo.getPassword(JWC_PASSWORD) ?: DEFAULT_PASSWORD
         val res = jwcLogin(studentIdStateFlow.value, password)
         res.onSuccess {
+            Log.i("TAG666 check token", "reLogin success ${it.msg}")
             dataStoreRepo.changeLoginJWCState(1)
             dataStoreRepo.setJWCToken(it.user?.token ?: DEFAULT_TOKEN)
         }.onFailure {
+            Log.i("TAG666 check token", "reLogin failed ${it.message}")
             dataStoreRepo.changeLoginJWCState(-2)
         }
         return res.isSuccess

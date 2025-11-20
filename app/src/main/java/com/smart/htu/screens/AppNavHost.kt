@@ -14,6 +14,7 @@ import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.navigation.Login
 import com.smart.htu.screens.navigation.MainFrame
 import com.smart.htu.screens.news.NewsViewModel
+import com.smart.htu.screens.setting.SettingViewModel
 
 @Composable
 fun AppNavHost() {
@@ -25,6 +26,7 @@ fun AppNavHost() {
     val newsViewModel: NewsViewModel = hiltViewModel()
     val airConditionViewModel: AirConditionViewModel = hiltViewModel()
     val librarySearchViewModel: LibrarySearchViewModel = hiltViewModel()
+    val settingViewModel: SettingViewModel = hiltViewModel()
     val navController = rememberNavController()
 
     NavDisplay(
@@ -35,8 +37,8 @@ fun AppNavHost() {
                     navController = navController,
                     mainViewModel = mainViewModel,
                     loginViewModel = loginViewModel,
-                    newsViewModel = newsViewModel,
-                    airConditionViewModel = airConditionViewModel
+                    airConditionViewModel = airConditionViewModel,
+                    settingViewModel = settingViewModel
                 )
             }
             entry<Login> {
@@ -46,13 +48,7 @@ fun AppNavHost() {
                 )
             }
         },
-        onBack = { count ->
-            repeat(count) {
-                if (backStack.isNotEmpty()) {
-                    backStack.removeLastOrNull()
-                }
-            }
-        }
+        onBack = { }
     )
 
 }

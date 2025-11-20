@@ -2,6 +2,7 @@ package com.smart.htu.screens.news.newsView
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Environment
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -484,7 +485,7 @@ fun NewsDetail(
             onDownload = {
                 scope.launch {
                     ToastUtil.showToast(context, "正在下载图片：$title.jpg")
-                    downloadFile(context, selectedImageData.value, "$title.jpg")
+                    downloadFile(context, selectedImageData.value, "$title.jpg", Environment.DIRECTORY_PICTURES)
                     ToastUtil.showToast(context, "下载成功")
                 }
             }

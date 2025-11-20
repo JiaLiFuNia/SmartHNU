@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.api.module.NoticeType
 import com.smart.htu.component.EmptyContent
@@ -52,9 +53,7 @@ import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
-import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
@@ -74,7 +73,6 @@ fun MessageScreen(
             isRefreshing = false
         }
     }
-
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     top.yukonga.miuix.kmp.basic.Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
@@ -140,13 +138,7 @@ fun MessageScreen(
                 overscrollEffect = null
             ) {
                 if (uiState.noticeList.isNotEmpty()) {
-                    items(uiState.noticeList.sortedByDescending { it.id }.filter { notice ->
-                        val currentDate = LocalDateTime.now()
-                        notice.expireDate.isAfter(currentDate) || notice.expireDate.isEqual(
-                            currentDate
-                        )
-                    }
-                    ) { notice ->
+                    items(uiState.noticeList.sortedByDescending { it.id }) { notice ->
                         SingleMessage(
                             isRead = notice.id in uiState.readNoticeIdList,
                             read = {
@@ -216,7 +208,7 @@ fun SingleMessage(
             .fillMaxWidth()
             .animateContentSize(),
         color = color,
-        shape = G2RoundedCornerShape(CardDefaults.CornerRadius)
+        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius)
     ) {
         BasicComponent(
             title = title,

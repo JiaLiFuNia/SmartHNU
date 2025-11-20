@@ -3,7 +3,6 @@ package com.smart.htu.screens.message
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.NoticeEntity
-import com.smart.htu.api.module.WarningWeatherData
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.NetworkRepo
@@ -18,12 +17,12 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 data class MessageUiState(
-    val warningWeatherData: List<WarningWeatherData> = emptyList(),
     val noticeList: List<NoticeEntity> = emptyList(),
-    val readNoticeIdList: List<String> = emptyList(),
+    val readNoticeIdList: MutableList<String> = mutableListOf(),
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
 
@@ -57,7 +56,16 @@ class MessageViewModel @Inject constructor(
                 .collect { config ->
                     _uiState.update {
                         it.copy(
-                            noticeList = config?.data ?: emptyList()
+                            noticeList = config?.data ?: emptyList(),
+                            readNoticeIdList = it.readNoticeIdList.apply {
+                                val currentDate = LocalDateTime.now()
+                                config?.data?.forEach {
+                                    if (it.expireDate.isAfter(currentDate) || it.expireDate.isEqual(
+                                            currentDate
+                                        )
+                                    ) addReadNoticeId(it.id)
+                                }
+                            }
                         )
                     }
                 }
@@ -69,17 +77,9 @@ class MessageViewModel @Inject constructor(
         }
         viewModelScope.launch {
             hadReadIdListStateFlow.collect { value ->
-                _uiState.update { it.copy(readNoticeIdList = value) }
+                _uiState.update { it.copy(readNoticeIdList = value.toMutableList()) }
             }
         }
-        getWarningWeather()
-    }
-
-    fun getWarningWeather() = viewModelScope.launch {
-        networkRepo.getWarningWeatherService()
-            .onSuccess { res ->
-                _uiState.update { it.copy(warningWeatherData = res) }
-            }
     }
 
     fun readAllNotice() = viewModelScope.launch {
@@ -90,7 +90,13 @@ class MessageViewModel @Inject constructor(
 
     fun addReadNoticeId(id: String) = viewModelScope.launch {
         if (!_uiState.value.readNoticeIdList.contains(id)) {
-            _uiState.update { it.copy(readNoticeIdList = it.readNoticeIdList + id) }
+            _uiState.update {
+                it.copy(
+                    readNoticeIdList = it.readNoticeIdList.apply {
+                        add(id)
+                    }
+                )
+            }
             dataStoreRepo.addReadNoticeId(_uiState.value.readNoticeIdList)
         }
     }

@@ -15,6 +15,7 @@ data class LibraryDetailEntity(
     val isbn: String? = "",
     val tags: List<String>? = emptyList(),
     val abstract: String? = "",
+    val topic: List<String>? = emptyList()
 )
 
 data class LibraryBookDetailRes(
@@ -52,7 +53,7 @@ data class BookDataMap(
         data class DetailInfoMap(
             @SerializedName("题名/责任者") val author: String,
             @SerializedName("ISBN及定价") val isbn: String,
-            @SerializedName("学科主题") val topic: String,
+            @SerializedName("学科主题") val topic: String? = null,
             @SerializedName("提要文摘附注") val abstract: String
         )
     }
@@ -76,4 +77,31 @@ data class BookBorrowingDetailRes(
                 ArrayList()
             }
     }
+}
+
+
+data class LibraryBorrowedBookRes(
+    val code: Int,
+    val msg: Any? = null,
+    val data: Data
+) {
+
+    data class Data(
+        val currentPage: Int,
+        val pageSize: Int,
+        val total: Int,
+        val items: List<BorrowedBookEntity>,
+        val totalPage: Int
+    )
+
+    data class BorrowedBookEntity(
+        val bibId: String,
+        val returnDate: String? = "",
+        val author: String,
+        val loanDate: String,
+        val dueDate: String? = "",
+        val location: String,
+        val title: String
+    )
+
 }

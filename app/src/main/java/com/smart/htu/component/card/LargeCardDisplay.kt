@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -51,7 +50,7 @@ fun LargeCardDisplay(
                 Icon(
                     painter = painterResource(id = leadingIconPainting),
                     contentDescription = "icon",
-                    tint = MaterialTheme.colorScheme.onSurface,
+                    tint = MiuixTheme.colorScheme.onSurface,
                 )
                 Spacer(modifier = Modifier.width(5.dp))
                 Text(text = title, style = MiuixTheme.textStyles.main)

@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.window.core.layout.WindowSizeClass
+import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.SuggestChip
@@ -69,7 +70,6 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,7 +82,7 @@ fun AirCondition(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
     val isShowSuggestChip by remember {
-        derivedStateOf { mutableStateOf(uiState.roomCode.isEmpty() || uiState.buildingCode.isEmpty() || !uiState.isCookieValid) }
+        derivedStateOf { mutableStateOf(uiState.dormRoomId.isEmpty() || !uiState.isCookieValid) }
     }
     val snackBarHostState = viewModel.snackBarHostState
 
@@ -178,7 +178,7 @@ fun AirCondition(
                                 rightActions = {
                                     Text(
                                         text = "${uiState.billData?.data?.soc ?: 0.0} 度",
-                                        color = Color(0xFF43A047),
+                                        color = MiuixTheme.colorScheme.primary,
                                         fontWeight = FontWeight.Bold
                                     )
                                 },
@@ -186,7 +186,8 @@ fun AirCondition(
                                     Icon(
                                         painter = painterResource(R.drawable.climate_mini_split_24px),
                                         contentDescription = null,
-                                        modifier = Modifier.padding(end = 12.dp)
+                                        modifier = Modifier.padding(end = 12.dp),
+                                        tint = MiuixTheme.colorScheme.onSurface
                                     )
                                 }
                             )
@@ -289,7 +290,7 @@ fun AirCondition(
                             rightActions = {
                                 Text(
                                     text = "${uiState.billData?.data?.soc ?: 0.0} 度",
-                                    color = Color(0xFF43A047),
+                                    color = MiuixTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold
                                 )
                             },
@@ -297,7 +298,8 @@ fun AirCondition(
                                 Icon(
                                     painter = painterResource(R.drawable.climate_mini_split_24px),
                                     contentDescription = null,
-                                    modifier = Modifier.padding(end = 12.dp)
+                                    modifier = Modifier.padding(end = 12.dp),
+                                    tint = MiuixTheme.colorScheme.onSurface
                                 )
                             }
                         )
@@ -410,7 +412,7 @@ fun AirConditionChart(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
+        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surface
     ) {
         Box(
@@ -436,7 +438,7 @@ fun SingleMessage(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
+        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surface
     ) {
         ListItem(

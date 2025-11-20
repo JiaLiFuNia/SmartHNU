@@ -1,28 +1,30 @@
 [versions]
 agp = "8.9.2"
+capsule = "2.1.1-patch2"
+composeMarkdown = "0.5.7"
 datetimeWheelPickerVersion = "1.1.0-alpha05-compose1.9"
 eddsa = "0.3.0"
 kotlin = "2.1.20"
 kotlinxDatetimeVersion = "0.7.1-0.6.x-compat"
 ksp = "2.1.20-2.0.0"
-aboutlibraries = "12.2.4"
+aboutlibraries = "13.1.0"
 map2d = "latest.integration"
 pdfViewerVersion = "2.3.7"
 reorderable = "3.0.0"
 webview = "0.33.6"
-gson = "2.11.0"
+gson = "3.0.0"
 scalars = "2.9.0"
-coreSplashscreen = "1.0.1"
+coreSplashscreen = "1.2.0"
 datastore = "1.1.4"
-haze = "1.6.10"
+haze = "1.7.0"
 hiltAndroid = "2.56.1"
 hiltNavigationCompose = "1.2.0"
 konfetti = "2.0.5"
 material = "1.8.3"
 material3 = "1.4.0"
 materialIconsCore = "1.7.8"
-adaptive = "1.2.0-beta03"
-nav3 = "1.0.0-alpha10"
+adaptive = "1.2.0"
+nav3 = "1.0.0"
 jsoup = "1.18.1"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -31,19 +33,22 @@ espressoCore = "3.6.1"
 coroutines = "1.10.1"
 serialization = "1.8.1"
 lifecycleRuntimeKtx = "2.8.7"
-lifecycleViewmodelNav3 = "1.0.0-alpha04"
+lifecycleViewmodelNav3 = "2.10.0"
 activityCompose = "1.10.1"
-composeBom = "2025.07.00"
-miuix = "0.5.1"
+composeBom = "2025.11.00"
+miuix = "0.6.1"
 navigationCompose = "2.9.3"
-coil = "2.6.0"
+coil = "3.3.0"
 appcompat = "1.7.1"
 retrofit = "2.11.0"
 webkit = "1.14.0"
-vico = "2.2.0"
+vico = "2.3.4"
+zoomableCoil3 = "0.18.0"
 
 [libraries]
 aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutlibraries" }
+capsule = { module = "com.mocharealm.gaze:capsule", version.ref = "capsule" }
+compose-markdown = { module = "com.github.jeziellago:compose-markdown", version.ref = "composeMarkdown" }
 datetime-wheel-picker = { module = "io.github.darkokoa:datetime-wheel-picker", version.ref = "datetimeWheelPickerVersion" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetimeVersion" }
 pdf-viewer = { module = "io.github.afreakyelf:Pdf-Viewer", version.ref = "pdfViewerVersion" }
@@ -77,8 +82,9 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3",
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-coil-base = { group = "io.coil-kt", name = "coil-base", version.ref = "coil" }
-coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+zoomable-image-coil3 = { module = "me.saket.telephoto:zoomable-image-coil3", version.ref = "zoomableCoil3" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 webview = { module = "io.github.kevinnzou:compose-webview", version.ref = "webview" }
 konfetti = { module = "nl.dionsegijn:konfetti-compose", version.ref = "konfetti" }
@@ -107,5 +113,5 @@ map2d = { module = "com.amap.api:map2d", version.ref = "map2d" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-about-library = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }
+about-library = { id = "com.mikepenz.aboutlibraries.plugin.android", version.ref = "aboutlibraries" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

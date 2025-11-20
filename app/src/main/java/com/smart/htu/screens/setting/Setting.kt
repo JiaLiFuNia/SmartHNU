@@ -1,22 +1,15 @@
 package com.smart.htu.screens.setting
 
+import android.os.Environment
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -32,15 +25,21 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.smart.htu.BuildConfig
+import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
+import com.smart.htu.api.module.CaptchaVersionEntity
 import com.smart.htu.component.InfoBadge
+import com.smart.htu.screens.CaptchaUpdateDialog
 import com.smart.htu.screens.UpdateDialog
+import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.setting.entity.DarkMode
 import com.smart.htu.utils.APPVersion.getVersionCode
 import com.smart.htu.utils.APPVersion.getVersionName
+import com.smart.htu.utils.FileUtil.moveFile
+import com.smart.htu.utils.ToastUtil.showSnackbar
 import com.smart.htu.utils.ToastUtil.showToast
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -49,79 +48,101 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
-import top.yukonga.miuix.kmp.basic.Scaffold
-import top.yukonga.miuix.kmp.basic.Surface
-import top.yukonga.miuix.kmp.extra.DropDownMode
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun SettingScreen(
     navController: NavController,
-    viewModel: SettingViewModel = hiltViewModel()
+    viewModel: SettingViewModel,
+    loginViewModel: LoginViewModel,
+    contentPadding: PaddingValues
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val loginUiState by loginViewModel.uiState.collectAsState()
+
     val hazeState = rememberHazeState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val scope = rememberCoroutineScope()
-    val snackBarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
     val context = LocalContext.current
 
     val showUpdateDialog = remember { mutableStateOf(false) }
+    val showCaptchaUpdateDialog = remember { mutableStateOf(false) }
 
-    Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
-        topBar = {
-            MediumTopAppBar(
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (uiState.blurEnabled) Color.Transparent else MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = if (uiState.blurEnabled) Color.Transparent else MiuixTheme.colorScheme.background
-                ),
-                title = { Text(text = stringResource(id = R.string.setting)) },
-                navigationIcon = {
-                    IconButton(
-                        onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "back"
-                        )
-                    }
-                },
-                modifier = Modifier.hazeEffect(
-                    state = hazeState,
-                    style = HazeMaterials.thick()
-                ) {
-                    blurRadius = 30.dp
-                    blurEnabled = uiState.blurEnabled
-                }
+    val captchaModelDownloadDir = File(
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+        "captcha.traineddata"
+    )
+    val captchaModelFileDir = File(
+        context.filesDir,
+        "captcha.traineddata"
+    )
+
+    val onCaptchaUpdateClick: () -> Unit = {
+        scope.launch {
+            moveFile(
+                sourceFile = captchaModelDownloadDir,
+                targetDirectory = context.filesDir,
+                targetFileName = "captcha.traineddata"
             )
-        },
-        snackbarHost = {
-            SnackbarHost(snackBarHostState)
+            viewModel.setLocalCaptchaVersion(
+                uiState.updateInfo?.captchaModelVersion ?: CaptchaVersionEntity()
+            )
+            showToast(context, "验证码识别模型已更新")
         }
-    ) {
+    }
+
+    Column {
+        MediumTopAppBar(
+            scrollBehavior = scrollBehavior,
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = if (uiState.blurEnabled) Color.Transparent else MiuixTheme.colorScheme.background,
+                scrolledContainerColor = if (uiState.blurEnabled) Color.Transparent else MiuixTheme.colorScheme.background
+            ),
+            title = { Text(text = stringResource(id = R.string.setting)) },
+            modifier = Modifier.hazeEffect(
+                state = hazeState,
+                style = HazeMaterials.thick()
+            ) {
+                blurRadius = 30.dp
+                blurEnabled = uiState.blurEnabled
+            }
+        )
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .hazeSource(state = hazeState)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .fillMaxSize()
-                .overScrollVertical(),
+                .overScrollVertical()
+                .padding(bottom = contentPadding.calculateBottomPadding()),
             overscrollEffect = null,
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                top = it.calculateTopPadding() + 8.dp,
-                end = 16.dp,
-                bottom = 12.dp
-            )
+            contentPadding = PaddingValues(16.dp, 12.dp),
         ) {
+            item {
+                SettingItemCard(
+                    label = "账号",
+                    titlePaddingValues = PaddingValues(start = 12.dp, bottom = 8.dp, top = 8.dp),
+                ) {
+                    SuperArrow(
+                        title = "账号与信息",
+                        summary = if (loginUiState.jwcLoginState != 1) "暂未登录，点击登录" else "个人信息、登录状态、退出登录等",
+                        onClick = {
+                            if (loginUiState.jwcLoginState != 1) navController.navigate(
+                                Destinations.Login.route
+                            ) else {
+                                navController.navigate(Destinations.Person.route)
+                            }
+                        }
+                    )
+                }
+            }
             item {
                 SettingItemCard(
                     label = "通用",
@@ -142,6 +163,15 @@ fun SettingScreen(
                             viewModel.changeLoadImgEnabled(!it)
                         }
                     )
+                    SuperSwitch(
+                        checked = true,
+                        title = "预测式返回",
+                        summary = "通过预测用户操作，提升页面响应速度（可能增加流量消耗）",
+                        onCheckedChange = {
+
+                        },
+                        enabled = false
+                    )
                 }
             }
             item {
@@ -154,7 +184,8 @@ fun SettingScreen(
                         summary = "设置首页聚焦内容",
                         onClick = {
                             showToast(context, "开发中...")
-                        }
+                        },
+                        enabled = false
                     )
                     SuperArrow(
                         title = "新闻正文样式",
@@ -176,7 +207,6 @@ fun SettingScreen(
                         summary = stringResource(id = R.string.theme_color_description),
                         items = themeModes,
                         selectedIndex = uiState.themeMode,
-                        mode = DropDownMode.AlwaysOnRight,
                         onSelectedIndexChange = { mode ->
                             viewModel.changeDynamicTheme(mode)
                         },
@@ -195,7 +225,6 @@ fun SettingScreen(
                         summary = "切换应用深色模式",
                         items = DarkMode.entries.map { item -> item.toStringResourceId() },
                         selectedIndex = uiState.isDarkTheme,
-                        mode = DropDownMode.AlwaysOnRight,
                         onSelectedIndexChange = { index ->
                             viewModel.changDarkMode(index)
                         }
@@ -226,21 +255,25 @@ fun SettingScreen(
                     )
                     BasicComponent(
                         title = stringResource(id = R.string.check_update),
-                        summary = "当前应用版本 ${getVersionName()}(${getVersionCode()})",
+                        summary = "当前应用版本：${getVersionName()}(${getVersionCode()})\n编译时间：${BuildConfig.BUILD_TIME}",
                         rightActions = {
                             if (uiState.isUpdate) {
                                 InfoBadge(text = "新版本", color = MaterialTheme.colorScheme.error)
                             }
                         },
                         onClick = {
-                            // showUpdateDialog.value = true
                             scope.launch {
-                                val res = viewModel.getUpdate()
-                                if (res) {
-                                    showUpdateDialog.value = true
-                                } else {
-                                    snackBarHostState.showSnackbar("当前已是最新版本")
-                                }
+                                viewModel.getUpdate(
+                                    onAppUpdate = {
+                                        scope.launch {
+                                            if (it) {
+                                                showUpdateDialog.value = true
+                                            } else {
+                                                showSnackbar(snackBarHostState, "当前已是最新版本")
+                                            }
+                                        }
+                                    }
+                                )
                             }
                         }
                     )
@@ -267,23 +300,47 @@ fun SettingScreen(
                     )
                     BasicComponent(
                         title = "验证码识别模型",
-                        summary = "当前版本 v1.0.1(101)",
+                        summary = "当前版本 ${uiState.captchaLocalInfo.versionName}(${uiState.captchaLocalInfo.versionCode})",
                         rightActions = {
-                            if (uiState.isUpdate) {
+                            if (uiState.isCaptchaUpdate && !captchaModelDownloadDir.exists() && !captchaModelFileDir.exists()) {
                                 InfoBadge(text = "新版本", color = MaterialTheme.colorScheme.error)
+                            } else {
+                                if (captchaModelDownloadDir.exists() && !captchaModelFileDir.exists()) {
+                                    TextButton(
+                                        onClick = { onCaptchaUpdateClick() }
+                                    ) {
+                                        Text(
+                                            text = "安装模型",
+                                            color = MiuixTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
                             }
                         },
                         onClick = {
-                            // showUpdateDialog.value = true
                             scope.launch {
-                                val res = viewModel.getCaptchaVersion()
-                                if (res <= 101) {
-                                    showUpdateDialog.value = true
+                                if (!captchaModelDownloadDir.exists()) {
+                                    viewModel.getUpdate(
+                                        onCaptchaModelUpdate = {
+                                            scope.launch {
+                                                if (it) {
+                                                    showCaptchaUpdateDialog.value = true
+                                                } else {
+                                                    snackBarHostState.showSnackbar("当前已是最新版本")
+                                                }
+                                            }
+                                        }
+                                    )
                                 } else {
-                                    snackBarHostState.showSnackbar("当前已是最新版本")
+                                    if (captchaModelFileDir.exists()) {
+                                        showToast(context, "验证码识别模型已是最新版本")
+                                    } else {
+                                        onCaptchaUpdateClick()
+                                    }
                                 }
                             }
-                        }
+                        },
+                        enabled = false
                     )
                 }
             }
@@ -291,9 +348,12 @@ fun SettingScreen(
     }
     UpdateDialog(
         showDialog = showUpdateDialog,
-        isForceUpdate = uiState.updateInfo.isForceUpdate,
-        onDismissRequest = {},
-        updateEntity = uiState.updateInfo
+        updateInfo = uiState.updateInfo?.data ?: return,
+        targetDirectory = Environment.DIRECTORY_DOWNLOADS
+    )
+    CaptchaUpdateDialog(
+        showDialog = showCaptchaUpdateDialog,
+        updateInfo = uiState.updateInfo?.captchaModelVersion ?: return
     )
 }
 
@@ -303,63 +363,5 @@ fun DarkMode.toStringResourceId(): String {
         DarkMode.SYSTEM -> "跟随系统"
         DarkMode.ON -> "开启"
         DarkMode.OFF -> "关闭"
-    }
-}
-
-
-@Composable
-fun UpdateCard(
-    onClick: () -> Unit,
-    uiState: SettingUiState
-) {
-    if (uiState.isUpdate || uiState.updateInfo.versionCode > 0) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth(),
-            shape = G2RoundedCornerShape(top.yukonga.miuix.kmp.basic.CardDefaults.CornerRadius),
-            color = MiuixTheme.colorScheme.surface,
-            onClick = {
-
-            }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                BasicComponent(
-                    title = "版本更新",
-                    summary = "版本号：${getVersionCode()} -> ${uiState.updateInfo.versionCode}",
-                    rightActions = {
-                        if (uiState.isUpdate) {
-                            InfoBadge(text = "新版本", color = MaterialTheme.colorScheme.error)
-                        }
-                    }
-                )
-                Text(
-                    text = uiState.updateInfo.update?.content ?: "暂无更新内容",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MiuixTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
-                TextButton(
-                    onClick = {
-                        onClick()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp, start = 16.dp, end = 16.dp, bottom = 16.dp),
-                    colors = ButtonDefaults.textButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ),
-                    shape = G2RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = "立即更新",
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                }
-            }
-        }
     }
 }

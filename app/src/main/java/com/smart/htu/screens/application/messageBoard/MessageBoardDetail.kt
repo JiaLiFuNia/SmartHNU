@@ -1,5 +1,6 @@
 package com.smart.htu.screens.application.messageBoard
 
+import android.os.Environment
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -44,8 +45,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.api.module.PostDetailData
@@ -193,7 +195,8 @@ fun MessageBoardDetail(
                     downloadFile(
                         context = context,
                         url = selectedImageData.value,
-                        fileName = "${uiState.postDetailData!!.title}.jpg"
+                        fileName = "${uiState.postDetailData!!.title}.jpg",
+                        targetDirectory = Environment.DIRECTORY_PICTURES
                     )
                     ToastUtil.showToast(context, "下载成功")
                 }
@@ -245,8 +248,6 @@ fun PostCard(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(it.url)
                         .crossfade(true)
-                        .addHeader("User-Agent", "Mozilla/5.0")
-                        .error(R.drawable.book_failure)
                         .build(),
                     contentDescription = "picture",
                     contentScale = ContentScale.Crop,
@@ -256,7 +257,8 @@ fun PostCard(
                             onImgClick(it.url)
                         },
                     alignment = Alignment.Center,
-                    placeholder = painterResource(id = R.drawable.book_failure)
+                    error = painterResource(id = R.drawable.ic_loading_placeholder_horizontal),
+                    placeholder = painterResource(id = R.drawable.ic_loading_placeholder_horizontal)
                 )
             }
         }
@@ -321,8 +323,6 @@ fun ReplyCard(
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data(it.url)
                                     .crossfade(true)
-                                    .addHeader("User-Agent", "Mozilla/5.0")
-                                    .error(R.drawable.book_failure)
                                     .build(),
                                 contentDescription = "picture",
                                 contentScale = ContentScale.Crop,
@@ -332,7 +332,8 @@ fun ReplyCard(
                                         onImgClick(it.url)
                                     },
                                 alignment = Alignment.Center,
-                                placeholder = painterResource(id = R.drawable.book_failure)
+                                error = painterResource(id = R.drawable.ic_loading_placeholder_horizontal),
+                                placeholder = painterResource(id = R.drawable.ic_loading_placeholder_horizontal)
                             )
                         }
                     }

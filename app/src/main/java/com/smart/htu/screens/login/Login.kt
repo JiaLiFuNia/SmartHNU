@@ -55,8 +55,8 @@ import com.smart.htu.R
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.TextButtonWithProgressIndicator
 import com.smart.htu.screens.navigateToWebView
-import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.HENAN_NORMAL_UNIVERSITY
+import com.smart.htu.utils.ToastUtil.showSnackbar
 import com.smart.htu.utils.startLaunchAPK
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.CardDefaults
@@ -206,10 +206,11 @@ fun LoginScreen(
                 TextButtonWithProgressIndicator(
                     text = if (uiState.isLoading) "正在登录..." else "登录",
                     onClick = {
-                        if (uiState.studentID == "admin")
-                            navController.navigate(Destinations.AccountManage.route)
-                        else {
-                            scope.launch {
+                        scope.launch {
+                            if (uiState.studentID == "admin") {
+                                viewModel.testLogin()
+                                // navController.navigate(Destinations.AccountManage.route)
+                            } else {
                                 viewModel.login(
                                     onSuccess = {
                                         focusManager.clearFocus()
@@ -288,7 +289,12 @@ fun LoginScreen(
     LoginInfoDialog(
         showDialog = showLoginInfoDialog,
         onDismissRequests = {
-            viewModel.showSnackBar("请前往河南师大智慧教务微信公众号进行密码重置")
+            scope.launch {
+                showSnackbar(
+                    viewModel.snackBarHostState,
+                    "请前往河南师大智慧教务微信公众号进行密码重置"
+                )
+            }
         }
     )
 }

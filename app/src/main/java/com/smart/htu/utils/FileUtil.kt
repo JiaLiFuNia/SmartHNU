@@ -2,7 +2,6 @@ package com.smart.htu.utils
 
 import android.app.DownloadManager
 import android.content.Context
-import android.os.Environment
 import android.util.Log
 import androidx.core.net.toUri
 import java.io.File
@@ -10,11 +9,8 @@ import java.io.FileOutputStream
 
 object FileUtil {
 
-    fun saveTextToFile(fileName: String, content: String) {
-        val downloadsDir =
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        val file = File(downloadsDir, fileName)
-
+    fun saveTextToFile(fileName: String, content: String, targetDirectory: String) {
+        val file = File(targetDirectory, fileName)
         FileOutputStream(file).use { output ->
             output.write(content.toByteArray())
         }
@@ -24,40 +20,62 @@ object FileUtil {
         context: Context,
         url: String,
         fileName: String,
-        targetDirectory: String = Environment.DIRECTORY_DOWNLOADS
+        targetDirectory: String
     ) {
         try {
             val request = DownloadManager.Request(url.toUri())
                 .setTitle(fileName)
                 .setDescription("正在下载文件")
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setDestinationInExternalPublicDir(targetDirectory, fileName)
                 .setAllowedOverMetered(true)
                 .setAllowedOverRoaming(true)
-
+                .setDestinationInExternalPublicDir(targetDirectory, fileName)
             val downloadManager =
                 context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             downloadManager.enqueue(request)
         } catch (e: Exception) {
-            Log.e("TAG666 downloadFile", "${e.message}")
+            Log.e("TAG666", "${e.message}")
+        }
+    }
+
+
+    fun moveFile(
+        sourceFile: File,
+        targetDirectory: File,
+        targetFileName: String
+    ): Boolean {
+        return try {
+            if (!targetDirectory.exists()) {
+                targetDirectory.mkdirs()
+            }
+            val targetFile = File(targetDirectory, targetFileName)
+            if (!sourceFile.exists()) {
+                false
+            } else {
+                sourceFile.copyTo(targetFile, overwrite = true)
+                sourceFile.delete()
+                true
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666 moveFile", "${e.message}")
+            false
         }
     }
 
     fun getFileContent(
         fileName: String,
-        targetDirectory: String
+        targetDirectory: File
     ): String? {
-        try {
-            val downloadsDir =
-                Environment.getExternalStoragePublicDirectory(targetDirectory)
-            val file = File(downloadsDir, fileName)
+        return try {
+            val file = File(targetDirectory, fileName)
             if (!file.exists()) {
-                return null
+                null
+            } else {
+                file.readText()
             }
-            return file.readText()
         } catch (e: Exception) {
             Log.e("TAG666 getFileContent", "${e.message}")
-            return null
+            null
         }
     }
 

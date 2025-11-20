@@ -37,7 +37,6 @@ import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TextField
-import top.yukonga.miuix.kmp.extra.DropDownMode
 import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -95,6 +94,18 @@ fun Feedback(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
+                Card {
+                    SuperDropdown(
+                        title = "反馈类型",
+                        items = FeedbackType.entries.map { it.type },
+                        onSelectedIndexChange = {
+                            viewModel.changeFeedbackType(FeedbackType.entries[it])
+                        },
+                        selectedIndex = FeedbackType.entries.indexOf(uiState.feedbackType)
+                    )
+                }
+            }
+            item {
                 TextField(
                     value = uiState.detailMessage,
                     label = "请详细描述你遇到的问题或者建议：",
@@ -108,17 +119,6 @@ fun Feedback(
             }
             item {
                 TextField(
-                    value = uiState.functionalModule,
-                    label = "功能模块",
-                    onValueChange = {
-                        viewModel.changeFunctionalModule(it)
-                    },
-                    useLabelAsPlaceholder = true,
-                    backgroundColor = MiuixTheme.colorScheme.surface
-                )
-            }
-            item {
-                TextField(
                     value = uiState.submitterEmail,
                     label = "邮箱(可空)",
                     onValueChange = {
@@ -127,19 +127,6 @@ fun Feedback(
                     useLabelAsPlaceholder = true,
                     backgroundColor = MiuixTheme.colorScheme.surface
                 )
-            }
-            item {
-                Card {
-                    SuperDropdown(
-                        title = "反馈类型",
-                        items = FeedbackType.entries.map { it.type },
-                        mode = DropDownMode.AlwaysOnRight,
-                        onSelectedIndexChange = {
-                            viewModel.changeFeedbackType(FeedbackType.entries[it])
-                        },
-                        selectedIndex = FeedbackType.entries.indexOf(uiState.feedbackType)
-                    )
-                }
             }
             item {
                 Spacer(modifier = Modifier.height(4.dp))

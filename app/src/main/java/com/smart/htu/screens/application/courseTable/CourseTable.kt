@@ -10,9 +10,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
@@ -57,7 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
+import coil3.compose.rememberAsyncImagePainter
 import com.smart.htu.MainActivity
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseEntity
@@ -70,6 +74,7 @@ import com.smart.htu.utils.CourseTableBackgroundUtil
 import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
 import com.smart.htu.utils.CourseTimeRange.summerOrWinterTimeInterval
 import com.smart.htu.utils.Permission
+import com.smart.htu.utils.ToastUtil.showSnackbar
 import com.smart.htu.utils.ToastUtil.showToast
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -79,12 +84,12 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SliderDefaults
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.extra.SuperBottomSheet
@@ -194,7 +199,9 @@ fun CourseTable(
                                 onSelectedIndexChange = {
                                     showDropDownMenu.value = false
                                     if (Permission.hasCalendarPermissions(context)) {
-                                        viewModel.showSnackBar("开发中...")
+                                        scope.launch {
+                                            showSnackbar(viewModel.snackBarHostState, "开发中...")
+                                        }
                                     } else {
                                         if (context is MainActivity) {
                                             context.requestCalendarPermissions()
@@ -244,8 +251,9 @@ fun CourseTable(
                     modifier = Modifier
                         .fillMaxSize()
                         .hazeSource(state = hazeState)
-                        .hazeEffect(HazeMaterials.thin()) {
-                            backgroundColor = Color.Transparent
+                        .hazeEffect(
+                            HazeMaterials.thin(MiuixTheme.colorScheme.background)
+                        ) {
                             this.blurEnabled = blurEnabled
                             this.drawContentBehind = drawContentBehind
                             this.blurRadius = uiState.backgroundBlurRadius
@@ -466,13 +474,17 @@ fun CourseTable(
         backgroundBlurState = uiState.backgroundBlurRadius,
         backgroundUri = backgroundUri,
         onToggleShowWeekendCourse = {
-            viewModel.changeIsShowWeekendCourse(it)
+            scope.launch {
+                viewModel.changeIsShowWeekendCourse(it)
+            }
         },
         onBackgroundUriChange = {
             backgroundUri = it
         },
         onBackgroundBluerChange = {
-            viewModel.changeBackgroundBlurRadius(it)
+            scope.launch {
+                viewModel.changeBackgroundBlurRadius(it)
+            }
         }
     )
 }
@@ -569,7 +581,8 @@ fun CourseTableMoreSettingBottomSheet(
         show = showBottomSheet,
         onDismissRequest = {
             showBottomSheet.value = false
-        }
+        },
+        backgroundColor = MiuixTheme.colorScheme.secondaryContainer
     ) {
         val launcher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent()
@@ -582,10 +595,7 @@ fun CourseTableMoreSettingBottomSheet(
         ) {
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.defaultColors(
-                        color = MiuixTheme.colorScheme.secondaryContainer,
-                    )
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     BasicComponent(
                         title = "课表背景",
@@ -622,23 +632,20 @@ fun CourseTableMoreSettingBottomSheet(
                         SuperSlider(
                             title = "模糊程度",
                             summary = "${((backgroundBlurState.value / 80f) * 100).toInt()} %",
-                            progress = backgroundBlurState.value,
-                            onProgressChange = {
+                            value = backgroundBlurState.value,
+                            onValueChange = {
                                 onBackgroundBluerChange(it.toInt().dp)
                             },
-                            decimalPlaces = 2,
-                            minValue = 0f,
-                            maxValue = 80f
+                            steps = 20,
+                            valueRange = 0f..80f,
+                            hapticEffect = SliderDefaults.SliderHapticEffect.Step
                         )
                     }
                 }
             }
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.defaultColors(
-                        color = MiuixTheme.colorScheme.secondaryContainer,
-                    )
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     SuperSwitch(
                         title = "是否显示周末课程",
@@ -649,6 +656,13 @@ fun CourseTableMoreSettingBottomSheet(
                         }
                     )
                 }
+                Spacer(
+                    Modifier.padding(
+                        bottom = WindowInsets.navigationBars.asPaddingValues()
+                            .calculateBottomPadding() + WindowInsets.captionBar.asPaddingValues()
+                            .calculateBottomPadding()
+                    )
+                )
             }
         }
     }

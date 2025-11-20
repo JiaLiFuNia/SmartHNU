@@ -19,6 +19,7 @@ import com.smart.htu.api.network.WeatherService
 import com.smart.htu.di.NetworkCookieJar
 import com.smart.htu.screens.news.entity.NewsCategoryEntity
 import com.smart.htu.utils.AESUtils
+import com.smart.htu.utils.AESUtils.randomString
 import com.smart.htu.utils.ParseNewsArticleUtil.parseHTMLToNewsArticle
 import com.smart.htu.utils.ParseNewsListUtil.parseHTMLToNewsList
 import kotlinx.coroutines.Dispatchers
@@ -85,8 +86,8 @@ class NetworkRepo @Inject constructor(
 
     // 获取实时天气
     suspend fun getWeatherService(): NowWeatherData? {
-        val res = weatherService.getNowWeather()
         try {
+            val res = weatherService.getNowWeather()
             return res.now
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
@@ -96,8 +97,8 @@ class NetworkRepo @Inject constructor(
 
     // 天气预警
     suspend fun getWarningWeatherService(): Result<List<WarningWeatherData>> {
-        val res = weatherService.getWarningWeather()
         return try {
+            val res = weatherService.getWarningWeather()
             if (res.code == 200) Result.success(res.warning)
             // Log.e("TAG666", "getWarningWeatherService ${res.body()?.string()}")
             else Result.failure(Exception("获取失败"))
@@ -230,7 +231,11 @@ class NetworkRepo @Inject constructor(
             getAuthLoginPage()
             val response = authServerService.authLogin(
                 username = studentId,
-                password = AESUtils.encryptPassword(password, pwdEncryptSalt),
+                password = AESUtils.encryptPassword(
+                    randomString(64) + password,
+                    pwdEncryptSalt,
+                    "CBC"
+                ),
                 execution = execution,
                 captcha = captcha ?: ""
             )

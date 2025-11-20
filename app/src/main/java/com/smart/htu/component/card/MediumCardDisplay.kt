@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.screens.application.ApplicationEntity
@@ -36,7 +37,6 @@ import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 
 @Composable
 fun MediumCardDisplay(
@@ -54,11 +54,12 @@ fun MediumCardDisplay(
                 onClick()
             }
         },
+        enabled = enabled,
         modifier = modifier
             .semantics { role = Role.Button }
             .fillMaxWidth()
             .animateContentSize(),
-        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
+        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
         color = if (enabled) MiuixTheme.colorScheme.surface
         else MiuixTheme.colorScheme.disabledSecondaryVariant
     ) {

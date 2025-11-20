@@ -7,8 +7,6 @@
         <domain includeSubdomains="true">htu.g8n.cn</domain>
         <domain includeSubdomains="true">libmsg.htu.cn</domain>
         <domain includeSubdomains="true">htu.edu.cn</domain>
-        <domain includeSubdomains="true">shuren100.com</domain>
-        <domain includeSubdomains="true">chinanews.com.cn</domain>
     </domain-config>
 
 </network-security-config>

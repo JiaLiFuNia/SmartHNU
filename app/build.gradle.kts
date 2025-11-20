@@ -1,4 +1,7 @@
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.TimeZone.getDefault
 
 plugins {
     alias(libs.plugins.android.application)
@@ -18,12 +21,24 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 35
-        versionCode = 202510051
-        versionName = "3.0.9.3"
+        versionCode = 202511201
+        versionName = "3.1.0"
+
+        val buildTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
+            timeZone = getDefault()
+        }.format(Date())
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+
+        buildConfigField("String", "BUILD_TIME", "\"$buildTime\"")
+    }
+
+    aboutLibraries {
+        export {
+            outputFile = file("res/raw/aboutlibraries.json")
         }
     }
 
@@ -45,6 +60,7 @@ android {
         jvmTarget = "17"
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
     packaging {
@@ -98,6 +114,7 @@ dependencies {
     implementation(libs.androidx.adaptive.navigation)
     // miuix
     implementation(libs.miuix)
+    implementation(libs.capsule)
 
     // Splash
     implementation(libs.androidx.core.splashscreen)
@@ -106,8 +123,9 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
 
     // Coil
-    implementation(libs.coil.base)
     implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+    implementation(libs.zoomable.image.coil3)
 
     // Hilt
     implementation(libs.hilt.android)
@@ -155,4 +173,6 @@ dependencies {
 
     implementation(libs.datetime.wheel.picker)
     implementation(libs.kotlinx.datetime)
+
+    implementation(libs.compose.markdown)
 }

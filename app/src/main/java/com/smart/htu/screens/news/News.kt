@@ -49,6 +49,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -58,9 +60,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.api.module.NewsItemEntity
@@ -76,7 +81,6 @@ import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
 
@@ -127,7 +131,7 @@ fun NewsScreenNavigation(
 fun NewsScreen(
     contentPadding: PaddingValues,
     navController: NavController,
-    viewModel: NewsViewModel,
+    viewModel: NewsViewModel = hiltViewModel(),
     // onNewsItemClick: (NewsItemEntity) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -321,7 +325,7 @@ fun NewsItem(
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize(),
-        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
+        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surface,
     ) {
         ListItem(
@@ -329,13 +333,18 @@ fun NewsItem(
             headlineContent = {
                 Text(
                     text = news.title,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = MiuixTheme.colorScheme.onSurface
+                    ),
                     maxLines = maxLines,
                     overflow = TextOverflow.Ellipsis
                 )
             },
             supportingContent = {
-                Text(text = formatDateToFriendly(news.time))
+                Text(
+                    text = formatDateToFriendly(news.time),
+                    color = MiuixTheme.colorScheme.onSurface
+                )
             },
             trailingContent = {
                 if ((news.imgUrl.endsWith(".jpg") || news.imgUrl.endsWith(".png")) && imageLoadEnabled) {
@@ -386,15 +395,26 @@ fun HorizontalBanner(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(bannerPicUrl[index])
                     .crossfade(true)
-                    .addHeader("User-Agent", "Mozilla/5.0")
-                    .error(R.drawable.ic_placeholder_large)
                     .build(),
                 contentDescription = "picture",
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(16 / 9f)
-                    .maskClip(MaterialTheme.shapes.extraLarge),
+                    .maskClip(MaterialTheme.shapes.extraLarge)
+                    .drawWithContent {
+                        drawContent()
+                        drawRect(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color(0xAA000000)
+                                ),
+                                startY = 300f,
+                                endY = Float.POSITIVE_INFINITY
+                            )
+                        )
+                    },
                 error = painterResource(id = R.drawable.ic_placeholder_large),
                 placeholder = painterResource(id = R.drawable.ic_placeholder_large)
             )
@@ -403,7 +423,7 @@ fun HorizontalBanner(
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
                 style = MaterialTheme.typography.titleMedium.copy(
-                    color = MaterialTheme.colorScheme.onSecondary
+                    color = Color.White
                 ),
                 modifier = Modifier
                     .fillMaxWidth()

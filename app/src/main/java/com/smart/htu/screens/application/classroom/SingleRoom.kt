@@ -17,10 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 
 @Composable
 fun SingleRoom(
@@ -31,7 +31,7 @@ fun SingleRoom(
     modifier: Modifier
 ) {
     Surface(
-        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
+        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
         modifier = modifier
             .height(50.dp),
         color = MiuixTheme.colorScheme.surface,

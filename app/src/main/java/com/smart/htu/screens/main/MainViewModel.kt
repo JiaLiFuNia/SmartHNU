@@ -16,7 +16,6 @@ import com.smart.htu.api.module.UpdateEntity
 import com.smart.htu.api.module.WarningWeatherData
 import com.smart.htu.repo.AppNetworkRepo
 import com.smart.htu.repo.DataStoreRepo
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
 import com.smart.htu.repo.JWCNetworkRepo
@@ -46,14 +45,15 @@ data class AppUiState(
     val courseSchedule: CourseScheduleEntity? = null,
     val examScheduleList: List<ExamEntity> = emptyList(),
     val holiday: HolidayData? = null,
-    val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
+    val blurEnabled: Boolean = true, // DEFAULT_BLUR_EFFECT,
     val username: String = DEFAULT_USERNAME,
     val readNoticeIdList: List<String> = emptyList(),
     val noticeIdList: List<String> = emptyList(),
     val update: UpdateEntity = UpdateEntity(),
     val isShowUpdateDialog: MutableState<Boolean> = mutableStateOf(false),
     val commonAppList: List<ApplicationEntity> = INIT_COMMON_APP_LIST,
-    val loginJWCState: Int = DEFAULT_LOGIN_STATE
+    val loginJWCState: Int = DEFAULT_LOGIN_STATE,
+    val totalHour: Double? = null
 )
 
 @HiltViewModel
@@ -118,6 +118,15 @@ class MainViewModel @Inject constructor(
             }
         )
 
+    private val totalHourDataStateFlow = dataStoreRepo.observeSecondClassData()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeSecondClassData().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
             loginJWCStateStateFlow.collect { value ->
@@ -126,7 +135,7 @@ class MainViewModel @Inject constructor(
         }
         viewModelScope.launch {
             blurStateFlow.collect { value ->
-                _uiState.update { it.copy(blurEffect = value) }
+                // _uiState.update { it.copy(blurEnabled = value) }
             }
         }
         viewModelScope.launch {
@@ -150,13 +159,20 @@ class MainViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
+            totalHourDataStateFlow.collect { value ->
+                _uiState.update {
+                    it.copy(totalHour = value?.data?.lastOrNull()?.totalScore ?: 0.0)
+                }
+            }
+        }
+        viewModelScope.launch {
             sharedDataRepository.getUpdate()
             sharedDataRepository.update
                 .collect { config ->
                     _uiState.update { uiState ->
                         uiState.copy(
-                            update = config ?: UpdateEntity(),
-                            isShowUpdateDialog = mutableStateOf(config?.isNeedUpdate == true)
+                            update = config?.data ?: UpdateEntity(),
+                            isShowUpdateDialog = mutableStateOf(config?.data?.isNeedUpdate == true)
                         )
                     }
                 }
@@ -175,17 +191,17 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             val currentWeatherDeferred = async { getCurrentWeather() }
             val holidayDeferred = async { getHoliday() }
-            val getWarningWeatherDeferred = async { getWarningWeather() }
+            val warningWeatherDeferred = async { getWarningWeather() }
 
             checkJWCToken()
-            val termIndex = async { sharedDataRepository.getTermIndex() }
+            val termIndexDeferred = async { sharedDataRepository.getTermIndex() }
             val todayCourseDeferred = async { getTodayCourse() }
             val currentWeekDeferred = async { getCurrentWeek() }
 
             currentWeatherDeferred.await()
             holidayDeferred.await()
-            getWarningWeatherDeferred.await()
-            termIndex.await()
+            warningWeatherDeferred.await()
+            termIndexDeferred.await()
             todayCourseDeferred.await()
             currentWeekDeferred.await()
         }
@@ -198,7 +214,7 @@ class MainViewModel @Inject constructor(
 
     private suspend fun checkJWCToken() {
         jwcNetworkRepo.checkJWCTokenService()
-            .onSuccess { changeLoginJWCState(1) }
+            .onSuccess { if (it) changeLoginJWCState(1) else changeLoginJWCState(0) }
             .onFailure { changeLoginJWCState(-2) }
     }
 
@@ -224,11 +240,15 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getWarningWeather() = viewModelScope.launch {
-        networkRepo.getWarningWeatherService()
-            .onSuccess { res ->
-                _uiState.update { it.copy(warningWeatherData = res) }
-            }
+    suspend fun getWarningWeather() {
+        try {
+            networkRepo.getWarningWeatherService()
+                .onSuccess { res ->
+                    _uiState.update { it.copy(warningWeatherData = res) }
+                }
+        } catch (e: Exception) {
+            Log.i("TAG666", "getWarningWeather: $e")
+        }
     }
 
     suspend fun getTodayCourse() {

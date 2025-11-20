@@ -4,16 +4,57 @@ import android.util.Log
 import com.smart.htu.api.module.BookBorrowingDetails
 import com.smart.htu.api.module.BookDataMap
 import com.smart.htu.api.module.BookImageData
+import com.smart.htu.api.module.LibraryBorrowedBookRes
+import com.smart.htu.api.module.LibraryLoginPost
 import com.smart.htu.api.module.LibrarySearchImgPost
 import com.smart.htu.api.module.LibrarySearchPost
 import com.smart.htu.api.module.LibrarySearchPost.QueryFieldList
 import com.smart.htu.api.module.SearchResultData
 import com.smart.htu.api.network.LibraryService
+import com.smart.htu.di.NetworkCookieJar
+import com.smart.htu.utils.AESUtils
+import com.smart.htu.utils.MD5Util.md5
+import okhttp3.Cookie
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import javax.inject.Inject
 
 class LibraryNetworkRepo @Inject constructor(
-    val libraryService: LibraryService, val dataStoreRepo: DataStoreRepo
+    private val libraryService: LibraryService,
+    private val dataStoreRepo: DataStoreRepo,
+    private val networkCookieJar: NetworkCookieJar
 ) {
+
+    suspend fun libraryCurrentBorrowingBookService(
+        page: Int,
+        pageSize: Int
+    ): Result<LibraryBorrowedBookRes?> {
+        try {
+            val res = libraryService.libraryCurrentBorrowingBook(page, pageSize)
+            return when (res.code()) {
+                200 -> Result.success(res.body())
+                else -> Result.failure(Exception("获取借阅信息失败，错误代码：${res.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(Exception(e))
+        }
+    }
+
+    suspend fun libraryBorrowedBookService(
+        page: Int,
+        pageSize: Int
+    ): Result<LibraryBorrowedBookRes?> {
+        try {
+            val res = libraryService.libraryBorrowedBook(page, pageSize)
+            return when (res.code()) {
+                200 -> Result.success(res.body())
+                else -> Result.failure(Exception("获取借阅信息失败，错误代码：${res.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(Exception(e))
+        }
+    }
 
     // 图书搜索
     suspend fun librarySearchService(
@@ -63,16 +104,83 @@ class LibraryNetworkRepo @Inject constructor(
         }
     }
 
+    // 借阅情况
     suspend fun libraryBookBorrowingDetailService(
         bookId: String
     ): Result<List<BookBorrowingDetails>> {
         try {
-            val res = libraryService.libraryBookBorrowingDetail(bookId)
+            val res = libraryService.libraryBookBorrowingStatus(bookId)
             return Result.success(res.data.bookBorrowingDetails)
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
             return Result.failure(Exception(e))
         }
+    }
+
+    suspend fun libraryLogin(
+        username: String,
+        password: String,
+        verifyCode: String,
+        session: String
+    ): Result<String> {
+        try {
+            if (username == "" || password == "") {
+                return Result.failure(Exception("学号或密码不能为空"))
+            }
+            val passwordEncrypt = AESUtils.encryptPassword(
+                password = password,
+                key = md5(username),
+                mode = "ECB"
+            )
+            val loginContext = "{\"userId\":\"${username}\",\"password\":\"${passwordEncrypt}\"}"
+            val res =
+                libraryService.libraryLogin(session, LibraryLoginPost(loginContext, verifyCode))
+            when (res.body()?.code) {
+                0 -> {
+                    val session = extractSession(res.headers().get("Set-Cookie").toString())
+                    return if (session.isNotEmpty()) {
+                        saveCookie(session)
+                        Result.success(session)
+                    } else {
+                        Result.failure(Exception("未知错误，请稍后重试"))
+                    }
+                }
+
+                1 -> return Result.failure(Exception(res.body()?.msg))
+
+                else -> return Result.failure(Exception("未知错误，请稍后重试"))
+            }
+        } catch (e: Exception) {
+            return Result.failure(Exception(e))
+        }
+    }
+
+    suspend fun getLoginPage(): Result<String> {
+        try {
+            val res = libraryService.libraryLoginPage()
+            return Result.success(extractSession(res.headers().get("Set-Cookie") ?: ""))
+        } catch (e: Exception) {
+            return Result.failure(Exception(e))
+        }
+    }
+
+    fun extractSession(cookie: String): String {
+        val matchResult = Regex("""meta-opac.session=([^;]+)""").find(cookie)
+        return if (matchResult != null) {
+            val session = matchResult.groupValues[1]
+            session
+        } else {
+            ""
+        }
+    }
+
+    fun saveCookie(session: String) {
+        val cookie = Cookie.Builder()
+            .name("meta-opac.session")
+            .value(session)
+            .domain("opac.htu.edu.cn")
+            .build()
+        networkCookieJar.saveFromResponse("https://opac.htu.edu.cn".toHttpUrl(), listOf(cookie))
     }
 
 }

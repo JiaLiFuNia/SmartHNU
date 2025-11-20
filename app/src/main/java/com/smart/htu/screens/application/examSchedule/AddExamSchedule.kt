@@ -49,7 +49,6 @@ import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
-import top.yukonga.miuix.kmp.extra.DropDownMode
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.extra.SuperDropdown
@@ -181,7 +180,7 @@ fun AddExamSchedule(
                             focusManager.moveFocus(FocusDirection.Down)
                         }
                     ),
-                    label = "请输入考试项目名称",
+                    label = "考试项目名称",
                     singleLine = true,
                     useLabelAsPlaceholder = true,
                     backgroundColor = MiuixTheme.colorScheme.surface,
@@ -193,11 +192,13 @@ fun AddExamSchedule(
                     SuperDropdown(
                         title = "考试类型",
                         items = ExamType.entries.map { it.type },
-                        mode = DropDownMode.AlwaysOnRight,
                         selectedIndex = ExamType.entries.indexOf(examEntity.value.examType),
                         onSelectedIndexChange = {
                             examEntity.value =
                                 examEntity.value.copy(examType = ExamType.entries[it])
+                        },
+                        onClick = {
+                            focusManager.clearFocus()
                         }
                     )
                 }
@@ -211,6 +212,7 @@ fun AddExamSchedule(
                             pattern = "yyyy年MM月dd日"
                         ),
                         onClick = {
+                            focusManager.clearFocus()
                             showDatePicker.value = true
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -222,6 +224,7 @@ fun AddExamSchedule(
                             pattern = "HH:mm"
                         ),
                         onClick = {
+                            focusManager.clearFocus()
                             showStartTimePicker.value = true
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -233,6 +236,7 @@ fun AddExamSchedule(
                             pattern = "HH:mm"
                         ),
                         onClick = {
+                            focusManager.clearFocus()
                             showEndTimePicker.value = true
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -288,6 +292,9 @@ fun AddExamSchedule(
                                     context.requestCalendarPermissions()
                                 }
                             }
+                        },
+                        onClick = {
+                            focusManager.clearFocus()
                         }
                     )
                 }

@@ -3,6 +3,7 @@ package com.smart.htu.component
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
+import android.os.Environment
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
@@ -15,7 +16,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,6 +31,7 @@ import com.kevinnzou.web.WebViewState
 import com.kevinnzou.web.rememberWebViewState
 import com.smart.htu.screens.news.newsView.JavaScriptInterface
 import com.smart.htu.utils.FileUtil.downloadFile
+import com.smart.htu.utils.ToastUtil.showSnackbar
 import com.smart.htu.utils.getHtml
 import com.smart.htu.utils.setDefaultSettings
 import kotlinx.coroutines.launch
@@ -80,7 +81,7 @@ fun WebView(
                         val errorMessage = document.select("div.wp_error_msg span").text()
                         onError(errorMessage)
                     } catch (e: Exception) {
-                        snackBarHostState.showSnackbar("获取网页内容失败：${e.message}")
+                        showSnackbar(snackBarHostState, "获取网页内容失败：${e.message}")
                     }
                 }
             }
@@ -108,7 +109,7 @@ fun WebView(
                             return true
                         } catch (_: Exception) {
                             scope.launch {
-                                snackBarHostState.showSnackbar("未安装微信或无法打开微信")
+                                showSnackbar(snackBarHostState, "未安装微信或无法打开微信")
                             }
                             return true
                         }
@@ -121,7 +122,7 @@ fun WebView(
                             return true
                         } catch (_: Exception) {
                             scope.launch {
-                                snackBarHostState.showSnackbar("无法打开邮件客户端")
+                                showSnackbar(snackBarHostState, "无法打开邮件客户端")
                             }
                             return true
                         }
@@ -164,15 +165,20 @@ fun WebView(
                     ) {
                         scope.launch {
                             val fileName = requestUrl.substringAfterLast('/')
-                            val confirmDownload = snackBarHostState.showSnackbar(
+                            showSnackbar(
+                                snackBarHostState,
                                 message = "是否下载文件：$fileName?",
                                 actionLabel = "下载",
-                                duration = SnackbarDuration.Long
+                                duration = SnackbarDuration.Long,
+                                onConfirm = {
+                                    downloadFile(
+                                        context,
+                                        requestUrl,
+                                        fileName,
+                                        Environment.DIRECTORY_DOCUMENTS
+                                    )
+                                }
                             )
-
-                            if (confirmDownload == SnackbarResult.ActionPerformed) {
-                                downloadFile(context, requestUrl, fileName)
-                            }
                         }
                     }
                 }

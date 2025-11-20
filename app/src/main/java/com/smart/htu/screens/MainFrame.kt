@@ -1,6 +1,7 @@
 package com.smart.htu.screens
 
 import android.app.Activity
+import android.os.Environment
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,8 +43,8 @@ import com.smart.htu.screens.main.Main
 import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.navigation.BottomNavigationItem
 import com.smart.htu.screens.news.NewsScreen
-import com.smart.htu.screens.news.NewsViewModel
-import com.smart.htu.screens.person.PersonScreen
+import com.smart.htu.screens.setting.SettingScreen
+import com.smart.htu.screens.setting.SettingViewModel
 import com.smart.htu.utils.DoubleBackToExitApp
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -53,12 +54,12 @@ fun MainFrame(
     navController: NavController,
     mainViewModel: MainViewModel,
     loginViewModel: LoginViewModel,
-    newsViewModel: NewsViewModel,
+    settingViewModel: SettingViewModel,
     airConditionViewModel: AirConditionViewModel
 ) {
     val context = LocalContext.current
-    val loginUiState by loginViewModel.uiState.collectAsState()
     val mainUiState by mainViewModel.uiState.collectAsState()
+    val settingUiState by settingViewModel.uiState.collectAsState()
     val savableStateHolder = rememberSaveableStateHolder()
     val (selectedItemIndex, onSelectedItemIndex) = rememberSaveable { mutableIntStateOf(0) }
     val messageCount = remember {
@@ -84,12 +85,19 @@ fun MainFrame(
             badge = 0
         ),
         BottomNavigationItem(
+            title = R.string.setting,
+            selectedIcon = R.drawable.baseline_settings_24,
+            unselectedIcon = R.drawable.outline_settings_24,
+            badge = if (settingUiState.isUpdate || settingUiState.isCaptchaUpdate) 1 else 0
+        ),
+        /*
+        BottomNavigationItem(
             enabled = loginUiState.jwcLoginState == 1 || loginUiState.jwcLoginState == -2,
             title = R.string.my,
             selectedIcon = R.drawable.ic_filled_person,
             unselectedIcon = R.drawable.ic_outline_person,
             badge = 0
-        )
+        )*/
     )
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
@@ -209,13 +217,13 @@ fun MainFrame(
 
                         2 -> NewsScreen(
                             navController = navController,
-                            viewModel = newsViewModel,
                             contentPadding = it
                         )
 
-                        3 -> PersonScreen(
+                        3 -> SettingScreen(
                             navController = navController,
-                            viewModel = loginViewModel,
+                            viewModel = settingViewModel,
+                            loginViewModel = loginViewModel,
                             contentPadding = it
                         )
                     }
@@ -227,19 +235,13 @@ fun MainFrame(
     // val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val showUpdateDialog = rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(mainUiState.update.isNeedUpdate, mainUiState.isShowUpdateDialog) {
-        if (mainUiState.update.isNeedUpdate == true && mainUiState.isShowUpdateDialog.value) {
-            showUpdateDialog.value = true
-        } else {
-            showUpdateDialog.value = false
-        }
+        showUpdateDialog.value =
+            mainUiState.update.isNeedUpdate && mainUiState.isShowUpdateDialog.value
     }
     UpdateDialog(
         showDialog = showUpdateDialog,
-        onDismissRequest = {
-            mainViewModel.changeUpdateDialogState(false)
-        },
-        isForceUpdate = mainUiState.update.isForceUpdate,
-        updateEntity = mainUiState.update
+        updateInfo = mainUiState.update,
+        targetDirectory = Environment.DIRECTORY_DOWNLOADS
     )
 
     DoubleBackToExitApp(

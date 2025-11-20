@@ -22,8 +22,7 @@ import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.PasswordRepo
 import com.smart.htu.repo.PasswordRepo.Companion.JWC_PASSWORD
 import com.smart.htu.repo.PasswordRepo.Companion.PASSWORD
-import com.smart.htu.repo.PasswordRepo.Companion.SC_PASSWORD
-import com.smart.htu.repo.SecondClassRepo
+import com.smart.htu.utils.ToastUtil.showSnackbar
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -41,6 +40,7 @@ data class LoginUiState(
     val authLoginState: Int = DEFAULT_LOGIN_STATE, // -1 失败   0 未登录   1 登录成功 2 登录中
     val jwcLoginState: Int = DEFAULT_LOGIN_STATE, // 0 未登录 1 登录成功 -1 登录失败 -2 token过期
     val scLoginState: Int = DEFAULT_LOGIN_STATE, // 0 未登录 1 登录成功 -1 登录失败 -2 token过期
+    val libraryLoginState: Int = DEFAULT_LOGIN_STATE, // 0 未登录 1 登录成功 -1 登录失败 -2 token过期
     val isGuestModeEnable: Boolean = false,
     val isLoading: Boolean = false,
     val username: String = DEFAULT_USERNAME,
@@ -50,7 +50,6 @@ data class LoginUiState(
     val mobileCode: String = DEFAULT_MOBILE_CODE,
     val personalMessage: PersonalMessageEntity? = null,
     val cookies: List<Cookie> = emptyList(),
-    val secondClassSid: String = "",
     val token: String = DEFAULT_TOKEN,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
@@ -58,7 +57,6 @@ data class LoginUiState(
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val jwcNetworkRepo: JWCNetworkRepo,
-    private val scNetworkRepo: SecondClassRepo,
     private val networkRepo: NetworkRepo,
     private val dataStoreRepo: DataStoreRepo,
     private val networkCookieJar: NetworkCookieJar,
@@ -79,7 +77,7 @@ class LoginViewModel @Inject constructor(
             }
         )
 
-    private val loginStateStateFlow = dataStoreRepo.observeLoginState()
+    private val loginAuthStateStateFlow = dataStoreRepo.observeLoginState()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -94,6 +92,15 @@ class LoginViewModel @Inject constructor(
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
                 dataStoreRepo.observeLoginJWCState().first()
+            }
+        )
+
+    private val loginLibStateStateFlow = dataStoreRepo.observeLoginLibraryState()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeLoginLibraryState().first()
             }
         )
 
@@ -142,16 +149,7 @@ class LoginViewModel @Inject constructor(
             }
         )
 
-    private val secondClassSidStateFlow = dataStoreRepo.observeSecondClassSid()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            runBlocking {
-                dataStoreRepo.observeSecondClassSid().first()
-            }
-        )
-
-    private val scloginStateStateFlow = dataStoreRepo.observeLoginSCState()
+    private val loginSCStateStateFlow = dataStoreRepo.observeLoginSCState()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -173,13 +171,23 @@ class LoginViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            loginStateStateFlow.collect { value ->
+            loginAuthStateStateFlow.collect { value ->
                 _uiState.update { it.copy(authLoginState = value) }
             }
         }
         viewModelScope.launch {
             loginJWCStateStateFlow.collect { value ->
                 _uiState.update { it.copy(jwcLoginState = value) }
+            }
+        }
+        viewModelScope.launch {
+            loginSCStateStateFlow.collect { value ->
+                _uiState.update { it.copy(scLoginState = value) }
+            }
+        }
+        viewModelScope.launch {
+            loginLibStateStateFlow.collect { value ->
+                _uiState.update { it.copy(libraryLoginState = value) }
             }
         }
         viewModelScope.launch {
@@ -205,16 +213,6 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             mobileCodeStateFlow.collect { value ->
                 _uiState.update { it.copy(mobileCode = value) }
-            }
-        }
-        viewModelScope.launch {
-            secondClassSidStateFlow.collect { value ->
-                _uiState.update { it.copy(secondClassSid = value) }
-            }
-        }
-        viewModelScope.launch {
-            scloginStateStateFlow.collect { value ->
-                _uiState.update { it.copy(scLoginState = value) }
             }
         }
         viewModelScope.launch {
@@ -255,40 +253,6 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    suspend fun loadSecondClassSid() {
-        val sid = scNetworkRepo.getSCLoginPage()
-        _uiState.update { it.copy(secondClassSid = sid) }
-    }
-
-    suspend fun secondClassLogin(
-        studentID: String = _uiState.value.studentID,
-        password: String = _uiState.value.password,
-        verifyCode: String,
-        onSuccess: () -> Unit = {},
-        onFailure: (String) -> Unit = {}
-    ) {
-        try {
-            changeLoginSCState(2) // 登录中
-            clearCookies()
-            scNetworkRepo.scLogin(
-                studentID = studentID,
-                password = password,
-                verifyCode = verifyCode,
-                sid = _uiState.value.secondClassSid
-            ).onSuccess {
-                onSuccess()
-                changeLoginSCState(1)
-                passwordRepo.savePassword(_uiState.value.password, SC_PASSWORD)
-            }.onFailure {
-                loadSecondClassSid()
-                onFailure(it.message.toString())
-                changeLoginSCState(-1)
-            }
-        } catch (e: Exception) {
-            Log.i("TAG666 viewModel", "Failed $e")
-        }
-    }
-
     /*private suspend fun getRefreshToken() {
         try {
             val logState = networkRepo.getAppTokenService(
@@ -319,11 +283,15 @@ class LoginViewModel @Inject constructor(
             }
             logState.onFailure {
                 changeLoginJWCState(-1)
-                showSnackBar(it.message.toString())
+                showSnackbar(snackBarHostState, it.message.toString())
             }
         } catch (e: Exception) {
             Log.i("TAG666 viewModel", "Failed to login $e")
         }
+    }
+
+    suspend fun testLogin() {
+        changeLoginJWCState(1)
     }
 
     private suspend fun checkJWCToken() {
@@ -403,12 +371,6 @@ class LoginViewModel @Inject constructor(
         networkCookieJar.clearCookies()
     }
 
-    fun showSnackBar(message: String) {
-        viewModelScope.launch {
-            snackBarHostState.showSnackbar(message)
-        }
-    }
-
     fun logout() = viewModelScope.launch {
         clearCookies()
         changeLoginAuthState(DEFAULT_LOGIN_STATE)
@@ -418,7 +380,8 @@ class LoginViewModel @Inject constructor(
         setJWCLogToken(DEFAULT_TOKEN)
         passwordRepo.clearPassword()
         dataStoreRepo.changeRoomId(DEFAULT_BUILDING_ID)
-        dataStoreRepo.changeBuildingId(DEFAULT_ROOM_ID)
+        dataStoreRepo.saveDormRoomId(DEFAULT_ROOM_ID)
+        dataStoreRepo.saveSecondClassSid("")
     }
 
 }

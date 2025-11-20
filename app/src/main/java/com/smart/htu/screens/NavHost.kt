@@ -24,9 +24,9 @@ import com.smart.htu.screens.application.examSchedule.ExamSchedule
 import com.smart.htu.screens.application.grade.Grade
 import com.smart.htu.screens.application.librarySearch.LibrarySearchDetail
 import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
-import com.smart.htu.screens.application.librarySearch.LibrarySearchViewModel
 import com.smart.htu.screens.application.messageBoard.MessageBoard
 import com.smart.htu.screens.application.messageBoard.MessageBoardDetail
+import com.smart.htu.screens.application.secondClass.SecondClass
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluation
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluationDetail
 import com.smart.htu.screens.application.textbook.Textbook
@@ -43,11 +43,12 @@ import com.smart.htu.screens.news.NewsSearch
 import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.news.newsView.NewsDetail
 import com.smart.htu.screens.person.AccountManage
+import com.smart.htu.screens.person.PersonScreen
 import com.smart.htu.screens.setting.AIConfigurationScreen
 import com.smart.htu.screens.setting.About
 import com.smart.htu.screens.setting.ArticleStyle
 import com.smart.htu.screens.setting.License
-import com.smart.htu.screens.setting.SettingScreen
+import com.smart.htu.screens.setting.SettingViewModel
 import com.smart.htu.screens.setting.feedback.Feedback
 import com.smart.htu.utils.startAppUrl
 import com.smart.htu.utils.startLaunchAPK
@@ -59,7 +60,7 @@ fun NavHostScreen() {
     val loginViewModel: LoginViewModel = hiltViewModel()
     val newsViewModel: NewsViewModel = hiltViewModel()
     val airConditionViewModel: AirConditionViewModel = hiltViewModel()
-    val librarySearchViewModel: LibrarySearchViewModel = hiltViewModel()
+    val settingViewModel: SettingViewModel = hiltViewModel()
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -70,8 +71,8 @@ fun NavHostScreen() {
                 navController = navController,
                 mainViewModel = mainViewModel,
                 loginViewModel = loginViewModel,
-                newsViewModel = newsViewModel,
-                airConditionViewModel = airConditionViewModel
+                airConditionViewModel = airConditionViewModel,
+                settingViewModel = settingViewModel
             )
         }
         animatedComposable(Destinations.Login.route) {
@@ -80,11 +81,11 @@ fun NavHostScreen() {
                 viewModel = loginViewModel
             )
         }
+        animatedComposable(Destinations.Person.route) {
+            PersonScreen(navController = navController, viewModel = loginViewModel)
+        }
         animatedComposable(Destinations.Message.route) {
             MessageScreen(navController = navController)
-        }
-        animatedComposable(Destinations.Setting.route) {
-            SettingScreen(navController = navController)
         }
         animatedComposable(Destinations.ApplicationEdit.route) {
             ApplicationEdit(navController = navController)
@@ -114,10 +115,7 @@ fun NavHostScreen() {
             License(navController = navController)
         }
         animatedComposable(Destinations.LibrarySearch.route) {
-            LibrarySearchScreen(
-                navController = navController,
-                viewModel = librarySearchViewModel
-            )
+            LibrarySearchScreen(navController = navController)
         }
         animatedComposable(
             route = "${Destinations.LibrarySearchDetail.route}/{bookId}",
@@ -295,6 +293,9 @@ fun NavHostScreen() {
                 Json.decodeFromString<ExamEntity>(examString)
             }
             AddExamSchedule(navController = navController, exam = exam)
+        }
+        animatedComposable(Destinations.SecondClass.route) {
+            SecondClass(navController = navController)
         }
     }
 }

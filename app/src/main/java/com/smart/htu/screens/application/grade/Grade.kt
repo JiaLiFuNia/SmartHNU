@@ -65,6 +65,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseGradeDetailRes.CourseGradeDetailEntity
 import com.smart.htu.api.module.CourseGradeRes.CourseGradeEntity
@@ -80,9 +81,11 @@ import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.GradeDivideUtil.divideGrade
 import com.smart.htu.utils.TermUtil.termConverter
+import com.smart.htu.utils.copyContent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
@@ -90,7 +93,6 @@ import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -267,7 +269,7 @@ fun Grade(
                                     }
                                     Surface(
                                         modifier = Modifier.fillMaxWidth(),
-                                        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
+                                        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
                                         color = MiuixTheme.colorScheme.surface
                                     ) {
                                         Box(
@@ -299,7 +301,8 @@ fun Grade(
                                                 ),
                                                 modifier = Modifier
                                                     .align(Alignment.BottomEnd)
-                                                    .size(width = 96.dp, height = 36.dp)
+                                                    .size(width = 96.dp, height = 36.dp),
+                                                enabled = !uiState.isLoadingGPA
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
@@ -320,22 +323,35 @@ fun Grade(
                                         text = "课程大类学分",
                                         insideMargin = PaddingValues(start = 12.dp, bottom = 8.dp)
                                     )
-                                    Surface(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
-                                        color = MiuixTheme.colorScheme.surface
+                                    Card(
+                                        modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                        ) {
-                                            uiState.allCredits?.forEach {
-                                                BasicComponent(
-                                                    title = it.label,
-                                                    rightActions = {
-                                                        Text(it.credit)
-                                                    }
-                                                )
+                                        Row {
+                                            Column(
+                                                modifier = Modifier.weight(0.5f)
+                                            ) {
+                                                uiState.allCredits?.filterIndexed { index, entity ->
+                                                    index % 2 == 0
+                                                }?.forEach {
+                                                    BasicComponent(
+                                                        title = it.credit,
+                                                        summary = it.label,
+                                                        onClick = { copyContent("${it.label} ${it.credit}") }
+                                                    )
+                                                }
+                                            }
+                                            Column(
+                                                modifier = Modifier.weight(0.5f)
+                                            ) {
+                                                uiState.allCredits?.filterIndexed { index, entity ->
+                                                    index % 2 == 1
+                                                }?.forEach {
+                                                    BasicComponent(
+                                                        title = it.credit,
+                                                        summary = it.label,
+                                                        onClick = { copyContent("${it.label} ${it.credit}") }
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -379,7 +395,7 @@ fun SingleCourseGrade(
             .semantics { role = Role.Button }
             .fillMaxWidth()
             .animateContentSize(),
-        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
+        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surface
     ) {
         ListItem(

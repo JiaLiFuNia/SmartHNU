@@ -10,8 +10,9 @@ import top.yukonga.miuix.kmp.basic.SmallTitle
 
 @Composable
 fun SettingItemCard(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     label: String? = null,
+    titlePaddingValues: PaddingValues = PaddingValues(start = 12.dp, bottom = 8.dp, top = 16.dp),
     content: @Composable () -> Unit
 ) {
     Column(
@@ -20,7 +21,7 @@ fun SettingItemCard(
         if (label != null)
             SmallTitle(
                 text = label,
-                insideMargin = PaddingValues(start = 12.dp, bottom = 8.dp, top = 16.dp)
+                insideMargin = titlePaddingValues
             )
         Card {
             content()

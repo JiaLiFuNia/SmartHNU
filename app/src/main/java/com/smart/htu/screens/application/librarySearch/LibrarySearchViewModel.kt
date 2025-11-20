@@ -1,14 +1,17 @@
 package com.smart.htu.screens.application.librarySearch
 
 import android.util.Log
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.BookBorrowingDetails
+import com.smart.htu.api.module.LibraryBorrowedBookRes.BorrowedBookEntity
 import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.api.module.SearchBookData
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
 import com.smart.htu.repo.LibraryNetworkRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +23,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.jsoup.Jsoup
 import javax.inject.Inject
 
 data class LibrarySearchUiState(
@@ -30,7 +34,11 @@ data class LibrarySearchUiState(
     val bookSearchList: List<SearchBookData> = emptyList(),
     val libraryBookDetail: LibraryDetailEntity? = null,
     val libraryBookBorrowingDetail: List<BookBorrowingDetails> = emptyList(),
-    val waitingBorrowedBookList: List<LibraryDetailEntity> = emptyList()
+    val waitingBorrowedBookList: List<LibraryDetailEntity> = emptyList(),
+    val borrowedBookList: List<BorrowedBookEntity>? = null,
+    val currentBorrowingBookList: List<BorrowedBookEntity>? = null,
+    val session: String = "",
+    val libraryLoginState: Int = DEFAULT_LOGIN_STATE, // 0 未登录 1 登录成功 -1 登录失败 -2 token过期
 )
 
 @HiltViewModel
@@ -41,6 +49,8 @@ class LibrarySearchViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(LibrarySearchUiState())
     val uiState: StateFlow<LibrarySearchUiState> = _uiState.asStateFlow()
+
+    val snackBarHostState = SnackbarHostState()
 
     private val waitingBorrowedBookListStateFlow = dataStoreRepo.observeWaitingBorrowedBookList()
         .stateIn(
@@ -69,6 +79,24 @@ class LibrarySearchViewModel @Inject constructor(
             }
         )
 
+    private val loginLibStateStateFlow = dataStoreRepo.observeLoginLibraryState()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeLoginLibraryState().first()
+            }
+        )
+
+    private val librarySessionStateFLow = dataStoreRepo.observeLibrarySession()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeLibrarySession().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
             waitingBorrowedBookListStateFlow.collect { value ->
@@ -85,8 +113,74 @@ class LibrarySearchViewModel @Inject constructor(
                 _uiState.update { it.copy(searchHistoryList = value) }
             }
         }
+        viewModelScope.launch {
+            loginLibStateStateFlow.collect { value ->
+                _uiState.update { it.copy(libraryLoginState = value) }
+            }
+        }
+        viewModelScope.launch {
+            librarySessionStateFLow.collect { value ->
+                _uiState.update { it.copy(session = value) }
+            }
+        }
+        viewModelScope.launch {
+            if (_uiState.value.libraryLoginState == 1) {
+                getLibraryBorrowedBook()
+                getCurrentBorrowingBook()
+            }
+        }
     }
 
+    suspend fun createSession() {
+        libraryNetworkRepo.getLoginPage()
+            .onSuccess { res ->
+                Log.i("TAG666", "createSession: $res")
+                _uiState.update { it.copy(session = res) }
+            }
+    }
+
+    suspend fun libraryLogin(
+        username: String,
+        password: String,
+        verifyCode: String,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        libraryNetworkRepo.libraryLogin(
+            username, password, verifyCode, "meta-opac.session=${_uiState.value.session}"
+        ).onSuccess { res ->
+            changeLoginLibraryState(1)
+            saveLibrarySession(res)
+            onSuccess()
+        }.onFailure {
+            onFailure(it.message.toString())
+            changeLoginLibraryState(-1)
+        }
+    }
+
+    suspend fun getCurrentBorrowingBook() {
+        libraryNetworkRepo.libraryCurrentBorrowingBookService(page = 1, pageSize = 100)
+            .onSuccess { res ->
+                _uiState.update { it.copy(currentBorrowingBookList = res?.data?.items) }
+            }
+            .onFailure {
+                changeLoginLibraryState(-2)
+                Log.d("TAG666", "获取借阅信息失败：${it.message}")
+            }
+    }
+
+    suspend fun getLibraryBorrowedBook(page: Int = 1, pageSize: Int = 5) {
+        libraryNetworkRepo.libraryBorrowedBookService(page, pageSize)
+            .onSuccess { res ->
+                _uiState.update { it.copy(borrowedBookList = res?.data?.items) }
+            }
+            .onFailure {
+                changeLoginLibraryState(-2)
+                Log.d("TAG666", "获取借阅信息失败：${it.message}")
+            }
+    }
+
+    // 添加待借书籍列表
     fun addWaitingBorrowedBookList(book: LibraryDetailEntity) {
         viewModelScope.launch {
             val currentRentList = _uiState.value.waitingBorrowedBookList.toMutableList()
@@ -140,7 +234,7 @@ class LibrarySearchViewModel @Inject constructor(
         }
     }
 
-    fun libraryBookDetail(bookId: String) = viewModelScope.launch {
+    suspend fun libraryBookDetail(bookId: String) {
         libraryNetworkRepo.libraryBookDetailService(bookId)
             .onSuccess { res ->
                 var imageUrl = ""
@@ -160,7 +254,8 @@ class LibrarySearchViewModel @Inject constructor(
                             isbn = res.baseInfo.map.isbn,
                             tags = res.baseInfo.map.tags,
                             abstract = res.detailInfo.map.abstract,
-                            imageUrl = imageUrl
+                            imageUrl = imageUrl,
+                            topic = Jsoup.parse(res.detailInfo.map.topic ?: "").text().split(" ")
                         )
                     )
                 }
@@ -169,6 +264,14 @@ class LibrarySearchViewModel @Inject constructor(
             .onSuccess { res ->
                 _uiState.update { it.copy(libraryBookBorrowingDetail = res) }
             }
+    }
+
+    fun changeLoginLibraryState(state: Int) = viewModelScope.launch {
+        dataStoreRepo.changeLoginLibraryState(state)
+    }
+
+    fun saveLibrarySession(session: String) = viewModelScope.launch {
+        dataStoreRepo.saveLibrarySession(session)
     }
 
     fun addSearchHistory(keyword: String) = viewModelScope.launch {

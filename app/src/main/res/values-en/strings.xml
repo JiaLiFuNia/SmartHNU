@@ -152,5 +152,6 @@
     <string name="logging_in">登录中</string>
     <string name="repair">报修</string>
     <string name="login_failed">登录失败</string>
+    <string name="select_course_assistance">选课辅助</string>
 
 </resources>

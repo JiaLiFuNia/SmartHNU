@@ -43,6 +43,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.api.module.PostsListData.PostsEntity
 import com.smart.htu.component.CircularProgressIndicator
@@ -61,7 +62,6 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -112,6 +112,7 @@ fun MessageBoard(
                     IconButton(
                         onClick = {
                             navController.navigateToWebView(
+                                // https://authserver2.htu.edu.cn/authserver/login?service=https://yjfk.htu.edu.cn/h5/pages/ssp/post_edit
                                 url = AUTH_LOGIN_URL + "https://yjfk.htu.edu.cn/h5/pages/ssp/post_edit",
                                 label = "发布留言"
                             )
@@ -201,7 +202,7 @@ fun PostsCard(
 ) {
     Surface(
         onClick = { onClick(post.postID) },
-        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
+        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surface,
         modifier = Modifier.fillMaxWidth()
     ) {

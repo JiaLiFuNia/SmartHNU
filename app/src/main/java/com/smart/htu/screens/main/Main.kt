@@ -1,7 +1,6 @@
 package com.smart.htu.screens.main
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,18 +14,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,8 +31,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -51,12 +47,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -77,16 +72,11 @@ import com.smart.htu.screens.application.airCondition.AirConditionUiState
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.login.LoginUiState
 import com.smart.htu.screens.login.LoginViewModel
-import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigateWithCheckLoginState
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
-import com.smart.htu.utils.Constants.Companion.SECOND_CLASS_URL
-import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
 import com.smart.htu.utils.startCalendar
 import top.yukonga.miuix.kmp.basic.BasicComponent
-import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Surface
@@ -95,7 +85,6 @@ import top.yukonga.miuix.kmp.extra.SuperBottomSheet
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -138,10 +127,15 @@ fun Main(
     }
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     Column {
-        TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
+        MediumTopAppBar(
+            scrollBehavior = scrollBehavior,
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MiuixTheme.colorScheme.background,
+                scrolledContainerColor = MiuixTheme.colorScheme.background
+            ),
             title = { Text(text = "欢迎！${uiState.username}") },
             actions = {
                 IconButton(
@@ -167,20 +161,6 @@ fun Main(
                         )
                     }
                 }
-                IconButton(
-                    onClick = {
-                        navController.navigate(Destinations.Setting.route)
-                    }
-                ) {
-                    BadgedBox(
-                        badge = { if (uiState.update.isNeedUpdate) Badge() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Settings,
-                            contentDescription = "setting"
-                        )
-                    }
-                }
             }
         )
         PullToRefresh(
@@ -190,6 +170,7 @@ fun Main(
             isRefreshing = isRefreshing,
             modifier = Modifier
                 .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(bottom = contentPadding.calculateBottomPadding())
         ) {
             if (windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND))
@@ -350,7 +331,8 @@ fun FocusCard(
                     leadingContent = {
                         Icon(
                             painter = painterResource(id = R.drawable.today_24px),
-                            contentDescription = "today"
+                            contentDescription = "today",
+                            tint = MiuixTheme.colorScheme.onSurface
                         )
                     },
                     trailingContent = {
@@ -369,7 +351,8 @@ fun FocusCard(
                                 ) ?: R.drawable.qweather101
                             ),
                             contentDescription = "weather",
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
+                            tint = MiuixTheme.colorScheme.onSurface
                         )
                     },
                     trailingContent = {
@@ -390,16 +373,14 @@ fun FocusCard(
                     leadingContent = {
                         Icon(
                             painter = painterResource(id = R.drawable.format_paint_24px),
-                            contentDescription = "two"
+                            contentDescription = "two",
+                            tint = MiuixTheme.colorScheme.onSurface
                         )
                     },
                     title = "第二课堂",
-                    content = "-- 学时",
+                    content = "${mainUiState.totalHour?.toInt() ?: "--"} 学时",
                     onClick = {
-                        navController.navigateToWebView(
-                            url = SECOND_CLASS_URL,
-                            label = context.getString(R.string.second_class)
-                        )
+                        navController.navigate(Destinations.SecondClass.route)
                     },
                     modifier = Modifier.weight(0.5f)
                 )
@@ -407,7 +388,8 @@ fun FocusCard(
                     leadingContent = {
                         Icon(
                             painter = painterResource(id = R.drawable.bolt_24px),
-                            contentDescription = "two"
+                            contentDescription = "two",
+                            tint = MiuixTheme.colorScheme.onSurface
                         )
                     },
                     title = "寝室电费",
@@ -451,7 +433,9 @@ fun FocusCardItem(
         headlineContent = {
             Text(
                 text = title,
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelMedium.copy(
+                    color = MiuixTheme.colorScheme.onSurface
+                ),
                 maxLines = 1
             )
         },
@@ -463,7 +447,9 @@ fun FocusCardItem(
         supportingContent = {
             Text(
                 text = content,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = MiuixTheme.colorScheme.onSurface
+                ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.basicMarquee(
@@ -507,16 +493,13 @@ fun TodayCourseCard(
             if (examScheduleList.isNotEmpty()) {
                 Column {
                     examScheduleList.forEach { exam ->
-                        ExamScheduleCard(
-                            exam = exam,
-                            isInProgress = LocalDateTime.now().isBefore(
-                                LocalDateTime.of(exam.date, exam.endTime) // 结束之前
-                            ) && LocalDateTime.now().isAfter(
-                                LocalDateTime.of(exam.date, exam.startTime) // 开始之后
-                            ),
-                            isPassed = LocalDateTime.now().isAfter(
-                                LocalDateTime.of(exam.date, exam.endTime) // 结束之后
-                            ),
+                        SingleTaskCard(
+                            taskName = exam.examName,
+                            taskDescription = "${exam.examRoom} | ${exam.seatNumber}",
+                            taskColor = Color(exam.examType.color),
+                            startTime = exam.startTime,
+                            endTime = exam.endTime,
+                            modifier = Modifier,
                             onClick = {
                                 navController.navigate(Destinations.ExamSchedule.route)
                             }
@@ -554,8 +537,7 @@ fun TodayCourseCard(
                         todayCourseList.forEachIndexed { index, it ->
                             SingleCourseCard(
                                 modifier = Modifier.fillMaxSize(),
-                                onClick = {},
-                                message = it
+                                course = it
                             )
                         }
                     }
@@ -625,133 +607,6 @@ fun CommonAppsCard(
         }
     )
 }
-
-@Composable
-fun ExamScheduleCard(
-    exam: ExamEntity,
-    isInProgress: Boolean,
-    isPassed: Boolean,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier,
-        colors = CardDefaults.defaultColors(
-            color = if (isPassed) MiuixTheme.colorScheme.surface
-            else MiuixTheme.colorScheme.surface
-        ),
-        onClick = { onClick() }
-    ) {
-        val textColor = if (isPassed) MiuixTheme.colorScheme.disabledOnSecondaryVariant
-        else MiuixTheme.colorScheme.onSurface
-        val iconColor = if (isPassed) MiuixTheme.colorScheme.primary.copy(0.6f)
-        else MiuixTheme.colorScheme.primary
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 15.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .width(4.dp)
-                    .height(32.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(exam.examType.color))
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = exam.examName,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            color = MiuixTheme.colorScheme.onBackground
-                        ),
-                        modifier = Modifier
-                    )
-                    Text(
-                        text = if (isInProgress) "考试中" else if (isPassed) "已结束" else "未开始",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            color = Color(exam.examType.color)
-                        ),
-                        modifier = Modifier
-                    )
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(0.45f)
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.schedule_24px),
-                            contentDescription = "time",
-                            modifier = Modifier
-                                .size(22.dp)
-                                .padding(end = 4.dp),
-                            tint = iconColor
-                        )
-                        Text(
-                            text = "${
-                                convertLocalTimeToStringTime(
-                                    time = exam.startTime,
-                                    pattern = "HH:mm"
-                                )
-                            } 开考",
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth(),
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                color = textColor
-                            ),
-                            textAlign = TextAlign.Start
-                        )
-                    }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(0.55f)
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.location_on_24px),
-                            contentDescription = "building",
-                            modifier = Modifier
-                                .size(22.dp)
-                                .padding(end = 4.dp),
-                            tint = iconColor
-                        )
-                        Text(
-                            text = "${exam.examRoom} | ${exam.seatNumber}",
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.Start,
-                            maxLines = 1,
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                color = textColor
-                            ),
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
 
 @Composable
 fun WeatherBottomSheet(

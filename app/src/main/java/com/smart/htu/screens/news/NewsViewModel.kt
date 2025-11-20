@@ -235,7 +235,6 @@ class NewsViewModel @Inject constructor(
                 currentList[typeIndex] = (currentList[typeIndex]?.plus(res))?.toMutableList()
             }
             _uiState.update { it.copy(newsList = currentList) }
-            Log.i("TAG666 getNewsList", "${currentList[typeIndex]} $res")
         } catch (e: Exception) {
             Log.e("TAG666 getNewsList ", "error: ${e.message}")
         }
@@ -252,7 +251,6 @@ class NewsViewModel @Inject constructor(
                 )
             )
             _uiState.update { it.copy(bannerPicList = res) }
-            Log.i("TAG666", "getNewsList: $res")
         } catch (e: Exception) {
             Log.i("TAG666", "getNewsList: $e")
         }

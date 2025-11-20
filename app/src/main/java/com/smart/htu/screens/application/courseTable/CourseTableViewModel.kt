@@ -1,7 +1,7 @@
 package com.smart.htu.screens.application.courseTable
 
+import android.os.Environment
 import android.util.Log
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -16,6 +16,7 @@ import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.utils.FileUtil.saveTextToFile
 import com.smart.htu.utils.TermUtil.getCurrentTerm
+import com.smart.htu.utils.ToastUtil.showSnackbar
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -222,7 +223,7 @@ class CourseTableViewModel @Inject constructor(
             try {
                 val courseData = getAllWeekCourseSchedule()
                 if (courseData.isNullOrEmpty()) {
-                    showSnackBar("没有课表数据导出")
+                    showSnackbar(snackBarHostState, "没有课表数据导出")
                     return@launch
                 }
                 val icsContent = buildICSFile(
@@ -234,12 +235,13 @@ class CourseTableViewModel @Inject constructor(
                     "${_uiState.value.username}_${_uiState.value.termCode}学期课表_${System.currentTimeMillis()}.ics"
                 saveTextToFile(
                     fileName = fileName,
-                    content = icsContent
+                    content = icsContent,
+                    targetDirectory = Environment.DIRECTORY_DOWNLOADS
                 )
-                showSnackBar("$fileName 已成功导出到下载目录")
+                showSnackbar(snackBarHostState, "$fileName 已成功导出到下载目录")
             } catch (e: Exception) {
                 Log.e("TAG666", "导出ICS文件失败: ${e.message}")
-                showSnackBar("导出失败: ${e.message}")
+                showSnackbar(snackBarHostState, "导出失败: ${e.message}")
             }
         }
     }
@@ -304,27 +306,23 @@ class CourseTableViewModel @Inject constructor(
         return sb.toString()
     }
 
-    fun showSnackBar(
-        message: String,
-        actionLabel: String? = null,
-        withDismissAction: Boolean = false,
-        duration: SnackbarDuration = if (actionLabel == null) SnackbarDuration.Short else SnackbarDuration.Indefinite
-    ) {
-        viewModelScope.launch {
-            snackBarHostState.showSnackbar(message, actionLabel, withDismissAction, duration)
-        }
+    /* fun showSnackBar(
+         message: String,
+         actionLabel: String? = null,
+         withDismissAction: Boolean = false,
+         duration: SnackbarDuration = if (actionLabel == null) SnackbarDuration.Short else SnackbarDuration.Indefinite
+     ) {
+         viewModelScope.launch {
+             snackBarHostState.showSnackbar(message, actionLabel, withDismissAction, duration)
+         }
+     }*/
+
+    suspend fun changeBackgroundBlurRadius(blurRadius: Dp) {
+        dataStoreRepo.changeCourseTableBackgroundBlurRadius(blurRadius.value.toInt())
     }
 
-    fun changeBackgroundBlurRadius(blurRadius: Dp) {
-        viewModelScope.launch {
-            dataStoreRepo.changeCourseTableBackgroundBlurRadius(blurRadius.value.toInt())
-        }
-    }
-
-    fun changeIsShowWeekendCourse(isShow: Boolean) {
-        viewModelScope.launch {
-            dataStoreRepo.changeWeekendCourseShowState(isShow)
-        }
+    suspend fun changeIsShowWeekendCourse(isShow: Boolean) {
+        dataStoreRepo.changeWeekendCourseShowState(isShow)
     }
 
 }

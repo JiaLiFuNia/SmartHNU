@@ -2,6 +2,7 @@ package com.smart.htu.screens.person
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -10,19 +11,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,27 +38,36 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.window.core.layout.WindowSizeClass
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.card.LargeCardDisplay
+import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.login.LogoutDialog
 import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.setting.SettingItemCard
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
+import com.smart.htu.utils.ToastUtil.showSnackbar
 import com.smart.htu.utils.ToastUtil.showToast
 import com.smart.htu.utils.copyContent
 import dev.chrisbanes.haze.hazeEffect
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.PullToRefresh
+import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.extra.SuperArrow
+import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -60,8 +75,7 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @Composable
 fun PersonScreen(
     navController: NavController,
-    viewModel: LoginViewModel,
-    contentPadding: PaddingValues
+    viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
@@ -69,6 +83,8 @@ fun PersonScreen(
     val showLogoutDialog = remember { mutableStateOf(false) }
     val showLoginDialog = remember { mutableStateOf(false) }
     val isShowPrivateMessage = remember { mutableStateOf(true) }
+    val isShowMessageDialog = remember { mutableStateOf(false) }
+    val showDialogTarget = remember { mutableStateOf("") }
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
@@ -80,23 +96,44 @@ fun PersonScreen(
         }
     }
 
-    Column {
-        TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
-            title = { Text(text = stringResource(R.string.my)) },
-            actions = {
-                IconButton(
-                    onClick = {
-                        isShowPrivateMessage.value = !isShowPrivateMessage.value
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    Scaffold(
+        containerColor = MiuixTheme.colorScheme.background,
+        topBar = {
+            MediumTopAppBar(
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MiuixTheme.colorScheme.background,
+                    scrolledContainerColor = MiuixTheme.colorScheme.background
+                ),
+                title = { Text(text = "账号与信息") },
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "back"
+                        )
                     }
-                ) {
-                    Icon(
-                        painter = painterResource(id = if (isShowPrivateMessage.value) R.drawable.visibility_24px else R.drawable.visibility_off_24px),
-                        contentDescription = "eye"
-                    )
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            isShowPrivateMessage.value = !isShowPrivateMessage.value
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = if (isShowPrivateMessage.value) R.drawable.visibility_24px else R.drawable.visibility_off_24px),
+                            contentDescription = "eye"
+                        )
+                    }
                 }
-            }
-        )
+            )
+        },
+        snackbarHost = {
+            SnackbarHost(snackBarHostState)
+        }
+    ) {
         PullToRefresh(
             pullToRefreshState = pullToRefreshState,
             onRefresh = { isRefreshing = true },
@@ -104,7 +141,7 @@ fun PersonScreen(
             refreshTexts = PULL_TO_REFRESH_TEXT,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = contentPadding.calculateBottomPadding())
+                .padding(top = it.calculateTopPadding())
         ) {
             if (windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND))
                 Row {
@@ -113,6 +150,7 @@ fun PersonScreen(
                         modifier = Modifier
                             .weight(0.5f)
                             .fillMaxSize()
+                            .nestedScroll(scrollBehavior.nestedScrollConnection)
                             .overScrollVertical(),
                         overscrollEffect = null
                     ) {
@@ -188,13 +226,6 @@ fun PersonScreen(
                                 }
                             ) {
                                 PersonalMessage(
-                                    label = "统一身份认证系统",
-                                    trailingText = stringResource(id = loginStateString(uiState.authLoginState)),
-                                    onClick = {
-                                        showLoginDialog.value = true
-                                    }
-                                )
-                                PersonalMessage(
                                     label = "河南师大智慧教务",
                                     trailingText = stringResource(id = loginStateString(uiState.jwcLoginState)),
                                     onClick = {
@@ -204,8 +235,15 @@ fun PersonScreen(
                                     }
                                 )
                                 PersonalMessage(
+                                    label = "统一身份认证系统",
+                                    trailingText = stringResource(id = loginStateString(uiState.authLoginState)),
+                                    onClick = {
+                                        showLoginDialog.value = true
+                                    }
+                                )
+                                PersonalMessage(
                                     label = "第二课堂管理系统",
-                                    trailingText = stringResource(id = loginStateString(0)),
+                                    trailingText = stringResource(id = loginStateString(uiState.scLoginState)),
                                     onClick = {
                                     }
                                 )
@@ -235,17 +273,23 @@ fun PersonScreen(
                 }
             else
                 LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                     modifier = Modifier
                         .fillMaxSize()
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
                         .overScrollVertical(),
-                    overscrollEffect = null
+                    overscrollEffect = null,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        top = 8.dp,
+                        end = 12.dp,
+                        bottom = 16.dp
+                    )
                 ) {
                     item {
-                        LargeCardDisplay(
+                        SettingItemCard(
                             modifier = Modifier,
-                            title = "我的信息",
-                            leadingIconPainting = R.drawable.person_search_24px
+                            label = "个人信息"
                         ) {
                             PersonalMessage(
                                 label = stringResource(id = R.string.username),
@@ -300,50 +344,54 @@ fun PersonScreen(
                                 )
                             }
                         }
-                        Spacer(modifier = Modifier.height(20.dp))
                     }
                     item {
-                        LargeCardDisplay(
-                            modifier = Modifier,
-                            title = "账号管理",
-                            leadingIconPainting = R.drawable.circle_admin,
-                            actionText = "详情",
-                            navigateTo = {
-                                navController.navigate(Destinations.AccountManage.route)
-                            }
-                        ) {
-                            PersonalMessage(
-                                label = "统一身份认证系统",
-                                trailingText = stringResource(id = loginStateString(uiState.authLoginState)),
-                                onClick = {
-                                    if (uiState.authLoginState != 1) showLoginDialog.value = true
-                                }
-                            )
+                        SettingItemCard(modifier = Modifier, label = "登录状态") {
                             PersonalMessage(
                                 label = "河南师大智慧教务",
                                 trailingText = stringResource(id = loginStateString(uiState.jwcLoginState)),
                                 onClick = {
-                                    if (uiState.jwcLoginState != 1) navController.navigate(
-                                        Destinations.Login.route
-                                    )
+                                    // isShowMessageDialog.value = true
+                                }
+                            )
+                            PersonalMessage(
+                                label = "统一身份认证",
+                                trailingText = stringResource(id = loginStateString(uiState.authLoginState)),
+                                onClick = {
+                                    showDialogTarget.value = "统一身份认证"
+                                    isShowMessageDialog.value = true
                                 }
                             )
                             PersonalMessage(
                                 label = "第二课堂管理系统",
                                 trailingText = stringResource(id = loginStateString(uiState.scLoginState)),
                                 onClick = {
+                                    showDialogTarget.value = "第二课堂管理系统"
+                                    isShowMessageDialog.value = true
                                 }
                             )
                             PersonalMessage(
-                                label = "我的图书馆",
-                                trailingText = stringResource(id = loginStateString(0)),
+                                label = "图书馆书目检索系统",
+                                trailingText = stringResource(id = loginStateString(uiState.libraryLoginState)),
                                 onClick = {
+                                    showDialogTarget.value = "图书馆书目检索系统"
+                                    isShowMessageDialog.value = true
                                 }
                             )
                         }
-                        Spacer(modifier = Modifier.height(20.dp))
                     }
                     item {
+                        Card {
+                            SuperArrow(
+                                title = "登录信息管理",
+                                onClick = {
+                                    navController.navigate(Destinations.AccountManage.route)
+                                }
+                            )
+                        }
+                    }
+                    item {
+                        Spacer(modifier = Modifier.height(height = 16.dp))
                         TextButton(
                             text = stringResource(id = R.string.log_out),
                             onClick = {
@@ -363,8 +411,8 @@ fun PersonScreen(
             showDialog = showLogoutDialog,
             onConfirmClick = {
                 viewModel.logout()
-                navController.navigate(Destinations.App.route)
                 showLogoutDialog.value = false
+                navController.popBackStack()
             }
         )
 
@@ -388,6 +436,48 @@ fun PersonScreen(
             },
             logState = uiState.authLoginState
         )
+
+        DeleteMessageDialog(isShowMessageDialog, showDialogTarget)
+    }
+}
+
+@Composable
+fun DeleteMessageDialog(
+    showDialog: MutableState<Boolean>,
+    target: MutableState<String>
+) {
+    SuperDialog(
+        title = "提示",
+        summary = "是否清除 ${target.value} 的登录信息？",
+        onDismissRequest = {
+            showDialog.value = false
+        },
+        show = showDialog
+    ) {
+        Column {
+            Text("功能开发中...")
+            Spacer(modifier = Modifier.height(20.dp))
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TextButton(
+                    text = "取消",
+                    onClick = {
+                        showDialog.value = false
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(Modifier.width(20.dp))
+                TextButton(
+                    text = "确认",
+                    onClick = {
+                        showDialog.value = false
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.textButtonPrimaryColors()
+                )
+            }
+        }
     }
 }
 
@@ -443,9 +533,9 @@ fun PersonalMessage(
                         scope.launch {
                             if (isShowPrivateMessage) {
                                 copyContent(trailingText)
-                                snackBarHostState.showSnackbar("已复制到剪贴板")
+                                showSnackbar(snackBarHostState, "已复制到剪贴板")
                             } else {
-                                snackBarHostState.showSnackbar("已开启隐私保护模式，禁止复制信息")
+                                showSnackbar(snackBarHostState, "已开启隐私保护模式，禁止复制信息")
                             }
                         }
                     }

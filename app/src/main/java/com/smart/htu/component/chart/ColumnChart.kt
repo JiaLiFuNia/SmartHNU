@@ -48,11 +48,12 @@ fun ColumnChart(
     xData: MutableState<List<String>>,
     yData: MutableState<List<Double>>,
     verticalAxisItemPlacerStep: Double, // 纵轴数据间距
-    columnCollectionSpacing: Dp // 每一列的间隔
+    columnCollectionSpacing: Dp, // 每一列的间隔
+    columnWidth: Dp = 16.dp
 ) {
     val columnStyle = rememberLineComponent(
         fill = fill(MiuixTheme.colorScheme.primary),
-        thickness = 16.dp,
+        thickness = columnWidth,
         shape = CorneredShape.rounded(topLeftPercent = 30, topRightPercent = 30),
     )
 

@@ -11,6 +11,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.TextButton
+import top.yukonga.miuix.kmp.extra.SpinnerDefaults
 import top.yukonga.miuix.kmp.extra.SpinnerEntry
 import top.yukonga.miuix.kmp.extra.SpinnerItemImpl
 import top.yukonga.miuix.kmp.extra.SuperDialog
@@ -44,7 +45,8 @@ fun SuperSpinnerDialog(
                                 entryCount = items.size,
                                 isSelected = selectedIndex == index,
                                 index = index,
-                                dialogMode = true
+                                dialogMode = true,
+                                spinnerColors = SpinnerDefaults.spinnerColors()
                             ) { selectedIdx ->
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                                 onSelectedIndexChange?.invoke(selectedIdx)

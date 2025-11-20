@@ -22,7 +22,7 @@ class AppWebViewViewModel @Inject constructor(
 
     fun loadCookiesForUrl(url: String) {
         viewModelScope.launch {
-            val cookie = networkCookieJar.loadAllCookies()
+            val cookie = networkCookieJar.loadCookiesForUrl(url)
             Log.d("TAG666 WebViewViewModel", "$cookie $url")
             _cookies.update { cookie }
         }

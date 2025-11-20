@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.repo.DataStoreRepo
-import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.utils.TermUtil.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +21,7 @@ import javax.inject.Inject
 data class ExamScheduleUiState(
     val examScheduleList: List<ExamEntity> = emptyList(),
     val globalTermCode: String,
-    val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
+    val blurEnabled: Boolean = true// DEFAULT_BLUR_EFFECT
 )
 
 @HiltViewModel
@@ -67,7 +66,7 @@ class ExamScheduleViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             blurStateFlow.collect { value ->
-                _uiState.update { it.copy(blurEffect = value) }
+                // _uiState.update { it.copy(blurEnabled = value) }
             }
         }
         viewModelScope.launch {

@@ -33,6 +33,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -44,11 +45,11 @@ import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.TextField
-import top.yukonga.miuix.kmp.extra.DropDownMode
 import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
@@ -61,6 +62,7 @@ fun AIConfigurationScreen(
     val scope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
+    val hapticFeedback = LocalHapticFeedback.current
 
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
@@ -92,7 +94,8 @@ fun AIConfigurationScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .overScrollVertical(),
+                .overScrollVertical()
+                .scrollEndHaptic(),
             overscrollEffect = null,
             contentPadding = PaddingValues(
                 start = 16.dp,
@@ -172,8 +175,7 @@ fun AIConfigurationScreen(
                                 selectedIndex = uiState.selectedAIModelIndex,
                                 onSelectedIndexChange = {
                                     viewModel.selectAIModel(it)
-                                },
-                                mode = DropDownMode.AlwaysOnRight,
+                                }
                             )
                         }
                         TextField(

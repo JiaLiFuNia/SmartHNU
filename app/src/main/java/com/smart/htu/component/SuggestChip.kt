@@ -17,8 +17,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import top.yukonga.miuix.kmp.basic.CardDefaults
-import top.yukonga.miuix.kmp.utils.G2RoundedCornerShape
+import top.yukonga.miuix.kmp.basic.Surface
 
 @Composable
 fun SuggestChip(
@@ -35,10 +36,10 @@ fun SuggestChip(
     }
     val textColor = when (type) {
         SuggestChipType.INFO -> MaterialTheme.colorScheme.onPrimaryContainer
-        SuggestChipType.ERROR -> MaterialTheme.colorScheme.onErrorContainer
+        SuggestChipType.ERROR -> MaterialTheme.colorScheme.error
     }
-    top.yukonga.miuix.kmp.basic.Surface(
-        shape = G2RoundedCornerShape(CardDefaults.CornerRadius),
+    Surface(
+        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
         color = containerColor,
         onClick = onClick,
         modifier = modifier

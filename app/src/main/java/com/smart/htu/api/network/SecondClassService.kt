@@ -14,17 +14,17 @@ interface SecondClassService {
     @POST("syslogin")
     @FormUrlEncoded
     suspend fun scLogin(
-        @Header("Cookie") sid: String,
-        @Field("username") username: String,
+        @Header("Cookie") sid: String = "",
+        @Field("username") username: String = "",
         @Field("password") password: String = "",
-        @Field("password2") password2: String?,
-        @Field("tk") tk: String,
-        @Field("verifycode") verifyCode: String,
+        @Field("password2") password2: String? = "",
+        @Field("tk") tk: String = "",
+        @Field("verifycode") verifyCode: String = "",
     ): Response<ResponseBody>
 
-    @GET("sys/stu/dataanalysis/plate")
-    suspend fun getHourList(
+    @GET("sys/stu/score/list")
+    suspend fun getHourScoreList(
         @Header("Cookie") sid: String
-    ): SCHourEntity
+    ): Response<SCHourEntity>
 
 }

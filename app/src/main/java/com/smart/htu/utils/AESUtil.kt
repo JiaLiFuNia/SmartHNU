@@ -9,20 +9,35 @@ import javax.crypto.spec.SecretKeySpec
 object AESUtils {
     private const val AES_CHARS = "ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678"
 
-    private fun encryptAES(data: String, key: String, iv: String): String {
-        val keyBytes = key.toByteArray(Charsets.UTF_8)
-        val ivBytes = iv.toByteArray(Charsets.UTF_8)
-        val dataBytes = data.toByteArray(Charsets.UTF_8)
+    fun encryptPassword(password: String, key: String, mode: String): String {
+        return if (key.isEmpty()) password
+        else aesEncrypt(
+            data = password,
+            key = key.toByteArray(),
+            mode = mode
+        )
+    }
 
-        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        val secretKey = SecretKeySpec(keyBytes, "AES")
-        val ivSpec = IvParameterSpec(ivBytes)
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec)
-        val encrypted = cipher.doFinal(dataBytes)
+    fun aesEncrypt(
+        data: String,
+        key: ByteArray,
+        iv: ByteArray = randomString(16).toByteArray(),
+        mode: String,
+        padding: String = "PKCS5Padding"
+    ): String {
+        val transformation = "AES/$mode/$padding"
+        val cipher = Cipher.getInstance(transformation)
+        val secretKey = SecretKeySpec(key, "AES")
+        if (mode == "ECB") {
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+        } else {
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, IvParameterSpec(iv))
+        }
+        val encrypted = cipher.doFinal(data.toByteArray(Charsets.UTF_8))
         return Base64.getEncoder().encodeToString(encrypted)
     }
 
-    private fun randomString(length: Int): String {
+    fun randomString(length: Int): String {
         val random = SecureRandom()
         val sb = StringBuilder(length)
         repeat(length) {
@@ -32,11 +47,4 @@ object AESUtils {
         return sb.toString()
     }
 
-    fun encryptPassword(password: String, salt: String): String {
-        return if (salt.isEmpty()) password
-        else {
-            val data = randomString(64) + password
-            encryptAES(data, salt, randomString(16))
-        }
-    }
 }

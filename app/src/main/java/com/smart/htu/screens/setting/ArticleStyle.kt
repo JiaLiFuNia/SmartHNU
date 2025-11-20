@@ -2,13 +2,10 @@ package com.smart.htu.screens.setting
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -32,12 +29,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.kevinnzou.web.rememberWebViewNavigator
 import com.kevinnzou.web.rememberWebViewStateWithHTMLData
+import com.smart.htu.component.SuperSlider
 import com.smart.htu.component.WebView
 import com.smart.htu.screens.news.newsView.NewsHTML
 import com.smart.htu.screens.news.newsView.NewsStyle
@@ -45,8 +42,6 @@ import com.smart.htu.screens.news.newsView.NewsStyle.HORIZONTAL_MARGIN
 import com.smart.htu.screens.news.newsView.WebViewScript
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Scaffold
-import top.yukonga.miuix.kmp.basic.Slider
-import top.yukonga.miuix.kmp.extra.DropDownMode
 import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -63,6 +58,7 @@ fun ArticleStyle(
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val navigator = rememberWebViewNavigator()
+    val fontSizeProgress = remember { mutableFloatStateOf(uiState.newsFontSize) }
 
     Scaffold(
         containerColor = MiuixTheme.colorScheme.background,
@@ -115,7 +111,7 @@ fun ArticleStyle(
                             webViewState = rememberWebViewStateWithHTMLData(
                                 data = NewsHTML.HTML.format(
                                     NewsStyle.get(
-                                        fontSize = uiState.newsFontSize.toInt(),
+                                        fontSize = fontSizeProgress.floatValue.toInt(),
                                         lineHeight = 1.0F,
                                         letterSpacing = 0.5F,
                                         textMargin = HORIZONTAL_MARGIN,
@@ -149,31 +145,22 @@ fun ArticleStyle(
                 }
             }
             item {
-                val fontSizeProgress = remember { mutableFloatStateOf(uiState.newsFontSize) }
                 // BasicComponent()
                 Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        top.yukonga.miuix.kmp.basic.Text(
-                            text = "字体大小",
-                            fontSize = MiuixTheme.textStyles.headline1.fontSize,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Slider(
-                            progress = fontSizeProgress.floatValue,
-                            onProgressChange = {
-                                fontSizeProgress.floatValue = it
-                                viewModel.changeNewsFontSize(fontSizeProgress.floatValue.toInt())
-                            },
-                            decimalPlaces = 1,
-                            minValue = 15f,
-                            maxValue = 25f
-                        )
-                    }
+                    SuperSlider(
+                        title = "字体大小",
+                        summary = "${fontSizeProgress.floatValue.toInt()} sp",
+                        value = fontSizeProgress.floatValue,
+                        onValueChange = {
+                            fontSizeProgress.floatValue = it
+                        },
+                        onValueChangeFinished = {
+                            viewModel.changeNewsFontSize(fontSizeProgress.floatValue.toInt())
+                        },
+                        valueRange = 15f..25f,
+                        showKeyPoints = false,
+                        keyPoints = listOf(15f, 17f, 19f, 21f, 23f, 25f)
+                    )
                 }
             }
             item {
@@ -183,7 +170,6 @@ fun ArticleStyle(
                         summary = "更改字体样式",
                         items = listOf("系统默认", "Serif", "Sans-serif", "Monospace"),
                         selectedIndex = 0,
-                        mode = DropDownMode.AlwaysOnRight,
                         onSelectedIndexChange = { mode ->
                         },
                         enabled = false

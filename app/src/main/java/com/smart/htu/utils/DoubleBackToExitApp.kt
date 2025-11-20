@@ -1,15 +1,14 @@
 package com.smart.htu.utils
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import com.smart.htu.App.Companion.context
-import com.smart.htu.MainActivity
+import com.smart.htu.MainActivity.Companion.snackBarHostState
+import com.smart.htu.utils.ToastUtil.showSnackbar
 import kotlinx.coroutines.launch
 
 @Composable
@@ -25,9 +24,9 @@ fun DoubleBackToExitApp(
         } else {
             shouldExit = true
             coroutineScope.launch {
-                MainActivity.snackBarHostState.showSnackbar(
-                    "再一次操作退出应用",
-                    duration = SnackbarDuration.Short
+                showSnackbar(
+                    snackBarHostState = snackBarHostState,
+                    message = "再一次操作退出应用",
                 )
                 kotlinx.coroutines.delay(2000)
                 shouldExit = false

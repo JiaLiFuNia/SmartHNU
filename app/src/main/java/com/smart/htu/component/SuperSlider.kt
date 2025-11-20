@@ -10,10 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.Slider
-import top.yukonga.miuix.kmp.basic.SliderColors
 import top.yukonga.miuix.kmp.basic.SliderDefaults
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -21,18 +19,16 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 @Composable
 fun SuperSlider(
     title: String,
-    summary: String,
-    progress: Float,
-    onProgressChange: (Float) -> Unit,
-    modifier: Modifier = Modifier,
+    summary: String? = null,
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    onValueChangeFinished: (() -> Unit)? = null,
     enabled: Boolean = true,
-    minValue: Float = 0f,
-    maxValue: Float = 1f,
-    height: Dp = SliderDefaults.MinHeight,
-    colors: SliderColors = SliderDefaults.sliderColors(),
-    effect: Boolean = false,
-    decimalPlaces: Int = 2,
-    hapticEffect: SliderDefaults.SliderHapticEffect = SliderDefaults.DefaultHapticEffect
+    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    steps: Int = 0,
+    showKeyPoints: Boolean = false,
+    keyPoints: List<Float>? = null,
+    hapticEffect:  SliderDefaults.SliderHapticEffect = SliderDefaults.DefaultHapticEffect
 ) {
     Column(
         modifier = Modifier
@@ -48,25 +44,29 @@ fun SuperSlider(
                 fontSize = MiuixTheme.textStyles.headline1.fontSize,
                 fontWeight = FontWeight.Medium
             )
-            Text(
-                text = summary,
-                fontSize = MiuixTheme.textStyles.headline1.fontSize,
-                fontWeight = FontWeight.Medium
-            )
+            if (summary != null) {
+                Text(
+                    text = summary,
+                    fontSize = MiuixTheme.textStyles.headline1.fontSize,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
         Spacer(modifier = Modifier.height(8.dp))
         Slider(
-            progress = progress,
-            onProgressChange = onProgressChange,
-            decimalPlaces = decimalPlaces,
-            minValue = minValue,
-            maxValue = maxValue,
-            modifier = modifier,
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier,
             enabled = enabled,
-            height = height,
-            colors = colors,
-            effect = effect,
-            hapticEffect = hapticEffect
+            valueRange = valueRange,
+            steps = steps,
+            onValueChangeFinished = onValueChangeFinished,
+            height = SliderDefaults.MinHeight,
+            colors = SliderDefaults.sliderColors(),
+            effect = false,
+            hapticEffect = hapticEffect,
+            showKeyPoints = showKeyPoints,
+            keyPoints = keyPoints
         )
     }
 }

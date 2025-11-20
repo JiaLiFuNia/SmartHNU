@@ -12,9 +12,11 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.smart.htu.api.DataStoreService
 import com.smart.htu.api.module.ACCookie
+import com.smart.htu.api.module.CaptchaVersionEntity
 import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.api.module.NewsMarkEntity
+import com.smart.htu.api.module.SCHourEntity
 import com.smart.htu.screens.application.ApplicationEntity
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import com.smart.htu.utils.TermUtil
@@ -39,7 +41,9 @@ class DataStoreRepo @Inject constructor(
         val LOGIN_STATE = intPreferencesKey("LOGIN_STATE")
         val LOGIN_JWC_STATE = intPreferencesKey("LOGIN_JWC_STATE")
         val LOGIN_SC_STATE = intPreferencesKey("LOGIN_SC_STATE")
+        val LOGIN_LIB_STATE = intPreferencesKey("LOGIN_LIB_STATE")
         val SECOND_CLASS_SID = stringPreferencesKey("SECOND_CLASS_SID")
+        val LIB_META_SESSION = stringPreferencesKey("LIB_SESSION")
         val TOKEN = stringPreferencesKey("TOKEN")
         val DARK_THEME = intPreferencesKey("DARK_THEME")
         val THEME_MODE = intPreferencesKey("THEME_MODE")
@@ -49,7 +53,7 @@ class DataStoreRepo @Inject constructor(
         val WAITING_BORROWED_BOOK_LIST = stringPreferencesKey("WAITING_BORROWED_BOOK_LIST")
         val BLUR_EFFECT = booleanPreferencesKey("BLUR_EFFECT")
         val STUDENT_ID = stringPreferencesKey("STUDENT_ID")
-        val BUILDING_ID = stringPreferencesKey("BUILDING_ID")
+        val DORM_ROOM_ID = stringPreferencesKey("DORM_ROOM_ID")
         val ROOM_ID = stringPreferencesKey("ROOM_ID")
         val GLOBAL_TERM = stringPreferencesKey("GLOBAL_TERM")
         val NOTICE_READ_ID_LIST = stringPreferencesKey("NOTICE_READ_ID_LIST")
@@ -71,6 +75,8 @@ class DataStoreRepo @Inject constructor(
         val COURSE_TABLE_BACKGROUND_BLUR_RADIUS =
             intPreferencesKey("COURSE_TABLE_BACKGROUND_BLUR_RADIUS")
         val WEEKEND_COURSE_SHOW_STATE = booleanPreferencesKey("WEEKEND_COURSE_SHOW_STATE")
+        val SECOND_CLASS_DATA = stringPreferencesKey("SECOND_CLASS_DATA")
+        val UPDATE_RES = stringPreferencesKey("UPDATE_RES")
 
         const val DEFAULT_COOKIES = "[]"
         const val DEFAULT_MESSAGE_READ_ID = "[]"
@@ -138,8 +144,8 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[STUDENT_ID] = id }
     }
 
-    override suspend fun changeBuildingId(id: String) {
-        context.dataStore.edit { it[BUILDING_ID] = id }
+    override suspend fun saveDormRoomId(id: String) {
+        context.dataStore.edit { it[DORM_ROOM_ID] = id }
     }
 
     override suspend fun changeRoomId(room: String) {
@@ -259,6 +265,22 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[WEEKEND_COURSE_SHOW_STATE] = isShow }
     }
 
+    override suspend fun saveSecondClassData(data: SCHourEntity) {
+        context.dataStore.edit { it[SECOND_CLASS_DATA] = Json.encodeToString(data) }
+    }
+
+    override suspend fun saveUpdateRes(result: CaptchaVersionEntity) {
+        context.dataStore.edit { it[UPDATE_RES] = Json.encodeToString(result) }
+    }
+
+    override suspend fun changeLoginLibraryState(state: Int) {
+        context.dataStore.edit { it[LOGIN_LIB_STATE] = state }
+    }
+
+    override suspend fun saveLibrarySession(session: String) {
+        context.dataStore.edit { it[LIB_META_SESSION] = session }
+    }
+
 
     override fun observeThemeMode(): Flow<Int> {
         return context.dataStore.data.map { it[THEME_MODE] ?: DEFAULT_THEME_MODE }
@@ -315,7 +337,7 @@ class DataStoreRepo @Inject constructor(
     }
 
     override fun observeBuildingId(): Flow<String> {
-        return context.dataStore.data.map { it[BUILDING_ID] ?: DEFAULT_BUILDING_ID }
+        return context.dataStore.data.map { it[DORM_ROOM_ID] ?: DEFAULT_BUILDING_ID }
     }
 
     override fun observeRoomId(): Flow<String> {
@@ -447,4 +469,29 @@ class DataStoreRepo @Inject constructor(
             it[WEEKEND_COURSE_SHOW_STATE] ?: true
         }
     }
+
+    override fun observeSecondClassData(): Flow<SCHourEntity?> {
+        return context.dataStore.data.map {
+            val json = it[SECOND_CLASS_DATA]
+            if (json != null) Json.decodeFromString<SCHourEntity>(json)
+            else null
+        }
+    }
+
+    override fun observeUpdateRes(): Flow<CaptchaVersionEntity> {
+        return context.dataStore.data.map {
+            Json.decodeFromString<CaptchaVersionEntity>(
+                it[UPDATE_RES] ?: Json.encodeToString(CaptchaVersionEntity())
+            )
+        }
+    }
+
+    override fun observeLoginLibraryState(): Flow<Int> {
+        return context.dataStore.data.map { it[LOGIN_LIB_STATE] ?: DEFAULT_LOGIN_STATE }
+    }
+
+    override fun observeLibrarySession(): Flow<String> {
+        return context.dataStore.data.map { it[LIB_META_SESSION] ?: "" }
+    }
+
 }
