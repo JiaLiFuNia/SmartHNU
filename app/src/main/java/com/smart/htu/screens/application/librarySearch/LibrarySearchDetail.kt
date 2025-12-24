@@ -14,24 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,7 +42,7 @@ import com.smart.htu.R
 import com.smart.htu.api.module.BookBorrowingDetails
 import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.component.CircularProgressIndicator
-import com.smart.htu.utils.ToastUtil.showSnackbar
+import com.smart.htu.utils.ToastUtil.showToast
 import com.smart.htu.utils.copyContent
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -64,13 +52,21 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.Copy
+import top.yukonga.miuix.kmp.icon.icons.useful.Like
+import top.yukonga.miuix.kmp.icon.icons.useful.Unlike
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
+@OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun LibrarySearchDetail(
     navController: NavController,
@@ -78,12 +74,11 @@ fun LibrarySearchDetail(
     bookId: String
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val context = LocalContext.current
+    val scrollBehavior = MiuixScrollBehavior()
     val lazyListState = rememberLazyListState()
     val hazeState = rememberHazeState()
     val scope = rememberCoroutineScope()
-    val snackBarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(bookId) {
         viewModel.libraryBookDetail(bookId)
@@ -95,25 +90,18 @@ fun LibrarySearchDetail(
         .build()
 
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
-        snackbarHost = {
-            SnackbarHost(hostState = snackBarHostState)
-        },
         topBar = {
-            MediumTopAppBar(
+            top.yukonga.miuix.kmp.basic.TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = Color.Transparent
-                ),
-                title = {
-                    Text(text = "详情")
-                },
+                color = Color.Transparent,
+                title = "详情",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }) {
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = MiuixIcons.Useful.Back,
                             contentDescription = "back"
                         )
                     }
@@ -130,8 +118,8 @@ fun LibrarySearchDetail(
                         Icon(
                             imageVector = if (uiState.waitingBorrowedBookList
                                     .map { it.bookId }.contains(bookId)
-                            ) Icons.Filled.Favorite
-                            else Icons.Outlined.FavoriteBorder,
+                            ) MiuixIcons.Useful.Like
+                            else MiuixIcons.Useful.Unlike,
                             contentDescription = "favorite"
                         )
                     }
@@ -144,24 +132,25 @@ fun LibrarySearchDetail(
                                                 "作者：${uiState.libraryBookDetail?.author}\n" +
                                                 "ISBN：${uiState.libraryBookDetail?.isbn}\n"
                                 )
-                                showSnackbar(snackBarHostState, "已复制书籍信息到剪贴板")
+                                showToast(context, "已复制书籍信息到剪贴板")
                             }
                         },
-                        enabled = uiState.libraryBookDetail != null
+                        enabled = uiState.libraryBookDetail != null,
+                        modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.content_copy_24px),
-                            contentDescription = "favorite"
+                            MiuixIcons.Useful.Copy,
+                            contentDescription = "copy"
                         )
                     }
                 },
                 modifier = Modifier/*.hazeEffect(
                     state = hazeState,
-                    style = HazeMaterials.ultraThin(
-                        MiuixTheme.colorScheme.background
-                    )
+                    style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
                 ) {
-                    blurRadius = 50.dp
+                    blurRadius = 30.dp
+                    noiseFactor = 0f
+                    blurEnabled = true
                 }*/
             )
         }
@@ -200,18 +189,15 @@ fun LibrarySearchDetail(
                     .fillMaxHeight(),
                 alignment = Alignment.TopCenter,
                 error = painterResource(id = R.drawable.ic_placeholder_vertical_error),
-                placeholder = painterResource(id = R.drawable.ic_placeholder_vertical_loading),
-                onError = { result ->
-                    println("错误原因: ${result}")
-                },
+                placeholder = painterResource(id = R.drawable.ic_placeholder_vertical_loading)
             )
 
             LazyColumn(
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
-                    top = 8.dp,
-                    bottom = 16.dp
+                    top = 16.dp,
+                    bottom = it.calculateBottomPadding() + 12.dp
                 ),
                 state = lazyListState,
                 modifier = Modifier
@@ -279,7 +265,7 @@ fun LibrarySearchDetail(
                                 item {
                                     if (it.isNotEmpty()) {
                                         Surface(
-                                            color = MiuixTheme.colorScheme.surface,
+                                            color = MiuixTheme.colorScheme.surfaceContainer,
                                             shape = MaterialTheme.shapes.small
                                         ) {
                                             Text(
@@ -288,7 +274,7 @@ fun LibrarySearchDetail(
                                                     horizontal = 12.dp,
                                                     vertical = 4.dp
                                                 ),
-                                                color = MiuixTheme.colorScheme.onSurface
+                                                color = MiuixTheme.colorScheme.onBackground
                                             )
                                         }
                                     }
@@ -307,7 +293,7 @@ fun LibrarySearchDetail(
                                     text = uiState.libraryBookDetail?.abstract.toString(),
                                     overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.padding(12.dp),
-                                    color = MiuixTheme.colorScheme.onSurface
+                                    color = MiuixTheme.colorScheme.onBackground
                                 )
                             }
                         }
@@ -366,12 +352,12 @@ fun BookInfo(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.Center
         ) {
-            top.yukonga.miuix.kmp.basic.Text(
+            Text(
                 text = label,
                 fontSize = MiuixTheme.textStyles.body2.fontSize,
                 color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
             )
-            top.yukonga.miuix.kmp.basic.Text(
+            Text(
                 text = content,
                 fontSize = MiuixTheme.textStyles.headline1.fontSize,
                 fontWeight = FontWeight.Medium,

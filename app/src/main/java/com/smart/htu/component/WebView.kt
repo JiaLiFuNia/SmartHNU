@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Environment
+import android.view.View
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -37,6 +37,7 @@ import com.smart.htu.utils.setDefaultSettings
 import kotlinx.coroutines.launch
 import okhttp3.Cookie
 import org.jsoup.Jsoup
+import top.yukonga.miuix.kmp.basic.LinearProgressIndicator
 
 @SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -197,7 +198,7 @@ fun WebView(
             when (loadingState) {
                 is LoadingState.Loading -> {
                     LinearProgressIndicator(
-                        progress = { loadingState.progress },
+                        progress = loadingState.progress,
                         modifier = Modifier
                             .fillMaxWidth(),
                     )

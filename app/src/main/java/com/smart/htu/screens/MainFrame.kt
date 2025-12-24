@@ -5,12 +5,15 @@ import android.os.Environment
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Article
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationItemIconPosition
 import androidx.compose.material3.ShortNavigationBar
 import androidx.compose.material3.ShortNavigationBarItem
@@ -46,6 +49,7 @@ import com.smart.htu.screens.news.NewsScreen
 import com.smart.htu.screens.setting.SettingScreen
 import com.smart.htu.screens.setting.SettingViewModel
 import com.smart.htu.utils.DoubleBackToExitApp
+import top.yukonga.miuix.kmp.basic.NavigationItem
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -100,6 +104,25 @@ fun MainFrame(
         )*/
     )
 
+    val items = listOf(
+        NavigationItem(
+            label = "主页",
+            icon = Icons.Outlined.Home
+        ),
+        NavigationItem(
+            label = "应用",
+            icon = Icons.Outlined.Widgets
+        ),
+        NavigationItem(
+            label = "新闻",
+            icon = Icons.AutoMirrored.Outlined.Article
+        ),
+        NavigationItem(
+            label = "设置",
+            icon = Icons.Outlined.Settings
+        )
+    )
+
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
     top.yukonga.miuix.kmp.basic.Scaffold(
@@ -147,44 +170,11 @@ fun MainFrame(
                     }
                 }
             else
-                NavigationBar(
-                    containerColor = MiuixTheme.colorScheme.surfaceContainer
-                ) {
-                    navigationItem.filter { it.enabled }.forEachIndexed { index, item ->
-                        NavigationBarItem(
-                            icon = {
-                                BadgedBox(
-                                    badge = {
-                                        if (item.badge > 0) {
-                                            Badge {
-                                                Text(text = item.badge.toString())
-                                            }
-                                        }
-                                    }
-                                ) {
-                                    Icon(
-                                        painter = painterResource(
-                                            id = if (index == selectedItemIndex) {
-                                                item.selectedIcon
-                                            } else {
-                                                item.unselectedIcon
-                                            }
-                                        ),
-                                        contentDescription = "icon"
-                                    )
-                                }
-                            },
-                            label = {
-                                Text(text = stringResource(id = item.title))
-                            },
-                            selected = selectedItemIndex == index,
-                            onClick = {
-                                onSelectedItemIndex(index)
-                            },
-                            modifier = Modifier
-                        )
-                    }
-                }
+                top.yukonga.miuix.kmp.basic.NavigationBar(
+                    items = items,
+                    selected = selectedItemIndex,
+                    onClick = { onSelectedItemIndex(it) }
+                )
         }
     ) {
         AnimatedContent(
@@ -230,19 +220,19 @@ fun MainFrame(
                 }
             )
         }
-    }
 
-    // val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    val showUpdateDialog = rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(mainUiState.update.isNeedUpdate, mainUiState.isShowUpdateDialog) {
-        showUpdateDialog.value =
-            mainUiState.update.isNeedUpdate && mainUiState.isShowUpdateDialog.value
+        // val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+        val showUpdateDialog = rememberSaveable { mutableStateOf(false) }
+        LaunchedEffect(mainUiState.update.isNeedUpdate, mainUiState.isShowUpdateDialog) {
+            showUpdateDialog.value =
+                mainUiState.update.isNeedUpdate && mainUiState.isShowUpdateDialog.value
+        }
+        UpdateDialog(
+            showDialog = showUpdateDialog,
+            updateInfo = mainUiState.update,
+            targetDirectory = Environment.DIRECTORY_DOWNLOADS
+        )
     }
-    UpdateDialog(
-        showDialog = showUpdateDialog,
-        updateInfo = mainUiState.update,
-        targetDirectory = Environment.DIRECTORY_DOWNLOADS
-    )
 
     DoubleBackToExitApp(
         onExit = {

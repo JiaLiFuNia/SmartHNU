@@ -59,6 +59,14 @@ object ParseNewsArticleUtil {
         SingleParseRule("articleContent", "div.wp_articlecontent", "all")
     )
 
+    private val BWC_PARSE_RULE = ArticleParseRule(
+        SingleParseRule("all", "div#content_1", ""),
+        SingleParseRule("title", "span.Article_Title", "text"),
+        SingleParseRule("publishDate", "span.Article_PublishDate", "text"),
+        SingleParseRule("visitCount", "span.WP_VisitCount", "text"),
+        SingleParseRule("articleContent", "div.Article_Content", "all")
+    )
+
     fun parseHTMLToNewsArticle(url: String, html: String): NewsArticleEntity {
         try {
             val document = Jsoup.parse(html)
@@ -222,6 +230,7 @@ object ParseNewsArticleUtil {
             "kyc" -> OIP_PARSE_RULE
             "mhec" -> RSC_PARSE_RULE
             "lib" -> LIB_PARSE_RULE
+            "bwc" -> BWC_PARSE_RULE
             else -> PARSE_RULE
         }
     }

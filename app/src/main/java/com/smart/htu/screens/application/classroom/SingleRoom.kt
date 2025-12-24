@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
@@ -34,7 +34,7 @@ fun SingleRoom(
         shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
         modifier = modifier
             .height(50.dp),
-        color = MiuixTheme.colorScheme.surface,
+        color = MiuixTheme.colorScheme.surfaceContainer,
         onClick = {
             onClick()
         }
@@ -54,7 +54,7 @@ fun SingleRoom(
                         .fillMaxHeight()
                         .background(
                             color = if (formerPeriodBusyState) MiuixTheme.colorScheme.disabledSecondaryVariant
-                            else MiuixTheme.colorScheme.surface
+                            else MiuixTheme.colorScheme.surfaceContainer
                         )
                 )
                 Box(
@@ -63,7 +63,7 @@ fun SingleRoom(
                         .fillMaxHeight()
                         .background(
                             color = if (latterPeriodBusyState) MiuixTheme.colorScheme.disabledSecondaryVariant
-                            else MiuixTheme.colorScheme.surface
+                            else MiuixTheme.colorScheme.surfaceContainer
                         )
                 )
             }
@@ -71,7 +71,7 @@ fun SingleRoom(
                 text = label,
                 maxLines = 1,
                 color = if (formerPeriodBusyState && latterPeriodBusyState) MiuixTheme.colorScheme.disabledOnSurface
-                else MiuixTheme.colorScheme.onSurface,
+                else MiuixTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier

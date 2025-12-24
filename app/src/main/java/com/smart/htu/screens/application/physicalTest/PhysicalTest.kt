@@ -3,20 +3,16 @@ package com.smart.htu.screens.application.physicalTest
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,8 +25,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.smart.htu.R
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
-import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 
@@ -41,29 +40,25 @@ fun PhysicalTest(
     viewModel: PhysicalTestViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
 
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background
-                ),
-                title = { Text(text = stringResource(R.string.physical_test)) },
+                title = stringResource(R.string.physical_test),
                 navigationIcon = {
                     IconButton(
                         onClick = {
                             navController.popBackStack()
-                        }
+                        },
+                        modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = MiuixIcons.Useful.Back,
                             contentDescription = "back"
                         )
                     }

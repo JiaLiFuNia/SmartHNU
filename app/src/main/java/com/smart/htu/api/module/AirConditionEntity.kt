@@ -3,6 +3,7 @@ package com.smart.htu.api.module
 import com.smart.htu.utils.DateUtil.convertStringDateToLocalDate
 import com.smart.htu.utils.DateUtil.dateFormatter
 import kotlinx.serialization.Serializable
+import java.time.LocalDate
 
 @Serializable
 data class ACCookie(
@@ -58,6 +59,11 @@ data class BillRecordsData(
             val date = convertStringDateToLocalDate(datetime, "yyyy-M-d")
             return String.format("%d-%d", date.monthValue, date.dayOfMonth)
         }
+
+    val dateTime: LocalDate
+        get() {
+            return convertStringDateToLocalDate(datetime, "yyyy-M-d")
+        }
 }
 
 data class BuyRecords(
@@ -71,9 +77,16 @@ data class BuyRecordsData(
     private val datetime: String, // 2025-9-8 12:11:56
     val money: String,
 ) {
-    val dateTime: String
+    val dateTime: LocalDate
         get() {
-            return dateFormatter(datetime, "yyyy-M-d H:mm:ss", "yyyy-MM-dd")
+            return convertStringDateToLocalDate(
+                dateString = dateFormatter(
+                    datetime,
+                    "yyyy-M-d H:mm:ss",
+                    "yyyy-MM-dd"
+                ),
+                pattern = "yyyy-M-d"
+            )
         }
 
     val easyDateTime: String

@@ -8,12 +8,15 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.smart.htu.App.Companion.context
 import com.smart.htu.screens.NavHostScreen
 import com.smart.htu.screens.application.courseTable.CourseTableViewModel
+import com.smart.htu.screens.setting.SettingViewModel
 import com.smart.htu.ui.theme.SmartHNUTheme
+import com.smart.htu.ui.theme.keyColorFor
 import com.smart.htu.utils.Calendar.createCalendar
 import com.smart.htu.utils.Permission.Companion.checkRequestCalendarPermissions
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,6 +30,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private val courseTableViewModel: CourseTableViewModel by viewModels()
+    private val settingViewModel: SettingViewModel by viewModels()
     private lateinit var calendarPermissionLauncher: ActivityResultLauncher<Array<String>>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +40,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             snackBarHostState = remember { SnackbarHostState() }
 
-            SmartHNUTheme {
+            val uiState = settingViewModel.uiState.collectAsState().value
+            SmartHNUTheme(
+                themeMode = uiState.themeMode,
+                keyColor = keyColorFor(uiState.keyColorSeedIndex)
+            ) {
                 Surface { NavHostScreen() }
             }
         }

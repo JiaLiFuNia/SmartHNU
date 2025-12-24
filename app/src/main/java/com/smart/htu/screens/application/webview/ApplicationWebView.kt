@@ -6,21 +6,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,11 +20,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.kevinnzou.web.rememberWebViewNavigator
@@ -54,7 +45,13 @@ import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.extra.DropdownImpl
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.Cancel
+import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
+import top.yukonga.miuix.kmp.icon.icons.useful.Refresh
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,22 +91,11 @@ fun ApplicationWebView(
     }
 
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
+        containerColor = MiuixTheme.colorScheme.surfaceContainer,
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background
-                ),
-                title = {
-                    Text(
-                        text = title,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                },
+            SmallTopAppBar(
+                color = Color.Transparent,
+                title = title,
                 actions = {
                     IconButton(
                         onClick = {
@@ -117,7 +103,16 @@ fun ApplicationWebView(
                             appWebViewViewModel.loadCookiesForUrl(url)
                         }
                     ) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        Icon(MiuixIcons.Useful.Refresh, contentDescription = "Refresh")
+                    }
+                    top.yukonga.miuix.kmp.basic.IconButton(
+                        onClick = {
+                            showDropDownMenu.value = true
+                        },
+                        holdDownState = showDropDownMenu.value,
+                        modifier = Modifier.padding(end = 16.dp)
+                    ) {
+                        Icon(MiuixIcons.Useful.ImmersionMore, contentDescription = "more")
                     }
                     val dropdownOptions = listOf(
                         "分享",
@@ -178,14 +173,12 @@ fun ApplicationWebView(
                             }
                         }
                     }
-                    IconButton(onClick = { showDropDownMenu.value = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "more")
-                    }
                 },
                 navigationIcon = {
                     Row(
                         horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(start = 16.dp)
                     ) {
                         IconButton(
                             onClick = {
@@ -195,10 +188,10 @@ fun ApplicationWebView(
                                     navController.popBackStack()
                             }
                         ) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
+                            Icon(MiuixIcons.Useful.Back, contentDescription = "back")
                         }
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.Close, contentDescription = "close")
+                            Icon(MiuixIcons.Useful.Cancel, contentDescription = "close")
                         }
                     }
                 }

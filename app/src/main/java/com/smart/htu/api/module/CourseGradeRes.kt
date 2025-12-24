@@ -34,9 +34,17 @@ data class CourseGradeDetailRes(
 ) {
     data class CourseGradeDetailEntity(
         @SerializedName("zcj") val totalGrade: String,
-        @SerializedName("bl1") val usualGradePercentage: Any,
-        @SerializedName("cj1") val usualGrade: Any,
-        @SerializedName("bl4") val finalGradePercentage: Any,
-        @SerializedName("cj4") val finalGrade: Any
+        @SerializedName("bl1") val percentageFirst: String?,
+        @SerializedName("bl1mc") val percentageFirstLabel: String,
+        @SerializedName("bl2") val percentageSecond: String?,
+        @SerializedName("bl2mc") val percentageSecondLabel: String,
+        @SerializedName("bl3") val percentageThird: String?,
+        @SerializedName("bl3mc") val percentageThirdLabel: String,
+        @SerializedName("bl4") val percentageFourth: String?,
+        @SerializedName("bl4mc") val percentageFourthLabel: String,
+        @SerializedName("cj1") val gradeFirst: String?,
+        @SerializedName("cj2") val gradeSecond: String?,
+        @SerializedName("cj3") val gradeThird: String?,
+        @SerializedName("cj4") val gradeFourth: String?
     )
 }

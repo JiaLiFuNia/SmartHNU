@@ -20,7 +20,6 @@ import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.extra.SuperDialogDefaults
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun BasicDialog(
@@ -70,18 +69,10 @@ fun BasicDialog(
                             showDialog.value = false
                         },
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.textButtonPrimaryColors()
+                        colors = ButtonDefaults.textButtonColorsPrimary()
                     )
                 }
             }
         }
     }
 }
-
-@Composable
-fun ButtonDefaults.textButtonPrimaryColors() = textButtonColors(
-    color = MiuixTheme.colorScheme.primaryContainer,
-    disabledColor = MiuixTheme.colorScheme.disabledPrimaryButton,
-    textColor = MiuixTheme.colorScheme.primary,
-    disabledTextColor = MiuixTheme.colorScheme.disabledOnPrimaryButton
-)

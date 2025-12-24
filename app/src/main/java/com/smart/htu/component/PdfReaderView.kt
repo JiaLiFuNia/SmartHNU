@@ -4,8 +4,6 @@ import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -20,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.rajat.pdfviewer.PdfRendererView
@@ -27,6 +26,8 @@ import com.rajat.pdfviewer.compose.PdfRendererViewCompose
 import com.rajat.pdfviewer.util.PdfSource
 import com.smart.htu.R
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,7 +45,6 @@ fun PdfReaderView(
     val showDownloadDialog = remember { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -59,12 +59,18 @@ fun PdfReaderView(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "close")
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
+                        Icon(imageVector = MiuixIcons.Useful.Back, contentDescription = "close")
                     }
                 },
                 actions = {
-                    IconButton(onClick = { showDownloadDialog.value = true }) {
+                    IconButton(
+                        onClick = { showDownloadDialog.value = true },
+                        modifier = Modifier.padding(end = 16.dp)
+                    ) {
                         Icon(
                             painterResource(R.drawable.download_24px),
                             contentDescription = "download"

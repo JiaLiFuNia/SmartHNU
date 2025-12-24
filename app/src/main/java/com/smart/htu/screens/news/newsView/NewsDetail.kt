@@ -17,7 +17,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,9 +31,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,8 +39,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -72,7 +67,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -112,11 +106,15 @@ import top.yukonga.miuix.kmp.basic.FloatingToolbar
 import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ToolbarPosition
 import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.extra.SuperBottomSheet
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalDate
 
@@ -175,24 +173,34 @@ fun NewsDetail(
         showErrorMessageDialog.value = errorMessage.value.isNotEmpty()
     }
 
+    val scrollBehavior = MiuixScrollBehavior()
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background
-                ),
-                title = {
-                    Text(
-                        text = source,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+            top.yukonga.miuix.kmp.basic.SmallTopAppBar(
+                title = source,
+                scrollBehavior = scrollBehavior,
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp),
+                    ) {
+                        top.yukonga.miuix.kmp.basic.Icon(
+                            imageVector = MiuixIcons.Useful.Back,
+                            contentDescription = "close",
+                            tint = MiuixTheme.colorScheme.onBackground
+                        )
+                    }
                 },
                 actions = {
+                    IconButton(
+                        onClick = { showDropDownMenu.value = true },
+                        modifier = Modifier.padding(end = 16.dp),
+                    ) {
+                        Icon(
+                            MiuixIcons.Useful.ImmersionMore, contentDescription = "more",
+                            tint = MiuixTheme.colorScheme.onBackground
+                        )
+                    }
                     val dropdownOptions = listOf(
                         stringResource(R.string.share),
                         stringResource(R.string.copy_url),
@@ -230,7 +238,7 @@ fun NewsDetail(
                                                 scope.launch {
                                                     copyContent(url)
                                                     snackBarHostState.showSnackbar(
-                                                        message = context.getString(R.string.copied_to_clipboard)
+                                                        message = "已复制到剪贴板"
                                                     )
                                                 }
                                             }
@@ -249,20 +257,13 @@ fun NewsDetail(
                             }
                         }
                     }
-                    IconButton(onClick = { showDropDownMenu.value = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "more")
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "close")
-                    }
                 },
                 modifier = Modifier.hazeEffect(
                     state = hazeState,
-                    style = HazeMaterials.thick()
+                    style = HazeMaterials.thick(MiuixTheme.colorScheme.surface)
                 ) {
-                    blurRadius = 40.dp
+                    blurRadius = 30.dp
+                    noiseFactor = 0f
                     blurEnabled = uiState.blurEffect
                 }
             )
@@ -278,8 +279,8 @@ fun NewsDetail(
                 ) {
                     Row(
                         modifier = Modifier
-                            .background(MiuixTheme.colorScheme.surfaceContainer)
-                        // .hazeEffect(state = hazeState)
+                            .background(Color.Transparent)
+                        .hazeEffect(state = hazeState)
                     ) {
                         IconButton(
                             onClick = {
@@ -343,7 +344,6 @@ fun NewsDetail(
                         }
                         IconButton(
                             onClick = {
-                                // newsViewModel.changeBionicReadingEnabled(!uiState.bionicReadingEnabled)
                                 navController.navigate(Destinations.ArticleStyle.route)
                             }
                         ) {
@@ -367,8 +367,9 @@ fun NewsDetail(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
+                .padding(top = 16.dp)
                 .hazeSource(state = hazeState),
-            contentPadding = PaddingValues(top = it.calculateTopPadding())
+            contentPadding = it
         ) {
             if (newsViewMode.intValue == 0 && uiState.newsArticle == null && newsLoading.value) {
                 item { CircularProgressIndicator() }
@@ -485,7 +486,12 @@ fun NewsDetail(
             onDownload = {
                 scope.launch {
                     ToastUtil.showToast(context, "正在下载图片：$title.jpg")
-                    downloadFile(context, selectedImageData.value, "$title.jpg", Environment.DIRECTORY_PICTURES)
+                    downloadFile(
+                        context,
+                        selectedImageData.value,
+                        "$title.jpg",
+                        Environment.DIRECTORY_PICTURES
+                    )
                     ToastUtil.showToast(context, "下载成功")
                 }
             }

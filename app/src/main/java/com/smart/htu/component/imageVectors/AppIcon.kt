@@ -25,7 +25,7 @@ fun appIcon(): ImageVector {
         viewportHeight = 512.0f
     ).apply {
         path(
-            fill = SolidColor(MiuixTheme.colorScheme.surface),
+            fill = SolidColor(MiuixTheme.colorScheme.surfaceContainer),
             stroke = null,
             strokeLineWidth = 0.0f,
             strokeLineCap = Butt,

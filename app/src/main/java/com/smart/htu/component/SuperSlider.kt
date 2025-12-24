@@ -63,7 +63,6 @@ fun SuperSlider(
             onValueChangeFinished = onValueChangeFinished,
             height = SliderDefaults.MinHeight,
             colors = SliderDefaults.sliderColors(),
-            effect = false,
             hapticEffect = hapticEffect,
             showKeyPoints = showKeyPoints,
             keyPoints = keyPoints

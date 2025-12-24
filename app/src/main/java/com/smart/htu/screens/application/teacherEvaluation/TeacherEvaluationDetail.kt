@@ -14,9 +14,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,9 +37,11 @@ import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -56,7 +56,7 @@ fun TeacherEvaluationDetail(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
@@ -73,17 +73,15 @@ fun TeacherEvaluationDetail(
     }
 
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background,
-                ),
-                title = { Text(text = stringResource(id = R.string.teacher_evaluation)) },
+                title = stringResource(id = R.string.teacher_evaluation),
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "back"
@@ -138,7 +136,7 @@ fun QuestionItem(
             .semantics { role = androidx.compose.ui.semantics.Role.Button }
             .fillMaxWidth(),
         shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
-        color = MiuixTheme.colorScheme.surface
+        color = MiuixTheme.colorScheme.surfaceContainer
     ) {
         Column(
             modifier = Modifier

@@ -22,7 +22,6 @@ import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.PasswordRepo
 import com.smart.htu.repo.PasswordRepo.Companion.JWC_PASSWORD
 import com.smart.htu.repo.PasswordRepo.Companion.PASSWORD
-import com.smart.htu.utils.ToastUtil.showSnackbar
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -220,9 +219,9 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    suspend fun login(onSuccess: () -> Unit = {}) {
+    suspend fun login(onResult: (String) -> Unit = {}) {
         _uiState.update { it.copy(isLoading = true) }
-        if (_uiState.value.jwcLoginState != 1) jwcLogin(onSuccess)
+        if (_uiState.value.jwcLoginState != 1) jwcLogin(onResult)
         _uiState.update { it.copy(isLoading = false) }
     }
 
@@ -266,14 +265,13 @@ class LoginViewModel @Inject constructor(
         }
     }*/
 
-    suspend fun jwcLogin(onSuccess: () -> Unit = {}) {
+    suspend fun jwcLogin(onResult: (String) -> Unit = {}) {
         try {
             val logState = jwcNetworkRepo.jwcLogin(
                 username = _uiState.value.studentID,
                 password = _uiState.value.jwcPassword
             )
             logState.onSuccess {
-                onSuccess()
                 changeLoginJWCState(1)
                 getPersonalMessage()
                 setJWCLogToken(it.user?.token ?: DEFAULT_TOKEN)
@@ -282,8 +280,8 @@ class LoginViewModel @Inject constructor(
                 passwordRepo.savePassword(_uiState.value.jwcPassword, JWC_PASSWORD)
             }
             logState.onFailure {
+                onResult(it.message.toString())
                 changeLoginJWCState(-1)
-                showSnackbar(snackBarHostState, it.message.toString())
             }
         } catch (e: Exception) {
             Log.i("TAG666 viewModel", "Failed to login $e")

@@ -17,18 +17,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -38,33 +33,47 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.smart.htu.R
 import com.smart.htu.component.BottomCircularProgressIndicator
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.TextField
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperDropdown
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Cancel
+import top.yukonga.miuix.kmp.icon.icons.useful.Confirm
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun AirConditionSetting(
     navController: NavController,
     viewModel: AirConditionViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    val hazeState = rememberHazeState()
 
     val shiroJID = remember { mutableStateOf(uiState.userLoginCookie?.shiroJID ?: "") }
     val ymId = remember { mutableStateOf(uiState.userLoginCookie?.ymId ?: "") }
@@ -79,24 +88,20 @@ fun AirConditionSetting(
 
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     Scaffold(
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background
-                ),
-                title = {
-                    Text("配置")
-                },
+                color = Color.Transparent,
+                title = "配置",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Close,
+                            imageVector = MiuixIcons.Useful.Cancel,
                             contentDescription = "back"
                         )
                     }
@@ -119,14 +124,24 @@ fun AirConditionSetting(
                                 roomId.value.isNotEmpty() &&
                                 !buildingIdError &&
                                 !roomIdError &&
-                                !uiState.isCheckingConfig
+                                !uiState.isCheckingConfig,
+                        modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Check,
+                            imageVector = MiuixIcons.Useful.Confirm,
                             contentDescription = "test"
                         )
                     }
-                }
+                },
+                modifier = Modifier
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
+                    ) {
+                        blurRadius = 30.dp
+                        noiseFactor = 0f
+                        blurEnabled = true
+                    },
             )
         },
         snackbarHost = {
@@ -137,21 +152,22 @@ fun AirConditionSetting(
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
-                top = it.calculateTopPadding() + 8.dp,
-                bottom = 12.dp
+                top = it.calculateTopPadding(),
+                bottom = it.calculateBottomPadding() + 12.dp
             ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .fillMaxSize()
+                .padding(top = 16.dp)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .overScrollVertical(),
+                .overScrollVertical()
+                .hazeSource(hazeState),
             overscrollEffect = null
         ) {
             item {
                 SuggestChip(
                     text = "当前仅建设东路校区可用",
                     onClick = {},
-                    onActionClick = {},
                     type = SuggestChipType.INFO,
                     icon = Icons.Outlined.Info
                 )
@@ -186,7 +202,7 @@ fun AirConditionSetting(
                         focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Down)
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    backgroundColor = MiuixTheme.colorScheme.surface,
+                    backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
                     singleLine = true,
                     maxLines = 1,
                     trailingIcon = {
@@ -216,7 +232,7 @@ fun AirConditionSetting(
                             focusManager.clearFocus()
                         }
                     ),
-                    backgroundColor = MiuixTheme.colorScheme.surface,
+                    backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
                     trailingIcon = {
                         if (roomIdError)
                             Icon(
@@ -227,6 +243,13 @@ fun AirConditionSetting(
                             )
                     },
                     labelColor = if (roomIdError) MaterialTheme.colorScheme.error else MiuixTheme.colorScheme.onSecondaryContainer,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "示例：1号楼101房间，填写为：宿舍楼号：01，房间号：0101",
+                    fontSize = 14.sp,
+                    color = MiuixTheme.colorScheme.onBackgroundVariant,
+                    modifier = Modifier.padding(start = 12.dp)
                 )
             }
             item {

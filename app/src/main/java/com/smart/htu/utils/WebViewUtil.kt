@@ -80,6 +80,7 @@ fun WebView.setDefaultSettings() {
         loadWithOverviewMode = true
         isHorizontalScrollBarEnabled = false
         cacheMode = WebSettings.LOAD_DEFAULT
+        offscreenPreRaster = true
 
         // Allow zooming
         setSupportZoom(true)

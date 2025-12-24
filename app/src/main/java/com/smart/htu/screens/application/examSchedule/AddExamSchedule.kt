@@ -6,19 +6,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -43,21 +40,31 @@ import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
 import com.smart.htu.utils.Permission
 import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
 import com.smart.htu.utils.ToastUtil.showToast
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.extra.SuperDropdown
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.Confirm
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
 import java.time.LocalTime
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun AddExamSchedule(
     exam: ExamEntity? = null,
@@ -67,9 +74,10 @@ fun AddExamSchedule(
     val uiState by viewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
+    val hazeState = rememberHazeState()
 
     val showDatePicker = remember { mutableStateOf(false) }
     val showStartTimePicker = remember { mutableStateOf(false) }
@@ -93,19 +101,18 @@ fun AddExamSchedule(
     }
 
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background,
-                ),
-                title = { Text(text = if (exam == null) "添加考试项目" else "修改考试项目") },
+                color = Color.Transparent,
+                title = if (exam == null) "添加考试项目" else "修改考试项目",
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.Outlined.Close,
+                            imageVector = MiuixIcons.Useful.Back,
                             contentDescription = "back"
                         )
                     }
@@ -142,13 +149,22 @@ fun AddExamSchedule(
                                     showToast(context, "日程已创建")
                                 }
                             }
-                        }
+                        },
+                        modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Check,
-                            contentDescription = "back"
+                            imageVector = MiuixIcons.Useful.Confirm,
+                            contentDescription = "check"
                         )
                     }
+                },
+                modifier = Modifier.hazeEffect(
+                    state = hazeState,
+                    style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
+                ) {
+                    blurRadius = 30.dp
+                    noiseFactor = 0f
+                    blurEnabled = uiState.blurEnabled
                 }
             )
         },
@@ -159,13 +175,15 @@ fun AddExamSchedule(
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
-                top = it.calculateTopPadding() + 8.dp,
-                bottom = 12.dp
+                top = it.calculateTopPadding(),
+                bottom = it.calculateBottomPadding() + 12.dp
             ),
             modifier = Modifier
                 .fillMaxSize()
+                .padding(top = 16.dp)
+                .hazeSource(hazeState)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .overScrollVertical(),
+                .overScrollVertical().imePadding(),
             overscrollEffect = null,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -183,7 +201,7 @@ fun AddExamSchedule(
                     label = "考试项目名称",
                     singleLine = true,
                     useLabelAsPlaceholder = true,
-                    backgroundColor = MiuixTheme.colorScheme.surface,
+                    backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -207,10 +225,17 @@ fun AddExamSchedule(
                 Card {
                     SuperArrow(
                         title = "日期",
-                        rightText = convertLocalDateToStringDate(
-                            date = examEntity.value.date,
-                            pattern = "yyyy年MM月dd日"
-                        ),
+                        rightActions = {
+                            top.yukonga.miuix.kmp.basic.Text(
+                                convertLocalDateToStringDate(
+                                    date = examEntity.value.date,
+                                    pattern = "yyyy年MM月dd日"
+                                ),
+                                Modifier.padding(end = 8.dp),
+                                fontSize = MiuixTheme.textStyles.body2.fontSize,
+                                color = MiuixTheme.colorScheme.onSurfaceVariantActions
+                            )
+                        },
                         onClick = {
                             focusManager.clearFocus()
                             showDatePicker.value = true
@@ -219,10 +244,17 @@ fun AddExamSchedule(
                     )
                     SuperArrow(
                         title = "开始时间",
-                        rightText = convertLocalTimeToStringTime(
-                            time = examEntity.value.startTime,
-                            pattern = "HH:mm"
-                        ),
+                        rightActions = {
+                            top.yukonga.miuix.kmp.basic.Text(
+                                convertLocalTimeToStringTime(
+                                    time = examEntity.value.startTime,
+                                    pattern = "HH:mm"
+                                ),
+                                Modifier.padding(end = 8.dp),
+                                fontSize = MiuixTheme.textStyles.body2.fontSize,
+                                color = MiuixTheme.colorScheme.onSurfaceVariantActions
+                            )
+                        },
                         onClick = {
                             focusManager.clearFocus()
                             showStartTimePicker.value = true
@@ -231,10 +263,17 @@ fun AddExamSchedule(
                     )
                     SuperArrow(
                         title = "结束时间",
-                        rightText = convertLocalTimeToStringTime(
-                            time = examEntity.value.endTime,
-                            pattern = "HH:mm"
-                        ),
+                        rightActions = {
+                            top.yukonga.miuix.kmp.basic.Text(
+                                convertLocalTimeToStringTime(
+                                    time = examEntity.value.endTime,
+                                    pattern = "HH:mm"
+                                ),
+                                Modifier.padding(end = 8.dp),
+                                fontSize = MiuixTheme.textStyles.body2.fontSize,
+                                color = MiuixTheme.colorScheme.onSurfaceVariantActions
+                            )
+                        },
                         onClick = {
                             focusManager.clearFocus()
                             showEndTimePicker.value = true
@@ -257,7 +296,7 @@ fun AddExamSchedule(
                     label = "请输入考场地点",
                     singleLine = true,
                     useLabelAsPlaceholder = true,
-                    backgroundColor = MiuixTheme.colorScheme.surface,
+                    backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -275,7 +314,7 @@ fun AddExamSchedule(
                     label = "请输入座位号",
                     singleLine = true,
                     useLabelAsPlaceholder = true,
-                    backgroundColor = MiuixTheme.colorScheme.surface,
+                    backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
                     modifier = Modifier.fillMaxWidth()
                 )
             }

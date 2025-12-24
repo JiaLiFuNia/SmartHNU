@@ -14,16 +14,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -57,10 +53,14 @@ import com.smart.htu.utils.DateUtil.dateFormatter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -71,7 +71,7 @@ fun MessageBoard(
     viewModel: MessageBoardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
@@ -90,20 +90,17 @@ fun MessageBoard(
     }
 
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background
-                ),
-                title = { Text(text = stringResource(R.string.message_board)) },
+                title = stringResource(R.string.message_board),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }) {
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = MiuixIcons.Useful.Back,
                             contentDescription = "back"
                         )
                     }
@@ -116,7 +113,8 @@ fun MessageBoard(
                                 url = AUTH_LOGIN_URL + "https://yjfk.htu.edu.cn/h5/pages/ssp/post_edit",
                                 label = "发布留言"
                             )
-                        }
+                        },
+                        modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(imageVector = Icons.Outlined.Add, contentDescription = "add")
                     }

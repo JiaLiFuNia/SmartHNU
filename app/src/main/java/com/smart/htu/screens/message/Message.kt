@@ -6,18 +6,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -43,15 +37,21 @@ import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.startWebUrl
 import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -73,22 +73,20 @@ fun MessageScreen(
             isRefreshing = false
         }
     }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     top.yukonga.miuix.kmp.basic.Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background
-                ),
-                title = { Text(text = stringResource(id = R.string.message_center)) },
+                color = Color.Transparent,
+                title = stringResource(id = R.string.message_center),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }) {
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = MiuixIcons.Useful.Back,
                             contentDescription = "back"
                         )
                     }
@@ -97,7 +95,8 @@ fun MessageScreen(
                     IconButton(
                         onClick = {
                             viewModel.readAllNotice()
-                        }
+                        },
+                        modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.checklist_rtl_24px),
@@ -107,9 +106,10 @@ fun MessageScreen(
                 },
                 modifier = Modifier.hazeEffect(
                     state = hazeState,
-                    style = HazeMaterials.regular()
+                    style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
                 ) {
                     blurRadius = 30.dp
+                    noiseFactor = 0f
                     blurEnabled = uiState.blurEffect
                 }
             )
@@ -121,7 +121,6 @@ fun MessageScreen(
             onRefresh = { isRefreshing = true },
             isRefreshing = isRefreshing,
             modifier = Modifier
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .fillMaxSize(),
             contentPadding = it
         ) {
@@ -134,6 +133,8 @@ fun MessageScreen(
                 ),
                 modifier = Modifier
                     .fillMaxSize()
+                    .hazeSource(hazeState)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .overScrollVertical(),
                 overscrollEffect = null
             ) {
@@ -175,7 +176,7 @@ fun SingleMessage(
     noticeId: String = "",
     action: String = "",
     type: NoticeType = NoticeType.COMMON,
-    color: Color = MiuixTheme.colorScheme.surface,
+    color: Color = MiuixTheme.colorScheme.surfaceContainer,
     navController: NavController
 ) {
     Surface(

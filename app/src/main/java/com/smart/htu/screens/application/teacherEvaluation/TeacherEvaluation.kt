@@ -1,9 +1,7 @@
 package com.smart.htu.screens.application.teacherEvaluation
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,22 +9,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,14 +28,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
@@ -54,20 +41,27 @@ import com.smart.htu.R
 import com.smart.htu.api.module.EvaluationInfo
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
-import com.smart.htu.component.InfoBadge
 import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.application.grade.SelectTermBottomSheet
+import com.smart.htu.screens.application.grade.UpFloatingActionButton
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.TermUtil.termConverter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
-import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.basic.ArrowRight
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,7 +73,7 @@ fun TeacherEvaluation(
     val uiState by viewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
 
     val isBottomSheetShow = remember { mutableStateOf(false) }
     val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
@@ -96,24 +90,29 @@ fun TeacherEvaluation(
     }
 
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background,
-                ),
-                title = { Text(text = stringResource(id = R.string.teacher_evaluation)) },
+                title = stringResource(id = R.string.teacher_evaluation),
                 actions = {
-                    IconButton(onClick = { isBottomSheetShow.value = true }) {
-                        Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "more")
+                    IconButton(
+                        onClick = { isBottomSheetShow.value = true },
+                        modifier = Modifier.padding(end = 16.dp),
+                        holdDownState = isBottomSheetShow.value
+                    ) {
+                        Icon(
+                            imageVector = MiuixIcons.Useful.ImmersionMore,
+                            contentDescription = "more"
+                        )
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            imageVector = MiuixIcons.Useful.Back,
                             contentDescription = "back"
                         )
                     }
@@ -121,21 +120,10 @@ fun TeacherEvaluation(
             )
         },
         floatingActionButton = {
-            AnimatedVisibility(
-                modifier = Modifier,
-                visible = !fabVisible,
-                enter = slideInVertically(initialOffsetY = { it * 2 }),
-                exit = slideOutVertically(targetOffsetY = { it * 2 }),
-            ) {
-                FloatingActionButton(
-                    onClick = { scope.launch { lazyListState.scrollToItem(0) } }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.outline_arrow_upward_24),
-                        contentDescription = "up"
-                    )
-                }
-            }
+            UpFloatingActionButton(
+                fabVisible = fabVisible,
+                onClick = { scope.launch { lazyListState.scrollToItem(0) } }
+            )
         }
     ) {
         PullToRefresh(
@@ -179,11 +167,15 @@ fun TeacherEvaluation(
                                     .padding(bottom = 4.dp)
                             )
                     }
-                    items(uiState.evaluationInfo?.evaluationInfoList ?: emptyList()) {
-                        SingleTeacher(
+                    items(
+                        (uiState.evaluationInfo?.evaluationInfoList
+                            ?: emptyList()).sortedBy { it.evaluationCode }
+                    ) {
+                        TeacherItem(
                             teacher = it,
                             onClick = { syllabusEvaluateCode, teacherCode ->
-                                if (it.evaluationCode.isEmpty()) navController.navigate(route = "${Destinations.TeacherEvaluationDetail.route}/${syllabusEvaluateCode}/${teacherCode}")
+                                if (it.evaluationCode.isEmpty())
+                                    navController.navigate("${Destinations.TeacherEvaluationDetail.route}/${syllabusEvaluateCode}/${teacherCode}")
                             }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -209,48 +201,84 @@ fun TeacherEvaluation(
 }
 
 @Composable
-fun SingleTeacher(
+fun TeacherItem(
     teacher: EvaluationInfo,
-    onClick: (String, String) -> Unit = { _, _ -> }
+    onClick: (String, String) -> Unit
 ) {
-    Surface(
-        onClick = {
-            onClick(teacher.syllabusEvaluateCode, teacher.teacherCode)
-        },
+    Card(
         modifier = Modifier
-            .semantics { role = androidx.compose.ui.semantics.Role.Button }
             .fillMaxWidth(),
-        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
-        color = MiuixTheme.colorScheme.surface
+        onClick = { onClick(teacher.syllabusEvaluateCode, teacher.teacherCode) },
+        insideMargin = PaddingValues(16.dp),
+        pressFeedbackType = PressFeedbackType.Sink,
     ) {
-        ListItem(
-            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-            headlineContent = {
-                Text(
-                    text = teacher.teacherName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            supportingContent = {
-                Row(
-                    modifier = Modifier.padding(top = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    InfoBadge(teacher.courseType)
-                    InfoBadge(teacher.courseName)
-                }
-            },
-            trailingContent = {
-                Text(
-                    text = if (teacher.evaluationCode.isNotEmpty()) "已评价" else "未评价",
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    top.yukonga.miuix.kmp.basic.Text(
+                        text = teacher.teacherName,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight(550),
                     )
+                    /*top.yukonga.miuix.kmp.basic.Text(
+                        text = teacher.courseType,
+                        fontSize = 12.sp,
+                        color = MiuixTheme.colorScheme.onTertiaryContainer.copy(
+                            0.8f
+                        ),
+                        modifier = Modifier
+                            .padding(start = 6.dp)
+                            .clip(ContinuousRoundedRectangle(6.dp))
+                            .background(
+                                MiuixTheme.colorScheme.tertiaryContainer.copy(
+                                    0.6f
+                                )
+                            )
+                            .padding(
+                                horizontal = 6.dp,
+                                vertical = 2.dp
+                            ),
+                        fontWeight = FontWeight(750),
+                        maxLines = 1
+                    )*/
+                }
+                top.yukonga.miuix.kmp.basic.Text(
+                    text = "${teacher.courseType} | ${teacher.courseName}",
+                    fontSize = 14.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                    modifier = Modifier.padding(top = 2.dp),
+                    maxLines = 4
                 )
             }
-        )
+            top.yukonga.miuix.kmp.basic.Text(
+                text = if (teacher.evaluationCode.isNotEmpty()) "已评价" else "未评价",
+                fontSize = 12.sp,
+                color = if (teacher.evaluationCode.isNotEmpty())
+                    MiuixTheme.colorScheme.onTertiaryContainer.copy(0.8f)
+                else MiuixTheme.colorScheme.error.copy(0.8f),
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .clip(ContinuousRoundedRectangle(6.dp))
+                    .background(
+                        if (teacher.evaluationCode.isNotEmpty())
+                            MiuixTheme.colorScheme.tertiaryContainer.copy(0.6f)
+                        else MiuixTheme.colorScheme.errorContainer.copy(0.6f)
+                    )
+                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                fontWeight = FontWeight(750),
+                maxLines = 1
+            )
+            top.yukonga.miuix.kmp.basic.Icon(
+                modifier = Modifier
+                    .size(width = 10.dp, height = 16.dp),
+                imageVector = MiuixIcons.Basic.ArrowRight,
+                contentDescription = null,
+                tint = MiuixTheme.colorScheme.onSurfaceVariantActions,
+            )
+        }
     }
 }

@@ -44,6 +44,10 @@ sealed class Destinations(
     data object ExamSchedule: Destinations("exam_schedule")
     data object AddExamSchedule: Destinations("add_exam_schedule")
     data object SecondClass: Destinations("second_class")
+    data object CourseHelperNavHost: Destinations("course_helper_nav_host")
+    data object CourseHelper: Destinations("course_helper")
+    data object CourseRepo: Destinations("course_repo")
+    data object CourseInfo: Destinations("course_info")
 }
 
 @Serializable

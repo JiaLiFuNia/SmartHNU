@@ -25,18 +25,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -84,16 +78,22 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SliderDefaults
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.extra.SuperBottomSheet
 import top.yukonga.miuix.kmp.extra.SuperSwitch
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.lang.Integer.max
 import java.time.format.DateTimeFormatter
@@ -114,7 +114,7 @@ fun CourseTable(
     viewModel: CourseTableViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     val context = LocalContext.current
@@ -131,21 +131,17 @@ fun CourseTable(
 
     Scaffold(
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = topAppBarColors(
-                    containerColor = if (backgroundUri != null) Color.Transparent else MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = if (backgroundUri != null) Color.Transparent else MiuixTheme.colorScheme.background
-                ),
-                title = {
-                    Text(text = "${uiState.termCode} 学期 第 ${uiState.week} 周")
-                },
+                color = if (backgroundUri != null) Color.Transparent else MiuixTheme.colorScheme.surface,
+                title = "${uiState.termCode} 学期 第 ${uiState.week} 周",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = MiuixIcons.Useful.Back,
                             contentDescription = "back"
                         )
                     }
@@ -154,9 +150,14 @@ fun CourseTable(
                     IconButton(
                         onClick = {
                             showDropDownMenu.value = true
-                        }
+                        },
+                        modifier = Modifier.padding(end = 16.dp),
+                        holdDownState = showDropDownMenu.value
                     ) {
-                        Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "more")
+                        Icon(
+                            imageVector = MiuixIcons.Useful.ImmersionMore,
+                            contentDescription = "more"
+                        )
                     }
                     ListPopup(
                         show = showDropDownMenu,
@@ -265,7 +266,7 @@ fun CourseTable(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(top = it.calculateTopPadding())
-                    .padding(horizontal = 4.dp)
+                    .padding(horizontal = 4.dp, vertical = 8.dp)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 // 年份 星期 日期
@@ -582,7 +583,7 @@ fun CourseTableMoreSettingBottomSheet(
         onDismissRequest = {
             showBottomSheet.value = false
         },
-        backgroundColor = MiuixTheme.colorScheme.secondaryContainer
+        backgroundColor = MiuixTheme.colorScheme.surface
     ) {
         val launcher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent()

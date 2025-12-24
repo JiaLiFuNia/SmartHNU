@@ -3,33 +3,18 @@ package com.smart.htu.screens.news
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.input.clearText
-import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Clear
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.SearchBarDefaults.inputFieldColors
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -49,8 +34,13 @@ import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.InputField
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
-import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.basic.SearchBar
+import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,31 +51,26 @@ fun NewsSearch(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    val textFieldState = rememberTextFieldState()
+    val textValue = rememberSaveable { mutableStateOf("") }
     val lazyListState = rememberLazyListState()
     val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
     val scope = rememberCoroutineScope()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
 
     val isSearching = rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background
-                ),
-                title = {
-                    Text(text = "搜索")
-                },
+                title = "搜索",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = MiuixIcons.Useful.Back,
                             contentDescription = "back"
                         )
                     }
@@ -113,54 +98,29 @@ fun NewsSearch(
         Column(
             modifier = Modifier
                 .padding(it)
+                .padding(top = 16.dp)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .background(MiuixTheme.colorScheme.background)
-            ) {
-                SearchBarDefaults.InputField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    state = textFieldState,
-                    onSearch = {
-                        scope.launch {
-                            isSearching.value = true
-                            viewModel.searchNews(it)
-                        }
-                    },
-                    expanded = false,
-                    onExpandedChange = { },
-                    placeholder = { Text("搜索新闻、公告和通知...") },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Outlined.Search,
-                            contentDescription = "search"
-                        )
-                    },
-                    trailingIcon = {
-                        if (textFieldState.text.isNotEmpty()) {
-                            IconButton(
-                                onClick = {
-                                    textFieldState.clearText()
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Clear,
-                                    contentDescription = "clear"
-                                )
+            SearchBar(
+                modifier = Modifier.padding(bottom = 8.dp),
+                inputField = {
+                    InputField(
+                        query = textValue.value,
+                        onQueryChange = { textValue.value = it },
+                        onSearch = {
+                            scope.launch {
+                                isSearching.value = true
+                                viewModel.searchNews(it)
                             }
-                        }
-                    },
-                    colors = inputFieldColors(
-                        focusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh,
-                        unfocusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh
+                        },
+                        expanded = false,
+                        onExpandedChange = {  },
+                        label = "搜索新闻、公告和通知...",
                     )
-                )
-            }
+                },
+                expanded = false,
+                onExpandedChange = {  }
+            ) { }
             LazyColumn(
                 state = lazyListState,
                 contentPadding = PaddingValues(16.dp, 12.dp),
@@ -186,7 +146,7 @@ fun NewsSearch(
                         if (uiState.searchList.isNullOrEmpty()) {
                             item {
                                 EmptyContent(
-                                    text = "\"${textFieldState.text}\"\n没有相关新闻或通知",
+                                    text = "\"${textValue.value}\"\n没有相关新闻或通知",
                                     image = emptyData()
                                 )
                             }

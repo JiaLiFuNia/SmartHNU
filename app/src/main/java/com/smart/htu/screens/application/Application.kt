@@ -2,29 +2,31 @@ package com.smart.htu.screens.application
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -36,18 +38,26 @@ import com.smart.htu.R
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.MediumCardDisplay
+import com.smart.htu.component.card.SmallCardDisplay
 import com.smart.htu.screens.application.ApplicationEntity.ApplicationCategory
 import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigateWithCheckLoginState
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.ToastUtil.showToast
-import com.smart.htu.utils.startLaunchAPK
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
@@ -62,51 +72,80 @@ fun Application(
     val loginUiState by loginViewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    val hazeState = rememberHazeState()
     val scope = rememberCoroutineScope()
     val showAuthLoginDialog = remember { mutableStateOf(false) }
     val loginState = remember {
         derivedStateOf { loginUiState.jwcLoginState != 1 && loginUiState.jwcLoginState != -2 }
     }
+    val displayMode = remember { mutableIntStateOf(0) } // 0 矩形 1 方形
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
 
-    Column {
-        MediumTopAppBar(
-            scrollBehavior = scrollBehavior,
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MiuixTheme.colorScheme.background,
-                scrolledContainerColor = MiuixTheme.colorScheme.background
-            ),
-            title = { Text(text = stringResource(R.string.application)) },
-            actions = {
-                TextButton(
-                    onClick = {
-                        startLaunchAPK("com.autewifi.sd.enroll")
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                horizontalPadding = 16.dp,
+                title = stringResource(R.string.application),
+                largeTitle = stringResource(R.string.application),
+                scrollBehavior = scrollBehavior,
+                color = Color.Transparent,
+                modifier = Modifier
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
+                    ) {
+                        blurRadius = 30.dp
+                        noiseFactor = 0f
+                        blurEnabled = true
+                    },
+                actions = {
+                    top.yukonga.miuix.kmp.basic.IconButton(
+                        onClick = {
+                            displayMode.intValue = if (displayMode.intValue == 0) 1 else 0
+                        },
+                        modifier = Modifier.padding(end = 16.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (displayMode.intValue == 0) Icons.Outlined.ViewAgenda else Icons.Outlined.GridView,
+                            contentDescription = null
+                        )
                     }
-                ) { Text(text = "i 师大") }
-            }
-        )
-
+                }
+            )
+        },
+        popupHost = {},
+    ) {
         LazyVerticalGrid(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = it.calculateTopPadding(),
+                bottom = contentPadding.calculateBottomPadding() + 12.dp
+            ),
             columns = GridCells.Fixed(
-                if (windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND))
-                    4 else 2
+                if (windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND)) {
+                    if (displayMode.intValue == 1) 8 else 4
+                } else {
+                    if (displayMode.intValue == 1) 4 else 2
+                }
             ),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
-                .overScrollVertical()
+                .fillMaxSize()
+                .padding(top = 16.dp)
+                .hazeSource(hazeState)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .padding(bottom = contentPadding.calculateBottomPadding()),
+                .overScrollVertical()
+                .scrollEndHaptic(),
             overscrollEffect = null,
         ) {
             if (loginState.value) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     SuggestChip(
                         onClick = { navController.navigate(Destinations.Login.route) },
-                        onActionClick = { navController.navigate(Destinations.Login.route) },
                         text = "暂未登录，登录后即可体验全部功能",
                         type = SuggestChipType.ERROR,
                         icon = Icons.AutoMirrored.Filled.ArrowForward
@@ -125,48 +164,68 @@ fun Application(
                     )
                 }
                 items(appList) { app ->
-                    MediumCardDisplay(
-                        enabled = ((loginUiState.isGuestModeEnable && app.guestMode) || !loginState.value) && app.canBeUsed,
-                        content = app,
-                        modifier = Modifier,
-                        onClick = {
-                            when {
-                                app.loginMode == ApplicationEntity.LoginMode.AUTH_SERVER && loginUiState.authLoginState != 1 -> {
-                                    showAuthLoginDialog.value = true
-                                }
-
-                                /*app.loginMode == ApplicationEntity.LoginMode.SECOND_CLASS && loginUiState.scLoginState != 1 -> {
-                                    scope.launch {
-                                        loginViewModel.loadSecondClassSid()
-                                        showSCLoginDialog.value = true
+                    if (displayMode.intValue == 0) {
+                        MediumCardDisplay(
+                            enabled = ((loginUiState.isGuestModeEnable && app.guestMode) || !loginState.value) && app.enabled,
+                            content = app,
+                            modifier = Modifier,
+                            onClick = {
+                                when {
+                                    app.loginMode == ApplicationEntity.LoginMode.AUTH_SERVER && loginUiState.authLoginState != 1 -> {
+                                        showAuthLoginDialog.value = true
                                     }
-                                }*/
 
-                                else -> {
-                                    navController.navigateWithCheckLoginState(
-                                        isGuest = loginUiState.isGuestModeEnable && app.guestMode,
-                                        route = app.route,
-                                        routeType = app.routeType,
-                                        logState = !loginState.value,
-                                        label = app.label
-                                    )
+                                    /*app.loginMode == ApplicationEntity.LoginMode.SECOND_CLASS && loginUiState.scLoginState != 1 -> {
+                                        scope.launch {
+                                            loginViewModel.loadSecondClassSid()
+                                            showSCLoginDialog.value = true
+                                        }
+                                    }*/
+
+                                    else -> {
+                                        navController.navigateWithCheckLoginState(
+                                            isGuest = loginUiState.isGuestModeEnable && app.guestMode,
+                                            route = app.route,
+                                            routeType = app.routeType,
+                                            logState = !loginState.value,
+                                            label = app.label
+                                        )
+                                    }
                                 }
                             }
-                        }
-                    )
-                    /*SmallCardDisplay(
-                        enabled = (loginUiState.isGuest && app.guestEnable) || loginUiState.loginJWCState == 1,
-                        content = app,
-                        onClick = {
-                            navController.navigateWithAuthCheck(
-                                isGuest = loginUiState.isGuest && app.guestEnable,
-                                routeType = app.routeType,
-                                route = app.route,
-                                logState = loginUiState.loginJWCState == 1,
-                                label = app.label
-                            )
-                        }
-                    )*/
+                        )
+                    } else {
+                        SmallCardDisplay(
+                            enabled = ((loginUiState.isGuestModeEnable && app.guestMode) || !loginState.value) && app.enabled,
+                            content = app,
+                            modifier = Modifier
+                                .size(76.dp),
+                            onClick = {
+                                when {
+                                    app.loginMode == ApplicationEntity.LoginMode.AUTH_SERVER && loginUiState.authLoginState != 1 -> {
+                                        showAuthLoginDialog.value = true
+                                    }
+
+                                    /*app.loginMode == ApplicationEntity.LoginMode.SECOND_CLASS && loginUiState.scLoginState != 1 -> {
+                                        scope.launch {
+                                            loginViewModel.loadSecondClassSid()
+                                            showSCLoginDialog.value = true
+                                        }
+                                    }*/
+
+                                    else -> {
+                                        navController.navigateWithCheckLoginState(
+                                            isGuest = loginUiState.isGuestModeEnable && app.guestMode,
+                                            route = app.route,
+                                            routeType = app.routeType,
+                                            logState = !loginState.value,
+                                            label = app.label
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }

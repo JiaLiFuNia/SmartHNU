@@ -1,18 +1,22 @@
 package com.smart.htu.screens.setting
 
 import android.os.Environment
-import androidx.compose.foundation.layout.Column
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -36,6 +40,7 @@ import com.smart.htu.screens.UpdateDialog
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.setting.entity.DarkMode
+import com.smart.htu.ui.theme.KeyColors
 import com.smart.htu.utils.APPVersion.getVersionCode
 import com.smart.htu.utils.APPVersion.getVersionName
 import com.smart.htu.utils.FileUtil.moveFile
@@ -48,11 +53,15 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
@@ -67,7 +76,7 @@ fun SettingScreen(
     val loginUiState by loginViewModel.uiState.collectAsState()
 
     val hazeState = rememberHazeState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val context = LocalContext.current
@@ -98,32 +107,46 @@ fun SettingScreen(
         }
     }
 
-    Column {
-        MediumTopAppBar(
-            scrollBehavior = scrollBehavior,
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = if (uiState.blurEnabled) Color.Transparent else MiuixTheme.colorScheme.background,
-                scrolledContainerColor = if (uiState.blurEnabled) Color.Transparent else MiuixTheme.colorScheme.background
-            ),
-            title = { Text(text = stringResource(id = R.string.setting)) },
-            modifier = Modifier.hazeEffect(
-                state = hazeState,
-                style = HazeMaterials.thick()
-            ) {
-                blurRadius = 30.dp
-                blurEnabled = uiState.blurEnabled
-            }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                horizontalPadding = 16.dp,
+                title = stringResource(id = R.string.setting),
+                largeTitle = stringResource(id = R.string.setting),
+                scrollBehavior = scrollBehavior,
+                color = Color.Transparent,
+                modifier = Modifier
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
+                    ) {
+                        blurRadius = 30.dp
+                        noiseFactor = 0f
+                        blurEnabled = uiState.blurEnabled
+                    }
+            )
+        },
+        popupHost = {},
+        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(
+            WindowInsetsSides.Horizontal
         )
+    ) {
         LazyColumn(
             state = listState,
             modifier = Modifier
-                .hazeSource(state = hazeState)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .fillMaxSize()
+                .padding(top = 16.dp)
+                .hazeSource(hazeState)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .overScrollVertical()
-                .padding(bottom = contentPadding.calculateBottomPadding()),
+                .scrollEndHaptic(),
             overscrollEffect = null,
-            contentPadding = PaddingValues(16.dp, 12.dp),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = it.calculateTopPadding(),
+                bottom = contentPadding.calculateBottomPadding() + 12.dp
+            )
         ) {
             item {
                 SettingItemCard(
@@ -163,15 +186,6 @@ fun SettingScreen(
                             viewModel.changeLoadImgEnabled(!it)
                         }
                     )
-                    SuperSwitch(
-                        checked = true,
-                        title = "预测式返回",
-                        summary = "通过预测用户操作，提升页面响应速度（可能增加流量消耗）",
-                        onCheckedChange = {
-
-                        },
-                        enabled = false
-                    )
                 }
             }
             item {
@@ -179,66 +193,56 @@ fun SettingScreen(
                     label = stringResource(R.string.display),
                     modifier = Modifier
                 ) {
-                    SuperArrow(
-                        title = "聚焦",
-                        summary = "设置首页聚焦内容",
-                        onClick = {
-                            showToast(context, "开发中...")
-                        },
-                        enabled = false
+                    val themeModes = listOf(
+                        stringResource(id = R.string.settings_theme_mode_system),
+                        stringResource(id = R.string.settings_theme_mode_light),
+                        stringResource(id = R.string.settings_theme_mode_dark),
+                        stringResource(id = R.string.settings_theme_mode_monet_system),
+                        stringResource(id = R.string.settings_theme_mode_monet_light),
+                        stringResource(id = R.string.settings_theme_mode_monet_dark),
                     )
-                    SuperArrow(
-                        title = "新闻正文样式",
-                        summary = "调整新闻正文字体样式及大小",
-                        onClick = {
-                            navController.navigate(Destinations.ArticleStyle.route)
-                        }
-                    )
-                }
-            }
-            item {
-                SettingItemCard(
-                    label = stringResource(id = R.string.theme),
-                    modifier = Modifier
-                ) {
-                    val themeModes = listOf("动态", "师大青")
                     SuperDropdown(
-                        title = stringResource(id = R.string.theme_color),
-                        summary = stringResource(id = R.string.theme_color_description),
+                        title = "应用主题",
+                        summary = "选择应用的主题模式",
                         items = themeModes,
                         selectedIndex = uiState.themeMode,
                         onSelectedIndexChange = { mode ->
                             viewModel.changeDynamicTheme(mode)
                         },
                     )
-                    /*SuperSwitch(
+                    val keyColorOptions =
+                        remember { listOf("Default") + KeyColors.map { it.first } }
+                    AnimatedVisibility(visible = uiState.themeMode in listOf(3, 4, 5)) {
+                        SuperDropdown(
+                            title = "Key Color",
+                            items = keyColorOptions,
+                            selectedIndex = uiState.keyColorSeedIndex,
+                            onSelectedIndexChange = { viewModel.changKeyColorSeedIndex(it) }
+                        )
+                    }
+                    SuperSwitch(
+                        checked = uiState.blurEnabled,
                         title = "实时模糊",
-                        checked = uiState.blurEffect,
                         summary = "开启后部分页面将具有模糊效果，具体效果因机型、系统而异",
-                        onCheckedChange = { value ->
-                            viewModel.changeBlurState(value)
-                        },
-                        switchColors = SwitchDefaults.switchColors(checkedTrackColor = MaterialTheme.colorScheme.primary)
-                    )*/
-                    SuperDropdown(
-                        title = stringResource(id = R.string.dark_theme),
-                        summary = "切换应用深色模式",
-                        items = DarkMode.entries.map { item -> item.toStringResourceId() },
-                        selectedIndex = uiState.isDarkTheme,
-                        onSelectedIndexChange = { index ->
-                            viewModel.changDarkMode(index)
+                        onCheckedChange = {
+                            viewModel.changeBlurEnabled(it)
                         }
                     )
-                    /*DropdownListItem(
-                        leadingImageVector = R.drawable.outline_language_24,
-                        headlineText = stringResource(id = R.string.language),
-                        value = uiState.languageList[uiState.selectedLanguageIndex].value,
-                        selections = uiState.languageList,
-                        onValueChanged = { index, _ ->
-                            viewModel.changeLanguage(index, context)
-                        },
-                        trailingImageVector = R.drawable.outline_unfold_more_24
-                    )*/
+                    SuperSwitch(
+                        checked = true,
+                        title = "预测式返回",
+                        summary = "通过预测手势滑动方向来加快返回应用的速度（实验性功能）",
+                        onCheckedChange = {
+
+                        }
+                    )
+                    SuperArrow(
+                        title = "字体设置",
+                        summary = "调整新闻正文字体样式及大小",
+                        onClick = {
+                            navController.navigate(Destinations.ArticleStyle.route)
+                        }
+                    )
                 }
             }
             item {
@@ -296,7 +300,14 @@ fun SettingScreen(
                         onClick = {
                             viewModel.clearCache()
                         },
-                        rightText = uiState.cacheSize
+                        rightActions = {
+                            top.yukonga.miuix.kmp.basic.Text(
+                                text = uiState.cacheSize,
+                                fontSize = MiuixTheme.textStyles.body2.fontSize,
+                                color = MiuixTheme.colorScheme.onSurfaceVariantActions,
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                        }
                     )
                     BasicComponent(
                         title = "验证码识别模型",
@@ -365,3 +376,4 @@ fun DarkMode.toStringResourceId(): String {
         DarkMode.OFF -> "关闭"
     }
 }
+

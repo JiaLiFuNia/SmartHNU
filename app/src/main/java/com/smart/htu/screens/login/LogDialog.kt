@@ -41,7 +41,6 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.smart.htu.R
 import com.smart.htu.component.TextButtonWithProgressIndicator
-import com.smart.htu.component.textButtonPrimaryColors
 import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.TextButton
@@ -89,7 +88,7 @@ fun LogoutDialog(
                     showDialog.value = false
                 },
                 modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.textButtonPrimaryColors()
+                colors = ButtonDefaults.textButtonColorsPrimary()
             )
             Spacer(Modifier.width(20.dp))
             TextButton(
@@ -228,6 +227,8 @@ fun LoginDialog(
                         },
                         isLoading = logState == 2,
                         enabled = password.value.isNotEmpty() && account.value.isNotEmpty(),
+                        colors = ButtonDefaults.buttonColorsPrimary(),
+                        textColors = ButtonDefaults.textButtonColorsPrimary(),
                         modifier = Modifier
                             .weight(0.5f)
                             .fillMaxWidth(),
@@ -256,6 +257,8 @@ fun LoginDialog(
                         isLoading = logState == 2,
                         enabled = password.value.isNotEmpty() && account.value.isNotEmpty(),
                         modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColorsPrimary(),
+                        textColors = ButtonDefaults.textButtonColorsPrimary(),
                     )
                     Spacer(Modifier.height(12.dp))
                     TextButton(
@@ -303,7 +306,7 @@ fun LoginInfoDialog(
                     showDialog.value = false
                 },
                 modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.textButtonPrimaryColors()
+                colors = ButtonDefaults.textButtonColorsPrimary()
             )
         }
     }

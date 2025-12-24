@@ -44,7 +44,7 @@ fun TabRow(
                 shape = ContinuousRoundedRectangle(TabRowDefaults.TabRowCornerRadius),
                 onClick = { onTabSelected?.invoke(index) },
                 enabled = onTabSelected != null,
-                color = if (selectedTabIndex == index) MiuixTheme.colorScheme.surface else MiuixTheme.colorScheme.background,
+                color = if (selectedTabIndex == index) MiuixTheme.colorScheme.surfaceContainer else MiuixTheme.colorScheme.surface,
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(1f)
@@ -56,7 +56,7 @@ fun TabRow(
                 ) {
                     Text(
                         text = tabText,
-                        color = if (selectedTabIndex == index) MiuixTheme.colorScheme.onSurface else MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                        color = if (selectedTabIndex == index) MiuixTheme.colorScheme.onBackground else MiuixTheme.colorScheme.onSurfaceVariantSummary,
                         fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis

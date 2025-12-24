@@ -7,6 +7,7 @@ import com.smart.htu.api.network.AppLoginService
 import com.smart.htu.api.network.AppService
 import com.smart.htu.api.network.AuthLoginService
 import com.smart.htu.api.network.EHallService
+import com.smart.htu.api.network.JWCAppService
 import com.smart.htu.api.network.JWCService
 import com.smart.htu.api.network.LibraryService
 import com.smart.htu.api.network.MessageBoardService
@@ -163,10 +164,10 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideJWCService(
+    fun provideJWCAppService(
         okHttpClient: OkHttpClient,
         dataStoreRepo: DataStoreRepo
-    ): JWCService {
+    ): JWCAppService {
         val clientWithInterceptor = okHttpClient.newBuilder()
             .addInterceptor { chain ->
                 val token = runBlocking { dataStoreRepo.observeJWCToken().first() }
@@ -175,6 +176,25 @@ object NetworkModule {
                     .build()
                 chain.proceed(newRequest)
             }
+            .build()
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl(ApiConstants.JWC_BASE_URL)
+            .client(clientWithInterceptor)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(JWCAppService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideJWCService(
+        okHttpClient: OkHttpClient,
+        cookieJar: NetworkCookieJar
+    ): JWCService {
+        val clientWithInterceptor = okHttpClient.newBuilder()
+            .followRedirects(false)
+            .cookieJar(cookieJar)
             .build()
 
         val retrofit = Retrofit.Builder()
@@ -249,6 +269,7 @@ object NetworkModule {
     fun provideMessageBoardService(): MessageBoardService {
         val retrofit = Retrofit.Builder()
             .baseUrl(ApiConstants.MESSAGE_BOARD_BASE_URL)
+            // .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(MessageBoardService::class.java)

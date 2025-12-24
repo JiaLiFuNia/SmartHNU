@@ -7,17 +7,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,9 +29,13 @@ import com.smart.htu.api.module.FeedbackType
 import com.smart.htu.component.TextButtonWithProgressIndicator
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TextField
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperDropdown
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -50,24 +48,21 @@ fun Feedback(
     val uiState by viewModel.uiState.collectAsState()
 
     val snackBarHostState = remember { SnackbarHostState() }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
 
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background
-                ),
-                title = { Text(text = stringResource(id = R.string.feedback)) },
+                title = stringResource(id = R.string.feedback),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }) {
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = MiuixIcons.Useful.Back,
                             contentDescription = "back"
                         )
                     }
@@ -113,7 +108,7 @@ fun Feedback(
                         viewModel.changeDetailMessage(it)
                     },
                     useLabelAsPlaceholder = true,
-                    backgroundColor = MiuixTheme.colorScheme.surface,
+                    backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
                     minLines = 4
                 )
             }
@@ -125,7 +120,7 @@ fun Feedback(
                         viewModel.changeSubmitterEmail(it)
                     },
                     useLabelAsPlaceholder = true,
-                    backgroundColor = MiuixTheme.colorScheme.surface
+                    backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
                 )
             }
             item {

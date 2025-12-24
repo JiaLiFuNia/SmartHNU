@@ -1,6 +1,7 @@
 package com.smart.htu.screens.setting
 
 import android.util.Log
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.annotation.ExperimentalCoilApi
@@ -40,6 +41,7 @@ import javax.inject.Inject
 
 data class SettingUiState(
     val themeMode: Int = DEFAULT_THEME_MODE,
+    val keyColorSeedIndex: Int = 0,
     val isDarkTheme: Int = 0,
     val blurEnabled: Boolean = true,
     val selectedLanguageIndex: Int = 0,
@@ -57,6 +59,8 @@ data class SettingUiState(
     val newsFontSize: Float = 17f,
     val bionicReadingEnabled: Boolean = true,
 )
+
+val DEFAULT_BLUR_RADIUS = 30.dp
 
 val AI_MODEL_LIST = listOf(
     AIModelEntity(
@@ -283,9 +287,13 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    fun changDarkMode(isDarkTheme: Int) {
+    fun changKeyColorSeedIndex(index: Int) {
+        _uiState.update { it.copy(keyColorSeedIndex = index) }
+    }
+
+    fun changeBlurEnabled(enabled: Boolean) {
         viewModelScope.launch {
-            dataStoreRepo.changeDarkTheme(isDarkTheme)
+            dataStoreRepo.changeBlurState(enabled)
         }
     }
 

@@ -31,9 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,7 +54,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.window.core.layout.WindowSizeClass
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.api.module.ExamEntity
@@ -76,10 +73,18 @@ import com.smart.htu.screens.navigateWithCheckLoginState
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.startCalendar
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
+import dev.chrisbanes.haze.rememberHazeState
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
+import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.extra.SuperBottomSheet
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -91,7 +96,7 @@ import java.util.Locale
 import kotlin.math.ceil
 
 @SuppressLint("RestrictedApi")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun Main(
     mainViewModel: MainViewModel,
@@ -104,6 +109,7 @@ fun Main(
     val loginUiState by loginViewModel.uiState.collectAsState()
     val airConditionUiState by airConditionViewModel.uiState.collectAsState()
 
+    val hazeState = rememberHazeState()
     val isNotLoggedIn = remember {
         derivedStateOf { loginUiState.jwcLoginState != 1 && loginUiState.jwcLoginState != -2 }
     }
@@ -127,178 +133,130 @@ fun Main(
     }
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
 
-    Column {
-        MediumTopAppBar(
-            scrollBehavior = scrollBehavior,
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MiuixTheme.colorScheme.background,
-                scrolledContainerColor = MiuixTheme.colorScheme.background
-            ),
-            title = { Text(text = "欢迎！${uiState.username}") },
-            actions = {
-                IconButton(
-                    onClick = {
-                        navController.navigate(
-                            route = Destinations.Message.route
-                        )
-                    }
-                ) {
-                    BadgedBox(
-                        badge = {
-                            if (messageCount.value > 0)
-                                Badge(
-                                    content = {
-                                        Text(text = messageCount.value.toString())
-                                    }
-                                )
-                        }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = "主页",
+                largeTitle = "欢迎！${uiState.username}",
+                scrollBehavior = scrollBehavior,
+                actions = {
+                    IconButton(
+                        onClick = {
+                            navController.navigate(
+                                route = Destinations.Message.route
+                            )
+                        },
+                        modifier = Modifier.padding(end = 16.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Email,
-                            contentDescription = null
-                        )
+                        BadgedBox(
+                            badge = {
+                                if (messageCount.value > 0)
+                                    Badge(
+                                        content = {
+                                            Text(text = messageCount.value.toString())
+                                        }
+                                    )
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Email,
+                                contentDescription = null
+                            )
+                        }
                     }
-                }
-            }
-        )
+                },
+                color = Color.Transparent,
+                modifier = Modifier
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
+                    ) {
+                        blurRadius = 30.dp
+                        noiseFactor = 0f
+                        blurEnabled = true
+                    }
+            )
+        },
+        popupHost = {},
+    ) {
         PullToRefresh(
             pullToRefreshState = pullToRefreshState,
             refreshTexts = PULL_TO_REFRESH_TEXT,
             onRefresh = { isRefreshing = true },
             isRefreshing = isRefreshing,
             modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .padding(bottom = contentPadding.calculateBottomPadding())
+                .padding(top = 16.dp)
+                .fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = it.calculateTopPadding(),
+                bottom = contentPadding.calculateBottomPadding() + 12.dp
+            )
         ) {
-            if (windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND))
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp, 12.dp),
-                        modifier = Modifier
-                            .weight(0.5f)
-                            .overScrollVertical()
-                            .fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(20.dp),
-                        overscrollEffect = null
-                    ) {
+            LazyColumn(
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = it.calculateTopPadding(),
+                    bottom = contentPadding.calculateBottomPadding() + 12.dp
+                ),
+                modifier = Modifier
+                    .hazeSource(hazeState)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .overScrollVertical()
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                overscrollEffect = null
+            ) {
+                if (isNotLoggedIn.value || holidayState.value) {
+                    item {
                         if (isNotLoggedIn.value) {
-                            item {
-                                SuggestChip(
-                                    onClick = { navController.navigate(Destinations.Login.route) },
-                                    onActionClick = { navController.navigate(Destinations.Login.route) },
-                                    text = "暂未登录，登录后即可体验全部功能",
-                                    type = SuggestChipType.ERROR,
-                                    icon = Icons.AutoMirrored.Filled.ArrowForward
-                                )
-                            }
+                            SuggestChip(
+                                onClick = { navController.navigate(Destinations.Login.route) },
+                                text = "暂未登录，登录后即可体验全部功能",
+                                type = SuggestChipType.ERROR,
+                                icon = Icons.AutoMirrored.Filled.ArrowForward
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
                         }
                         if (holidayState.value) {
-                            item {
-                                uiState.holiday.let {
-                                    SuggestChip(
-                                        onClick = { },
-                                        onActionClick = { },
-                                        text = if (it?.isLieu == true) "今天是${it.holiday}，放假调休" else "今天是${it?.holiday}，放假愉快",
-                                        type = SuggestChipType.INFO,
-                                        icon = Icons.Outlined.Info
-                                    )
-                                }
-                            }
-                        }
-                        item {
-                            FocusCard(navController, loginUiState, airConditionUiState, uiState)
-                        }
-                        item {
-                            CommonAppsCard(
-                                uiState = uiState,
-                                navController = navController,
-                                loginUiState = loginUiState,
-                                loginState = isNotLoggedIn.value
-                            )
-                        }
-                    }
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp, 12.dp),
-                        modifier = Modifier
-                            .weight(0.5f)
-                            .overScrollVertical()
-                            .fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(20.dp),
-                        overscrollEffect = null
-                    ) {
-                        /*item {
-                            ExamScheduleCard(uiState.examScheduleList, navController)
-                        }*/
-                        item {
-                            TodayCourseCard(
-                                uiState.todayCourseList,
-                                uiState.examScheduleList,
-                                isNotLoggedIn.value,
-                                navController
-                            )
-                        }
-                    }
-                }
-            else
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp, 12.dp),
-                    modifier = Modifier
-                        .overScrollVertical()
-                        .fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(20.dp),
-                    overscrollEffect = null
-                ) {
-                    if (isNotLoggedIn.value || holidayState.value) {
-                        item {
-                            if (isNotLoggedIn.value) {
+                            uiState.holiday.let {
                                 SuggestChip(
-                                    onClick = { navController.navigate(Destinations.Login.route) },
-                                    onActionClick = { navController.navigate(Destinations.Login.route) },
-                                    text = "暂未登录，登录后即可体验全部功能",
-                                    type = SuggestChipType.ERROR,
-                                    icon = Icons.AutoMirrored.Filled.ArrowForward
+                                    onClick = { },
+                                    text = if (it?.isLieu == true) "今天是${it.holiday}，放假调休" else "今天是${it?.holiday}假期，放假愉快",
+                                    type = SuggestChipType.INFO,
+                                    icon = if (it?.isLieu == true) Icons.Outlined.Info else R.drawable.celebration_24px
                                 )
-                                Spacer(modifier = Modifier.height(12.dp))
-                            }
-                            if (holidayState.value) {
-                                uiState.holiday.let {
-                                    SuggestChip(
-                                        onClick = { },
-                                        onActionClick = { },
-                                        text = if (it?.isLieu == true) "今天是${it.holiday}，放假调休" else "今天是${it?.holiday}假期，放假愉快",
-                                        type = SuggestChipType.INFO,
-                                        icon = if (it?.isLieu == true) Icons.Outlined.Info else R.drawable.celebration_24px
-                                    )
-                                }
                             }
                         }
                     }
-                    item {
-                        FocusCard(navController, loginUiState, airConditionUiState, uiState)
-                    }
-                    item {
-                        TodayCourseCard(
-                            uiState.todayCourseList,
-                            uiState.examScheduleList,
-                            isNotLoggedIn.value,
-                            navController
-                        )
-                    }
-                    /*item {
-                        ExamScheduleCard(uiState.examScheduleList, navController)
-                    }*/
-                    item {
-                        CommonAppsCard(
-                            uiState = uiState,
-                            navController = navController,
-                            loginUiState = loginUiState,
-                            loginState = isNotLoggedIn.value
-                        )
-                    }
                 }
+                item {
+                    FocusCard(navController, loginUiState, airConditionUiState, uiState)
+                }
+                item {
+                    TodayCourseCard(
+                        uiState.todayCourseList,
+                        uiState.examScheduleList,
+                        isNotLoggedIn.value,
+                        navController
+                    )
+                }
+                /*item {
+                    ExamScheduleCard(uiState.examScheduleList, navController)
+                }*/
+                item {
+                    /*CommonAppsCard(
+                        uiState = uiState,
+                        navController = navController,
+                        loginUiState = loginUiState,
+                        loginState = isNotLoggedIn.value
+                    )*/
+                }
+            }
         }
     }
 
@@ -320,7 +278,7 @@ fun FocusCard(
         modifier = Modifier,
         title = "聚焦",
         leadingIconPainting = R.drawable.center_focus_weak_24px,
-        containerColor = MiuixTheme.colorScheme.surface
+        containerColor = MiuixTheme.colorScheme.surfaceContainer
     ) {
         Column {
             Row {
@@ -472,7 +430,7 @@ fun TodayCourseCard(
     navController: NavController
 ) {
     LargeCardDisplay(
-        containerColor = MiuixTheme.colorScheme.surface,
+        containerColor = MiuixTheme.colorScheme.surfaceContainer,
         modifier = Modifier,
         title = stringResource(id = R.string.today_task),
         actionText = "课程表",
@@ -595,8 +553,7 @@ fun CommonAppsCard(
                                         logState = !loginState,
                                         label = app.label
                                     )
-                                },
-                                disableContainerColor = Color.Transparent
+                                }
                             )
                         }
                     }

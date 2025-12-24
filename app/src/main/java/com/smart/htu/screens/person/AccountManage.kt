@@ -5,16 +5,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,8 +25,12 @@ import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.setting.SettingItemCard
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TextField
+import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -42,22 +43,19 @@ fun AccountManage(
     val uiState by viewModel.uiState.collectAsState()
 
     val (editable, onEditable) = remember { mutableStateOf(false) }
-
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
+                title = "登录信息管理",
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background,
-                ),
-                title = { Text(text = "登录信息管理") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            imageVector = MiuixIcons.Useful.Back,
                             contentDescription = "back"
                         )
                     }
@@ -81,8 +79,7 @@ fun AccountManage(
         ) {
             item {
                 SuggestChip(
-                    onClick = { },
-                    onActionClick = { onEditable(true) },
+                    onClick = { onEditable(true) },
                     text = "请不要将此页面信息泄露给他人",
                     type = SuggestChipType.ERROR,
                     icon = Icons.Outlined.Info
@@ -91,7 +88,7 @@ fun AccountManage(
             item {
                 SettingItemCard(label = "河南师大智慧教务", modifier = Modifier) {
                     TextField(
-                        backgroundColor = MiuixTheme.colorScheme.surface,
+                        backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
                         value = uiState.token,
                         onValueChange = {
                             viewModel.setJWCLogToken(it)
@@ -113,7 +110,7 @@ fun AccountManage(
                         ) {
                             it.value.forEach {
                                 TextField(
-                                    backgroundColor = MiuixTheme.colorScheme.surface,
+                                    backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
                                     value = it.value,
                                     onValueChange = {},
                                     label = it.name,

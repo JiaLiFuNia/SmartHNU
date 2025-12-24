@@ -1,11 +1,9 @@
 package com.smart.htu.screens.application.grade
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,20 +22,12 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -54,25 +44,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseGradeDetailRes.CourseGradeDetailEntity
 import com.smart.htu.api.module.CourseGradeRes.CourseGradeEntity
-import com.smart.htu.component.BasicDialog
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
-import com.smart.htu.component.InfoBadge
 import com.smart.htu.component.TabRow
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
@@ -87,12 +72,21 @@ import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.extra.SuperBottomSheet
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -104,7 +98,7 @@ fun Grade(
     val uiState by viewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
 
     val isBottomSheetShow = remember { mutableStateOf(false) }
     val isGradeDetailBottomSheetShow = remember { mutableStateOf(false) }
@@ -128,46 +122,44 @@ fun Grade(
     }
 
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background,
-                ),
-                title = { Text(text = stringResource(id = R.string.course_grade)) },
+                color = Color.Transparent,
+                title = stringResource(id = R.string.course_grade),
                 actions = {
-                    IconButton(onClick = { isBottomSheetShow.value = true }) {
-                        Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "more")
+                    IconButton(
+                        onClick = { isBottomSheetShow.value = true },
+                        modifier = Modifier.padding(end = 16.dp),
+                        holdDownState = isBottomSheetShow.value
+                    ) {
+                        Icon(
+                            imageVector = MiuixIcons.Useful.ImmersionMore,
+                            contentDescription = "more"
+                        )
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "back"
+                    IconButton(
+                        modifier = Modifier.padding(start = 16.dp),
+                        onClick = {
+                            navController.popBackStack()
+                        }
+                    ) {
+                        top.yukonga.miuix.kmp.basic.Icon(
+                            imageVector = MiuixIcons.Useful.Back,
+                            contentDescription = null,
+                            tint = MiuixTheme.colorScheme.onBackground
                         )
                     }
                 }
             )
         },
         floatingActionButton = {
-            AnimatedVisibility(
-                modifier = Modifier,
-                visible = !fabVisible,
-                enter = slideInVertically(initialOffsetY = { it * 2 }),
-                exit = slideOutVertically(targetOffsetY = { it * 2 }),
-            ) {
-                FloatingActionButton(
-                    onClick = { scope.launch { lazyListState.scrollToItem(0) } }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.outline_arrow_upward_24),
-                        contentDescription = "up"
-                    )
-                }
-            }
+            UpFloatingActionButton(
+                fabVisible = fabVisible,
+                onClick = { scope.launch { lazyListState.scrollToItem(0) } }
+            )
         }
     ) {
         PullToRefresh(
@@ -176,14 +168,14 @@ fun Grade(
             onRefresh = { isRefreshing = true },
             isRefreshing = isRefreshing,
             modifier = Modifier
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .fillMaxSize(),
             contentPadding = it
         ) {
             Column(
                 modifier = Modifier
-                    .padding(top = it.calculateTopPadding())
+                    .padding(top = it.calculateTopPadding() + 16.dp)
                     .fillMaxSize()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 TabRow(
                     tabs = tabItem,
@@ -228,14 +220,14 @@ fun Grade(
                                     }
                                 } else {
                                     items(uiState.courseGrade ?: emptyList()) {
-                                        SingleCourseGrade(
-                                            course = it,
+                                        CourseGradeItem(
+                                            grade = it,
                                             onClick = {
                                                 scope.launch {
                                                     viewModel.getCourseGradeDetail(it)
-                                                    isGradeDetailBottomSheetShow.value = true
                                                 }
-                                            }
+                                            },
+                                            gradeDetail = uiState.courseGradeDetail
                                         )
                                         Spacer(modifier = Modifier.height(12.dp))
                                     }
@@ -270,7 +262,7 @@ fun Grade(
                                     Surface(
                                         modifier = Modifier.fillMaxWidth(),
                                         shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
-                                        color = MiuixTheme.colorScheme.surface
+                                        color = MiuixTheme.colorScheme.surfaceContainer
                                     ) {
                                         Box(
                                             modifier = Modifier
@@ -288,8 +280,8 @@ fun Grade(
                                                     }
                                                 },
                                                 colors = ButtonDefaults.buttonColors(
-                                                    containerColor = MiuixTheme.colorScheme.surface,
-                                                    contentColor = MiuixTheme.colorScheme.onSurface
+                                                    containerColor = MiuixTheme.colorScheme.background,
+                                                    contentColor = MiuixTheme.colorScheme.onBackground
                                                 ),
                                                 border = BorderStroke(
                                                     1.dp,
@@ -375,87 +367,175 @@ fun Grade(
                 }
             }
         )
-
-        CourseGradeDetailDialog(
-            message = uiState.courseGradeDetail,
-            showGradeDetailBottomSheet = isGradeDetailBottomSheetShow
-        )
     }
 }
 
 
 @Composable
-fun SingleCourseGrade(
-    course: CourseGradeEntity,
+fun CourseGradeItem(
+    gradeDetail: CourseGradeDetailEntity?,
+    grade: CourseGradeEntity,
     onClick: (String) -> Unit
 ) {
-    Surface(
-        onClick = { onClick(course.gradeCode) },
+    val isGradeDetailBottomSheetShow = remember { mutableStateOf(false) }
+    Card(
         modifier = Modifier
-            .semantics { role = Role.Button }
-            .fillMaxWidth()
-            .animateContentSize(),
-        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
-        color = MiuixTheme.colorScheme.surface
+            .fillMaxWidth(),
+        onClick = {
+            onClick(grade.gradeCode)
+            isGradeDetailBottomSheetShow.value = true
+        },
+        insideMargin = PaddingValues(16.dp),
+        pressFeedbackType = PressFeedbackType.Sink,
     ) {
-        ListItem(
-            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-            headlineContent = {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
-                    text = course.courseName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    text = grade.courseName,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight(550),
                 )
-            },
-            supportingContent = {
-                Row(
-                    modifier = Modifier.padding(top = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    InfoBadge(course.courseCategory)
-                    InfoBadge(course.courseClassification)
-                }
-            },
-            trailingContent = {
                 Text(
-                    text = course.gradeString,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        color = divideGrade(course.gradeDouble),
-                        fontWeight = FontWeight.Bold
-                    ),
-                    textAlign = TextAlign.Center
+                    text = buildAnnotatedString {
+                        append(grade.courseCategory)
+                        if (grade.courseClassification.isNotEmpty())
+                            append(" | ")
+                        append(grade.courseClassification)
+                    },
+                    fontSize = 14.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                    modifier = Modifier.padding(top = 2.dp),
+                    maxLines = 4
                 )
             }
-        )
+            Text(
+                text = grade.gradeString,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = divideGrade(grade.gradeDouble),
+                    fontWeight = FontWeight.Bold
+                ),
+                textAlign = TextAlign.Center
+            )
+        }
     }
+
+    CourseGradeDetailDialog(
+        gradeDetail = gradeDetail,
+        grade = grade,
+        showGradeDetailBottomSheet = isGradeDetailBottomSheetShow
+    )
 }
 
 @Composable
 fun CourseGradeDetailDialog(
-    message: CourseGradeDetailEntity?,
+    gradeDetail: CourseGradeDetailEntity?,
+    grade: CourseGradeEntity,
     showGradeDetailBottomSheet: MutableState<Boolean>
 ) {
-    BasicDialog(
-        showDialog = showGradeDetailBottomSheet,
+    SuperBottomSheet(
         title = "成绩详情",
-        insideMargin = DpSize(16.dp, 24.dp)
+        show = showGradeDetailBottomSheet,
+        onDismissRequest = {
+            showGradeDetailBottomSheet.value = false
+        },
+        backgroundColor = MiuixTheme.colorScheme.surface
     ) {
-        if (message == null) {
-            top.yukonga.miuix.kmp.basic.CircularProgressIndicator()
+        if (gradeDetail == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                top.yukonga.miuix.kmp.basic.CircularProgressIndicator()
+            }
         } else {
             MessageCardDisplay(
                 modifier = Modifier.fillMaxWidth(),
+                labelOnTop = false,
                 message = listOf(
                     SingleInfo(
-                        label = "平时成绩",
-                        content = message.usualGrade.toString()
+                        label = "绩点",
+                        content = grade.gradePoint.toString(),
+                        rowIndex = 1
                     ),
                     SingleInfo(
-                        label = "期末成绩",
-                        content = message.finalGrade.toString()
+                        label = "学分",
+                        content = grade.gradeCredits.toString(),
+                        rowIndex = 1
+                    ),
+                    SingleInfo(
+                        label = gradeDetail.percentageFirstLabel,
+                        content = gradeDetail.gradeFirst.toString().ifEmpty { "无" },
+                        rightContent = {
+                            gradeDetail.percentageFirst.toString().let {
+                                if (it.isNotEmpty())
+                                    Text("${it}%")
+                            }
+                        },
+                        rowIndex = 2
+                    ),
+                    SingleInfo(
+                        label = gradeDetail.percentageSecondLabel,
+                        content = gradeDetail.gradeSecond.toString().ifEmpty { "无" },
+                        rightContent = {
+                            gradeDetail.percentageSecond.toString().let {
+                                if (it.isNotEmpty())
+                                    Text("${it}%")
+                            }
+                        },
+                        rowIndex = 2
+                    ),
+                    SingleInfo(
+                        label = gradeDetail.percentageThirdLabel,
+                        content = gradeDetail.gradeThird.toString().ifEmpty { "无" },
+                        rightContent = {
+                            gradeDetail.percentageThird.toString().let {
+                                if (it.isNotEmpty())
+                                    Text("${it}%")
+                            }
+                        },
+                        rowIndex = 3
+                    ),
+                    SingleInfo(
+                        label = gradeDetail.percentageFourthLabel,
+                        content = gradeDetail.gradeFourth.toString().ifEmpty { "无" },
+                        rightContent = {
+                            gradeDetail.percentageFourth.toString().let {
+                                if (it.isNotEmpty())
+                                    Text("${it}%")
+                            }
+                        },
+                        rowIndex = 3
                     )
                 )
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+fun UpFloatingActionButton(
+    fabVisible: Boolean,
+    onClick: () -> Unit
+) {
+    AnimatedVisibility(
+        visible = !fabVisible,
+        enter = slideInVertically(initialOffsetY = { it * 2 }),
+        exit = slideOutVertically(targetOffsetY = { it * 2 }),
+    ) {
+        top.yukonga.miuix.kmp.basic.FloatingActionButton(
+            onClick = onClick
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.ArrowUpward,
+                contentDescription = "up",
+                tint = MiuixTheme.colorScheme.onPrimary
             )
         }
     }

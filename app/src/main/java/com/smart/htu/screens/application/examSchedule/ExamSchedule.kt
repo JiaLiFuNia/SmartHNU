@@ -14,14 +14,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -52,8 +49,13 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.serialization.json.Json
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.FloatingActionButton
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -67,46 +69,48 @@ fun ExamSchedule(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     val hazeState = rememberHazeState()
 
     Scaffold(
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background,
-                ),
-                title = { Text(text = "考试安排") },
+                color = Color.Transparent,
+                title = "考试安排",
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "back"
-                        )
-                    }
-                },
-                actions = {
                     IconButton(
-                        onClick = {
-                            navController.navigate("${Destinations.AddExamSchedule.route}/null")
-                        }
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Add,
-                            contentDescription = "up"
+                            imageVector = MiuixIcons.Useful.Back,
+                            contentDescription = "back"
                         )
                     }
                 },
                 modifier = Modifier.hazeEffect(
                     state = hazeState,
-                    style = HazeMaterials.thick(MiuixTheme.colorScheme.background)
+                    style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
                 ) {
                     blurRadius = 30.dp
+                    noiseFactor = 0f
                     blurEnabled = uiState.blurEnabled
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate("${Destinations.AddExamSchedule.route}/null")
+                }
+            ) {
+                top.yukonga.miuix.kmp.basic.Icon(
+                    Icons.Outlined.Add,
+                    contentDescription = "add",
+                    tint = MiuixTheme.colorScheme.onPrimary
+                )
+            }
         }
     ) {
         LazyColumn(
@@ -114,12 +118,13 @@ fun ExamSchedule(
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
-                top = it.calculateTopPadding() + 8.dp,
-                bottom = 12.dp
+                top = it.calculateTopPadding(),
+                bottom = it.calculateBottomPadding() + 12.dp
             ),
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .padding(top = 16.dp)
                 .hazeSource(hazeState)
                 .overScrollVertical(),
             overscrollEffect = null
@@ -179,10 +184,7 @@ fun ExamScheduleCard(
 ) {
     Card(
         modifier = Modifier,
-        colors = CardDefaults.defaultColors(
-            color = if (isPassed) MiuixTheme.colorScheme.surface
-            else MiuixTheme.colorScheme.surface
-        ),
+        colors = CardDefaults.defaultColors(MiuixTheme.colorScheme.surfaceContainer),
         pressFeedbackType = PressFeedbackType.Sink,
         onClick = { onClick(exam) }
     ) {
@@ -300,3 +302,9 @@ fun ExamScheduleCard(
         }
     }
 }
+
+
+val SCHEDULE_PRIMARY_1_LIGHT = Color(0xFF3482FF)
+val SCHEDULE_PRIMARY_2_LIGHT = Color(0xFFFF9F05)
+val SCHEDULE_PRIMARY_3_LIGHT = Color(0xFF7767F9)
+val SCHEDULE_PRIMARY_4_LIGHT = Color(0xFFFA382E)

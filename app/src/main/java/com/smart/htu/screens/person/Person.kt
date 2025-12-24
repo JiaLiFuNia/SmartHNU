@@ -13,18 +13,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,7 +44,6 @@ import androidx.window.core.layout.WindowSizeClass
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.component.card.LargeCardDisplay
-import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.login.LogoutDialog
@@ -62,13 +57,16 @@ import dev.chrisbanes.haze.hazeEffect
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TextButton
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDialog
-import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,22 +94,19 @@ fun PersonScreen(
         }
     }
 
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background
-                ),
-                title = { Text(text = "账号与信息") },
+                title = "账号与信息",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }) {
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = MiuixIcons.Useful.Back,
                             contentDescription = "back"
                         )
                     }
@@ -120,11 +115,15 @@ fun PersonScreen(
                     IconButton(
                         onClick = {
                             isShowPrivateMessage.value = !isShowPrivateMessage.value
-                        }
+                        },
+                        modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = if (isShowPrivateMessage.value) R.drawable.visibility_24px else R.drawable.visibility_off_24px),
-                            contentDescription = "eye"
+                            painter = if (isShowPrivateMessage.value)
+                                painterResource(id = R.drawable.visibility_24px)
+                            else
+                                painterResource(id = R.drawable.visibility_off_24px),
+                            contentDescription = ""
                         )
                     }
                 }
@@ -146,7 +145,10 @@ fun PersonScreen(
             if (windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND))
                 Row {
                     LazyColumn(
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                        contentPadding = PaddingValues(
+                            horizontal = 16.dp,
+                            vertical = 12.dp
+                        ),
                         modifier = Modifier
                             .weight(0.5f)
                             .fillMaxSize()
@@ -208,7 +210,10 @@ fun PersonScreen(
                         }
                     }
                     LazyColumn(
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                        contentPadding = PaddingValues(
+                            horizontal = 16.dp,
+                            vertical = 12.dp
+                        ),
                         modifier = Modifier
                             .weight(0.5f)
                             .fillMaxSize()
@@ -227,7 +232,11 @@ fun PersonScreen(
                             ) {
                                 PersonalMessage(
                                     label = "河南师大智慧教务",
-                                    trailingText = stringResource(id = loginStateString(uiState.jwcLoginState)),
+                                    trailingText = stringResource(
+                                        id = loginStateString(
+                                            uiState.jwcLoginState
+                                        )
+                                    ),
                                     onClick = {
                                         if (uiState.jwcLoginState != 1) navController.navigate(
                                             Destinations.Login.route
@@ -236,14 +245,22 @@ fun PersonScreen(
                                 )
                                 PersonalMessage(
                                     label = "统一身份认证系统",
-                                    trailingText = stringResource(id = loginStateString(uiState.authLoginState)),
+                                    trailingText = stringResource(
+                                        id = loginStateString(
+                                            uiState.authLoginState
+                                        )
+                                    ),
                                     onClick = {
                                         showLoginDialog.value = true
                                     }
                                 )
                                 PersonalMessage(
                                     label = "第二课堂管理系统",
-                                    trailingText = stringResource(id = loginStateString(uiState.scLoginState)),
+                                    trailingText = stringResource(
+                                        id = loginStateString(
+                                            uiState.scLoginState
+                                        )
+                                    ),
                                     onClick = {
                                     }
                                 )
@@ -474,7 +491,7 @@ fun DeleteMessageDialog(
                         showDialog.value = false
                     },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.textButtonPrimaryColors()
+                    colors = ButtonDefaults.textButtonColorsPrimary()
                 )
             }
         }
@@ -535,7 +552,10 @@ fun PersonalMessage(
                                 copyContent(trailingText)
                                 showSnackbar(snackBarHostState, "已复制到剪贴板")
                             } else {
-                                showSnackbar(snackBarHostState, "已开启隐私保护模式，禁止复制信息")
+                                showSnackbar(
+                                    snackBarHostState,
+                                    "已开启隐私保护模式，禁止复制信息"
+                                )
                             }
                         }
                     }

@@ -31,8 +31,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
@@ -52,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -60,6 +59,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
@@ -74,10 +74,16 @@ import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.DateUtil.formatDateToFriendly
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
+import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -136,6 +142,7 @@ fun NewsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    val hazeState = rememberHazeState()
     val tabItems = uiState.newsOptionItems.map { it.label.label }
     val newsPagerState = rememberPagerState(
         pageCount = { tabItems.size },
@@ -143,6 +150,7 @@ fun NewsScreen(
     )
     val selectedTabIndex = remember { derivedStateOf { newsPagerState.currentPage } }
 
+    val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
@@ -159,152 +167,199 @@ fun NewsScreen(
             viewModel.getNewsList(selectedTabIndex.value)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(MiuixTheme.colorScheme.background),
-            title = { Text(text = stringResource(R.string.news)) },
-            actions = {
-                IconButton(onClick = { navController.navigate(Destinations.NewsHistory.route) }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.bookmark_24px),
-                        contentDescription = "history"
-                    )
-                }
-                IconButton(onClick = { navController.navigate(Destinations.NewsSearch.route) }) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "search"
-                    )
-                }
-            }
-        )
-        PrimaryScrollableTabRow(
-            containerColor = Color.Transparent,
-            selectedTabIndex = newsPagerState.currentPage,
-            modifier = Modifier
-                .padding(horizontal = 16.dp),
-            indicator = { },
-            divider = { }
-        ) {
-            tabItems.forEachIndexed { index, item ->
-                Tab(
-                    selected = index == selectedTabIndex.value,
-                    onClick = {
-                        scope.launch {
-                            newsPagerState.animateScrollToPage(index)
-                        }
-                    },
-                    selectedContentColor = MiuixTheme.colorScheme.onSurface,
-                    unselectedContentColor = MiuixTheme.colorScheme.onSurface
-                ) {
-                    Text(
-                        text = stringResource(id = item),
-                        modifier = Modifier.padding(8.dp),
-                        fontSize = if (index == selectedTabIndex.value) 17.sp else 15.sp,
-                        fontWeight = if (index == selectedTabIndex.value) FontWeight.Bold else FontWeight.Medium,
-                        color = if (index == selectedTabIndex.value) MiuixTheme.colorScheme.onSurface
-                        else MiuixTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                }
-            }
-        }
-
-        val bannerPicUrl = uiState.bannerPicList.map { it.imgUrl }
-        val bannerTitle = uiState.bannerPicList.map { it.title }
-        val bannerUrl = uiState.bannerPicList.map { it.url }
-
-        PullToRefresh(
-            pullToRefreshState = pullToRefreshState,
-            refreshTexts = PULL_TO_REFRESH_TEXT,
-            onRefresh = { isRefreshing = true },
-            isRefreshing = isRefreshing,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = contentPadding.calculateBottomPadding())
-        ) {
-            HorizontalPager(
-                state = newsPagerState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 4.dp),
-                pageSpacing = 12.dp
-            ) { pageIndex ->
-                Box {
-                    val lazyListState = rememberLazyListState()
-                    val pageNumber = remember { mutableIntStateOf(1) }
-                    if (uiState.newsList[pageIndex] == null) {
-                        CircularProgressIndicator(modifier = Modifier.fillMaxSize())
-                    } else {
-                        LazyColumn(
-                            state = lazyListState,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .overScrollVertical(),
-                            overscrollEffect = null,
-                            contentPadding = PaddingValues(16.dp, 8.dp)
-                        ) {
-                            if (pageIndex == 1 && uiState.loadImgEnabled) {
-                                item {
-                                    HorizontalBanner(
-                                        bannerPicUrl = bannerPicUrl,
-                                        bannerUrl = bannerUrl,
-                                        bannerTitle = bannerTitle
-                                    ) { url, label ->
-                                        /*navController.navigateToNewsDetail(
-                                            url = url,
-                                            label = label
-                                        )*/
-                                    }
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                }
-                            }
-                            itemsIndexed(
-                                uiState.newsList[pageIndex] ?: emptyList()
-                            ) { _, news ->
-                                NewsItem(
-                                    news = news,
-                                    imageLoadEnabled = uiState.loadImgEnabled,
-                                    onClick = {
-                                        // onNewsItemClick(news)
-                                        viewModel.addNewsHistory(
-                                            NewsMarkEntity(
-                                                title = news.title,
-                                                url = news.url,
-                                                time = LocalDate.now().toString(),
-                                                source = context.getString(news.label.label)
-                                            )
-                                        )
-                                        navController.navigateToNewsDetail(
-                                            url = news.url,
-                                            title = news.title,
-                                            label = context.getString(news.label.label)
-                                        )
-                                    }
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                            }
-                            item {
-                                LaunchedEffect(Unit) {
-                                    pageNumber.intValue = pageNumber.intValue + 1
-                                    viewModel.getNewsList(pageIndex, pageNumber.intValue)
-                                }
-                            }
-                        }
+    Scaffold(
+        topBar = {
+            top.yukonga.miuix.kmp.basic.TopAppBar(
+                horizontalPadding = 16.dp,
+                title = stringResource(R.string.news),
+                largeTitle = stringResource(R.string.news),
+                scrollBehavior = scrollBehavior,
+                color = Color.Transparent,
+                actions = {
+                    IconButton(onClick = { navController.navigate(Destinations.NewsHistory.route) }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.bookmark_24px),
+                            contentDescription = "history"
+                        )
                     }
-
-                    FloatingActionButton(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(14.dp),
-                        onClick = { scope.launch { lazyListState.scrollToItem(0) } }
+                    IconButton(
+                        onClick = { navController.navigate(Destinations.NewsSearch.route) },
+                        modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.outline_arrow_upward_24),
-                            contentDescription = "up"
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "search"
                         )
+                    }
+                },
+                modifier = Modifier
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
+                    ) {
+                        blurRadius = 30.dp
+                        noiseFactor = 0f
+                        blurEnabled = uiState.blurEffect
+                    }
+            )
+        },
+        popupHost = {},
+    ) {
+        Box(
+            modifier = Modifier
+        ) {
+            Column(
+                modifier = Modifier
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
+                    ) {
+                        blurRadius = 30.dp
+                        noiseFactor = 0f
+                        blurEnabled = uiState.blurEffect
+                    }
+                    .zIndex(1f)
+                    .padding(top = it.calculateTopPadding())
+            ) {
+                PrimaryScrollableTabRow(
+                    containerColor = Color.Transparent,
+                    selectedTabIndex = newsPagerState.currentPage,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp),
+                    indicator = { },
+                    divider = { }
+                ) {
+                    tabItems.forEachIndexed { index, item ->
+                        Tab(
+                            selected = index == selectedTabIndex.value,
+                            onClick = {
+                                scope.launch {
+                                    newsPagerState.animateScrollToPage(index)
+                                }
+                            },
+                            selectedContentColor = MiuixTheme.colorScheme.onSurface,
+                            unselectedContentColor = MiuixTheme.colorScheme.onSurface
+                        ) {
+                            Text(
+                                text = stringResource(id = item),
+                                modifier = Modifier.padding(8.dp),
+                                fontSize = if (index == selectedTabIndex.value) 17.sp else 15.sp,
+                                fontWeight = if (index == selectedTabIndex.value) FontWeight.Bold else FontWeight.Medium,
+                                color = if (index == selectedTabIndex.value) MiuixTheme.colorScheme.onSurface
+                                else MiuixTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
+                }
+            }
+
+            val bannerPicUrl = uiState.bannerPicList.map { it.imgUrl }
+            val bannerTitle = uiState.bannerPicList.map { it.title }
+            val bannerUrl = uiState.bannerPicList.map { it.url }
+
+            PullToRefresh(
+                pullToRefreshState = pullToRefreshState,
+                refreshTexts = PULL_TO_REFRESH_TEXT,
+                onRefresh = { isRefreshing = true },
+                isRefreshing = isRefreshing,
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = it.calculateTopPadding() + 8.dp + 25.dp,
+                    bottom = contentPadding.calculateBottomPadding() + 12.dp
+                ),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 16.dp)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+
+            ) {
+                HorizontalPager(
+                    state = newsPagerState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .hazeSource(hazeState),
+                    pageSpacing = 12.dp
+                ) { pageIndex ->
+                    Box {
+                        val lazyListState = rememberLazyListState()
+                        val pageNumber = remember { mutableIntStateOf(1) }
+                        if (uiState.newsList[pageIndex] == null) {
+                            CircularProgressIndicator(modifier = Modifier.fillMaxSize())
+                        } else {
+                            LazyColumn(
+                                state = lazyListState,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .overScrollVertical(),
+                                overscrollEffect = null,
+                                contentPadding = PaddingValues(
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    top = it.calculateTopPadding() + 8.dp + 25.dp,
+                                    bottom = contentPadding.calculateBottomPadding() + 12.dp
+                                ),
+                            ) {
+                                if (pageIndex == 1 && uiState.loadImgEnabled) {
+                                    item {
+                                        HorizontalBanner(
+                                            bannerPicUrl = bannerPicUrl,
+                                            bannerUrl = bannerUrl,
+                                            bannerTitle = bannerTitle
+                                        ) { url, label ->
+                                            /*navController.navigateToNewsDetail(
+                                                url = url,
+                                                label = label
+                                            )*/
+                                        }
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                    }
+                                }
+                                itemsIndexed(
+                                    uiState.newsList[pageIndex] ?: emptyList()
+                                ) { _, news ->
+                                    NewsItem(
+                                        news = news,
+                                        imageLoadEnabled = uiState.loadImgEnabled,
+                                        onClick = {
+                                            // onNewsItemClick(news)
+                                            viewModel.addNewsHistory(
+                                                NewsMarkEntity(
+                                                    title = news.title,
+                                                    url = news.url,
+                                                    time = LocalDate.now().toString(),
+                                                    source = context.getString(news.label.label)
+                                                )
+                                            )
+                                            navController.navigateToNewsDetail(
+                                                url = news.url,
+                                                title = news.title,
+                                                label = context.getString(news.label.label)
+                                            )
+                                        }
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
+                                item {
+                                    LaunchedEffect(Unit) {
+                                        pageNumber.intValue = pageNumber.intValue + 1
+                                        viewModel.getNewsList(pageIndex, pageNumber.intValue)
+                                    }
+                                }
+                            }
+                        }
+
+                        FloatingActionButton(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(14.dp),
+                            onClick = { scope.launch { lazyListState.scrollToItem(0) } }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.outline_arrow_upward_24),
+                                contentDescription = "up"
+                            )
+                        }
                     }
                 }
             }
@@ -326,7 +381,7 @@ fun NewsItem(
             .fillMaxWidth()
             .animateContentSize(),
         shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
-        color = MiuixTheme.colorScheme.surface,
+        color = MiuixTheme.colorScheme.surfaceContainer,
     ) {
         ListItem(
             colors = ListItemDefaults.colors(containerColor = Color.Transparent),

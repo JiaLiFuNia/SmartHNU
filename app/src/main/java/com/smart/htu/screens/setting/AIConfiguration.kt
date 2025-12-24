@@ -8,23 +8,26 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,21 +35,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.smart.htu.component.TextButtonWithProgressIndicator
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.TextField
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.extra.SuperSwitch
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
@@ -58,51 +70,64 @@ fun AIConfigurationScreen(
     viewModel: SettingViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    val hazeState = rememberHazeState()
+    val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
-    val hapticFeedback = LocalHapticFeedback.current
+    val focusManager = LocalFocusManager.current
 
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
+        containerColor = MiuixTheme.colorScheme.surface,
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
+                title = "YunAI 配置",
                 scrollBehavior = scrollBehavior,
-                colors = topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background
-                ),
-                title = { Text(text = "YunAI 配置") },
+                color = Color.Transparent,
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "back"
+                        modifier = Modifier.padding(start = 16.dp),
+                        onClick = {
+                            navController.popBackStack()
+                        }
+                    ) {
+                        top.yukonga.miuix.kmp.basic.Icon(
+                            imageVector = MiuixIcons.Useful.Back,
+                            contentDescription = null,
+                            tint = MiuixTheme.colorScheme.onBackground
                         )
                     }
-                }
+                },
+                modifier = Modifier
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
+                    ) {
+                        blurRadius = 30.dp
+                        noiseFactor = 0f
+                        blurEnabled = uiState.blurEnabled
+                    }
             )
         },
         snackbarHost = {
             SnackbarHost(snackBarHostState)
-        }
+        },
+        contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(
+            WindowInsetsSides.Horizontal
+        )
     ) {
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
+                .padding(top = 16.dp)
+                .hazeSource(hazeState)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .overScrollVertical()
                 .scrollEndHaptic(),
             overscrollEffect = null,
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                top = it.calculateTopPadding() + 8.dp,
-                end = 12.dp,
-                bottom = 16.dp
-            ),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = it.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
@@ -161,7 +186,7 @@ fun AIConfigurationScreen(
                         TextField(
                             label = "URL",
                             value = "https://api.siliconflow.cn/",
-                            backgroundColor = MiuixTheme.colorScheme.surface,
+                            backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
                             readOnly = true,
                             singleLine = true,
                             onValueChange = {
@@ -175,30 +200,35 @@ fun AIConfigurationScreen(
                                 selectedIndex = uiState.selectedAIModelIndex,
                                 onSelectedIndexChange = {
                                     viewModel.selectAIModel(it)
+                                },
+                                onClick = {
+                                    focusManager.clearFocus()
                                 }
                             )
                         }
                         TextField(
                             label = "Key",
                             value = uiState.aiModelKey,
-                            backgroundColor = MiuixTheme.colorScheme.surface,
+                            backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
                             singleLine = true,
                             onValueChange = {
                                 viewModel.saveAIModelKey(key = it, test = false)
+                            },
+                            trailingIcon = {
+                                top.yukonga.miuix.kmp.basic.IconButton(
+                                    onClick = { },
+                                    modifier = Modifier.padding(end = 8.dp)
+                                ) {
+                                    Icon(Icons.Outlined.Info, contentDescription = null)
+                                }
                             }
                         )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            TextButton(onClick = { }) {
-                                Text(text = "如何申请 Key?")
-                            }
-                        }
+                        Spacer(modifier = Modifier.height(12.dp))
                         TextButtonWithProgressIndicator(
                             text = "测试",
                             onClick = {
                                 scope.launch {
+                                    focusManager.clearFocus()
                                     viewModel.testAIService(
                                         onResult = {
                                             scope.launch {

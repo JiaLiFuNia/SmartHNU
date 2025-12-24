@@ -1,140 +1,28 @@
 package com.smart.htu.ui.theme
 
 import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.smart.htu.screens.setting.entity.DarkMode
-import com.smart.htu.screens.setting.SettingViewModel
+import top.yukonga.miuix.kmp.theme.ColorSchemeMode
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-
-private val lightScheme = lightColorScheme(
-    primary = primaryLight,
-    onPrimary = onPrimaryLight,
-    primaryContainer = primaryContainerLight,
-    onPrimaryContainer = onPrimaryContainerLight,
-    secondary = secondaryLight,
-    onSecondary = onSecondaryLight,
-    secondaryContainer = secondaryContainerLight,
-    onSecondaryContainer = onSecondaryContainerLight,
-    tertiary = tertiaryLight,
-    onTertiary = onTertiaryLight,
-    tertiaryContainer = tertiaryContainerLight,
-    onTertiaryContainer = onTertiaryContainerLight,
-    error = errorLight,
-    onError = onErrorLight,
-    errorContainer = errorContainerLight,
-    onErrorContainer = onErrorContainerLight,
-    background = backgroundLight,
-    onBackground = onBackgroundLight,
-    surface = surfaceLight,
-    onSurface = onSurfaceLight,
-    surfaceVariant = surfaceVariantLight,
-    onSurfaceVariant = onSurfaceVariantLight,
-    outline = outlineLight,
-    outlineVariant = outlineVariantLight,
-    scrim = scrimLight,
-    inverseSurface = inverseSurfaceLight,
-    inverseOnSurface = inverseOnSurfaceLight,
-    inversePrimary = inversePrimaryLight,
-    surfaceDim = surfaceDimLight,
-    surfaceBright = surfaceBrightLight,
-    surfaceContainerLowest = surfaceContainerLowestLight,
-    surfaceContainerLow = surfaceContainerLowLight,
-    surfaceContainer = surfaceContainerLight,
-    surfaceContainerHigh = surfaceContainerHighLight,
-    surfaceContainerHighest = surfaceContainerHighestLight,
-)
-
-private val darkScheme = darkColorScheme(
-    primary = primaryDark,
-    onPrimary = onPrimaryDark,
-    primaryContainer = primaryContainerDark,
-    onPrimaryContainer = onPrimaryContainerDark,
-    secondary = secondaryDark,
-    onSecondary = onSecondaryDark,
-    secondaryContainer = secondaryContainerDark,
-    onSecondaryContainer = onSecondaryContainerDark,
-    tertiary = tertiaryDark,
-    onTertiary = onTertiaryDark,
-    tertiaryContainer = tertiaryContainerDark,
-    onTertiaryContainer = onTertiaryContainerDark,
-    error = errorDark,
-    onError = onErrorDark,
-    errorContainer = errorContainerDark,
-    onErrorContainer = onErrorContainerDark,
-    background = backgroundDark,
-    onBackground = onBackgroundDark,
-    surface = surfaceDark,
-    onSurface = onSurfaceDark,
-    surfaceVariant = surfaceVariantDark,
-    onSurfaceVariant = onSurfaceVariantDark,
-    outline = outlineDark,
-    outlineVariant = outlineVariantDark,
-    scrim = scrimDark,
-    inverseSurface = inverseSurfaceDark,
-    inverseOnSurface = inverseOnSurfaceDark,
-    inversePrimary = inversePrimaryDark,
-    surfaceDim = surfaceDimDark,
-    surfaceBright = surfaceBrightDark,
-    surfaceContainerLowest = surfaceContainerLowestDark,
-    surfaceContainerLow = surfaceContainerLowDark,
-    surfaceContainer = surfaceContainerDark,
-    surfaceContainerHigh = surfaceContainerHighDark,
-    surfaceContainerHighest = surfaceContainerHighestDark,
-)
+import top.yukonga.miuix.kmp.theme.ThemeController
 
 @Composable
 fun SmartHNUTheme(
-    viewModel: SettingViewModel = hiltViewModel(),
+    themeMode: Int,
+    keyColor: Color? = null,
     content: @Composable () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-
-    val darkTheme = when (uiState.isDarkTheme) {
-        DarkMode.ON.ordinal -> true
-        DarkMode.OFF.ordinal -> false
+    val isDark = isSystemInDarkTheme()
+    val darkTheme = when (themeMode) {
+        2, 5 -> true
+        1, 4 -> false
         else -> isSystemInDarkTheme()
-    }
-    val colorScheme = when {
-        uiState.themeMode == 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> darkScheme
-        else -> lightScheme
-    }
-    val miuixSchemeColor = when (darkTheme) {
-        false -> top.yukonga.miuix.kmp.theme.lightColorScheme(
-            disabledPrimaryButton = colorScheme.primaryContainer.copy(0.5f),
-            disabledOnPrimaryButton = colorScheme.primary.copy(0.5f),
-            primary = colorScheme.primary,
-            primaryContainer = colorScheme.primaryContainer,
-            tertiaryContainer = colorScheme.secondaryContainer,
-            onTertiaryContainer = colorScheme.primary
-        )
-
-        true -> top.yukonga.miuix.kmp.theme.darkColorScheme(
-            disabledPrimaryButton = colorScheme.primaryContainer.copy(0.5f),
-            disabledOnPrimaryButton = colorScheme.primary.copy(0.5f),
-            primary = colorScheme.primary,
-            primaryContainer = colorScheme.primaryContainer,
-            tertiaryContainer = colorScheme.secondaryContainer,
-            onTertiaryContainer = colorScheme.primary
-        )
     }
 
     val view = LocalView.current
@@ -146,14 +34,32 @@ fun SmartHNUTheme(
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
-    MiuixTheme(
-        colors = miuixSchemeColor,
-        content = {
-            MaterialTheme(
-                typography = Typography,
-                colorScheme = colorScheme,
-                content = content
-            )
+
+    val controller = remember(themeMode, keyColor, isDark) {
+        when (themeMode) {
+            1 -> ThemeController(ColorSchemeMode.Light)
+            2 -> ThemeController(ColorSchemeMode.Dark)
+            3 -> ThemeController(ColorSchemeMode.MonetSystem, keyColor = keyColor, isDark = isDark)
+            4 -> ThemeController(ColorSchemeMode.MonetLight, keyColor = keyColor)
+            5 -> ThemeController(ColorSchemeMode.MonetDark, keyColor = keyColor)
+            else -> ThemeController(ColorSchemeMode.System)
         }
+    }
+    MiuixTheme(
+        controller = controller,
+        content = content
     )
 }
+
+
+val KeyColors: List<Pair<String, Color>> = listOf(
+    "Blue" to Color(0xFF3482FF),
+    "Green" to Color(0xFF36D167),
+    "Purple" to Color(0xFF7C4DFF),
+    "Yellow" to Color(0xFFFFB21D),
+    "Orange" to Color(0xFFFF5722),
+    "Pink" to Color(0xFFE91E63),
+    "Teal" to Color(0xFF00BCD4)
+)
+
+fun keyColorFor(index: Int): Color? = if (index <= 0) null else KeyColors.getOrNull(index - 1)?.second

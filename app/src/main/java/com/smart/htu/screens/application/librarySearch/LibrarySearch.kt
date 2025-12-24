@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,34 +21,13 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Clear
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.SearchBarDefaults.inputFieldColors
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -70,9 +48,13 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -97,17 +79,28 @@ import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.setting.SettingItemCard
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
+import com.smart.htu.utils.DateUtil.convertStringDateToLocalDate
 import com.smart.htu.utils.ToastUtil.showToast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okhttp3.Cookie
 import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.InputField
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SearchBar
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.Info
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import java.time.Duration
+import java.time.LocalDate
 import kotlin.math.ceil
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -123,7 +116,7 @@ fun LibrarySearchScreen(
 
     val (expand, onExpand) = rememberSaveable { mutableStateOf(false) }
     val (isSearching, onSearch) = rememberSaveable { mutableStateOf(false) }
-    val searchTextFieldState = rememberTextFieldState()
+    var searchValue by rememberSaveable { mutableStateOf("") }
 
     val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
     val showLoginDialog = rememberSaveable { mutableStateOf(false) }
@@ -150,27 +143,23 @@ fun LibrarySearchScreen(
         }
     }
 
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         snackbarHost = {
             SnackbarHost(hostState = viewModel.snackBarHostState)
         },
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = MiuixTheme.colorScheme.background
-                ),
-                title = {
-                    Text(text = "图书查询")
-                },
+                color = Color.Transparent,
+                title = "图书查询",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }) {
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = MiuixIcons.Useful.Back,
                             contentDescription = "back"
                         )
                     }
@@ -183,10 +172,11 @@ fun LibrarySearchScreen(
                                     viewModel.createSession()
                                     showLoginDialog.value = true
                                 }
-                            }
+                            },
+                            modifier = Modifier.padding(end = 16.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Outlined.Info,
+                                imageVector = MiuixIcons.Useful.Info,
                                 contentDescription = "info",
                                 tint = MaterialTheme.colorScheme.error
                             )
@@ -210,9 +200,10 @@ fun LibrarySearchScreen(
                                         label = "图书馆"
                                     )
                                 }
-                            }
+                            },
+                            modifier = Modifier.padding(end = 16.dp)
                         ) {
-                            Icon(imageVector = Icons.Outlined.Info, contentDescription = "info")
+                            Icon(imageVector = MiuixIcons.Useful.Info, contentDescription = "info")
                         }
                     }
                 }
@@ -225,7 +216,7 @@ fun LibrarySearchScreen(
                 enter = slideInVertically(initialOffsetY = { it * 2 }),
                 exit = slideOutVertically(targetOffsetY = { it * 2 }),
             ) {
-                FloatingActionButton(
+                top.yukonga.miuix.kmp.basic.FloatingActionButton(
                     onClick = { scope.launch { lazyListState.scrollToItem(0) } }
                 ) {
                     Icon(
@@ -242,117 +233,57 @@ fun LibrarySearchScreen(
             isRefreshing = isRefreshing,
             refreshTexts = PULL_TO_REFRESH_TEXT,
             modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
+                .fillMaxSize(),
             contentPadding = it
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = it.calculateTopPadding() + 8.dp)
+                    .padding(top = it.calculateTopPadding() + 16.dp)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
-                DockedSearchBar(
-                    colors = SearchBarDefaults.colors(containerColor = MiuixTheme.colorScheme.surfaceContainerHigh),
-                    modifier = Modifier
-                        .heightIn(max = 240.dp)
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 8.dp),
+                SearchBar(
+                    modifier = Modifier.padding(bottom = 8.dp),
                     inputField = {
-                        SearchBarDefaults.InputField(
-                            colors = inputFieldColors(
-                                focusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh,
-                                unfocusedContainerColor = MiuixTheme.colorScheme.surfaceContainerHigh
-                            ),
-                            modifier = Modifier.fillMaxWidth(),
-                            state = searchTextFieldState,
+                        InputField(
+                            query = searchValue,
+                            onQueryChange = { searchValue = it },
                             onSearch = {
-                                onExpand(false)
                                 onSearch(true)
                                 viewModel.librarySearch(it, 1)
-                                viewModel.addSearchHistory(it)
                             },
                             expanded = expand,
                             onExpandedChange = { onExpand(it) },
-                            placeholder = { Text(text = "搜索书名、作者、ISBN...") },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = null
-                                )
-                            },
-                            trailingIcon = {
-                                IconButton(
-                                    onClick = {
-                                        if (expand) {
-                                            onExpand(false)
-                                        } else {
-                                            if (isSearching)
-                                                onSearch(false)
-                                            else
-                                                onExpand(true)
-                                        }
-                                    }
+                            label = "搜索书名、作者、ISBN...",
+                        )
+                    },
+                    outsideRightAction = {
+                        Text(
+                            modifier = Modifier
+                                .padding(end = 12.dp)
+                                .clickable(
+                                    interactionSource = null,
+                                    indication = null
                                 ) {
-                                    Icon(
-                                        imageVector = when {
-                                            expand -> Icons.Default.KeyboardArrowUp
-                                            isSearching -> Icons.Outlined.Clear
-                                            else -> Icons.Default.KeyboardArrowDown
-                                        },
-                                        contentDescription = ""
-                                    )
-                                }
-                            }
+                                    onExpand(false)
+                                    onSearch(false)
+                                    searchValue = ""
+                                },
+                            text = "取消",
+                            style = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Bold),
+                            color = MiuixTheme.colorScheme.primary
                         )
                     },
                     expanded = expand,
-                    onExpandedChange = { onExpand(it) },
-                ) {
-                    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                        uiState.searchHistoryList.forEachIndexed { index, resultText ->
-                            ListItem(
-                                headlineContent = { Text(text = resultText) },
-                                leadingContent = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.outline_history_24),
-                                        contentDescription = null
-                                    )
-                                },
-                                trailingContent = {
-                                    IconButton(onClick = { viewModel.deleteSearchHistory(index) }) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Clear,
-                                            contentDescription = "delete"
-                                        )
-                                    }
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier = Modifier
-                                    .clickable {
-                                        searchTextFieldState.setTextAndPlaceCursorAtEnd(
-                                            resultText
-                                        )
-                                        viewModel.librarySearch(resultText, page = 1)
-                                        onSearch(true)
-                                        onExpand(false)
-                                    }
-                                    .fillMaxWidth()
-                            )
-                        }
-                    }
-                }
+                    onExpandedChange = { onExpand(it) }
+                ) { }
 
                 LazyColumn(
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 8.dp,
-                        bottom = 12.dp
-                    ),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
                     state = lazyListState,
                     modifier = Modifier
                         .fillMaxSize()
+                        .padding(bottom = 12.dp)
                         .overScrollVertical(),
                     overscrollEffect = null,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -374,13 +305,13 @@ fun LibrarySearchScreen(
                                 }
                                 item {
                                     LaunchedEffect(Unit) {
-                                        viewModel.loadNextPage(searchTextFieldState.text.toString())
+                                        viewModel.loadNextPage(searchValue)
                                     }
                                 }
                             } else {
                                 item {
                                     EmptyContent(
-                                        text = "\"${searchTextFieldState.text}\"\n没有搜索结果",
+                                        text = "\"${searchValue}\"\n没有搜索结果",
                                         image = emptyData()
                                     )
                                 }
@@ -476,7 +407,7 @@ fun WaitingToBorrowedBookList(
             val rowCount = remember {
                 derivedStateOf { ceil(bookList.size / 3.0) }
             }
-            val lazyVerticalGridHeight by remember { derivedStateOf { rowCount.value * 180 + (rowCount.value - 1) * 8 } }
+            val lazyVerticalGridHeight by remember { derivedStateOf { rowCount.value * 185 + (rowCount.value - 1) * 8 } }
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
                 modifier = Modifier
@@ -487,12 +418,13 @@ fun WaitingToBorrowedBookList(
                 userScrollEnabled = false
             ) {
                 items(bookList) {
-                    Card(
-                        colors = CardDefaults.cardColors(Color.Transparent),
+                    Surface(
                         onClick = {
                             onClick(it.bookId.toString())
                         },
-                        modifier = Modifier
+                        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
+                        modifier = Modifier,
+                        color = MiuixTheme.colorScheme.surfaceContainer,
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -608,7 +540,63 @@ fun CurrentBorrowingBookList(
                         BasicComponent(
                             title = "${it.title}-${it.author}",
                             summary = "应还日期：${it.dueDate}",
-                            onClick = { onClick(it.bibId) }
+                            onClick = { onClick(it.bibId) },
+                            rightActions = {
+                                val remainingDays = remember {
+                                    derivedStateOf {
+                                        try {
+                                            if (it.dueDate != null) {
+                                                val dueDate = convertStringDateToLocalDate(
+                                                    it.dueDate,
+                                                    "yyyy-MM-dd"
+                                                )
+                                                val currentDate = LocalDate.now()
+                                                Duration.between(
+                                                    currentDate.atStartOfDay(),
+                                                    dueDate.atStartOfDay()
+                                                ).toDays().toFloat()
+                                            } else {
+                                                0f
+                                            }
+                                        } catch (e: Exception) {
+                                            0f
+                                        }
+                                    }
+                                }
+                                Row(
+                                    verticalAlignment = Alignment.Bottom,
+                                    modifier = Modifier
+                                ) {
+                                    top.yukonga.miuix.kmp.basic.Text(
+                                        buildAnnotatedString {
+                                            withStyle(
+                                                style = SpanStyle(
+                                                    color = MiuixTheme.colorScheme.onBackground,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 26.sp
+                                                )
+                                            ) {
+                                                append(
+                                                    if (remainingDays.value >= 0) {
+                                                        "${remainingDays.value.toInt()}"
+                                                    } else {
+                                                        "${-remainingDays.value.toInt()}"
+                                                    }
+                                                )
+                                            }
+
+                                            withStyle(
+                                                style = SpanStyle(
+                                                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                                                    fontSize = 16.sp
+                                                )
+                                            ) {
+                                                append(" 天")
+                                            }
+                                        }
+                                    )
+                                }
+                            }
                         )
                     }
                 }
@@ -627,10 +615,10 @@ fun LibrarySingleBook(
     onClick: () -> Unit = {}
 ) {
     Surface(
-        shape = ContinuousRoundedRectangle(top.yukonga.miuix.kmp.basic.CardDefaults.CornerRadius),
+        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
-        color = MiuixTheme.colorScheme.surface
+        color = MiuixTheme.colorScheme.surfaceContainer
     ) {
         Row(
             modifier = Modifier

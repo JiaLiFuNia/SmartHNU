@@ -1,34 +1,34 @@
 package com.smart.htu.component.card
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
+import com.smart.htu.R
 import com.smart.htu.screens.application.ApplicationEntity
+import com.smart.htu.screens.application.ApplicationEntity.ApplicationCategory
+import com.smart.htu.screens.application.ApplicationEntity.LoginMode
 import com.smart.htu.screens.application.ApplicationEntity.RouteType
+import com.smart.htu.screens.navigation.Destinations
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
@@ -36,65 +36,71 @@ fun SmallCardDisplay(
     enabled: Boolean,
     content: ApplicationEntity,
     modifier: Modifier = Modifier,
-    enableContainerColor: Color = MiuixTheme.colorScheme.surface,
-    disableContainerColor: Color = MiuixTheme.colorScheme.disabledSecondaryVariant,
     onClick: () -> Unit
 ) {
-    val showDialog = remember { mutableStateOf(false) }
     Surface(
         onClick = {
-            if (content.routeType == RouteType.ALIPAY) {
-                showDialog.value = true
-            } else {
-                onClick()
-            }
+            onClick()
         },
+        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
         modifier = modifier
-            .size(70.dp)
-            .semantics { role = Role.Button }
-            .animateContentSize(),
-        shape = ContinuousRoundedRectangle(top.yukonga.miuix.kmp.basic.CardDefaults.CornerRadius),
-        color = if (enabled) enableContainerColor
-        else disableContainerColor
+            .aspectRatio(1f),
+        color = Color.Transparent
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(5.dp),
+                .fillMaxWidth()
+                .padding(2.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
-                modifier = Modifier.size(40.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = content.icon),
-                    contentDescription = "icon",
-                    modifier = Modifier.size(35.dp),
-                    tint = if (enabled) MiuixTheme.colorScheme.primary
-                    else MiuixTheme.colorScheme.primary.copy(0.38f)
+            Card(
+                modifier = Modifier
+                    .size(58.dp)
+                    .aspectRatio(1f),
+                colors = CardDefaults.defaultColors(
+                    if (enabled) MiuixTheme.colorScheme.surfaceContainer
+                    else MiuixTheme.colorScheme.disabledSecondaryVariant,
                 )
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = content.icon),
+                        contentDescription = "icon",
+                        modifier = Modifier.size(32.dp),
+                        tint = if (enabled) MiuixTheme.colorScheme.primary
+                        else MiuixTheme.colorScheme.primary.copy(0.38f)
+                    )
+                }
             }
             Text(
-                text = stringResource(id = content.label),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 13.sp,
-                modifier = Modifier
-                    .basicMarquee(
-                        repeatDelayMillis = 2_000,
-                    ),
-                color = if (enabled) MiuixTheme.colorScheme.onSurface
-                else MiuixTheme.colorScheme.onSurfaceContainerVariant,
-                textAlign = TextAlign.Center
+                text = stringResource(content.label),
+                fontSize = 15.sp,
+                lineHeight = 18.sp,
+                modifier = Modifier.padding(top = 4.dp)
             )
         }
     }
-    JumpToAlipayDialog(
-        showDialog = showDialog,
-        onConfirmClick = {
-            onClick()
-        }
+}
+
+
+@Preview
+@Composable
+fun SmallCardDisplayPreview() {
+    SmallCardDisplay(
+        enabled = true,
+        content = ApplicationEntity(
+            guestMode = false,
+            loginMode = LoginMode.COMMON,
+            icon = R.drawable.calendar_month_24px,
+            label = R.string.course_table,
+            routeType = RouteType.SCREEN,
+            route = Destinations.CourseTable.route,
+            category = ApplicationCategory.STUDY
+        ),
+        onClick = {}
     )
 }

@@ -18,6 +18,7 @@ import com.smart.htu.screens.application.airCondition.AirConditionSetting
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.application.campusLife.CampusLife
 import com.smart.htu.screens.application.classroom.ClassroomSearchScreen
+import com.smart.htu.screens.application.courseHelper.CourseHelperNavHost
 import com.smart.htu.screens.application.courseTable.CourseTable
 import com.smart.htu.screens.application.examSchedule.AddExamSchedule
 import com.smart.htu.screens.application.examSchedule.ExamSchedule
@@ -296,6 +297,9 @@ fun NavHostScreen() {
         }
         animatedComposable(Destinations.SecondClass.route) {
             SecondClass(navController = navController)
+        }
+        animatedComposable(Destinations.CourseHelperNavHost.route) {
+            CourseHelperNavHost(navController)
         }
     }
 }

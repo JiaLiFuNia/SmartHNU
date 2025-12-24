@@ -153,4 +153,10 @@
     <string name="repair">报修</string>
     <string name="login_failed">登录失败</string>
     <string name="select_course_assistance">选课辅助</string>
+    <string name="settings_theme_mode_system">跟随系统</string>
+    <string name="settings_theme_mode_light">浅色</string>
+    <string name="settings_theme_mode_dark">深色</string>
+    <string name="settings_theme_mode_monet_system">Monet（跟随系统）</string>
+    <string name="settings_theme_mode_monet_light">Monet（浅色）</string>
+    <string name="settings_theme_mode_monet_dark">Monet（深色）</string>
 </resources>

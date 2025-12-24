@@ -4,31 +4,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerScope
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,42 +39,57 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.window.core.layout.WindowSizeClass
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
-import com.smart.htu.component.TabRow
+import com.smart.htu.component.card.MessageCardDisplay
+import com.smart.htu.component.card.SingleInfo
 import com.smart.htu.component.chart.ColumnChart
 import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.TabRowDefaults
+import top.yukonga.miuix.kmp.basic.TabRowWithContour
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.Settings
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import java.time.LocalDate
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun AirCondition(
     navController: NavController,
     viewModel: AirConditionViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
     val isShowSuggestChip by remember {
         derivedStateOf { mutableStateOf(uiState.dormRoomId.isEmpty() || !uiState.isCookieValid) }
     }
     val snackBarHostState = viewModel.snackBarHostState
+    val hazeState = rememberHazeState()
 
     val tabItem = listOf("用电情况", "缴费情况")
     val pagerState = rememberPagerState { tabItem.size }
@@ -102,20 +107,18 @@ fun AirCondition(
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background
-                ),
-                title = { Text(text = "空调电费") },
+                color = Color.Transparent,
+                title = "空调电费",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }) {
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = MiuixIcons.Useful.Back,
                             contentDescription = "back"
                         )
                     }
@@ -124,10 +127,22 @@ fun AirCondition(
                     IconButton(
                         onClick = {
                             navController.navigate(Destinations.AirConditionSetting.route)
-                        }
+                        },
+                        modifier = Modifier.padding(end = 16.dp)
                     ) {
-                        Icon(imageVector = Icons.Outlined.Settings, contentDescription = "setting")
+                        Icon(
+                            imageVector = MiuixIcons.Useful.Settings,
+                            contentDescription = "setting"
+                        )
                     }
+                },
+                modifier = Modifier.hazeEffect(
+                    state = hazeState,
+                    style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
+                ) {
+                    blurRadius = 30.dp
+                    noiseFactor = 0f
+                    blurEnabled = true
                 }
             )
         },
@@ -141,228 +156,111 @@ fun AirCondition(
             onRefresh = { isRefreshing = true },
             isRefreshing = isRefreshing,
             modifier = Modifier
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .fillMaxSize(),
             contentPadding = it
         ) {
-            if (windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)) {
-                Row(modifier = Modifier.fillMaxSize()) {
-                    Column(
-                        modifier = Modifier
-                            .padding(top = it.calculateTopPadding() + 8.dp)
-                            .fillMaxSize()
-                            .weight(0.5f)
-                    ) {
-                        if (isShowSuggestChip.value) {
-                            SuggestChip(
-                                onClick = {
-                                    navController.navigate(Destinations.AirConditionSetting.route)
-                                },
-                                onActionClick = {
-                                },
-                                text = "请设置你的宿舍楼，房间号和 Cookie",
-                                type = SuggestChipType.ERROR,
-                                icon = Icons.Outlined.Info,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                        }
-                        Card(
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        ) {
-                            BasicComponent(
-                                title = (uiState.billData?.data?.displayRoomName
-                                    ?: "加载中...").replace("河南师范大学", ""),
-                                summary = uiState.billData?.data?.surplusList?.first()?.roomStatus
-                                    ?: "未知状态",
-                                rightActions = {
-                                    Text(
-                                        text = "${uiState.billData?.data?.soc ?: 0.0} 度",
-                                        color = MiuixTheme.colorScheme.primary,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                },
-                                leftAction = {
-                                    Icon(
-                                        painter = painterResource(R.drawable.climate_mini_split_24px),
-                                        contentDescription = null,
-                                        modifier = Modifier.padding(end = 12.dp),
-                                        tint = MiuixTheme.colorScheme.onSurface
-                                    )
-                                }
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-                    Column(
-                        modifier = Modifier
-                            .padding(top = it.calculateTopPadding() + 8.dp)
-                            .fillMaxSize()
-                            .weight(0.5f)
-                    ) {
-                        TabRow(
-                            tabs = tabItem,
-                            selectedTabIndex = selectTabIndex,
-                            onTabSelected = {
-                                scope.launch {
-                                    pagerState.animateScrollToPage(it)
-                                }
-                            },
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        HorizontalPager(
-                            modifier = Modifier.fillMaxSize(),
-                            pageSpacing = 12.dp,
-                            state = pagerState,
-                            verticalAlignment = Alignment.Top,
-                        ) { page ->
-                            BillColumn(
-                                page = page,
-                                xData = when (page) {
-                                    0 -> uiState.billRecords?.rows?.map {
-                                        it.easyDateTime
-                                    }
-
-                                    else -> uiState.buyRecords?.rows?.map {
-                                        it.easyDateTime
-                                    }
-                                },
-                                yData = when (page) {
-                                    0 -> uiState.billRecords?.rows?.map {
-                                        it.used.toDouble()
-                                    }
-
-                                    else -> uiState.buyRecords?.rows?.map {
-                                        it.money.toDouble()
-                                    }
-                                },
-                                labelData = when (page) {
-                                    0 -> uiState.billRecords?.rows?.map {
-                                        it.datetime
-                                    }
-
-                                    else -> uiState.buyRecords?.rows?.map {
-                                        it.dateTime
-                                    }
-                                },
-                                contentData = when (page) {
-                                    0 -> uiState.billRecords?.rows?.map {
-                                        "${it.used} 度"
-                                    }
-
-                                    else -> uiState.buyRecords?.rows?.map {
-                                        "${it.money} 元"
-                                    }
-                                }
-                            )
-                        }
-                    }
-                }
-            } else {
-                Column(
-                    modifier = Modifier
-                        .padding(top = it.calculateTopPadding() + 8.dp)
-                        .fillMaxSize()
-                ) {
-                    if (isShowSuggestChip.value) {
-                        SuggestChip(
-                            onClick = {
-                                navController.navigate(Destinations.AirConditionSetting.route)
-                            },
-                            onActionClick = {
-                            },
-                            text = "请设置你的宿舍楼，房间号和 Cookie",
-                            type = SuggestChipType.ERROR,
-                            icon = Icons.Outlined.Info,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-                    Card(
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    ) {
-                        BasicComponent(
-                            title = (uiState.billData?.data?.displayRoomName
-                                ?: "加载中...").replace("河南师范大学", ""),
-                            summary = uiState.billData?.data?.surplusList?.first()?.roomStatus
-                                ?: "未知状态",
-                            rightActions = {
-                                Text(
-                                    text = "${uiState.billData?.data?.soc ?: 0.0} 度",
-                                    color = MiuixTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            },
-                            leftAction = {
-                                Icon(
-                                    painter = painterResource(R.drawable.climate_mini_split_24px),
-                                    contentDescription = null,
-                                    modifier = Modifier.padding(end = 12.dp),
-                                    tint = MiuixTheme.colorScheme.onSurface
-                                )
-                            }
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    TabRow(
-                        tabs = tabItem,
-                        selectedTabIndex = selectTabIndex,
-                        onTabSelected = {
-                            scope.launch {
-                                pagerState.animateScrollToPage(it)
-                            }
+            Column(
+                modifier = Modifier
+                    .padding(top = it.calculateTopPadding() + 16.dp)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .fillMaxSize()
+                    .hazeSource(hazeState)
+            ) {
+                if (isShowSuggestChip.value) {
+                    SuggestChip(
+                        onClick = {
+                            navController.navigate(Destinations.AirConditionSetting.route)
                         },
+                        text = "请设置你的宿舍楼，房间号和 Cookie",
+                        type = SuggestChipType.ERROR,
+                        icon = Icons.Outlined.Info,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    HorizontalPager(
-                        modifier = Modifier.fillMaxSize(),
-                        pageSpacing = 12.dp,
-                        state = pagerState,
-                        verticalAlignment = Alignment.Top,
-                    ) { page ->
-                        BillColumn(
-                            page = page,
-                            xData = when (page) {
-                                0 -> uiState.billRecords?.rows?.map {
-                                    it.easyDateTime
-                                }
-
-                                else -> uiState.buyRecords?.rows?.map {
-                                    it.easyDateTime
-                                }
-                            },
-                            yData = when (page) {
-                                0 -> uiState.billRecords?.rows?.map {
-                                    it.used.toDouble()
-                                }
-
-                                else -> uiState.buyRecords?.rows?.map {
-                                    it.money.toDouble()
-                                }
-                            },
-                            labelData = when (page) {
-                                0 -> uiState.billRecords?.rows?.map {
-                                    it.datetime
-                                }
-
-                                else -> uiState.buyRecords?.rows?.map {
-                                    it.dateTime
-                                }
-                            },
-                            contentData = when (page) {
-                                0 -> uiState.billRecords?.rows?.map {
-                                    "${it.used} 度"
-                                }
-
-                                else -> uiState.buyRecords?.rows?.map {
-                                    "${it.money} 元"
-                                }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+                Card(
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    BasicComponent(
+                        title = (uiState.billData?.data?.displayRoomName
+                            ?: "加载中...").replace("河南师范大学", ""),
+                        summary = uiState.billData?.data?.surplusList?.first()?.roomStatus
+                            ?: "未知状态",
+                        rightActions = {
+                            Text(
+                                text = "${uiState.billData?.data?.soc ?: 0.0} 度",
+                                color = MiuixTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        },
+                        leftAction = {
+                            Icon(
+                                painter = painterResource(R.drawable.climate_mini_split_24px),
+                                contentDescription = null,
+                                modifier = Modifier.padding(end = 12.dp),
+                                tint = MiuixTheme.colorScheme.onSurface
+                            )
+                        }
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                TabRowWithContour(
+                    tabs = tabItem,
+                    selectedTabIndex = selectTabIndex,
+                    onTabSelected = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(it)
+                        }
+                    },
+                    colors = TabRowDefaults.tabRowColors(backgroundColor = MiuixTheme.colorScheme.secondary),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalPager(
+                    modifier = Modifier.fillMaxSize(),
+                    pageSpacing = 12.dp,
+                    state = pagerState,
+                    verticalAlignment = Alignment.Top,
+                ) { page ->
+                    BillColumn(
+                        page = page,
+                        xData = when (page) {
+                            0 -> uiState.billRecords?.rows?.map {
+                                it.easyDateTime
                             }
-                        )
-                    }
+
+                            else -> uiState.buyRecords?.rows?.map {
+                                it.easyDateTime
+                            }
+                        },
+                        yData = when (page) {
+                            0 -> uiState.billRecords?.rows?.map {
+                                it.used.toDouble()
+                            }
+
+                            else -> uiState.buyRecords?.rows?.map {
+                                it.money.toDouble()
+                            }
+                        },
+                        labelData = when (page) {
+                            0 -> uiState.billRecords?.rows?.map {
+                                it.dateTime
+                            }
+
+                            else -> uiState.buyRecords?.rows?.map {
+                                it.dateTime
+                            }
+                        },
+                        contentData = when (page) {
+                            0 -> uiState.billRecords?.rows?.map {
+                                "${it.used} 度"
+                            }
+
+                            else -> uiState.buyRecords?.rows?.map {
+                                "${it.money} 元"
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -374,7 +272,7 @@ fun PagerScope.BillColumn(
     page: Int,
     xData: List<String>?,
     yData: List<Double>?,
-    labelData: List<String>?,
+    labelData: List<LocalDate>?,
     contentData: List<String>?
 ) {
     LazyColumn(
@@ -397,8 +295,18 @@ fun PagerScope.BillColumn(
                     yData = yData
                 )
             }
-            itemsIndexed(labelData) { index, label ->
-                SingleMessage(label, contentData[index])
+            item {
+                MessageCardDisplay(
+                    modifier = Modifier.fillMaxWidth(),
+                    message = labelData.mapIndexed { index, it ->
+                        SingleInfo(
+                            label = it.toString(),
+                            content = contentData[index],
+                            rowIndex = index / 2
+                        )
+                    },
+                    labelOnTop = false
+                )
             }
         }
     }
@@ -413,7 +321,7 @@ fun AirConditionChart(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
-        color = MiuixTheme.colorScheme.surface
+        color = MiuixTheme.colorScheme.surfaceContainer
     ) {
         Box(
             modifier = Modifier
@@ -436,10 +344,16 @@ fun SingleMessage(
     label: String,
     content: String
 ) {
-    Surface(
+    Card {
+        BasicComponent(
+            title = label,
+            summary = content
+        )
+    }
+    /*Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
-        color = MiuixTheme.colorScheme.surface
+        color = MiuixTheme.colorScheme.surfaceContainer
     ) {
         ListItem(
             modifier = Modifier.fillMaxWidth(),
@@ -452,5 +366,5 @@ fun SingleMessage(
                 )
             }
         )
-    }
+    }*/
 }

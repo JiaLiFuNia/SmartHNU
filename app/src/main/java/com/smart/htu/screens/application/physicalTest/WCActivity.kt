@@ -6,8 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.navigation.compose.rememberNavController
-import com.smart.htu.ui.theme.SmartHNUTheme
 import dagger.hilt.android.AndroidEntryPoint
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
@@ -30,10 +28,6 @@ class WCActivity : ComponentActivity() {
         }
 
         setContent {
-            SmartHNUTheme {
-                val navController = rememberNavController()
-                PhysicalTest(navController = navController)
-            }
         }
     }
 

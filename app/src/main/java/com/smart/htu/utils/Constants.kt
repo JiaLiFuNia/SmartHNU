@@ -179,6 +179,7 @@ class Constants {
             ),
             ApplicationEntity(
                 guestMode = true,
+                loginMode = LoginMode.AUTH_SERVER,
                 icon = R.drawable.speaker_notes_24px,
                 label = R.string.message_board,
                 routeType = RouteType.SCREEN,
@@ -203,13 +204,13 @@ class Constants {
                 category = ApplicationCategory.CAMPUS
             ),
             ApplicationEntity(
-                canBeUsed = false,
+                enabled = true,
                 guestMode = false,
-                loginMode = LoginMode.AUTH_SERVER,
+                loginMode = LoginMode.COMMON,
                 icon = R.drawable.construction_24px,
                 label = R.string.select_course_assistance,
-                routeType = null,
-                route = null,
+                routeType = RouteType.SCREEN,
+                route = Destinations.CourseHelperNavHost.route,
                 category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
             /*

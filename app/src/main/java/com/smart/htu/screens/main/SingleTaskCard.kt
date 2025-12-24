@@ -13,6 +13,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Apartment
+import androidx.compose.material.icons.outlined.Category
+import androidx.compose.material.icons.outlined.CoPresent
+import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -216,9 +223,10 @@ fun CourseDetailDialog(
         title = message.courseName + if (message.classroomName.isNullOrEmpty()) {
             " - ${message.projectName}"
         } else {
-            ""
+            "\n"
         } + " ${message.startTime} - ${message.endTime}",
-        insideMargin = DpSize(16.dp, 24.dp)
+        insideMargin = DpSize(16.dp, 24.dp),
+        backgroundColor = MiuixTheme.colorScheme.surface
     ) {
         MessageCardDisplay(
             modifier = Modifier.fillMaxWidth(),
@@ -226,32 +234,38 @@ fun CourseDetailDialog(
                 SingleInfo(
                     label = "教师",
                     content = message.teacherName ?: "暂无",
-                    leadingIcon = R.drawable.ic_outline_person
+                    leadingIcon = Icons.Outlined.Person,
+                    rowIndex = 1
                 ),
                 SingleInfo(
                     label = "教室",
                     content = message.classroomName ?: "暂无",
-                    leadingIcon = R.drawable.apartment_24px
+                    leadingIcon = Icons.Outlined.Apartment,
+                    rowIndex = 1
                 ),
                 SingleInfo(
                     label = "课程类型",
                     content = "${message.assessmentMethod} / ${message.teachingEnvironment}",
-                    leadingIcon = R.drawable.category_24px
+                    leadingIcon = Icons.Outlined.Category,
+                    rowIndex = 2
                 ),
                 SingleInfo(
                     label = "节次",
                     content = message.classTimeCodeDetailed,
-                    leadingIcon = R.drawable.schedule_24px
+                    leadingIcon = Icons.Outlined.Schedule,
+                    rowIndex = 2
                 ),
                 SingleInfo(
                     label = "人数",
                     content = message.totalStudents.toString(),
-                    leadingIcon = R.drawable.groups_24px
+                    leadingIcon = Icons.Outlined.Groups,
+                    rowIndex = 3
                 ),
                 SingleInfo(
                     label = "上课班级",
                     content = message.className,
-                    leadingIcon = R.drawable.co_present_24px
+                    leadingIcon = Icons.Outlined.CoPresent,
+                    rowIndex = 3
                 )
             )
         )

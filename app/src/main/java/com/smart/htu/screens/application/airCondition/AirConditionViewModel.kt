@@ -271,9 +271,7 @@ class AirConditionViewModel @Inject constructor(
                 campusId = campusLocation,
                 buildingId = buildingId,
                 roomId = roomId,
-                dormRoomId = if (buildingId.length == 2 && roomId.length == 4) {
-                    if (campusLocation == 0) buildingId else (buildingId.toInt() + 20).toString() + roomId
-                } else ""
+                dormRoomId = (if (campusLocation == 0) buildingId else (buildingId.toInt() + 20).toString()) + roomId
             )
         }
         Log.i("TAG666 dormRoomId", _uiState.value.dormRoomId)

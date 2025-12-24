@@ -18,16 +18,11 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -59,6 +54,7 @@ import com.smart.htu.utils.Constants.Companion.COURSE_PERIOD
 import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
 import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
 import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
@@ -66,12 +62,16 @@ import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SpinnerEntry
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.extra.SuperSpinner
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
@@ -105,36 +105,33 @@ fun ClassroomSearchScreen(
     }
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     Scaffold(
-        containerColor = MiuixTheme.colorScheme.background,
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = topAppBarColors(
-                    containerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background,
-                    scrolledContainerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.background
-                ),
-                title = {
-                    Text(
-                        text = stringResource(id = R.string.classroom_search)
-                    )
-                },
+                color = Color.Transparent,
+                title = stringResource(id = R.string.classroom_search),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }
+                        modifier = Modifier.padding(start = 16.dp),
+                        onClick = {
+                            navController.popBackStack()
+                        }
                     ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "back"
+                        top.yukonga.miuix.kmp.basic.Icon(
+                            imageVector = MiuixIcons.Useful.Back,
+                            contentDescription = null,
+                            tint = MiuixTheme.colorScheme.onBackground
                         )
                     }
                 },
                 modifier = Modifier.hazeEffect(
                     state = hazeState,
-                    style = HazeMaterials.regular()
+                    style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
                 ) {
                     blurRadius = 30.dp
+                    noiseFactor = 0f
                     blurEnabled = uiState.blurEffect
                 }
             )
@@ -165,10 +162,14 @@ fun ClassroomSearchScreen(
                         Card {
                             SuperArrow(
                                 title = "选择日期",
-                                rightText = convertLocalDateToStringDate(
-                                    selectedDate.value,
-                                    "YY年MM月dd日 E"
-                                ),
+                                rightActions = {
+                                    top.yukonga.miuix.kmp.basic.Text(
+                                        convertLocalDateToStringDate(
+                                            selectedDate.value,
+                                            "YY年MM月dd日 E"
+                                        )
+                                    )
+                                },
                                 onClick = {
                                     showDatePicker.value = true
                                 }
@@ -364,22 +365,26 @@ fun ClassroomSearchScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .overScrollVertical(),
+                    .overScrollVertical()
+                    .hazeSource(hazeState),
                 overscrollEffect = null,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 item {
-                    SmallTitle(
-                        text = "选择教学楼和时间",
-                        insideMargin = PaddingValues(start = 12.dp, top = 4.dp, bottom = 8.dp)
-                    )
                     Card {
                         SuperArrow(
                             title = "选择日期",
-                            rightText = convertLocalDateToStringDate(
-                                selectedDate.value,
-                                "YY年MM月dd日 E"
-                            ),
+                            rightActions = {
+                                top.yukonga.miuix.kmp.basic.Text(
+                                    text = convertLocalDateToStringDate(
+                                        selectedDate.value,
+                                        "YY年MM月dd日 E"
+                                    ),
+                                    fontSize = MiuixTheme.textStyles.body2.fontSize,
+                                    color = MiuixTheme.colorScheme.onSurfaceVariantActions,
+                                    modifier = Modifier.padding(end = 8.dp)
+                                )
+                            },
                             onClick = {
                                 showDatePicker.value = true
                             }
@@ -607,7 +612,7 @@ fun TipDialog(
                     ) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.defaultColors(color = MiuixTheme.colorScheme.background)
+                            colors = CardDefaults.defaultColors(color = MiuixTheme.colorScheme.surface)
                         ) {
                             Box(
                                 modifier = Modifier

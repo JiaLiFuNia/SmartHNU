@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import com.smart.htu.api.module.CaptchaVersionEntity
 import com.smart.htu.api.module.UpdateData
 import com.smart.htu.api.module.UpdateEntity
-import com.smart.htu.component.textButtonPrimaryColors
 import com.smart.htu.utils.FileUtil.downloadFile
 import com.smart.htu.utils.ToastUtil
 import kotlinx.coroutines.launch
@@ -84,7 +83,7 @@ fun UpdateDialog(
                         }
                     },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.textButtonPrimaryColors()
+                    colors = ButtonDefaults.textButtonColorsPrimary()
                 )
             }
         }

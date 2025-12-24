@@ -9,22 +9,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -82,13 +77,17 @@ import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.extra.DropdownImpl
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -101,7 +100,7 @@ fun SecondClass(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
     val hazeState = rememberHazeState()
 
@@ -130,18 +129,17 @@ fun SecondClass(
 
     Scaffold(
         topBar = {
-            MediumTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = topAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = Color.Transparent,
-                ),
-                title = { Text(text = stringResource(id = R.string.second_class)) },
+                color = Color.Transparent,
+                title = stringResource(id = R.string.second_class),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }) {
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = MiuixIcons.Useful.Back,
                             contentDescription = "back"
                         )
                     }
@@ -154,7 +152,8 @@ fun SecondClass(
                                     viewModel.loadSecondClassSid()
                                     showSCLoginDialog.value = true
                                 }
-                            }
+                            },
+                            modifier = Modifier.padding(end = 16.dp)
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.error_24px),
@@ -186,7 +185,8 @@ fun SecondClass(
                                         label = "第二课堂"
                                     )
                                 }
-                            }
+                            },
+                            modifier = Modifier.padding(end = 16.dp)
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.format_paint_24px),
@@ -197,11 +197,12 @@ fun SecondClass(
                 },
                 modifier = Modifier.hazeEffect(
                     state = hazeState,
-                    style = HazeMaterials.thick(MiuixTheme.colorScheme.background)
+                    style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
                 ) {
                     blurRadius = 30.dp
+                    noiseFactor = 0f
                     blurEnabled = true
-                }
+                },
             )
         },
         snackbarHost = {
@@ -214,8 +215,6 @@ fun SecondClass(
             onRefresh = { isRefreshing = true },
             isRefreshing = isRefreshing,
             modifier = Modifier
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .hazeSource(hazeState)
                 .fillMaxSize(),
             contentPadding = it
         ) {
@@ -223,11 +222,14 @@ fun SecondClass(
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
-                    top = it.calculateTopPadding() + 8.dp,
-                    bottom = 12.dp
+                    top = it.calculateTopPadding(),
+                    bottom = it.calculateBottomPadding() + 12.dp
                 ),
                 modifier = Modifier
+                    .padding(top = 16.dp)
                     .fillMaxSize()
+                    .hazeSource(hazeState)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .overScrollVertical(),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 overscrollEffect = null
@@ -242,7 +244,6 @@ fun SecondClass(
                                 }
                             },
                             text = "暂未登录第二课堂，或登录状态失效，请重新登录",
-                            onActionClick = { },
                             icon = Icons.AutoMirrored.Filled.ArrowForward,
                             type = SuggestChipType.ERROR
                         )
@@ -270,7 +271,7 @@ fun SecondClass(
                                                             ?: 0.0) / 600f).toFloat())
                                                     )
                                                     .background(
-                                                        MiuixTheme.colorScheme.primaryContainer
+                                                        MiuixTheme.colorScheme.onPrimaryVariant
                                                     )
                                             )
                                         }
@@ -351,7 +352,12 @@ fun SecondClass(
                                     insideMargin = PaddingValues(horizontal = 12.dp)
                                 )
                                 SelectTerm(
-                                    termList = uiState.termList ?: emptyList(),
+                                    termList = (uiState.termList ?: emptyList()).plus(
+                                        Term(
+                                            "全部",
+                                            0
+                                        )
+                                    ),
                                     selectedIndex = selectedTermIndex
                                 )
                             }
@@ -372,39 +378,35 @@ fun SecondClass(
                                             Column(
                                                 modifier = Modifier.weight(0.5f)
                                             ) {
-                                                SingleContent(
-                                                    title = viewModel.category[0],
-                                                    content = item.classicScore.toInt(),
-                                                    hour = totalHour[0] ?: 0.0
+                                                BasicComponent(
+                                                    title = item.classicScore.toInt().toString(),
+                                                    summary = viewModel.category[0],
                                                 )
-                                                SingleContent(
-                                                    title = viewModel.category[1],
-                                                    content = item.lectureScore.toInt(),
-                                                    hour = totalHour[1] ?: 0.0
+                                                BasicComponent(
+                                                    title = item.lectureScore.toInt().toString(),
+                                                    summary = viewModel.category[1],
                                                 )
-                                                SingleContent(
-                                                    title = viewModel.category[3],
-                                                    content = item.practiceScore.toInt(),
-                                                    hour = totalHour[3] ?: 0.0
+                                                BasicComponent(
+                                                    title = item.practiceScore.toInt().toString(),
+                                                    summary = viewModel.category[3],
                                                 )
                                             }
                                             Column(
                                                 modifier = Modifier.weight(0.5f)
                                             ) {
-                                                SingleContent(
-                                                    title = viewModel.category[2],
-                                                    content = item.activityScore.toInt(),
-                                                    hour = totalHour[2] ?: 0.0
+                                                BasicComponent(
+                                                    title = item.activityScore.toInt().toString(),
+                                                    summary = viewModel.category[2],
                                                 )
-                                                SingleContent(
-                                                    title = viewModel.category[4],
-                                                    content = item.subjectCompetitionScore.toInt(),
-                                                    hour = totalHour[4] ?: 0.0
+                                                BasicComponent(
+                                                    title = item.subjectCompetitionScore.toInt()
+                                                        .toString(),
+                                                    summary = viewModel.category[4],
                                                 )
-                                                SingleContent(
-                                                    title = viewModel.category[5],
-                                                    content = (item.laborScore ?: 0.0).toInt(),
-                                                    hour = totalHour[5] ?: 0.0
+                                                BasicComponent(
+                                                    title = (item.laborScore ?: 0.0).toInt()
+                                                        .toString(),
+                                                    summary = viewModel.category[5],
                                                 )
                                             }
                                         }
@@ -467,47 +469,6 @@ fun SecondClass(
         logState = uiState.scLoginState
     )
 }
-
-@Composable
-fun SingleContent(
-    title: String,
-    content: Int,
-    hour: Double = 0.0
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .heightIn(min = 56.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth((hour / 300f).toFloat())
-                    .background(MiuixTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
-            ) {
-                if ((hour / 300f).toFloat() > 0.5)
-                    Text(
-                        text = hour.toInt().toString(),
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .padding(end = 8.dp),
-                        color = MiuixTheme.colorScheme.primary.copy(0.8f),
-                        fontSize = 14.sp
-                    )
-            }
-        }
-        BasicComponent(
-            title = content.toString(),
-            summary = title,
-        )
-    }
-}
-
 
 @Composable
 fun SelectTerm(

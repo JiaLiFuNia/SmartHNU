@@ -1,6 +1,5 @@
 package com.smart.htu.utils
 
-import android.util.Log
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -38,7 +37,6 @@ object DateUtil {
             val toFormatter = DateTimeFormatter.ofPattern(toPattern)
             date.format(toFormatter)
         } catch (e: Exception) {
-            Log.e("TAG666", "dateFormatter: $e")
             dateString
         }
     }

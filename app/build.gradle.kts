@@ -21,8 +21,8 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 35
-        versionCode = 202511201
-        versionName = "3.1.0"
+        versionCode = 202512241
+        versionName = "3.1.1"
 
         val buildTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
             timeZone = getDefault()
@@ -75,7 +75,7 @@ android {
         outputs.configureEach {
             if (this is BaseVariantOutputImpl) {
                 outputFileName =
-                    "SmartHNU_v${variant.versionName}(${variant.versionCode})_${variant.buildType.name}.apk"
+                    "SmartHNU_v${variant.versionName}(${variant.versionCode}).apk"
             }
         }
     }
@@ -92,6 +92,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.core)
+    implementation(libs.androidx.material.icons.extended)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.appcompat)

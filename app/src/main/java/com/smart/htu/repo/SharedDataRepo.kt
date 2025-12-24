@@ -6,7 +6,7 @@ import com.smart.htu.api.module.NoticeRes
 import com.smart.htu.api.module.TermIndexEntity
 import com.smart.htu.api.module.UpdateRes
 import com.smart.htu.api.network.AppService
-import com.smart.htu.api.network.JWCService
+import com.smart.htu.api.network.JWCAppService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -33,7 +33,7 @@ interface SharedDataRepository {
 
 @Singleton
 class SharedDataRepoImpl @Inject constructor(
-    private val jwcService: JWCService,
+    private val jwcAppService: JWCAppService,
     private val appService: AppService,
     private val dataStoreRepo: DataStoreRepo
 ) : SharedDataRepository {
@@ -112,7 +112,7 @@ class SharedDataRepoImpl @Inject constructor(
     // 学期
     override suspend fun getTermIndex(termCode: GlobalTerm): Result<TermIndexEntity> {
         try {
-            val res = jwcService.getTermIndex(termCode)
+            val res = jwcAppService.getTermIndex(termCode)
             Log.i("TAG666 shared", "获取学期成功")
             return when (res.code) {
                 200 -> {
