@@ -108,7 +108,7 @@ fun CourseInfo(
                 if (uiState.courseInfo!!.isEmpty()) {
                     item {
                         EmptyContent(
-                            text = "没有课程",
+                            text = "没有数据",
                             image = emptyData()
                         )
                     }

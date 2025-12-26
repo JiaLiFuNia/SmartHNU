@@ -1,9 +1,11 @@
 package com.smart.htu.api.network
 
 import com.smart.htu.api.module.CourseRepoRes
+import com.smart.htu.api.module.SelectCourseEntity
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Field
+import retrofit2.http.FieldMap
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -36,5 +38,16 @@ interface JWCService {
         @Field("kcrwdm") courseCode: String,
         @Field("_") timeStamp: Long = System.currentTimeMillis(),
     ): Response<ResponseBody>
+
+    @POST("/new/student/xsxk/xklx/{courseTypeId}/add")
+    @FormUrlEncoded
+    suspend fun selectCourse(
+        @Header("referer") referer: String = "https://jwc.htu.edu.cn/new/desktop",
+        @Field("kcrwdm") courseTaskCode: String,
+        @Field("kcmc") courseName: String,
+        @Field("qz") qz: String = "-1",
+        @Field("hlct") hlct: String = "0",
+        @FieldMap dynamicParam: Map<String, String>
+    ): Response<SelectCourseEntity>
 
 }

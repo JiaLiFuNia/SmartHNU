@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,6 +21,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -38,9 +40,13 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.smart.htu.App.Companion.context
 import com.smart.htu.R
+import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.animation.animatedComposable
+import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.utils.ToastUtil.showToast
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -49,14 +55,19 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
+import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.icons.useful.Info
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -143,14 +154,28 @@ fun CourseHelper(
                         )
                     }
                 },
-                modifier = Modifier.hazeEffect(
-                    state = hazeState,
-                    style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
-                ) {
-                    blurRadius = 30.dp
-                    noiseFactor = 0f
-                    blurEnabled = true
-                }
+                actions = {
+                    top.yukonga.miuix.kmp.basic.IconButton(
+                        onClick = {
+                            viewModel.changeInfoDialogShow(true)
+                        },
+                        modifier = Modifier.padding(end = 16.dp)
+                    ) {
+                        top.yukonga.miuix.kmp.basic.Icon(
+                            imageVector = MiuixIcons.Useful.Info,
+                            contentDescription = null
+                        )
+                    }
+                },
+                modifier =
+                    Modifier.hazeEffect(
+                        state = hazeState,
+                        style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
+                    ) {
+                        blurRadius = 30.dp
+                        noiseFactor = 0f
+                        blurEnabled = true
+                    }
             )
         }
     ) {
@@ -194,7 +219,9 @@ fun CourseHelper(
                                     rightActions = {
                                         top.yukonga.miuix.kmp.basic.IconButton(
                                             onClick = {
-                                                viewModel.removeTargetCourse(it)
+                                                scope.launch {
+                                                    viewModel.removeTargetCourse(it)
+                                                }
                                             }
                                         ) {
                                             top.yukonga.miuix.kmp.basic.Icon(
@@ -205,7 +232,7 @@ fun CourseHelper(
                                     },
                                     onClick = {
                                         scope.launch {
-                                            navController.navigate("${Destinations.CourseInfo.route}/${it.kcrwdm}")
+                                            navController.navigate("${Destinations.CourseInfo.route}/${it.courseTaskCode}")
                                         }
                                     }
                                 )
@@ -220,10 +247,27 @@ fun CourseHelper(
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        if (uiState.isSelecting) {
+                            InfiniteProgressIndicator(size = 18.dp)
+                            Text(
+                                modifier = Modifier
+                                    .padding(start = 8.dp)
+                                    .weight(1f),
+                                text = "选课中...",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                         top.yukonga.miuix.kmp.basic.IconButton(
                             minHeight = 35.dp,
                             minWidth = 35.dp,
-                            onClick = { },
+                            onClick = {
+                                scope.launch {
+                                    viewModel.selectTargetCourse {
+                                        showToast(context, it)
+                                    }
+                                }
+                            },
                             enabled = uiState.targetCourseList.isNotEmpty(),
                             backgroundColor = MiuixTheme.colorScheme.secondaryContainer,
                         ) {
@@ -248,51 +292,96 @@ fun CourseHelper(
                 }
             }
             item { HorizontalDivider() }
-            items(uiState.allCourseType) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    onClick = {
-                        scope.launch {
-                            viewModel.changeCourseRepo(null)
-                            delay(100)
-                            navController.navigate("${Destinations.CourseRepo.route}/${it.courseTypeName}/${it.courseTypeId}")
-                        }
-                    },
-                    insideMargin = PaddingValues(16.dp),
-                    pressFeedbackType = PressFeedbackType.Sink,
-                ) {
-                    Text(
-                        text = it.courseTypeName,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight(550),
-                    )
-                    Text(
-                        text = "选课学期: ${it.courseTermString}",
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(top = 2.dp),
-                        fontWeight = FontWeight(550),
-                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                    )
-                    val pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-                    Text(
-                        text = "选课时间: ${it.startTime.format(pattern)} - ${
-                            it.endTime.format(pattern)
-                        }",
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(top = 2.dp),
-                        fontWeight = FontWeight(550),
-                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                    )
-                    Text(
-                        text = it.description,
-                        fontSize = 14.sp,
-                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                        modifier = Modifier.padding(top = 2.dp),
-                        maxLines = 4
+            if (uiState.allCourseType.isEmpty()) {
+                item {
+                    EmptyContent(
+                        text = "暂无课程类型",
+                        image = emptyData()
                     )
                 }
+            } else {
+                items(uiState.allCourseType) { it ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        onClick = {
+                            scope.launch {
+                                viewModel.changeCourseRepo(null)
+                                delay(100)
+                                navController.navigate("${Destinations.CourseRepo.route}/${it.courseTypeName}/${it.courseTypeId}")
+                            }
+                        },
+                        insideMargin = PaddingValues(16.dp),
+                        pressFeedbackType = PressFeedbackType.Sink,
+                    ) {
+                        Text(
+                            text = it.courseTypeName,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight(550),
+                        )
+                        if (it.courseTermString != null) {
+                            Text(
+                                text = "选课学期: ${it.courseTermString}",
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(top = 2.dp),
+                                fontWeight = FontWeight(550),
+                                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                            )
+                        }
+                        val pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+                        if (it.startTime != null && it.endTime != null) {
+                            Text(
+                                text = "选课时间: ${it.startTime.format(pattern)} - ${
+                                    it.endTime.format(pattern)
+                                }",
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(top = 2.dp),
+                                fontWeight = FontWeight(550),
+                                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                            )
+                        }
+                        Text(
+                            text = it.description,
+                            fontSize = 14.sp,
+                            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                            modifier = Modifier.padding(top = 2.dp),
+                            maxLines = 4
+                        )
+                    }
+                }
             }
+        }
+        CourseHelperDialog(
+            uiState.isInfoDialogShow
+        ) {
+            viewModel.changeInfoDialogShow(false)
+        }
+    }
+}
+
+@Composable
+fun CourseHelperDialog(
+    show: MutableState<Boolean>,
+    onConfirmClick: () -> Unit
+) {
+    SuperDialog(
+        show = show,
+        title = "说明"
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(),
+        ) {
+            Text("选课辅助功能旨在帮助用户快速筛选和查找课程，不具有任何抢课功能，若出现选课失败的情况，请前往教务系统选课。")
+            Spacer(modifier = Modifier.height(12.dp))
+            TextButton(
+                text = "我已知晓",
+                onClick = {
+                    onConfirmClick()
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.textButtonColors()
+            )
         }
     }
 }

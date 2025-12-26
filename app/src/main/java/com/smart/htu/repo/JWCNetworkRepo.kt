@@ -76,6 +76,32 @@ class JWCNetworkRepo @Inject constructor(
             }
         )
 
+    suspend fun selectCourseService(
+        courseTaskCode: String,
+        courseName: String
+    ): Result<String> {
+        try {
+            val res = jwcService.selectCourse(
+                courseTaskCode = courseTaskCode,
+                courseName = courseName,
+                dynamicParam = mapOf() // 需要解析网页获取动态参数
+            )
+            return when (res.code()) {
+                200 -> {
+                    if (res.body()?.code == 0) Result.success(res.body()?.message ?: "")
+                    else Result.failure(
+                        Exception(res.body()?.message ?: "选课失败, 错误码：${res.code()}")
+                    )
+                }
+
+                else -> Result.failure(Exception("选课失败, 错误码：${res.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(e)
+        }
+    }
+
     suspend fun getCourseInfo(
         termCode: String,
         courseCode: String
@@ -425,9 +451,9 @@ fun parseSelectableCourse(html: String): List<SelectableCourseTypeEntity> {
         val types =
             doc.select("div.layui-container ul div#bb1") + doc.select("div.layui-container ul div#bb2")
         types.forEach {
-            val description = (it.selectFirst("div")?.attr("lay-tips") ?: "").split("<br>")
             val courseTypeId = it.selectFirst("div")?.attr("data-href") ?: ""
             val courseTypeName = it.selectFirst("div div.content div.text span")?.text() ?: ""
+            val description = (it.selectFirst("div")?.attr("lay-tips") ?: "").split("<br>")
             val timeInfo = it.selectFirst("div div.content div.description")?.text()?.split(" ")
                 ?: listOf("", "")
             val startTimeStr = "${timeInfo.getOrNull(0)} ${timeInfo.getOrNull(1)}"

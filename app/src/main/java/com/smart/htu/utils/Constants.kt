@@ -125,6 +125,16 @@ class Constants {
                 category = ApplicationCategory.TOOLS
             ),
             ApplicationEntity(
+                enabled = true,
+                guestMode = false,
+                loginMode = LoginMode.COMMON,
+                icon = R.drawable.add_task_24px,
+                label = R.string.select_course_assistance,
+                routeType = RouteType.SCREEN,
+                route = Destinations.CourseHelperNavHost.route,
+                category = ApplicationCategory.ACADEMIC_AFFAIRS
+            ),
+            ApplicationEntity(
                 guestMode = false,
                 loginMode = LoginMode.AUTH_SERVER,
                 icon = R.drawable.school_24px,
@@ -178,8 +188,8 @@ class Constants {
                 category = ApplicationCategory.TOOLS
             ),
             ApplicationEntity(
-                guestMode = true,
-                loginMode = LoginMode.AUTH_SERVER,
+                guestMode = false,
+                loginMode = LoginMode.COMMON,
                 icon = R.drawable.speaker_notes_24px,
                 label = R.string.message_board,
                 routeType = RouteType.SCREEN,
@@ -202,17 +212,7 @@ class Constants {
                 routeType = RouteType.URL,
                 route = AUTH_LOGIN_URL + "https://houqin.htu.edu.cn/authserver/caslogin?service=https://houqin.htu.edu.cn/h5/pages/rsp/myDeclare/repairDeclares?plat=weChat&plat=h5",
                 category = ApplicationCategory.CAMPUS
-            ),
-            ApplicationEntity(
-                enabled = true,
-                guestMode = false,
-                loginMode = LoginMode.COMMON,
-                icon = R.drawable.construction_24px,
-                label = R.string.select_course_assistance,
-                routeType = RouteType.SCREEN,
-                route = Destinations.CourseHelperNavHost.route,
-                category = ApplicationCategory.ACADEMIC_AFFAIRS
-            ),
+            )
             /*
                         ApplicationEntity(
                             guestMode = false,

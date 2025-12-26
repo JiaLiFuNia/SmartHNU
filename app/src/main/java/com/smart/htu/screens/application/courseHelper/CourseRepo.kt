@@ -188,7 +188,9 @@ fun CourseRepo(
                                     navController.navigate("${Destinations.CourseInfo.route}/$courseCode")
                                 },
                                 onAddClick = { course ->
-                                    viewModel.addTargetCourse(course)
+                                    scope.launch {
+                                        viewModel.addTargetCourse(course)
+                                    }
                                 },
                                 targetCourseListSize = uiState.targetCourseList.size,
                                 isInTargetCourseList = uiState.targetCourseList.contains(it)
@@ -216,7 +218,9 @@ fun CourseRepo(
                                         navController.navigate("${Destinations.CourseInfo.route}/$courseCode")
                                     },
                                     onAddClick = { course ->
-                                        viewModel.addTargetCourse(course)
+                                        scope.launch {
+                                            viewModel.addTargetCourse(course)
+                                        }
                                     },
                                     targetCourseListSize = uiState.targetCourseList.size,
                                     isInTargetCourseList = uiState.targetCourseList.contains(it)
@@ -243,7 +247,7 @@ fun CourseRepoItem(
         modifier = Modifier
             .fillMaxWidth(),
         onClick = {
-            onClick(course.kcrwdm)
+            onClick(course.courseTaskCode)
         },
         insideMargin = PaddingValues(16.dp)
     ) {

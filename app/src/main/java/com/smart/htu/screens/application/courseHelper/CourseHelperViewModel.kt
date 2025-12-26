@@ -1,5 +1,7 @@
 package com.smart.htu.screens.application.courseHelper
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.CourseItemEntity
@@ -8,12 +10,16 @@ import com.smart.htu.api.module.SelectableCourseTypeEntity
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.JWCNetworkRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class CourseHelperUiState(
@@ -22,7 +28,9 @@ data class CourseHelperUiState(
     val courseRepo: List<CourseItemEntity>? = null,
     val searchCourseRepo: List<CourseItemEntity> = emptyList(),
     val targetCourseList: List<CourseItemEntity> = emptyList(),
-    val courseInfo: List<CourseTimeEntity>? = null
+    val courseInfo: List<CourseTimeEntity>? = null,
+    val isSelecting: Boolean = false,
+    val isInfoDialogShow: MutableState<Boolean> = mutableStateOf(false),
 )
 
 @HiltViewModel
@@ -36,67 +44,66 @@ class CourseHelperViewModel @Inject constructor(
                 SelectableCourseTypeEntity(
                     courseTypeId = "01",
                     courseTypeName = "公共任选",
-                    courseTermString = "默认学期",
-                    description = "仅示例，不代表可选，请等待加载最新可选列表",
-                    startTime = LocalDateTime.now(),
-                    endTime = LocalDateTime.now()
+                    description = "仅示例，不代表可选，请等待加载最新可选列表或选课通知"
                 ),
                 SelectableCourseTypeEntity(
                     courseTypeId = "02",
                     courseTypeName = "体育专选",
-                    courseTermString = "默认学期",
-                    description = "仅示例，不代表可选，请等待加载最新可选列表",
-                    startTime = LocalDateTime.now(),
-                    endTime = LocalDateTime.now()
+                    description = "仅示例，不代表可选，请等待加载最新可选列表或选课通知"
                 ),
                 SelectableCourseTypeEntity(
                     courseTypeId = "03",
                     courseTypeName = "外语专选",
-                    courseTermString = "默认学期",
-                    description = "仅示例，不代表可选，请等待加载最新可选列表",
-                    startTime = LocalDateTime.now(),
-                    endTime = LocalDateTime.now()
+                    description = "仅示例，不代表可选，请等待加载最新可选列表或选课通知"
                 ),
                 SelectableCourseTypeEntity(
                     courseTypeId = "06",
                     courseTypeName = "专业选修",
-                    courseTermString = "默认学期",
-                    description = "仅示例，不代表可选，请等待加载最新可选列表",
-                    startTime = LocalDateTime.now(),
-                    endTime = LocalDateTime.now()
+                    description = "仅示例，不代表可选，请等待加载最新可选列表或选课通知"
                 ),
                 SelectableCourseTypeEntity(
                     courseTypeId = "07",
                     courseTypeName = "文学专选",
-                    courseTermString = "默认学期",
-                    description = "仅示例，不代表可选，请等待加载最新可选列表",
-                    startTime = LocalDateTime.now(),
-                    endTime = LocalDateTime.now()
+                    description = "仅示例，不代表可选，请等待加载最新可选列表或选课通知"
                 ),
                 SelectableCourseTypeEntity(
                     courseTypeId = "08",
                     courseTypeName = "体育专选",
-                    courseTermString = "默认学期",
-                    description = "仅示例，不代表可选，请等待加载最新可选列表",
-                    startTime = LocalDateTime.now(),
-                    endTime = LocalDateTime.now()
+                    description = "仅示例，不代表可选，请等待加载最新可选列表或选课通知"
                 ),
                 SelectableCourseTypeEntity(
                     courseTypeId = "10",
                     courseTypeName = "音乐专选",
-                    courseTermString = "默认学期",
-                    description = "仅示例，不代表可选，请等待加载最新可选列表",
-                    startTime = LocalDateTime.now(),
-                    endTime = LocalDateTime.now()
+                    description = "仅示例，不代表可选，请等待加载最新可选列表或选课通知"
                 )
             )
         )
     )
     val uiState: StateFlow<CourseHelperUiState> = _uiState.asStateFlow()
 
+    private val targetCourseListStateFlow = dataStoreRepo.observeTargetCourseList()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeTargetCourseList().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
+            targetCourseListStateFlow.collect { value ->
+                _uiState.update {
+                    it.copy(targetCourseList = value)
+                }
+            }
+        }
+        viewModelScope.launch {
             getCourseType()
+        }
+        viewModelScope.launch {
+            delay(500)
+            changeInfoDialogShow(true)
         }
     }
 
@@ -110,6 +117,38 @@ class CourseHelperViewModel @Inject constructor(
                 } ?: emptyList()
             )
         }
+    }
+
+    suspend fun selectTargetCourse(
+        onResult: (String) -> Unit
+    ) {
+        _uiState.update { it.copy(isSelecting = true) }
+        _uiState.value.targetCourseList.forEach { course ->
+            selectCourse(
+                courseTaskCode = course.courseTaskCode,
+                courseName = course.courseName
+            ) { result ->
+                onResult(result)
+            }
+        }
+        _uiState.update { it.copy(isSelecting = false) }
+    }
+
+    suspend fun selectCourse(
+        courseTaskCode: String,
+        courseName: String,
+        onResult: (String) -> Unit = {}
+    ) {
+        jwcNetworkRepo.selectCourseService(
+            courseTaskCode = courseTaskCode,
+            courseName = courseName
+        )
+            .onSuccess { res ->
+                onResult(res)
+            }
+            .onFailure { res ->
+                onResult(res.message.toString())
+            }
     }
 
     suspend fun getCourseRepo(courseTypeId: String) {
@@ -141,7 +180,7 @@ class CourseHelperViewModel @Inject constructor(
             .onSuccess { res ->
                 _uiState.update { it.copy(courseInfo = res) }
             }
-            .onFailure {  res ->
+            .onFailure { res ->
                 _uiState.update { it.copy(courseInfo = emptyList()) }
             }
     }
@@ -150,28 +189,26 @@ class CourseHelperViewModel @Inject constructor(
         getWebCookie()
         jwcNetworkRepo.getSelectableCourseType()
             .onSuccess { res ->
-                _uiState.update { it.copy(allCourseType = res) }
+                if (res.isNotEmpty()) _uiState.update { it.copy(allCourseType = res) }
             }
             .onFailure {
                 _uiState.update { it.copy(allCourseType = emptyList()) }
             }
     }
 
-    fun addTargetCourse(course: CourseItemEntity) {
+    suspend fun addTargetCourse(course: CourseItemEntity) {
         val currentList = _uiState.value.targetCourseList.toMutableList()
         if (!currentList.contains(course) && currentList.size < 3) {
             currentList.add(course)
-            _uiState.update { it.copy(targetCourseList = currentList) }
-            // dataStoreRepo.saveTargetCourseList(currentList)
+            dataStoreRepo.saveTargetCourseList(currentList)
         }
     }
 
-    fun removeTargetCourse(course: CourseItemEntity) {
+    suspend fun removeTargetCourse(course: CourseItemEntity) {
         val currentList = _uiState.value.targetCourseList.toMutableList()
         if (currentList.contains(course)) {
             currentList.remove(course)
-            _uiState.update { it.copy(targetCourseList = currentList) }
-            // dataStoreRepo.saveTargetCourseList(currentList)
+            dataStoreRepo.saveTargetCourseList(currentList)
         }
     }
 
@@ -183,6 +220,12 @@ class CourseHelperViewModel @Inject constructor(
 
     fun changeCourseRepo(courseRepo: List<CourseItemEntity>?) {
         _uiState.update { it.copy(courseRepo = courseRepo) }
+    }
+
+    fun changeInfoDialogShow(isShow: Boolean) {
+        _uiState.update {
+            it.copy(isInfoDialogShow = mutableStateOf(isShow))
+        }
     }
 
 }
