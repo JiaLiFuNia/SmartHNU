@@ -1,6 +1,5 @@
 package com.smart.htu.screens.setting
 
-import android.util.Log
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -277,7 +276,7 @@ class SettingViewModel @Inject constructor(
                 onCaptchaModelUpdate(_uiState.value.isCaptchaUpdate)
             }
             .onFailure {
-                showToast(context, "获取更新信息失败：${it.message}")
+                showToast(context, "${it.message}")
             }
     }
 
@@ -354,7 +353,6 @@ class SettingViewModel @Inject constructor(
             )
         )
         _uiState.update { it.copy(isTestLoading = false) }
-        Log.i("TAG666 testAIService", "$res")
         res.onSuccess {
             val content = it.choices.firstOrNull()?.message?.content ?: ""
             if (content.contains("测试成功")) {

@@ -39,7 +39,6 @@ import com.smart.htu.screens.CaptchaUpdateDialog
 import com.smart.htu.screens.UpdateDialog
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigation.Destinations
-import com.smart.htu.screens.setting.entity.DarkMode
 import com.smart.htu.ui.theme.KeyColors
 import com.smart.htu.utils.APPVersion.getVersionCode
 import com.smart.htu.utils.APPVersion.getVersionName
@@ -53,6 +52,7 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TopAppBar
@@ -149,10 +149,7 @@ fun SettingScreen(
             )
         ) {
             item {
-                SettingItemCard(
-                    label = "账号",
-                    titlePaddingValues = PaddingValues(start = 12.dp, bottom = 8.dp, top = 8.dp),
-                ) {
+                Card {
                     SuperArrow(
                         title = "账号与信息",
                         summary = if (loginUiState.jwcLoginState != 1) "暂未登录，点击登录" else "个人信息、登录状态、退出登录等",
@@ -208,7 +205,7 @@ fun SettingScreen(
                         selectedIndex = uiState.themeMode,
                         onSelectedIndexChange = { mode ->
                             viewModel.changeDynamicTheme(mode)
-                        },
+                        }
                     )
                     val keyColorOptions =
                         remember { listOf("Default") + KeyColors.map { it.first } }
@@ -229,7 +226,7 @@ fun SettingScreen(
                         }
                     )
                     SuperSwitch(
-                        checked = true,
+                        checked = false,
                         title = "预测式返回",
                         summary = "通过预测手势滑动方向来加快返回应用的速度（实验性功能）",
                         onCheckedChange = {
@@ -367,13 +364,3 @@ fun SettingScreen(
         updateInfo = uiState.updateInfo?.captchaModelVersion ?: return
     )
 }
-
-
-fun DarkMode.toStringResourceId(): String {
-    return when (this) {
-        DarkMode.SYSTEM -> "跟随系统"
-        DarkMode.ON -> "开启"
-        DarkMode.OFF -> "关闭"
-    }
-}
-

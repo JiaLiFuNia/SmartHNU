@@ -2,9 +2,7 @@ package com.smart.htu.repo
 
 import android.util.Log
 import com.smart.htu.api.module.GlobalTerm
-import com.smart.htu.api.module.NoticeRes
 import com.smart.htu.api.module.TermIndexEntity
-import com.smart.htu.api.module.UpdateRes
 import com.smart.htu.api.network.AppService
 import com.smart.htu.api.network.JWCAppService
 import kotlinx.coroutines.CoroutineScope
@@ -22,13 +20,9 @@ import javax.inject.Singleton
 interface SharedDataRepository {
     val loginJWCState: StateFlow<Int>
     val termIndex: StateFlow<TermIndexEntity?>
-    val notice: StateFlow<NoticeRes?>
-    val update: StateFlow<UpdateRes?>
 
     suspend fun setJWCLoginState(state: Int)
     suspend fun getTermIndex(termCode: GlobalTerm = GlobalTerm()): Result<TermIndexEntity>
-    suspend fun getNotice(): Result<NoticeRes>
-    suspend fun getUpdate(): Result<UpdateRes>
 }
 
 @Singleton
@@ -49,64 +43,9 @@ class SharedDataRepoImpl @Inject constructor(
             }
         )
     override val termIndex = MutableStateFlow<TermIndexEntity?>(null)
-    override val notice = MutableStateFlow<NoticeRes?>(null)
-    override val update = MutableStateFlow<UpdateRes?>(null)
 
     override suspend fun setJWCLoginState(state: Int) {
         dataStoreRepo.changeLoginJWCState(state)
-    }
-
-    override suspend fun getUpdate(): Result<UpdateRes> {
-        try {
-            val res = appService.getUpdate()
-            when (res.code()) {
-                200 -> {
-                    val updateRes = res.body()
-                    if (updateRes != null) {
-                        update.value = updateRes
-                        Log.i("TAG666", "获取更新成功")
-                        return Result.success(updateRes)
-                    } else {
-                        return Result.failure(Exception("null"))
-                    }
-                }
-
-                else -> {
-                    Log.i("TAG666", "获取更新失败")
-                    return Result.failure(Exception("获取失败，请切换至移动网络后重试"))
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("TAG666", "${e.message}")
-            return Result.failure(e)
-        }
-    }
-
-
-    override suspend fun getNotice(): Result<NoticeRes> {
-        try {
-            val res = appService.getNotice()
-            when (res.code()) {
-                200 -> {
-                    val noticeRes = res.body()
-                    if (noticeRes != null) {
-                        notice.value = noticeRes
-                        Log.i("TAG666", "获取公告成功")
-                        return Result.success(noticeRes)
-                    } else {
-                        return Result.failure(Exception("null"))
-                    }
-                }
-
-                else -> {
-                    Log.i("TAG666", "获取公告失败")
-                    return Result.failure(Exception("获取失败，请切换至移动网络后重试"))
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("TAG666", "${e.message}")
-            return Result.failure(e)
-        }
     }
 
     // 学期

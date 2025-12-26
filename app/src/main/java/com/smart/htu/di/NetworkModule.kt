@@ -87,10 +87,7 @@ object NetworkModule {
                 val response = chain.proceed(request)
                 if (response.isRedirect) {
                     val redirectUrl = response.header("Location") ?: ""
-                    Log.i("TAG666", "重定向到: $redirectUrl")
-                    if (redirectUrl.contains("mobile_code=")) {
-                        Log.i("TAG666", "mobile_code: $redirectUrl")
-                    }
+                    Log.i("TAG666 redirectUrl", redirectUrl)
                 }
                 response
             }
@@ -141,16 +138,10 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideLibraryService(
-        dataStoreRepo: DataStoreRepo
+        cookieJar: NetworkCookieJar
     ): LibraryService {
         val clientWithInterceptor = OkHttpClient.Builder()
-            .addInterceptor { chain ->
-                val session = runBlocking { dataStoreRepo.observeLibrarySession().first() }
-                val newRequest = chain.request().newBuilder()
-                    .addHeader("Cookie", "meta-opac.session=${session}")
-                    .build()
-                chain.proceed(newRequest)
-            }
+            .cookieJar(cookieJar)
             .build()
 
         val retrofit = Retrofit.Builder()
@@ -266,10 +257,12 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideMessageBoardService(): MessageBoardService {
+    fun provideMessageBoardService(
+        okHttpClient: OkHttpClient
+    ): MessageBoardService {
         val retrofit = Retrofit.Builder()
             .baseUrl(ApiConstants.MESSAGE_BOARD_BASE_URL)
-            // .client(okHttpClient)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(MessageBoardService::class.java)

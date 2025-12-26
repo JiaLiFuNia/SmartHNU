@@ -13,6 +13,7 @@ import com.google.gson.reflect.TypeToken
 import com.smart.htu.api.DataStoreService
 import com.smart.htu.api.module.ACCookie
 import com.smart.htu.api.module.CaptchaVersionEntity
+import com.smart.htu.api.module.CourseItemEntity
 import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.api.module.NewsMarkEntity
@@ -77,10 +78,13 @@ class DataStoreRepo @Inject constructor(
         val WEEKEND_COURSE_SHOW_STATE = booleanPreferencesKey("WEEKEND_COURSE_SHOW_STATE")
         val SECOND_CLASS_DATA = stringPreferencesKey("SECOND_CLASS_DATA")
         val UPDATE_RES = stringPreferencesKey("UPDATE_RES")
+        val TARGET_SELECT_COURSE_LIST = stringPreferencesKey("TARGET_SELECT_COURSE_LIST")
 
+
+        const val DEFAULT_EMPTY_LIST = "[]"
         const val DEFAULT_COOKIES = "[]"
         const val DEFAULT_MESSAGE_READ_ID = "[]"
-        const val DEFAULT_THEME_MODE = 1
+        const val DEFAULT_THEME_MODE = 0
         const val DEFAULT_BLUR_EFFECT = false
         const val DEFAULT_AI_FUNCTION_ENABLED = false
         const val DEFAULT_AI_MODEL_KEY = ""
@@ -277,8 +281,8 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[LOGIN_LIB_STATE] = state }
     }
 
-    override suspend fun saveLibrarySession(session: String) {
-        context.dataStore.edit { it[LIB_META_SESSION] = session }
+    override suspend fun saveTargetCourseList(list: List<CourseItemEntity>) {
+        context.dataStore.edit { it[TARGET_SELECT_COURSE_LIST] = Json.encodeToString(list) }
     }
 
 
@@ -492,6 +496,14 @@ class DataStoreRepo @Inject constructor(
 
     override fun observeLibrarySession(): Flow<String> {
         return context.dataStore.data.map { it[LIB_META_SESSION] ?: "" }
+    }
+
+    override fun observeTargetCourseList(): Flow<List<CourseItemEntity>> {
+        return context.dataStore.data.map {
+            Json.decodeFromString<List<CourseItemEntity>>(
+                it[TARGET_SELECT_COURSE_LIST] ?: DEFAULT_EMPTY_LIST
+            )
+        }
     }
 
 }

@@ -1,10 +1,13 @@
 package com.smart.htu.component.imageVectors
 
+import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.ImageVector.Builder
 import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -53,7 +56,7 @@ fun emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(MiuixTheme.colorScheme.surface)) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.background)) {
             moveTo(28.44f, 72.37f)
             arcToRelative(
                 24.66f,
@@ -192,7 +195,7 @@ fun emptyData(): ImageVector {
                 0f
             )
         }
-        path(fill = SolidColor(MiuixTheme.colorScheme.surface)) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.background)) {
             moveTo(297.24f, 238.83f)
             lineTo(138.92f, 279.58f)
             arcToRelative(
@@ -617,7 +620,7 @@ fun emptyData(): ImageVector {
             )
             close()
         }
-        path(fill = SolidColor(MiuixTheme.colorScheme.surface)) {
+        path(fill = SolidColor(MiuixTheme.colorScheme.background)) {
             moveTo(447.72f, 29.27f)
             arcTo(
                 24.66f,
@@ -1014,3 +1017,13 @@ fun emptyData(): ImageVector {
     }.build()
 }
 
+@Composable
+@Preview
+private fun Preview_MiuiIconFilledMagicWand() {
+    MiuixTheme {
+        Image(
+            painter = rememberVectorPainter(image = emptyData()),
+            contentDescription = null
+        )
+    }
+}

@@ -109,6 +109,7 @@ fun LoginDialog(
     title: String = stringResource(R.string.login),
     summary: String? = null,
     initStudentID: String = "",
+    password: String = "",
     isNeedVerifyCode: Boolean = false,
     verifyCodeModel: ImageRequest? = null,
     onLogin: (String, String, String) -> Unit,
@@ -116,7 +117,7 @@ fun LoginDialog(
     logState: Int
 ) {
     val account = remember { mutableStateOf(initStudentID) }
-    val password = remember { mutableStateOf("") }
+    val password = remember { mutableStateOf(password) }
     val verifyCode = remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 

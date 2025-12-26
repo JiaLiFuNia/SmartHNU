@@ -66,12 +66,13 @@ fun AccountManage(
         LazyColumn(
             contentPadding = PaddingValues(
                 start = 16.dp,
-                top = it.calculateTopPadding() + 8.dp,
-                end = 12.dp,
-                bottom = 16.dp
+                top = it.calculateTopPadding(),
+                end = 16.dp,
+                bottom = it.calculateBottomPadding() + 12.dp
             ),
             modifier = Modifier
                 .fillMaxSize()
+                .padding(top = 16.dp)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .overScrollVertical(),
             overscrollEffect = null,

@@ -359,11 +359,12 @@ fun ClassroomSearchScreen(
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
-                    top = it.calculateTopPadding() + 8.dp,
-                    bottom = 12.dp
+                    top = it.calculateTopPadding(),
+                    bottom = it.calculateBottomPadding() + 12.dp
                 ),
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(top = 16.dp)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .overScrollVertical()
                     .hazeSource(hazeState),

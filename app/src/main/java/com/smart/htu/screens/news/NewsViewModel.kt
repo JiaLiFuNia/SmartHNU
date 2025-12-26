@@ -306,7 +306,8 @@ class NewsViewModel @Inject constructor(
                             )
                         ),
                         model = AI_MODEL_LIST[_uiState.value.selectedAIModelIndex].model,
-                        stream = true
+                        stream = true,
+                        enable_thinking = true
                     )
                 ).collect { chunk ->
                     val content = chunk.choices.first().delta

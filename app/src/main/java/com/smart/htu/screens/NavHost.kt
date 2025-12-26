@@ -38,6 +38,7 @@ import com.smart.htu.screens.login.LoginScreen
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.message.MessageScreen
+import com.smart.htu.screens.message.MessageViewModel
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.NewsMark
 import com.smart.htu.screens.news.NewsSearch
@@ -62,6 +63,7 @@ fun NavHostScreen() {
     val newsViewModel: NewsViewModel = hiltViewModel()
     val airConditionViewModel: AirConditionViewModel = hiltViewModel()
     val settingViewModel: SettingViewModel = hiltViewModel()
+    val messageViewModel: MessageViewModel = hiltViewModel()
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -72,6 +74,7 @@ fun NavHostScreen() {
                 navController = navController,
                 mainViewModel = mainViewModel,
                 loginViewModel = loginViewModel,
+                messageViewModel = messageViewModel,
                 airConditionViewModel = airConditionViewModel,
                 settingViewModel = settingViewModel
             )

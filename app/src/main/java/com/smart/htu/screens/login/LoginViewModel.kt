@@ -233,7 +233,7 @@ class LoginViewModel @Inject constructor(
     ) {
         try {
             changeLoginAuthState(2) // 登录中
-            clearCookies()
+            clearAllCookies()
             val logState = networkRepo.authLogin(
                 studentId = studentID,
                 password = password
@@ -336,6 +336,10 @@ class LoginViewModel @Inject constructor(
         dataStoreRepo.changeLoginSCState(state = state)
     }
 
+    private suspend fun changeLoginLibState(state: Int) {
+        dataStoreRepo.changeLoginLibraryState(state = state)
+    }
+
     fun setJWCLogToken(token: String) {
         viewModelScope.launch {
             dataStoreRepo.setJWCToken(token = token)
@@ -363,17 +367,21 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private fun clearCookies() {
+    suspend fun clearAllCookies() {
         val cookieManager = CookieManager.getInstance()
         cookieManager.removeAllCookies(null)
         networkCookieJar.clearCookies()
+        changeLoginAuthState(DEFAULT_LOGIN_STATE)
+        changeLoginSCState(DEFAULT_LOGIN_STATE)
+        changeLoginLibState(DEFAULT_LOGIN_STATE)
     }
 
     fun logout() = viewModelScope.launch {
-        clearCookies()
+        clearAllCookies()
         changeLoginAuthState(DEFAULT_LOGIN_STATE)
         changeLoginJWCState(DEFAULT_LOGIN_STATE)
         changeLoginSCState(DEFAULT_LOGIN_STATE)
+        changeLoginLibState(DEFAULT_LOGIN_STATE)
         changeUsername(DEFAULT_USERNAME)
         setJWCLogToken(DEFAULT_TOKEN)
         passwordRepo.clearPassword()

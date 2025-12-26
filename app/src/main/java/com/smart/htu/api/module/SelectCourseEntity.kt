@@ -1,26 +1,27 @@
 package com.smart.htu.api.module
 
 import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
 data class SelectableCourseTypeEntity(
     val courseTypeId: String,
     val courseTypeName: String,
-    val courseTermString: String,
+    val courseTermString: String? = null,
     val description: String,
-    val startTime: LocalDateTime,
-    val endTime: LocalDateTime
+    val startTime: LocalDateTime? = null,
+    val endTime: LocalDateTime? = null
 )
 
 data class CourseRepoRes(
     @SerializedName("rows") val courseRepo: List<CourseItemEntity>
 )
 
+@Serializable
 data class CourseItemEntity(
     @SerializedName("teaxm") val teacherName: String? = null, // 教师
     @SerializedName("jxbmc") val className: String, // 上课班级
     @SerializedName("kcmc") val courseName: String, // 课程名称
-    @SerializedName("kcywmc") val courseEnglishName: String? = null, // 课程英文名称
     @SerializedName("xmmc") val projectName: String? = null, // 项目名称
     @SerializedName("zxs") val totalHour: Int, // 总学时
     @SerializedName("xf") val credit: String, // 学分
@@ -28,9 +29,9 @@ data class CourseItemEntity(
     @SerializedName("sksj") val classTime: String, // 课程类别
     @SerializedName("pkrs") val totalCapacity: Int, // 计划人数
     @SerializedName("jxbrs") val enrolledCount: String, // 已选人数
-    val kcrwdm: String,
-    val kcdm: String
+    @SerializedName("kcrwdm") val courseTaskCode: String,
 )
+
 
 data class CourseTimeEntity(
     @SerializedName("jxbmc") val className: String,
@@ -68,3 +69,10 @@ data class CourseTimeEntity(
             else -> dayOfWeek
         }
 }
+
+
+data class SelectCourseEntity(
+    val code: Int,
+    val data: String,
+    val message: String
+)

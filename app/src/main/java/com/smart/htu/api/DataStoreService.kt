@@ -2,6 +2,7 @@ package com.smart.htu.api
 
 import com.smart.htu.api.module.ACCookie
 import com.smart.htu.api.module.CaptchaVersionEntity
+import com.smart.htu.api.module.CourseItemEntity
 import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.api.module.NewsMarkEntity
@@ -22,7 +23,6 @@ interface DataStoreService {
     suspend fun changeLoginJWCState(state: Int)
     suspend fun changeLoginSCState(state: Int)
     suspend fun changeLoginLibraryState(state: Int)
-    suspend fun saveLibrarySession(session: String)
     suspend fun saveSecondClassSid(sid: String)
     suspend fun saveAuthCookie(cookie: List<Cookie>)
     suspend fun addWaitingBorrowedBookList(waitingBorrowedBookList: List<LibraryDetailEntity>)
@@ -51,6 +51,7 @@ interface DataStoreService {
     suspend fun changeWeekendCourseShowState(isShow: Boolean)
     suspend fun saveSecondClassData(data: SCHourEntity)
     suspend fun saveUpdateRes(result: CaptchaVersionEntity)
+    suspend fun saveTargetCourseList(list: List<CourseItemEntity>)
 
     fun observeThemeMode(): Flow<Int>
     fun observeDarkTheme(): Flow<Int>
@@ -90,6 +91,7 @@ interface DataStoreService {
     fun observeUpdateRes(): Flow<CaptchaVersionEntity>
     fun observeLoginLibraryState(): Flow<Int>
     fun observeLibrarySession(): Flow<String>
+    fun observeTargetCourseList(): Flow<List<CourseItemEntity>>
 
 
 }

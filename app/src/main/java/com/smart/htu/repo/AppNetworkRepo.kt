@@ -5,6 +5,7 @@ import com.smart.htu.api.module.ConfigEntity
 import com.smart.htu.api.module.FeedbackEntity
 import com.smart.htu.api.module.FeedbackRes
 import com.smart.htu.api.module.HolidayEntity
+import com.smart.htu.api.module.NoticeRes
 import com.smart.htu.api.module.UpdateRes
 import com.smart.htu.api.network.AppService
 import javax.inject.Inject
@@ -91,6 +92,28 @@ class AppNetworkRepo @Inject constructor(
                     val updateRes = res.body()
                     if (updateRes != null) {
                         Result.success(updateRes)
+                    } else {
+                        Result.failure(Exception("null"))
+                    }
+                }
+
+                else -> {
+                    Result.failure(Exception("获取失败，请稍后重试，错误码：${res.code()}"))
+                }
+            }
+        } catch (e: Exception) {
+            return Result.failure(e)
+        }
+    }
+
+    suspend fun getNotice(): Result<NoticeRes> {
+        try {
+            val res = appService.getNotice()
+            return when (res.code()) {
+                200 -> {
+                    val noticeRes = res.body()
+                    if (noticeRes != null) {
+                        Result.success(noticeRes)
                     } else {
                         Result.failure(Exception("null"))
                     }

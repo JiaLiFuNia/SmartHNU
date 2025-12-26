@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -67,6 +68,7 @@ import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -454,14 +456,19 @@ fun PersonScreen(
             logState = uiState.authLoginState
         )
 
-        DeleteMessageDialog(isShowMessageDialog, showDialogTarget)
+        DeleteMessageDialog(isShowMessageDialog, showDialogTarget) {
+            scope.launch {
+                viewModel.clearAllCookies()
+            }
+        }
     }
 }
 
 @Composable
 fun DeleteMessageDialog(
     showDialog: MutableState<Boolean>,
-    target: MutableState<String>
+    target: MutableState<String>,
+    onConfirmClick: () -> Unit
 ) {
     SuperDialog(
         title = "提示",
@@ -472,7 +479,6 @@ fun DeleteMessageDialog(
         show = showDialog
     ) {
         Column {
-            Text("功能开发中...")
             Spacer(modifier = Modifier.height(20.dp))
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -488,6 +494,7 @@ fun DeleteMessageDialog(
                 TextButton(
                     text = "确认",
                     onClick = {
+                        onConfirmClick()
                         showDialog.value = false
                     },
                     modifier = Modifier.weight(1f),
@@ -525,7 +532,9 @@ fun PersonalMessage(
             headlineContent = {
                 Text(
                     text = label,
-                    style = MaterialTheme.typography.titleMedium,
+                    fontSize = MiuixTheme.textStyles.headline1.fontSize,
+                    fontWeight = FontWeight.Medium,
+                    color = MiuixTheme.colorScheme.onBackground,
                     maxLines = 1
                 )
             },
@@ -535,14 +544,12 @@ fun PersonalMessage(
                 } else if (trailingText != null) {
                     Text(
                         text = trailingText,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        fontSize = MiuixTheme.textStyles.body1.fontSize,
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                     )
                 }
             },
-            modifier = Modifier.clickable(
-                enabled = isShowPrivateMessage
-            ) {
+            modifier = Modifier.clickable {
                 if (onClick != null) {
                     onClick()
                 } else {

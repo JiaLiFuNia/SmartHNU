@@ -6,6 +6,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -14,6 +15,11 @@ import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.m3.libraryColors
 import com.smart.htu.R
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
+import dev.chrisbanes.haze.rememberHazeState
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TopAppBar
@@ -21,17 +27,19 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.icons.useful.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun License(
     navController: NavController
 ) {
     val scrollBehavior = MiuixScrollBehavior()
+    val hazeState = rememberHazeState()
     Scaffold(
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
-                title ="开源许可证",
+                title = "开源许可证",
+                color = Color.Transparent,
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() },
@@ -42,14 +50,25 @@ fun License(
                             contentDescription = "back"
                         )
                     }
-                }
+                },
+                modifier = Modifier
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
+                    ) {
+                        blurRadius = 30.dp
+                        noiseFactor = 0f
+                        blurEnabled = true
+                    }
             )
         }
     ) {
         val libs = produceLibraries(R.raw.aboutlibraries)
         LibrariesContainer(
             libraries = libs.value,
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            modifier = Modifier
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .hazeSource(hazeState),
             contentPadding = it,
             colors = LibraryDefaults.libraryColors(
                 libraryBackgroundColor = MiuixTheme.colorScheme.surface
