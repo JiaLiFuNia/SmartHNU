@@ -1,6 +1,7 @@
 package com.smart.htu.screens.application.librarySearch
 
 import android.util.Log
+import android.webkit.CookieManager
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.ViewModel
@@ -9,6 +10,8 @@ import com.smart.htu.api.module.BookBorrowingDetails
 import com.smart.htu.api.module.LibraryBorrowedBookRes.BorrowedBookEntity
 import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.api.module.SearchBookData
+import com.smart.htu.di.NetworkCookieJar
+import com.smart.htu.di.NetworkModule.ApiConstants.LIBRARY_BASE_URL
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
@@ -44,7 +47,8 @@ data class LibrarySearchUiState(
 @HiltViewModel
 class LibrarySearchViewModel @Inject constructor(
     private val dataStoreRepo: DataStoreRepo,
-    private val libraryNetworkRepo: LibraryNetworkRepo
+    private val libraryNetworkRepo: LibraryNetworkRepo,
+    private val networkCookieJar: NetworkCookieJar
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LibrarySearchUiState())
@@ -120,7 +124,7 @@ class LibrarySearchViewModel @Inject constructor(
         }
         viewModelScope.launch {
             librarySessionStateFLow.collect { value ->
-                _uiState.update { it.copy(session = value) }
+                // _uiState.update { it.copy(session = value) }
             }
         }
         viewModelScope.launch {
@@ -135,6 +139,7 @@ class LibrarySearchViewModel @Inject constructor(
         libraryNetworkRepo.getLoginPage()
             .onSuccess { res ->
                 Log.i("TAG666", "createSession: $res")
+                // 用于同步验证码
                 _uiState.update { it.copy(session = res) }
             }
     }
@@ -147,10 +152,9 @@ class LibrarySearchViewModel @Inject constructor(
         onFailure: (String) -> Unit
     ) {
         libraryNetworkRepo.libraryLogin(
-            username, password, verifyCode, "meta-opac.session=${_uiState.value.session}"
+            username, password, verifyCode
         ).onSuccess { res ->
             changeLoginLibraryState(1)
-            saveLibrarySession(res)
             onSuccess()
         }.onFailure {
             onFailure(it.message.toString())
@@ -270,22 +274,15 @@ class LibrarySearchViewModel @Inject constructor(
         dataStoreRepo.changeLoginLibraryState(state)
     }
 
-    fun saveLibrarySession(session: String) = viewModelScope.launch {
-        dataStoreRepo.saveLibrarySession(session)
+    fun syncCookieToWebView() {
+        val cookies = networkCookieJar.loadCookiesForUrl(LIBRARY_BASE_URL)
+        val cookieManager = CookieManager.getInstance()
+        cookieManager.setAcceptCookie(true)
+        cookies.forEach { cookie ->
+            cookieManager.setCookie(LIBRARY_BASE_URL, "${cookie.name}=${cookie.value}")
+        }
+        cookieManager.flush()
     }
 
-    fun addSearchHistory(keyword: String) = viewModelScope.launch {
-        val currentSearchHistoryList = _uiState.value.searchHistoryList.toMutableList()
-        if (currentSearchHistoryList.contains(keyword))
-            currentSearchHistoryList.apply { remove(keyword) }
-        currentSearchHistoryList.add(0, keyword)
-        dataStoreRepo.changeBookSearchHistoryList(currentSearchHistoryList)
-    }
-
-    fun deleteSearchHistory(keywordIndex: Int) = viewModelScope.launch {
-        val currentSearchHistoryList = _uiState.value.searchHistoryList.toMutableList()
-        currentSearchHistoryList.removeAt(keywordIndex)
-        dataStoreRepo.changeBookSearchHistoryList(currentSearchHistoryList)
-    }
 
 }

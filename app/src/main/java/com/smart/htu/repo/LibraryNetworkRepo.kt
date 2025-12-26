@@ -12,9 +12,9 @@ import com.smart.htu.api.module.LibrarySearchPost.QueryFieldList
 import com.smart.htu.api.module.SearchResultData
 import com.smart.htu.api.network.LibraryService
 import com.smart.htu.di.NetworkCookieJar
+import com.smart.htu.di.NetworkModule.ApiConstants.LIBRARY_BASE_URL
 import com.smart.htu.utils.AESUtils
 import com.smart.htu.utils.MD5Util.md5
-import okhttp3.Cookie
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import javax.inject.Inject
 
@@ -120,8 +120,7 @@ class LibraryNetworkRepo @Inject constructor(
     suspend fun libraryLogin(
         username: String,
         password: String,
-        verifyCode: String,
-        session: String
+        verifyCode: String
     ): Result<String> {
         try {
             if (username == "" || password == "") {
@@ -134,12 +133,11 @@ class LibraryNetworkRepo @Inject constructor(
             )
             val loginContext = "{\"userId\":\"${username}\",\"password\":\"${passwordEncrypt}\"}"
             val res =
-                libraryService.libraryLogin(session, LibraryLoginPost(loginContext, verifyCode))
+                libraryService.libraryLogin(LibraryLoginPost(loginContext, verifyCode))
             when (res.body()?.code) {
                 0 -> {
                     val session = extractSession(res.headers().get("Set-Cookie").toString())
                     return if (session.isNotEmpty()) {
-                        saveCookie(session)
                         Result.success(session)
                     } else {
                         Result.failure(Exception("未知错误，请稍后重试"))
@@ -158,7 +156,14 @@ class LibraryNetworkRepo @Inject constructor(
     suspend fun getLoginPage(): Result<String> {
         try {
             val res = libraryService.libraryLoginPage()
-            return Result.success(extractSession(res.headers().get("Set-Cookie") ?: ""))
+            val setCookie = res.headers()["Set-Cookie"] ?: ""
+            val cookiesList = networkCookieJar.loadForRequest(LIBRARY_BASE_URL.toHttpUrl())
+            val currentCookie = cookiesList.find { it.name == "meta-opac.session" }?.value ?: ""
+            return if (setCookie.isNotEmpty()) {
+                Result.success(extractSession(setCookie))
+            } else {
+                Result.success(currentCookie)
+            }
         } catch (e: Exception) {
             return Result.failure(Exception(e))
         }
@@ -172,15 +177,6 @@ class LibraryNetworkRepo @Inject constructor(
         } else {
             ""
         }
-    }
-
-    fun saveCookie(session: String) {
-        val cookie = Cookie.Builder()
-            .name("meta-opac.session")
-            .value(session)
-            .domain("opac.htu.edu.cn")
-            .build()
-        networkCookieJar.saveFromResponse("https://opac.htu.edu.cn".toHttpUrl(), listOf(cookie))
     }
 
 }

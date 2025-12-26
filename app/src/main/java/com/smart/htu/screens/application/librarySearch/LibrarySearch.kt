@@ -72,8 +72,6 @@ import com.smart.htu.api.module.SearchBookData
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
-import com.smart.htu.component.updateWebViewCookies
-import com.smart.htu.di.NetworkModule.ApiConstants.LIBRARY_BASE_URL
 import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.screens.navigation.Destinations
@@ -83,7 +81,6 @@ import com.smart.htu.utils.DateUtil.convertStringDateToLocalDate
 import com.smart.htu.utils.ToastUtil.showToast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import okhttp3.Cookie
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.InputField
@@ -185,16 +182,7 @@ fun LibrarySearchScreen(
                         IconButton(
                             onClick = {
                                 scope.launch {
-                                    updateWebViewCookies(
-                                        url = LIBRARY_BASE_URL,
-                                        cookie = listOf(
-                                            Cookie.Builder()
-                                                .name("meta-opac.session")
-                                                .value(uiState.session)
-                                                .domain("opac.htu.edu.cn")
-                                                .build()
-                                        )
-                                    )
+                                    viewModel.syncCookieToWebView()
                                     navController.navigateToWebView(
                                         url = "https://opac.htu.edu.cn/space/index",
                                         label = "图书馆"
