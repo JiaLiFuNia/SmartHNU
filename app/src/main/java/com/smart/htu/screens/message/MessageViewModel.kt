@@ -1,12 +1,12 @@
 package com.smart.htu.screens.message
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.NoticeEntity
+import com.smart.htu.repo.AppNetworkRepo
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
-import com.smart.htu.repo.NetworkRepo
-import com.smart.htu.repo.SharedDataRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.time.LocalDateTime
 import javax.inject.Inject
 
 data class MessageUiState(
@@ -29,8 +28,7 @@ data class MessageUiState(
 @HiltViewModel
 class MessageViewModel @Inject constructor(
     private val dataStoreRepo: DataStoreRepo,
-    private val sharedDataRepository: SharedDataRepository,
-    private val networkRepo: NetworkRepo
+    private val appNetworkRepo: AppNetworkRepo
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MessageUiState())
@@ -52,25 +50,6 @@ class MessageViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            sharedDataRepository.notice
-                .collect { config ->
-                    _uiState.update {
-                        it.copy(
-                            noticeList = config?.data ?: emptyList(),
-                            readNoticeIdList = it.readNoticeIdList.apply {
-                                val currentDate = LocalDateTime.now()
-                                config?.data?.forEach {
-                                    if (it.expireDate.isAfter(currentDate) || it.expireDate.isEqual(
-                                            currentDate
-                                        )
-                                    ) addReadNoticeId(it.id)
-                                }
-                            }
-                        )
-                    }
-                }
-        }
-        viewModelScope.launch {
             blurStateFlow.collect { value ->
                 _uiState.update { it.copy(blurEffect = value) }
             }
@@ -80,28 +59,46 @@ class MessageViewModel @Inject constructor(
                 _uiState.update { it.copy(readNoticeIdList = value.toMutableList()) }
             }
         }
+        viewModelScope.launch {
+            getNotice()
+        }
     }
 
-    fun readAllNotice() = viewModelScope.launch {
+    suspend fun readAllNotice() {
         _uiState.value.noticeList.forEach {
             addReadNoticeId(it.id)
         }
     }
 
-    fun addReadNoticeId(id: String) = viewModelScope.launch {
+    suspend fun addReadNoticeId(id: String) {
         if (!_uiState.value.readNoticeIdList.contains(id)) {
-            _uiState.update {
-                it.copy(
-                    readNoticeIdList = it.readNoticeIdList.apply {
-                        add(id)
-                    }
-                )
-            }
-            dataStoreRepo.addReadNoticeId(_uiState.value.readNoticeIdList)
+            val currentReadIdList = _uiState.value.readNoticeIdList
+            currentReadIdList.add(id)
+            dataStoreRepo.addReadNoticeId(currentReadIdList)
         }
     }
 
-    suspend fun refreshNoticeData() {
-        sharedDataRepository.getNotice()
+    suspend fun getNotice() {
+        try {
+            appNetworkRepo.getNotice().onSuccess { res ->
+                _uiState.update {
+                    it.copy(noticeList = res.data)
+                }
+            }
+        } catch (e: Exception) {
+            Log.i("TAG666", "getNotice: $e")
+        }
+    }
+
+    fun calculateNotReadIdListSize(): Int {
+        val noticeList = _uiState.value.noticeList
+        val readIdList = _uiState.value.readNoticeIdList
+        var count = 0
+        noticeList.forEach {
+            if (!readIdList.contains(it.id)) {
+                count++
+            }
+        }
+        return count
     }
 }

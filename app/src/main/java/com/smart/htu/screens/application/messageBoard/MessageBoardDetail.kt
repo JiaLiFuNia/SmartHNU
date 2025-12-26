@@ -2,6 +2,7 @@ package com.smart.htu.screens.application.messageBoard
 
 import android.os.Environment
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,19 +32,23 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.api.module.PostDetailData
@@ -51,10 +56,14 @@ import com.smart.htu.api.module.PostDetailData.CommentData
 import com.smart.htu.api.module.PostDetailData.ReplyData
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.ImagePreviewDialog
-import com.smart.htu.component.InfoBadge
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.FileUtil.downloadFile
 import com.smart.htu.utils.ToastUtil
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
+import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
@@ -72,7 +81,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import kotlin.math.ceil
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun MessageBoardDetail(
     postID: String,
@@ -82,6 +91,7 @@ fun MessageBoardDetail(
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
+    val hazeState = rememberHazeState()
     val showImagePreview = remember { mutableStateOf(false) }
     val selectedImageData = remember { mutableStateOf("") }
 
@@ -114,7 +124,16 @@ fun MessageBoardDetail(
                             contentDescription = "back"
                         )
                     }
-                }
+                },
+                modifier = Modifier
+                    .hazeEffect(
+                        state = hazeState,
+                        style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
+                    ) {
+                        blurRadius = 30.dp
+                        noiseFactor = 0f
+                        blurEnabled = true
+                    }
             )
         }
     ) {
@@ -124,7 +143,6 @@ fun MessageBoardDetail(
             onRefresh = { isRefreshing = true },
             isRefreshing = isRefreshing,
             modifier = Modifier
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .fillMaxSize(),
             contentPadding = it
         ) {
@@ -132,11 +150,14 @@ fun MessageBoardDetail(
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
-                    top = it.calculateTopPadding() + 8.dp,
-                    bottom = 12.dp
+                    top = it.calculateTopPadding(),
+                    bottom = it.calculateBottomPadding() + 12.dp
                 ),
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(top = 16.dp)
+                    .hazeSource(hazeState)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .overScrollVertical(),
                 overscrollEffect = null
             ) {
@@ -149,7 +170,7 @@ fun MessageBoardDetail(
                         Text(
                             text = uiState.postDetailData!!.title,
                             color = MiuixTheme.colorScheme.onSurface,
-                            style = MiuixTheme.textStyles.title3,
+                            style = MiuixTheme.textStyles.title2,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(bottom = 12.dp)
                         )
@@ -209,7 +230,7 @@ fun PostCard(
 ) {
     BasicComponent(
         title = "提问人 ${post.userName}",
-        summary = post.createTime,
+        summary = post.createDateTime,
         leftAction = {
             Image(
                 painter = painterResource(R.drawable.ic_avator_poster),
@@ -220,7 +241,18 @@ fun PostCard(
             )
         },
         rightActions = {
-            InfoBadge(post.cateName)
+            top.yukonga.miuix.kmp.basic.Text(
+                text = post.cateName,
+                fontSize = 12.sp,
+                color = MiuixTheme.colorScheme.onTertiaryContainer.copy(0.8f),
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .clip(ContinuousRoundedRectangle(6.dp))
+                    .background(MiuixTheme.colorScheme.tertiaryContainer.copy(0.6f))
+                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                fontWeight = FontWeight(750),
+                maxLines = 1
+            )
         },
         insideMargin = PaddingValues(horizontal = 0.dp)
     )
@@ -231,6 +263,7 @@ fun PostCard(
         Text(
             text = post.content.replace("<br/>", "\n"),
             style = MiuixTheme.textStyles.main,
+            textAlign = TextAlign.Justify,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .padding(vertical = 4.dp)
@@ -288,7 +321,7 @@ fun ReplyCard(
             Card {
                 BasicComponent(
                     title = it.userName,
-                    summary = it.createTime,
+                    summary = it.createDateTime,
                     leftAction = {
                         Image(
                             painter = painterResource(
@@ -344,25 +377,25 @@ fun ReplyCard(
 fun CommentCard(
     comment: CommentData
 ) {
-    Card {
-        BasicComponent(
-            title = comment.content,
-            rightActions = {
-                val score = ceil(comment.score / 20.0)
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(2.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    repeat(score.toInt()) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = MiuixTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-            }
+    Card(
+        insideMargin = PaddingValues(16.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = comment.content,
+            style = MiuixTheme.textStyles.main
         )
+        Spacer(modifier = Modifier.height(5.dp))
+        val score = ceil(comment.score / 20.0)
+        Row {
+            repeat(score.toInt()) {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = null,
+                    tint = MiuixTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
     }
 }

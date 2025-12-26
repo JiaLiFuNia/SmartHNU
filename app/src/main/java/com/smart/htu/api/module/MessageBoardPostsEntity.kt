@@ -1,6 +1,12 @@
 package com.smart.htu.api.module
 
 import com.google.gson.annotations.SerializedName
+import com.smart.htu.utils.DateUtil.convertStringDateTimeToLocalDateTime
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+
+private val DATE_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
 data class MessageBoardPostsRes(
     val status: Boolean,
@@ -49,7 +55,7 @@ data class PostDetailData(
     val title: String,
     val content: String,
     @SerializedName("user_name") val userName: String,
-    @SerializedName("create_time") val createTime: String,
+    @SerializedName("create_time") private val createTime: String,
     @SerializedName("status_name") val statusName: String,
     @SerializedName("org_name") val organizationName: String,
     @SerializedName("team_name") val teamName: String,
@@ -58,6 +64,14 @@ data class PostDetailData(
     @SerializedName("comment_list") val replyList: List<ReplyData>,
     val pics: List<Pic>
 ) {
+
+
+    val createDateTime: String
+        get() = convertStringDateTimeToLocalDateTime(
+            "${LocalDateTime.now().year}/${createTime}",
+            "yyyy/MM/dd HH:mm"
+        ).toLocalDate().format(DATE_PATTERN)
+
     data class CommentData(
         val score: Long,
         val content: String,
@@ -67,10 +81,16 @@ data class PostDetailData(
     data class ReplyData(
         val label: String,
         @SerializedName("user_name") val userName: String,
-        @SerializedName("create_time") val createTime: String,
+        @SerializedName("create_time") private val createTime: String,
         val content: String,
         val pics: List<Pic>
-    )
+    ) {
+        val createDateTime: String
+            get() = convertStringDateTimeToLocalDateTime(
+                "${LocalDateTime.now().year}/${createTime}",
+                "yyyy/MM/dd HH:mm"
+            ).toLocalDate().format(DATE_PATTERN)
+    }
 }
 
 data class Pic(
