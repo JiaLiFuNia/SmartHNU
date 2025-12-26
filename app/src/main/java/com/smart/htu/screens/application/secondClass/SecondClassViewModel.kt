@@ -49,14 +49,7 @@ class SecondClassViewModel @Inject constructor(
     val uiState: StateFlow<SecondClassUiState> = _uiState.asStateFlow()
 
     val snackBarHostState = SnackbarHostState()
-    val category = listOf(
-        "阅读60部经典",
-        "聆听60场报告",
-        "参加60次活动",
-        "创新创业实践",
-        "学科竞赛",
-        "劳动教育"
-    )
+    val category = listOf("经典", "报告", "活动", "实践", "竞赛", "劳动")
 
     private val sidStateFlow = dataStoreRepo.observeSecondClassSid()
         .stateIn(

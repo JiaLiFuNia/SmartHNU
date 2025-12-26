@@ -448,6 +448,7 @@ fun SecondClass(
             verifyCodeRefreshKey++
         },
         initStudentID = uiState.studentID,
+        password = uiState.password,
         onLogin = { studentID, password, verifyCode ->
             scope.launch {
                 viewModel.secondClassLogin(
