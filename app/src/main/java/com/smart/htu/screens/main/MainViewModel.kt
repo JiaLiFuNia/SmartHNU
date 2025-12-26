@@ -47,8 +47,6 @@ data class AppUiState(
     val holiday: HolidayData? = null,
     val blurEnabled: Boolean = true, // DEFAULT_BLUR_EFFECT,
     val username: String = DEFAULT_USERNAME,
-    val readNoticeIdList: List<String> = emptyList(),
-    val noticeIdList: List<String> = emptyList(),
     val update: UpdateEntity = UpdateEntity(),
     val isShowUpdateDialog: MutableState<Boolean> = mutableStateOf(false),
     val commonAppList: List<ApplicationEntity> = INIT_COMMON_APP_LIST,
@@ -84,13 +82,6 @@ class MainViewModel @Inject constructor(
             runBlocking {
                 dataStoreRepo.observeUsername().first()
             }
-        )
-
-    private val readNoticeIdListStateFlow = dataStoreRepo.observeReadNoticeIdList()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            runBlocking { dataStoreRepo.observeReadNoticeIdList().first() }
         )
 
     private val commonAppListStateFlow = dataStoreRepo.observeCommonAppList()
@@ -149,11 +140,6 @@ class MainViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            readNoticeIdListStateFlow.collect { value ->
-                _uiState.update { it.copy(readNoticeIdList = value) }
-            }
-        }
-        viewModelScope.launch {
             examScheduleStateFlow.collect { value ->
                 _uiState.update { it.copy(examScheduleList = value) }
             }
@@ -166,50 +152,24 @@ class MainViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            sharedDataRepository.getUpdate()
-            sharedDataRepository.update
-                .collect { config ->
-                    _uiState.update { uiState ->
-                        uiState.copy(
-                            update = config?.data ?: UpdateEntity(),
-                            isShowUpdateDialog = mutableStateOf(config?.data?.isNeedUpdate == true)
-                        )
-                    }
-                }
-        }
-        viewModelScope.launch {
-            sharedDataRepository.getNotice()
-            sharedDataRepository.notice
-                .collect { config ->
-                    _uiState.update {
-                        it.copy(
-                            noticeIdList = config?.data?.map { it.id } ?: emptyList()
-                        )
-                    }
-                }
-        }
-        viewModelScope.launch {
             val currentWeatherDeferred = async { getCurrentWeather() }
             val holidayDeferred = async { getHoliday() }
             val warningWeatherDeferred = async { getWarningWeather() }
+            val updateInfoDeferred = async { getUpdateInfo() }
 
             checkJWCToken()
             val termIndexDeferred = async { sharedDataRepository.getTermIndex() }
             val todayCourseDeferred = async { getTodayCourse() }
             val currentWeekDeferred = async { getCurrentWeek() }
 
-            currentWeatherDeferred.await()
-            holidayDeferred.await()
-            warningWeatherDeferred.await()
             termIndexDeferred.await()
             todayCourseDeferred.await()
             currentWeekDeferred.await()
+            currentWeatherDeferred.await()
+            holidayDeferred.await()
+            warningWeatherDeferred.await()
+            updateInfoDeferred.await()
         }
-    }
-
-    suspend fun refreshNoticeAndUpdateMessage() {
-        sharedDataRepository.getNotice()
-        sharedDataRepository.getUpdate()
     }
 
     private suspend fun checkJWCToken() {
@@ -272,9 +232,19 @@ class MainViewModel @Inject constructor(
                     uiState.copy(holiday = it.holiday)
                 }
             }
-            Log.i("TAG666", "getHoliday: $res")
         } catch (e: Exception) {
             Log.i("TAG666", "getHoliday: $e")
+        }
+    }
+
+    suspend fun getUpdateInfo() {
+        try {
+            appNetworkRepo.updateService().onSuccess { res ->
+                _uiState.update { it.copy(update = res.data) }
+                if (res.data.isNeedUpdate) changeUpdateDialogState(true)
+            }
+        } catch (e: Exception) {
+            Log.i("TAG666", "getUpdateInfo: $e")
         }
     }
 

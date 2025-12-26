@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -42,6 +43,7 @@ import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -63,13 +65,14 @@ fun MessageScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val hazeState = rememberHazeState()
+    val scope = rememberCoroutineScope()
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
     LaunchedEffect(isRefreshing) {
         if (isRefreshing) {
             delay(500)
-            viewModel.refreshNoticeData()
+            viewModel.getNotice()
             isRefreshing = false
         }
     }
@@ -94,7 +97,9 @@ fun MessageScreen(
                 actions = {
                     IconButton(
                         onClick = {
-                            viewModel.readAllNotice()
+                            scope.launch {
+                                viewModel.readAllNotice()
+                            }
                         },
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
@@ -143,7 +148,9 @@ fun MessageScreen(
                         SingleMessage(
                             isRead = notice.id in uiState.readNoticeIdList,
                             read = {
-                                viewModel.addReadNoticeId(notice.id)
+                                scope.launch {
+                                    viewModel.addReadNoticeId(notice.id)
+                                }
                             },
                             title = notice.title,
                             content = notice.content,

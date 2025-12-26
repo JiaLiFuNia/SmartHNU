@@ -243,11 +243,11 @@ class NetworkRepo @Inject constructor(
             val errorTip = loggedPage.getElementById("showErrorTip")?.text() ?: ""
             Log.i("TAG666", "errorTip: $errorTip")
             // 获取 mobile_code
-            val mobileCode = extractMobileCode(response)
+            /*val mobileCode = extractMobileCode(response)
             if (mobileCode.isNotEmpty()) {
                 Log.i("TAG666", "获取到 mobile_code: $mobileCode")
                 dataStoreRepo.saveMobileCode(mobileCode)
-            }
+            }*/
             // getAppTokenService(mobileCode)
             return when (response.code()) {
                 401 -> Result.failure(Exception("状态码：${response.code()} $errorTip"))

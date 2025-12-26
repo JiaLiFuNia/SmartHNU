@@ -44,6 +44,7 @@ import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.Main
 import com.smart.htu.screens.main.MainViewModel
+import com.smart.htu.screens.message.MessageViewModel
 import com.smart.htu.screens.navigation.BottomNavigationItem
 import com.smart.htu.screens.news.NewsScreen
 import com.smart.htu.screens.setting.SettingScreen
@@ -59,6 +60,7 @@ fun MainFrame(
     mainViewModel: MainViewModel,
     loginViewModel: LoginViewModel,
     settingViewModel: SettingViewModel,
+    messageViewModel: MessageViewModel,
     airConditionViewModel: AirConditionViewModel
 ) {
     val context = LocalContext.current
@@ -67,7 +69,7 @@ fun MainFrame(
     val savableStateHolder = rememberSaveableStateHolder()
     val (selectedItemIndex, onSelectedItemIndex) = rememberSaveable { mutableIntStateOf(0) }
     val messageCount = remember {
-        derivedStateOf { mainUiState.noticeIdList.size - mainUiState.readNoticeIdList.size }
+        derivedStateOf { messageViewModel.calculateNotReadIdListSize() }
     }
     val navigationItem = listOf(
         BottomNavigationItem(
@@ -196,6 +198,7 @@ fun MainFrame(
                             mainViewModel = mainViewModel,
                             loginViewModel = loginViewModel,
                             airConditionViewModel = airConditionViewModel,
+                            messageViewModel = messageViewModel,
                             contentPadding = it
                         )
 

@@ -69,6 +69,7 @@ import com.smart.htu.screens.application.airCondition.AirConditionUiState
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.login.LoginUiState
 import com.smart.htu.screens.login.LoginViewModel
+import com.smart.htu.screens.message.MessageViewModel
 import com.smart.htu.screens.navigateWithCheckLoginState
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
@@ -102,6 +103,7 @@ fun Main(
     mainViewModel: MainViewModel,
     airConditionViewModel: AirConditionViewModel,
     loginViewModel: LoginViewModel,
+    messageViewModel: MessageViewModel,
     navController: NavController,
     contentPadding: PaddingValues
 ) {
@@ -117,7 +119,7 @@ fun Main(
         derivedStateOf { uiState.holiday != null }
     }
     val messageCount = remember {
-        derivedStateOf { uiState.noticeIdList.size - uiState.readNoticeIdList.size }
+        derivedStateOf { messageViewModel.calculateNotReadIdListSize() }
     }
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
@@ -125,7 +127,7 @@ fun Main(
     LaunchedEffect(isRefreshing, uiState.loginJWCState) {
         if (isRefreshing) {
             mainViewModel.getCurrentWeather()
-            mainViewModel.refreshNoticeAndUpdateMessage()
+            messageViewModel.getNotice()
             mainViewModel.getTodayCourse()
             mainViewModel.getCurrentWeek()
             isRefreshing = false
