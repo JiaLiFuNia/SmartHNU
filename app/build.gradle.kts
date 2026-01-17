@@ -21,7 +21,7 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 35
-        versionCode = 202512261
+        versionCode = 202601171
         versionName = "3.1.1"
 
         val buildTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
@@ -58,6 +58,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
+        freeCompilerArgs = listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
     }
     buildFeatures {
         buildConfig = true
@@ -115,6 +116,7 @@ dependencies {
     implementation(libs.androidx.adaptive.navigation)
     // miuix
     implementation(libs.miuix)
+    implementation(libs.miuix.icons)
     implementation(libs.capsule)
 
     // Splash
@@ -175,5 +177,5 @@ dependencies {
     implementation(libs.datetime.wheel.picker)
     implementation(libs.kotlinx.datetime)
 
-    implementation(libs.compose.markdown)
+    implementation(libs.readability4j)
 }
