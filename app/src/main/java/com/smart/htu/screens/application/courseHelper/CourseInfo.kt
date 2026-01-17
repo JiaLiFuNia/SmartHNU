@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -19,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
@@ -30,11 +29,13 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -42,7 +43,7 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @Composable
 fun CourseInfo(
     navController: NavController,
-    viewModel: CourseHelperViewModel,
+    viewModel: CourseHelperViewModel = hiltViewModel(),
     courseCode: String
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -60,14 +61,14 @@ fun CourseInfo(
             TopAppBar(
                 scrollBehavior = scrollBehavior,
                 color = Color.Transparent,
-                title = "课程详情",
+                title = "课程安排",
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Useful.Back,
+                            imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "back"
                         )
                     }
@@ -125,7 +126,7 @@ fun CourseInfo(
                                 ),
                                 SingleInfo(
                                     label = "节次",
-                                    content = it.sectionCode,
+                                    content = it.sectionListString,
                                     rowIndex = 0
                                 ),
                                 SingleInfo(

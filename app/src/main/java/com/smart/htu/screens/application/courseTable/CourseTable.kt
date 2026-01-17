@@ -27,10 +27,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -53,7 +51,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.smart.htu.MainActivity
@@ -62,7 +60,7 @@ import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.SuperSlider
-import com.smart.htu.screens.main.CourseDetailDialog
+import com.smart.htu.screens.main.CourseDetailBottomSheet
 import com.smart.htu.utils.CourseColorUtil.getColorByCourseName
 import com.smart.htu.utils.CourseTableBackgroundUtil
 import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
@@ -78,8 +76,9 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.DropdownImpl
+import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.basic.ListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
@@ -87,13 +86,16 @@ import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SliderDefaults
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.extra.SuperBottomSheet
+import top.yukonga.miuix.kmp.extra.SuperDropdown
+import top.yukonga.miuix.kmp.extra.SuperListPopup
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Back
-import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Import
+import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.lang.Integer.max
 import java.time.format.DateTimeFormatter
@@ -134,19 +136,28 @@ fun CourseTable(
             TopAppBar(
                 scrollBehavior = scrollBehavior,
                 color = if (backgroundUri != null) Color.Transparent else MiuixTheme.colorScheme.surface,
-                title = "${uiState.termCode} 学期 第 ${uiState.week} 周",
+                title = "第 ${uiState.week} 周",
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Useful.Back,
+                            imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "back"
                         )
                     }
                 },
                 actions = {
+                    IconButton(
+                        onClick = {
+                        }
+                    ) {
+                        Icon(
+                            imageVector = MiuixIcons.Regular.Import,
+                            contentDescription = "import"
+                        )
+                    }
                     IconButton(
                         onClick = {
                             showDropDownMenu.value = true
@@ -155,14 +166,14 @@ fun CourseTable(
                         holdDownState = showDropDownMenu.value
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Useful.ImmersionMore,
+                            imageVector = MiuixIcons.Regular.More,
                             contentDescription = "more"
                         )
                     }
-                    ListPopup(
+                    SuperListPopup(
                         show = showDropDownMenu,
                         popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
-                        alignment = PopupPositionProvider.Align.TopRight,
+                        alignment = PopupPositionProvider.Align.TopEnd,
                         onDismissRequest = {
                             showDropDownMenu.value = false
                         }
@@ -558,8 +569,8 @@ fun CourseTableSingleCourseCard(
             )
         }
     }
-    CourseDetailDialog(
-        message = course,
+    CourseDetailBottomSheet(
+        course = course,
         isBottomSheetShow = isBottomSheetShow,
         overlapCourseList = overlapCourseList,
         onSelectOverlapCourse = onSelectOverlapCourse
@@ -598,6 +609,18 @@ fun CourseTableMoreSettingBottomSheet(
                 Card(
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    SuperDropdown(
+                        title = "切换数据源",
+                        items = listOf("智慧教务", "教务系统"),
+                        selectedIndex = 0,
+                        enabled = false
+                    )
+                }
+            }
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     BasicComponent(
                         title = "课表背景",
                         summary = "更换或清除课表背景",
@@ -606,7 +629,7 @@ fun CourseTableMoreSettingBottomSheet(
                             onBackgroundUriChange(backgroundUri)
                             showToast(context, "重启生效")
                         },
-                        rightActions = {
+                        endActions = {
                             Image(
                                 painter = rememberAsyncImagePainter(backgroundUri),
                                 contentDescription = "背景",

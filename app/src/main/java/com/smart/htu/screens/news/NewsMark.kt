@@ -16,12 +16,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerScope
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -33,22 +30,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.component.EmptyContent
-import com.smart.htu.component.TabRow
 import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.utils.DateUtil.formatDateToFriendly
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -72,10 +72,11 @@ fun NewsMark(
                 title = "历史与收藏",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Useful.Back,
+                            imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "back"
                         )
                     }
@@ -89,7 +90,7 @@ fun NewsMark(
                 .padding(top = it.calculateTopPadding() + 8.dp)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
-            TabRow(
+            top.yukonga.miuix.kmp.basic.TabRow(
                 tabs = listOf("历史", "收藏"),
                 selectedTabIndex = tabSelectedIndex,
                 onTabSelected = {
@@ -178,8 +179,16 @@ fun NewsItem(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(text = "来源：${news.source}")
-                    Text(text = formatDateToFriendly(news.time))
+                    Text(
+                        text = "来源：${news.source}",
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                        fontSize = 14.sp
+                    )
+                    Text(
+                        text = formatDateToFriendly(news.time),
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                        fontSize = 14.sp
+                    )
                 }
             }
         )

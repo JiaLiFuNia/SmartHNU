@@ -18,8 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -33,7 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -52,12 +50,13 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
@@ -66,8 +65,8 @@ import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Back
-import top.yukonga.miuix.kmp.icon.icons.useful.Info
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Info
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -78,13 +77,13 @@ fun CourseHelperNavHost(
     navHostController: NavHostController
 ) {
     val navController = rememberNavController()
-    val courseHelperViewModel: CourseHelperViewModel = hiltViewModel()
+    val viewModel: CourseHelperViewModel = hiltViewModel()
     NavHost(
         navController = navController,
         startDestination = Destinations.CourseHelper.route
     ) {
         animatedComposable(Destinations.CourseHelper.route) {
-            CourseHelper(navController, { navHostController.popBackStack() }, courseHelperViewModel)
+            CourseHelper(navController, { navHostController.popBackStack() }, viewModel)
         }
         animatedComposable(
             route = "${Destinations.CourseRepo.route}/{courseTypeName}/{courseTypeId}",
@@ -97,13 +96,13 @@ fun CourseHelperNavHost(
                 }
             )
         ) {
-            val courseTypeName = it.arguments?.getString("courseTypeName") ?: ""
-            val courseTypeId = it.arguments?.getString("courseTypeId") ?: ""
+            val courseTypeName = it.arguments?.getString("courseTypeName") ?: "null"
+            val courseTypeId = it.arguments?.getString("courseTypeId") ?: "null"
             CourseRepo(
                 navController = navController,
-                viewModel = courseHelperViewModel,
                 courseTypeName = courseTypeName,
-                courseTypeId = courseTypeId
+                courseTypeId = courseTypeId,
+                viewModel = viewModel
             )
         }
         animatedComposable(
@@ -114,11 +113,11 @@ fun CourseHelperNavHost(
                 }
             )
         ) {
-            val courseCode = it.arguments?.getString("courseCode") ?: ""
+            val courseCode = it.arguments?.getString("courseCode") ?: "null"
             CourseInfo(
                 navController = navController,
-                viewModel = courseHelperViewModel,
-                courseCode = courseCode
+                courseCode = courseCode,
+                viewModel = viewModel
             )
         }
     }
@@ -149,33 +148,32 @@ fun CourseHelper(
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Useful.Back,
+                            imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "back"
                         )
                     }
                 },
                 actions = {
-                    top.yukonga.miuix.kmp.basic.IconButton(
+                    IconButton(
                         onClick = {
                             viewModel.changeInfoDialogShow(true)
                         },
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
-                        top.yukonga.miuix.kmp.basic.Icon(
-                            imageVector = MiuixIcons.Useful.Info,
+                        Icon(
+                            imageVector = MiuixIcons.Regular.Info,
                             contentDescription = null
                         )
                     }
                 },
-                modifier =
-                    Modifier.hazeEffect(
-                        state = hazeState,
-                        style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
-                    ) {
-                        blurRadius = 30.dp
-                        noiseFactor = 0f
-                        blurEnabled = true
-                    }
+                modifier = Modifier.hazeEffect(
+                    state = hazeState,
+                    style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
+                ) {
+                    blurRadius = 30.dp
+                    noiseFactor = 0f
+                    blurEnabled = true
+                }
             )
         }
     ) {
@@ -216,15 +214,15 @@ fun CourseHelper(
                                 BasicComponent(
                                     title = it.courseName,
                                     summary = "${it.category} | ${it.teacherName} | ${it.credit}学分",
-                                    rightActions = {
-                                        top.yukonga.miuix.kmp.basic.IconButton(
+                                    endActions = {
+                                        IconButton(
                                             onClick = {
                                                 scope.launch {
                                                     viewModel.removeTargetCourse(it)
                                                 }
                                             }
                                         ) {
-                                            top.yukonga.miuix.kmp.basic.Icon(
+                                            Icon(
                                                 imageVector = Icons.Outlined.Clear,
                                                 contentDescription = null
                                             )
@@ -258,7 +256,7 @@ fun CourseHelper(
                                 fontWeight = FontWeight.Medium
                             )
                         }
-                        top.yukonga.miuix.kmp.basic.IconButton(
+                        IconButton(
                             minHeight = 35.dp,
                             minWidth = 35.dp,
                             onClick = {
@@ -300,14 +298,12 @@ fun CourseHelper(
                     )
                 }
             } else {
-                items(uiState.allCourseType) { it ->
+                items(uiState.allCourseType) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth(),
                         onClick = {
                             scope.launch {
-                                viewModel.changeCourseRepo(null)
-                                delay(100)
                                 navController.navigate("${Destinations.CourseRepo.route}/${it.courseTypeName}/${it.courseTypeId}")
                             }
                         },

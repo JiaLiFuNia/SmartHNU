@@ -16,8 +16,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -37,7 +35,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
@@ -60,6 +58,8 @@ import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
@@ -70,8 +70,8 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Back
-import top.yukonga.miuix.kmp.icon.icons.useful.Settings
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Settings
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
@@ -118,7 +118,7 @@ fun AirCondition(
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Useful.Back,
+                            imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "back"
                         )
                     }
@@ -131,7 +131,7 @@ fun AirCondition(
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Useful.Settings,
+                            imageVector = MiuixIcons.Regular.Settings,
                             contentDescription = "setting"
                         )
                     }
@@ -186,14 +186,14 @@ fun AirCondition(
                             ?: "加载中...").replace("河南师范大学", ""),
                         summary = uiState.billData?.data?.surplusList?.first()?.roomStatus
                             ?: "未知状态",
-                        rightActions = {
+                        endActions = {
                             Text(
                                 text = "${uiState.billData?.data?.soc ?: 0.0} 度",
                                 color = MiuixTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold
                             )
                         },
-                        leftAction = {
+                        startAction = {
                             Icon(
                                 painter = painterResource(R.drawable.climate_mini_split_24px),
                                 contentDescription = null,

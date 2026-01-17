@@ -1,17 +1,15 @@
 package com.smart.htu.screens.message
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -26,12 +24,13 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.api.module.NoticeType
+import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.navigateToWebView
@@ -46,6 +45,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
@@ -53,7 +53,7 @@ import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -89,7 +89,7 @@ fun MessageScreen(
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Useful.Back,
+                            imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "back"
                         )
                     }
@@ -133,40 +133,66 @@ fun MessageScreen(
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
-                    top = it.calculateTopPadding() + 8.dp,
-                    bottom = 12.dp
+                    top = it.calculateTopPadding(),
+                    bottom = it.calculateBottomPadding() + 12.dp
                 ),
                 modifier = Modifier
                     .fillMaxSize()
                     .hazeSource(hazeState)
+                    .padding(top = 16.dp)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .overScrollVertical(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
                 overscrollEffect = null
             ) {
-                if (uiState.noticeList.isNotEmpty()) {
-                    items(uiState.noticeList.sortedByDescending { it.id }) { notice ->
-                        SingleMessage(
-                            isRead = notice.id in uiState.readNoticeIdList,
-                            read = {
-                                scope.launch {
-                                    viewModel.addReadNoticeId(notice.id)
-                                }
-                            },
-                            title = notice.title,
-                            content = notice.content,
-                            noticeId = notice.id,
-                            action = notice.action,
-                            type = notice.type,
-                            navController = navController
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
+                if (uiState.noticeList == null) {
+                    item {
+                        CircularProgressIndicator()
                     }
                 } else {
-                    item {
-                        EmptyContent(
-                            text = "暂无消息",
-                            image = emptyData()
-                        )
+                    if (uiState.noticeList.isNullOrEmpty() && uiState.jwcNoticeList.isNullOrEmpty()) {
+                        item {
+                            EmptyContent(
+                                text = "暂无消息",
+                                image = emptyData()
+                            )
+                        }
+                    } else {
+                        items(
+                            (uiState.noticeList
+                                ?: emptyList()).sortedByDescending { it.id }
+                        ) { notice ->
+                            SingleMessage(
+                                isRead = notice.id in uiState.readNoticeIdList,
+                                read = {
+                                    scope.launch {
+                                        viewModel.addReadNoticeId(notice.id)
+                                    }
+                                },
+                                title = notice.title,
+                                content = notice.content,
+                                action = notice.action,
+                                type = notice.type,
+                                navController = navController
+                            )
+                        }
+                        items(
+                            (uiState.jwcNoticeList ?: emptyList())
+                        ) { notice ->
+                            SingleMessage(
+                                isRead = notice.noticeId in uiState.readNoticeIdList,
+                                read = {
+                                    scope.launch {
+                                        viewModel.addReadNoticeId(notice.noticeId)
+                                        viewModel.getJWCNoticeDetail(notice.noticeId)
+                                    }
+                                },
+                                title = "教务通知",
+                                content = notice.content,
+                                type = NoticeType.JWC,
+                                navController = navController
+                            )
+                        }
                     }
                 }
             }
@@ -177,10 +203,9 @@ fun MessageScreen(
 @Composable
 fun SingleMessage(
     isRead: Boolean,
-    read: (String) -> Unit,
+    read: () -> Unit,
     title: String = "",
     content: String = "",
-    noticeId: String = "",
     action: String = "",
     type: NoticeType = NoticeType.COMMON,
     color: Color = MiuixTheme.colorScheme.surfaceContainer,
@@ -188,7 +213,7 @@ fun SingleMessage(
 ) {
     Surface(
         onClick = {
-            read(noticeId)
+            read()
             when (type) {
                 NoticeType.URL -> {
                     navController.navigateToWebView(
@@ -210,6 +235,9 @@ fun SingleMessage(
 
                 NoticeType.COMMON -> {
                 }
+
+                NoticeType.JWC -> {
+                }
             }
         },
         modifier = Modifier
@@ -221,11 +249,12 @@ fun SingleMessage(
         BasicComponent(
             title = title,
             summary = content,
-            rightActions = {
+            endActions = {
                 if (!isRead) {
                     Badge()
                 }
             }
         )
     }
+
 }

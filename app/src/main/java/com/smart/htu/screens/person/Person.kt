@@ -14,13 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,12 +36,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.window.core.layout.WindowSizeClass
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
-import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.login.LogoutDialog
@@ -58,16 +53,19 @@ import dev.chrisbanes.haze.hazeEffect
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -108,7 +106,7 @@ fun PersonScreen(
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Useful.Back,
+                            imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "back"
                         )
                     }
@@ -144,286 +142,139 @@ fun PersonScreen(
                 .fillMaxSize()
                 .padding(top = it.calculateTopPadding())
         ) {
-            if (windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND))
-                Row {
-                    LazyColumn(
-                        contentPadding = PaddingValues(
-                            horizontal = 16.dp,
-                            vertical = 12.dp
-                        ),
-                        modifier = Modifier
-                            .weight(0.5f)
-                            .fillMaxSize()
-                            .nestedScroll(scrollBehavior.nestedScrollConnection)
-                            .overScrollVertical(),
-                        overscrollEffect = null
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .overScrollVertical(),
+                overscrollEffect = null,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    top = 8.dp,
+                    end = 12.dp,
+                    bottom = 16.dp
+                )
+            ) {
+                item {
+                    SettingItemCard(
+                        modifier = Modifier,
+                        label = "个人信息"
                     ) {
-                        item {
-                            LargeCardDisplay(
-                                modifier = Modifier,
-                                title = "我的信息",
-                                leadingIconPainting = R.drawable.person_search_24px
-                            ) {
-                                PersonalMessage(
-                                    label = stringResource(id = R.string.username),
-                                    trailingText = uiState.personalMessage?.username
-                                )
-                                PersonalMessage(
-                                    label = stringResource(id = R.string.birthday),
-                                    trailingText = uiState.personalMessage?.birthday,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                                PersonalMessage(
-                                    label = stringResource(id = R.string.student_id),
-                                    trailingText = uiState.personalMessage?.studentId,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                                PersonalMessage(
-                                    label = stringResource(id = R.string.class_name),
-                                    trailingText = uiState.personalMessage?.className,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                                PersonalMessage(
-                                    label = stringResource(id = R.string.academic),
-                                    trailingText = uiState.personalMessage?.academic,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                                PersonalMessage(
-                                    label = stringResource(R.string.campus_name),
-                                    trailingText = uiState.personalMessage?.campusName,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                                PersonalMessage(
-                                    label = stringResource(id = R.string.political_outlook),
-                                    trailingText = uiState.personalMessage?.politicalProfile,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                                PersonalMessage(
-                                    label = stringResource(id = R.string.phone),
-                                    trailingText = uiState.personalMessage?.phoneNumber,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                                PersonalMessage(
-                                    label = stringResource(id = R.string.email),
-                                    trailingText = uiState.personalMessage?.emailNumber,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                            }
-                        }
-                    }
-                    LazyColumn(
-                        contentPadding = PaddingValues(
-                            horizontal = 16.dp,
-                            vertical = 12.dp
-                        ),
-                        modifier = Modifier
-                            .weight(0.5f)
-                            .fillMaxSize()
-                            .overScrollVertical(),
-                        overscrollEffect = null
-                    ) {
-                        item {
-                            LargeCardDisplay(
-                                modifier = Modifier,
-                                title = "账号管理",
-                                leadingIconPainting = R.drawable.circle_admin,
-                                actionText = "详情",
-                                navigateTo = {
-                                    navController.navigate(Destinations.AccountManage.route)
+                        PersonalMessage(
+                            label = stringResource(id = R.string.username),
+                            trailingText = uiState.personalMessage?.username
+                        )
+                        Column(
+                            modifier = Modifier
+                                .animateContentSize()
+                                .hazeEffect {
+                                    blurEnabled = !isShowPrivateMessage.value
                                 }
-                            ) {
-                                PersonalMessage(
-                                    label = "河南师大智慧教务",
-                                    trailingText = stringResource(
-                                        id = loginStateString(
-                                            uiState.jwcLoginState
-                                        )
-                                    ),
-                                    onClick = {
-                                        if (uiState.jwcLoginState != 1) navController.navigate(
-                                            Destinations.Login.route
-                                        )
-                                    }
-                                )
-                                PersonalMessage(
-                                    label = "统一身份认证系统",
-                                    trailingText = stringResource(
-                                        id = loginStateString(
-                                            uiState.authLoginState
-                                        )
-                                    ),
-                                    onClick = {
-                                        showLoginDialog.value = true
-                                    }
-                                )
-                                PersonalMessage(
-                                    label = "第二课堂管理系统",
-                                    trailingText = stringResource(
-                                        id = loginStateString(
-                                            uiState.scLoginState
-                                        )
-                                    ),
-                                    onClick = {
-                                    }
-                                )
-                                PersonalMessage(
-                                    label = "我的图书馆",
-                                    trailingText = stringResource(id = loginStateString(0)),
-                                    onClick = {
-                                    }
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(20.dp))
-                        }
-                        item {
-                            TextButton(
-                                text = stringResource(id = R.string.log_out),
-                                onClick = {
-                                    showLogoutDialog.value = true
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.textButtonColors(
-                                    color = MaterialTheme.colorScheme.errorContainer,
-                                    textColor = MaterialTheme.colorScheme.error
-                                )
+                        ) {
+                            PersonalMessage(
+                                label = stringResource(id = R.string.birthday),
+                                trailingText = uiState.personalMessage?.birthday,
+                                isShowPrivateMessage = isShowPrivateMessage.value
+                            )
+                            PersonalMessage(
+                                label = stringResource(id = R.string.student_id),
+                                trailingText = uiState.personalMessage?.studentId,
+                                isShowPrivateMessage = isShowPrivateMessage.value
+                            )
+                            PersonalMessage(
+                                label = stringResource(id = R.string.class_name),
+                                trailingText = uiState.personalMessage?.className,
+                                isShowPrivateMessage = isShowPrivateMessage.value
+                            )
+                            PersonalMessage(
+                                label = stringResource(id = R.string.academic),
+                                trailingText = uiState.personalMessage?.academic,
+                                isShowPrivateMessage = isShowPrivateMessage.value
+                            )
+                            PersonalMessage(
+                                label = stringResource(R.string.campus_name),
+                                trailingText = uiState.personalMessage?.campusName,
+                                isShowPrivateMessage = isShowPrivateMessage.value
+                            )
+                            PersonalMessage(
+                                label = stringResource(id = R.string.political_outlook),
+                                trailingText = uiState.personalMessage?.politicalProfile,
+                                isShowPrivateMessage = isShowPrivateMessage.value
+                            )
+                            PersonalMessage(
+                                label = stringResource(id = R.string.phone),
+                                trailingText = uiState.personalMessage?.phoneNumber,
+                                isShowPrivateMessage = isShowPrivateMessage.value
+                            )
+                            PersonalMessage(
+                                label = stringResource(id = R.string.email),
+                                trailingText = uiState.personalMessage?.emailNumber,
+                                isShowPrivateMessage = isShowPrivateMessage.value
                             )
                         }
                     }
                 }
-            else
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .nestedScroll(scrollBehavior.nestedScrollConnection)
-                        .overScrollVertical(),
-                    overscrollEffect = null,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        top = 8.dp,
-                        end = 12.dp,
-                        bottom = 16.dp
-                    )
-                ) {
-                    item {
-                        SettingItemCard(
-                            modifier = Modifier,
-                            label = "个人信息"
-                        ) {
-                            PersonalMessage(
-                                label = stringResource(id = R.string.username),
-                                trailingText = uiState.personalMessage?.username
-                            )
-                            Column(
-                                modifier = Modifier
-                                    .animateContentSize()
-                                    .hazeEffect {
-                                        blurEnabled = !isShowPrivateMessage.value
-                                    }
-                            ) {
-                                PersonalMessage(
-                                    label = stringResource(id = R.string.birthday),
-                                    trailingText = uiState.personalMessage?.birthday,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                                PersonalMessage(
-                                    label = stringResource(id = R.string.student_id),
-                                    trailingText = uiState.personalMessage?.studentId,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                                PersonalMessage(
-                                    label = stringResource(id = R.string.class_name),
-                                    trailingText = uiState.personalMessage?.className,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                                PersonalMessage(
-                                    label = stringResource(id = R.string.academic),
-                                    trailingText = uiState.personalMessage?.academic,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                                PersonalMessage(
-                                    label = stringResource(R.string.campus_name),
-                                    trailingText = uiState.personalMessage?.campusName,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                                PersonalMessage(
-                                    label = stringResource(id = R.string.political_outlook),
-                                    trailingText = uiState.personalMessage?.politicalProfile,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                                PersonalMessage(
-                                    label = stringResource(id = R.string.phone),
-                                    trailingText = uiState.personalMessage?.phoneNumber,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                                PersonalMessage(
-                                    label = stringResource(id = R.string.email),
-                                    trailingText = uiState.personalMessage?.emailNumber,
-                                    isShowPrivateMessage = isShowPrivateMessage.value
-                                )
-                            }
-                        }
-                    }
-                    item {
-                        SettingItemCard(modifier = Modifier, label = "登录状态") {
-                            PersonalMessage(
-                                label = "河南师大智慧教务",
-                                trailingText = stringResource(id = loginStateString(uiState.jwcLoginState)),
-                                onClick = {
-                                    // isShowMessageDialog.value = true
-                                }
-                            )
-                            PersonalMessage(
-                                label = "统一身份认证",
-                                trailingText = stringResource(id = loginStateString(uiState.authLoginState)),
-                                onClick = {
-                                    showDialogTarget.value = "统一身份认证"
-                                    isShowMessageDialog.value = true
-                                }
-                            )
-                            PersonalMessage(
-                                label = "第二课堂管理系统",
-                                trailingText = stringResource(id = loginStateString(uiState.scLoginState)),
-                                onClick = {
-                                    showDialogTarget.value = "第二课堂管理系统"
-                                    isShowMessageDialog.value = true
-                                }
-                            )
-                            PersonalMessage(
-                                label = "图书馆书目检索系统",
-                                trailingText = stringResource(id = loginStateString(uiState.libraryLoginState)),
-                                onClick = {
-                                    showDialogTarget.value = "图书馆书目检索系统"
-                                    isShowMessageDialog.value = true
-                                }
-                            )
-                        }
-                    }
-                    item {
-                        Card {
-                            SuperArrow(
-                                title = "登录信息管理",
-                                onClick = {
-                                    navController.navigate(Destinations.AccountManage.route)
-                                }
-                            )
-                        }
-                    }
-                    item {
-                        Spacer(modifier = Modifier.height(height = 16.dp))
-                        TextButton(
-                            text = stringResource(id = R.string.log_out),
+                item {
+                    SettingItemCard(modifier = Modifier, label = "登录状态") {
+                        PersonalMessage(
+                            label = "河南师大智慧教务",
+                            trailingText = stringResource(id = loginStateString(uiState.jwcLoginState)),
                             onClick = {
-                                showLogoutDialog.value = true
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.textButtonColors(
-                                color = MaterialTheme.colorScheme.errorContainer,
-                                textColor = MaterialTheme.colorScheme.error
-                            )
+                                // isShowMessageDialog.value = true
+                            }
+                        )
+                        PersonalMessage(
+                            label = "统一身份认证",
+                            trailingText = stringResource(id = loginStateString(uiState.authLoginState)),
+                            onClick = {
+                                showDialogTarget.value = "统一身份认证"
+                                isShowMessageDialog.value = true
+                            }
+                        )
+                        PersonalMessage(
+                            label = "第二课堂管理系统",
+                            trailingText = stringResource(id = loginStateString(uiState.scLoginState)),
+                            onClick = {
+                                showDialogTarget.value = "第二课堂管理系统"
+                                isShowMessageDialog.value = true
+                            }
+                        )
+                        PersonalMessage(
+                            label = "图书馆书目检索系统",
+                            trailingText = stringResource(id = loginStateString(uiState.libraryLoginState)),
+                            onClick = {
+                                showDialogTarget.value = "图书馆书目检索系统"
+                                isShowMessageDialog.value = true
+                            }
                         )
                     }
                 }
+                item {
+                    Card {
+                        SuperArrow(
+                            title = "登录信息管理",
+                            onClick = {
+                                navController.navigate(Destinations.AccountManage.route)
+                            }
+                        )
+                    }
+                }
+                item {
+                    Spacer(modifier = Modifier.height(height = 16.dp))
+                    TextButton(
+                        text = stringResource(id = R.string.log_out),
+                        onClick = {
+                            showLogoutDialog.value = true
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.textButtonColors(
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            textColor = MaterialTheme.colorScheme.error
+                        )
+                    )
+                }
+            }
         }
 
         LogoutDialog(

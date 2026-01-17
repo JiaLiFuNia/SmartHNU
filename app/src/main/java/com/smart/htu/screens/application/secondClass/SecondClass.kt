@@ -15,11 +15,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -43,7 +40,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
@@ -74,7 +71,9 @@ import okhttp3.Cookie
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.BasicComponentDefaults
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.ListPopup
+import top.yukonga.miuix.kmp.basic.DropdownImpl
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
@@ -83,11 +82,12 @@ import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
-import top.yukonga.miuix.kmp.extra.DropdownImpl
+import top.yukonga.miuix.kmp.extra.SuperListPopup
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -139,7 +139,7 @@ fun SecondClass(
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Useful.Back,
+                            imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "back"
                         )
                     }
@@ -282,7 +282,7 @@ fun SecondClass(
                                             titleColor = BasicComponentDefaults.titleColor(
                                                 MaterialTheme.colorScheme.onPrimaryContainer
                                             ),
-                                            leftAction = {
+                                            startAction = {
                                                 Icon(
                                                     painter = painterResource(R.drawable.format_paint_24px),
                                                     contentDescription = "第二课堂",
@@ -290,7 +290,7 @@ fun SecondClass(
                                                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                                                 )
                                             },
-                                            rightActions = {
+                                            endActions = {
                                                 top.yukonga.miuix.kmp.basic.Text(
                                                     text = "${it?.totalScore?.toInt()} (${it?.convertedTotalScore?.toInt()})",
                                                     color = MiuixTheme.colorScheme.primary,
@@ -506,10 +506,10 @@ fun SelectTerm(
             )
         }
 
-        ListPopup(
+        SuperListPopup(
             show = expanded,
             popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
-            alignment = PopupPositionProvider.Align.TopRight,
+            alignment = PopupPositionProvider.Align.TopEnd,
             onDismissRequest = {
                 expanded.value = false
             },

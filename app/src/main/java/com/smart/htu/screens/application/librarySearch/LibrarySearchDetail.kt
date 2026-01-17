@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,7 +32,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
@@ -53,16 +52,17 @@ import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Back
-import top.yukonga.miuix.kmp.icon.icons.useful.Copy
-import top.yukonga.miuix.kmp.icon.icons.useful.Like
-import top.yukonga.miuix.kmp.icon.icons.useful.Unlike
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Copy
+import top.yukonga.miuix.kmp.icon.extended.Favorites
+import top.yukonga.miuix.kmp.icon.extended.FavoritesFill
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -101,7 +101,7 @@ fun LibrarySearchDetail(
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Useful.Back,
+                            imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "back"
                         )
                     }
@@ -118,8 +118,8 @@ fun LibrarySearchDetail(
                         Icon(
                             imageVector = if (uiState.waitingBorrowedBookList
                                     .map { it.bookId }.contains(bookId)
-                            ) MiuixIcons.Useful.Like
-                            else MiuixIcons.Useful.Unlike,
+                            ) MiuixIcons.Regular.FavoritesFill
+                            else MiuixIcons.Regular.Favorites,
                             contentDescription = "favorite"
                         )
                     }
@@ -139,7 +139,7 @@ fun LibrarySearchDetail(
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(
-                            MiuixIcons.Useful.Copy,
+                            MiuixIcons.Regular.Copy,
                             contentDescription = "copy"
                         )
                     }
@@ -325,7 +325,7 @@ fun BookStateCard(
         BasicComponent(
             title = book.callNo,
             summary = book.location,
-            rightActions = {
+            endActions = {
                 Text(
                     text = book.status,
                     modifier = Modifier.padding(end = 8.dp),

@@ -17,10 +17,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,7 +50,6 @@ import androidx.navigation.NavController
 import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.component.EmptyContent
-import com.smart.htu.component.TabRow
 import com.smart.htu.component.TextButtonWithProgressIndicator
 import com.smart.htu.screens.navigateToWebView
 import com.smart.htu.utils.Constants.Companion.HENAN_NORMAL_UNIVERSITY
@@ -64,10 +60,13 @@ import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults.buttonColorsPrimary
 import top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Rename
+import top.yukonga.miuix.kmp.icon.extended.Rename
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -127,7 +126,7 @@ fun LoginScreen(
                     "账号密码",
                     "微信 Code"
                 )
-                TabRow(
+                top.yukonga.miuix.kmp.basic.TabRow(
                     tabs = loginWays,
                     selectedTabIndex = selectedLoginWayIndex,
                     onTabSelected = {
@@ -204,7 +203,7 @@ fun LoginScreen(
                                                 modifier = Modifier.padding(end = 12.dp)
                                             ) {
                                                 Icon(
-                                                    imageVector = MiuixIcons.Useful.Rename,
+                                                    imageVector = MiuixIcons.Regular.Rename,
                                                     tint = if (passwordVisible) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.onSecondaryContainer,
                                                     contentDescription = if (passwordVisible) "隐藏密码" else "显示密码"
                                                 )

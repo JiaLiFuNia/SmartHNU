@@ -32,13 +32,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -70,7 +65,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.kevinnzou.web.rememberWebViewNavigator
 import com.kevinnzou.web.rememberWebViewState
@@ -78,7 +73,6 @@ import com.kevinnzou.web.rememberWebViewStateWithHTMLData
 import com.smart.htu.R
 import com.smart.htu.api.module.AttachmentEntity
 import com.smart.htu.api.module.NewsMarkEntity
-import com.smart.htu.component.BasicDialog
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.DownloadDialog
 import com.smart.htu.component.ImagePreviewDialog
@@ -88,7 +82,7 @@ import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.news.newsView.NewsStyle.HORIZONTAL_MARGIN
 import com.smart.htu.utils.DateUtil.getCurrentDate
 import com.smart.htu.utils.FileUtil.downloadFile
-import com.smart.htu.utils.ToastUtil
+import com.smart.htu.utils.ToastUtil.showToast
 import com.smart.htu.utils.copyContent
 import com.smart.htu.utils.startWebUrl
 import dev.chrisbanes.haze.hazeEffect
@@ -96,29 +90,31 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
-import dev.jeziellago.compose.markdowntext.MarkdownText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.DropdownImpl
 import top.yukonga.miuix.kmp.basic.FloatingToolbar
-import top.yukonga.miuix.kmp.basic.ListPopup
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.ToolbarPosition
-import top.yukonga.miuix.kmp.extra.DropdownImpl
 import top.yukonga.miuix.kmp.extra.SuperBottomSheet
+import top.yukonga.miuix.kmp.extra.SuperListPopup
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Back
-import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalDate
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
+@OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun NewsDetail(
     url: String,
@@ -135,7 +131,6 @@ fun NewsDetail(
     val hazeState = rememberHazeState()
 
     val listState = rememberLazyListState()
-    val snackBarHostState = remember { SnackbarHostState() }
 
     val showDropDownMenu = remember { mutableStateOf(false) }
     val showFloatingToolbar = remember { mutableStateOf(true) }
@@ -146,9 +141,11 @@ fun NewsDetail(
     val newsLoading = remember { mutableStateOf(true) }
     val errorMessage = remember { mutableStateOf("") }
     val showErrorMessageDialog = remember { mutableStateOf(false) }
-    val showHtml = remember { mutableStateOf(false) }
+    val showHtmlText = remember { mutableStateOf(false) }
     val showImagePreview = remember { mutableStateOf(false) }
     val selectedImageData = remember { mutableStateOf("") }
+
+    val snackBarHostState = remember { SnackbarHostState() }
 
     val showAISummaryBottomSheet = remember { mutableStateOf(false) }
 
@@ -184,8 +181,8 @@ fun NewsDetail(
                         onClick = { navController.popBackStack() },
                         modifier = Modifier.padding(start = 16.dp),
                     ) {
-                        top.yukonga.miuix.kmp.basic.Icon(
-                            imageVector = MiuixIcons.Useful.Back,
+                        Icon(
+                            imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "close",
                             tint = MiuixTheme.colorScheme.onBackground
                         )
@@ -195,9 +192,10 @@ fun NewsDetail(
                     IconButton(
                         onClick = { showDropDownMenu.value = true },
                         modifier = Modifier.padding(end = 16.dp),
+                        holdDownState = showDropDownMenu.value
                     ) {
                         Icon(
-                            MiuixIcons.Useful.ImmersionMore, contentDescription = "more",
+                            MiuixIcons.Regular.More, contentDescription = "more",
                             tint = MiuixTheme.colorScheme.onBackground
                         )
                     }
@@ -205,12 +203,13 @@ fun NewsDetail(
                         stringResource(R.string.share),
                         stringResource(R.string.copy_url),
                         stringResource(R.string.open_outside),
-                        stringResource(R.string.forward)
+                        stringResource(R.string.forward),
+                        "复制 HTML 文本"
                     )
-                    ListPopup(
+                    SuperListPopup(
                         show = showDropDownMenu,
                         popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
-                        alignment = PopupPositionProvider.Align.TopRight,
+                        alignment = PopupPositionProvider.Align.TopEnd,
                         onDismissRequest = {
                             showDropDownMenu.value = false
                         }
@@ -226,7 +225,10 @@ fun NewsDetail(
                                         when (index) {
                                             0 -> {
                                                 Intent(Intent.ACTION_SEND).also {
-                                                    it.putExtra(Intent.EXTRA_TEXT, url)
+                                                    it.putExtra(
+                                                        Intent.EXTRA_TEXT,
+                                                        "$title $url"
+                                                    )
                                                     it.type = "text/plain"
                                                     if (it.resolveActivity(context.packageManager) != null) {
                                                         context.startActivity(it)
@@ -237,9 +239,7 @@ fun NewsDetail(
                                             1 -> {
                                                 scope.launch {
                                                     copyContent(url)
-                                                    snackBarHostState.showSnackbar(
-                                                        message = "已复制到剪贴板"
-                                                    )
+                                                    showToast(context, "已复制到剪贴板")
                                                 }
                                             }
 
@@ -249,6 +249,41 @@ fun NewsDetail(
 
                                             3 -> {
                                                 if (navigator.canGoForward) navigator.navigateForward()
+                                            }
+
+                                            4 -> {
+                                                scope.launch {
+                                                    copyContent(
+                                                        NewsHTML.HTML.format(
+                                                            NewsStyle.get(
+                                                                fontSize = uiState.newsFontSize,
+                                                                lineHeight = 1.0F,
+                                                                letterSpacing = 0.5F,
+                                                                textMargin = HORIZONTAL_MARGIN,
+                                                                textColor = Color.Black.toArgb(),
+                                                                textBold = false,
+                                                                textAlign = "start",
+                                                                boldTextColor = Color.Black.toArgb(),
+                                                                subheadBold = false,
+                                                                subheadUpperCase = false,
+                                                                imgMargin = HORIZONTAL_MARGIN,
+                                                                imgBorderRadius = 4,
+                                                                imgDisplayMode = if (uiState.loadImgEnabled) "block" else "none",
+                                                                linkTextColor = Color.Black.toArgb(),
+                                                                codeTextColor = Color.Black.toArgb(),
+                                                                codeBgColor = Color.Black.toArgb(),
+                                                                tableMargin = 0,
+                                                                selectionTextColor = Color.Black.toArgb(),
+                                                                selectionBgColor = Color.Blue.toArgb(),
+                                                                signatureColor = Color.Gray.toArgb()
+                                                            ),
+                                                            url,
+                                                            uiState.newsArticle?.articleContent,
+                                                            WebViewScript.get(uiState.bionicReadingEnabled)
+                                                        )
+                                                    )
+                                                    showToast(context, "已复制到剪贴板")
+                                                }
                                             }
                                         }
                                     },
@@ -275,12 +310,15 @@ fun NewsDetail(
                 visible = showFloatingToolbar.value
             ) {
                 FloatingToolbar(
-                    modifier = Modifier
+                    modifier = Modifier,
+                    cornerRadius = 20.dp,
                 ) {
                     Row(
                         modifier = Modifier
                             .background(Color.Transparent)
-                        .hazeEffect(state = hazeState)
+                            .hazeEffect(state = hazeState)
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         IconButton(
                             onClick = {
@@ -316,7 +354,14 @@ fun NewsDetail(
                                             url = url,
                                             time = LocalDate.now().toString(),
                                             source = source
-                                        )
+                                        ),
+                                        onResult = {
+                                            if (it) {
+                                                showToast(context, "已添加到收藏")
+                                            } else {
+                                                showToast(context, "已从收藏夹移除")
+                                            }
+                                        }
                                     )
                                 }
                             }
@@ -358,16 +403,13 @@ fun NewsDetail(
             }
         },
         floatingToolbarPosition = ToolbarPosition.BottomCenter,
-        snackbarHost = {
-            SnackbarHost(snackBarHostState)
-        },
         modifier = Modifier.fillMaxSize()
     ) {
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 16.dp)
+                .padding(top = if (newsViewMode.intValue == 0) 16.dp else 0.dp)
                 .hazeSource(state = hazeState),
             contentPadding = it
         ) {
@@ -391,7 +433,12 @@ fun NewsDetail(
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp)
                         )
-                        if (showHtml.value) Text(text = uiState.newsArticle?.articleContent.toString())
+                        if (showHtmlText.value) Text(
+                            text = uiState.newsArticle?.articleContent.toString(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        )
                     }
                 }
 
@@ -485,24 +532,18 @@ fun NewsDetail(
             onDismiss = { showImagePreview.value = false },
             onDownload = {
                 scope.launch {
-                    ToastUtil.showToast(context, "正在下载图片：$title.jpg")
+                    showToast(context, "正在下载图片：$title.jpg")
                     downloadFile(
                         context,
                         selectedImageData.value,
                         "$title.jpg",
                         Environment.DIRECTORY_PICTURES
                     )
-                    ToastUtil.showToast(context, "下载成功")
+                    showToast(context, "下载成功")
                 }
             }
         )
     }
-
-    BasicDialog(
-        showDialog = showErrorMessageDialog,
-        title = "提示",
-        summary = errorMessage.value,
-    ) { }
 
     AISummaryBottomSheet(
         showDialog = showAISummaryBottomSheet,
@@ -569,7 +610,7 @@ fun AttachmentContent(
                 Card {
                     val showDownloadDialog = remember { mutableStateOf(false) }
                     BasicComponent(
-                        leftAction = {
+                        startAction = {
                             Image(
                                 painter = painterResource(
                                     id = when (attachment.fileType) {
@@ -624,7 +665,7 @@ fun AISummaryBottomSheet(
         onDismissRequest = {
             showDialog.value = false
         },
-        rightAction = {
+        startAction = {
             IconButton(
                 onClick = {
                     copyContent(aiSummaryContent.toString())
@@ -766,11 +807,7 @@ fun AISummaryBottomSheet(
                 }
                 aiSummaryContent?.let {
                     Spacer(modifier = Modifier.height(4.dp))
-                    MarkdownText(
-                        markdown = it,
-                        isTextSelectable = true,
-                        disableLinkMovementMethod = true
-                    )
+                    top.yukonga.miuix.kmp.basic.Text(it)
                 }
             }
         }

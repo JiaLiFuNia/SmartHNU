@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 data class BuildingEntity(
     @SerializedName("jzwdm") val buildingCode: String,
     @SerializedName("jzwmc") val buildingName: String,
+    @SerializedName("xqmc") val campusName: String? = "",
     @SerializedName("rq") val date: String? = ""
 )
 

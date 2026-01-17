@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -21,16 +22,14 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.Text
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
@@ -60,7 +59,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
@@ -71,9 +70,14 @@ import com.smart.htu.R
 import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.component.CircularProgressIndicator
+import com.smart.htu.screens.application.ApplicationEntity
+import com.smart.htu.screens.main.TaskEntity
+import com.smart.htu.screens.main.TaskType
 import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.news.entity.NewsType
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.DateUtil.formatDateToFriendly
+import com.smart.htu.utils.MD5Util.md5
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -81,14 +85,18 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 /*@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -336,13 +344,16 @@ fun NewsScreen(
                                                 title = news.title,
                                                 label = context.getString(news.label.label)
                                             )
+                                        },
+                                        onAddClick = {
+                                            viewModel.addTaskList(it)
                                         }
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                 }
                                 item {
                                     LaunchedEffect(Unit) {
-                                        pageNumber.intValue = pageNumber.intValue + 1
+                                        pageNumber.intValue += 1
                                         viewModel.getNewsList(pageIndex, pageNumber.intValue)
                                     }
                                 }
@@ -373,7 +384,8 @@ fun NewsItem(
     news: NewsItemEntity,
     imageLoadEnabled: Boolean = true,
     maxLines: Int = 2,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onAddClick: (TaskEntity) -> Unit
 ) {
     Surface(
         onClick = onClick,
@@ -398,7 +410,8 @@ fun NewsItem(
             supportingContent = {
                 Text(
                     text = formatDateToFriendly(news.time),
-                    color = MiuixTheme.colorScheme.onSurface
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                    fontSize = 14.sp
                 )
             },
             trailingContent = {
@@ -417,6 +430,36 @@ fun NewsItem(
                         placeholder = painterResource(id = R.drawable.ic_loading_placeholder_horizontal),
                         error = painterResource(id = R.drawable.ic_loading_placeholder_horizontal)
                     )
+                }
+                if (news.label == NewsType.RESEARCH || news.label == NewsType.MATH_LECTURES) {
+                    IconButton(
+                        backgroundColor = MiuixTheme.colorScheme.secondaryContainer.copy(
+                            alpha = 0.8f
+                        ),
+                        minHeight = 35.dp,
+                        minWidth = 35.dp,
+                        onClick = {
+                            val task = TaskEntity(
+                                id = md5(news.title + news.time),
+                                type = TaskType.Event,
+                                title = news.title,
+                                content = "",
+                                location = news.label.name,
+                                startDateTime = LocalDateTime.of(2026, 1, 5, 10, 0, 0),
+                                endDateTime = LocalDateTime.of(2026, 1, 5, 11, 0, 0),
+                                actionType = ApplicationEntity.RouteType.Url,
+                                action = news.url
+                            )
+                            onAddClick(task)
+                        },
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(20.dp),
+                            imageVector = Icons.Outlined.Add,
+                            tint = MiuixTheme.colorScheme.onSurface,
+                            contentDescription = null
+                        )
+                    }
                 }
             }
         )

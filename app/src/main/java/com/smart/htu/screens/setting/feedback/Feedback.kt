@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -20,22 +18,27 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.smart.htu.R
 import com.smart.htu.api.module.FeedbackType
 import com.smart.htu.component.TextButtonWithProgressIndicator
+import com.smart.htu.utils.ToastUtil.showToast
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -47,9 +50,11 @@ fun Feedback(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    val context = LocalContext.current
     val snackBarHostState = remember { SnackbarHostState() }
     val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
 
     Scaffold(
         topBar = {
@@ -62,7 +67,7 @@ fun Feedback(
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Useful.Back,
+                            imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "back"
                         )
                     }
@@ -128,6 +133,7 @@ fun Feedback(
                 TextButtonWithProgressIndicator(
                     text = if (uiState.isSubmitting) "正在提交..." else "提交",
                     onClick = {
+                        focusManager.clearFocus()
                         if (uiState.detailMessage.isEmpty()) {
                             scope.launch {
                                 snackBarHostState.showSnackbar("内容不能为空")
@@ -136,12 +142,12 @@ fun Feedback(
                             viewModel.submitFeedback(
                                 onSuccess = {
                                     scope.launch {
-                                        snackBarHostState.showSnackbar(it)
+                                        showToast(context, it)
                                     }
                                 },
                                 onError = {
                                     scope.launch {
-                                        snackBarHostState.showSnackbar(it)
+                                        showToast(context, it)
                                     }
                                 }
                             )

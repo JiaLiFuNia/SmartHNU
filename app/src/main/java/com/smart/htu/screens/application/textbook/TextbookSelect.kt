@@ -1,6 +1,7 @@
 package com.smart.htu.screens.application.textbook
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,13 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerScope
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,32 +34,40 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.smart.htu.R
 import com.smart.htu.api.module.Textbook
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
-import com.smart.htu.component.TabRow
 import com.smart.htu.component.imageVectors.emptyData
+import com.smart.htu.screens.application.librarySearch.LibrarySingleBook
+import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.ToastUtil.showToast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
+import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.TabRowDefaults
+import top.yukonga.miuix.kmp.basic.TabRowWithContour
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.extra.SuperBottomSheet
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Confirm
-import top.yukonga.miuix.kmp.icon.icons.useful.Search
-import top.yukonga.miuix.kmp.icon.icons.useful.Undo
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Ok
+import top.yukonga.miuix.kmp.icon.extended.Search
+import top.yukonga.miuix.kmp.icon.extended.Undo
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -78,7 +81,7 @@ fun TextbookSelect(
     termCode: String
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val scrollBehavior = MiuixScrollBehavior()
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
@@ -113,7 +116,7 @@ fun TextbookSelect(
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "back"
                         )
                     }
@@ -136,14 +139,15 @@ fun TextbookSelect(
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .fillMaxSize()
             ) {
-                TabRow(
+                TabRowWithContour(
                     tabs = tabItem,
                     selectedTabIndex = selectIndex,
                     onTabSelected = {
-                        coroutineScope.launch {
+                        scope.launch {
                             pagerState.animateScrollToPage(it)
                         }
                     },
+                    colors = TabRowDefaults.tabRowColors(backgroundColor = MiuixTheme.colorScheme.secondary),
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -155,7 +159,10 @@ fun TextbookSelect(
                 ) {
                     SelectTextbook(
                         textbook = if (it == 0) uiState.selectableList else uiState.selectedList,
-                        viewModel = viewModel
+                        pageIndex = it,
+                        uiState = uiState,
+                        viewModel = viewModel,
+                        navController = navController
                     )
                 }
             }
@@ -166,8 +173,12 @@ fun TextbookSelect(
 @Composable
 fun PagerScope.SelectTextbook(
     textbook: List<Textbook>?,
-    viewModel: TextbookViewModel
+    pageIndex: Int,
+    uiState: TextbookUiState,
+    viewModel: TextbookViewModel,
+    navController: NavController
 ) {
+    val scope = rememberCoroutineScope()
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 16.dp),
         modifier = Modifier
@@ -189,7 +200,18 @@ fun PagerScope.SelectTextbook(
                 }
             } else {
                 items(textbook) {
-                    CourseTextbookItem(it, {})
+                    CourseTextbookItem(
+                        textbook = it,
+                        onClick = {},
+                        pageIndex = pageIndex,
+                        uiState = uiState,
+                        onSearch = {
+                            scope.launch {
+                                viewModel.librarySearch(it, 1)
+                            }
+                        },
+                        navController = navController
+                    )
                     Spacer(modifier = Modifier.height(12.dp))
                 }
             }
@@ -200,9 +222,14 @@ fun PagerScope.SelectTextbook(
 @Composable
 fun CourseTextbookItem(
     textbook: Textbook,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    pageIndex: Int,
+    uiState: TextbookUiState,
+    onSearch: (String) -> Unit,
+    navController: NavController
 ) {
     val context = LocalContext.current
+    val isSearchBottomSheetShow = remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
             .fillMaxWidth(),
@@ -216,26 +243,26 @@ fun CourseTextbookItem(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                top.yukonga.miuix.kmp.basic.Text(
+                Text(
                     text = textbook.textbookName,
                     fontSize = 17.sp,
                     fontWeight = FontWeight(550),
                 )
-                top.yukonga.miuix.kmp.basic.Text(
+                Text(
                     text = "ISBN：${textbook.isbn}",
                     fontSize = 12.sp,
                     modifier = Modifier.padding(top = 2.dp),
                     fontWeight = FontWeight(550),
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
-                top.yukonga.miuix.kmp.basic.Text(
+                Text(
                     text = "定价：${textbook.price}",
                     fontSize = 12.sp,
                     modifier = Modifier.padding(top = 2.dp),
                     fontWeight = FontWeight(550),
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
-                top.yukonga.miuix.kmp.basic.Text(
+                Text(
                     text = "编著和出版社：${textbook.editor} | ${textbook.publisher}",
                     fontSize = 14.sp,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
@@ -254,12 +281,11 @@ fun CourseTextbookItem(
             IconButton(
                 minHeight = 35.dp,
                 minWidth = 35.dp,
-                onClick = { showToast(context, "开发中") },
-                backgroundColor = if (textbook.isSelected) {
-                    MiuixTheme.colorScheme.secondaryContainer.copy(alpha = 0.8f)
-                } else {
-                    MiuixTheme.colorScheme.secondaryContainer
-                }
+                onClick = {
+                    onSearch(textbook.isbn)
+                    isSearchBottomSheetShow.value = true
+                },
+                backgroundColor = MiuixTheme.colorScheme.secondaryContainer.copy(alpha = 0.8f)
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 10.dp),
@@ -267,7 +293,7 @@ fun CourseTextbookItem(
                 ) {
                     Icon(
                         modifier = Modifier.size(20.dp),
-                        imageVector = MiuixIcons.Useful.Search,
+                        imageVector = MiuixIcons.Regular.Search,
                         contentDescription = null
                     )
                     Text(
@@ -283,11 +309,7 @@ fun CourseTextbookItem(
                 minHeight = 35.dp,
                 minWidth = 35.dp,
                 onClick = { showToast(context, "开发中") },
-                backgroundColor = if (textbook.isSelected) {
-                    MiuixTheme.colorScheme.secondaryContainer.copy(alpha = 0.8f)
-                } else {
-                    MiuixTheme.colorScheme.secondaryContainer
-                }
+                backgroundColor = MiuixTheme.colorScheme.secondaryContainer.copy(alpha = 0.8f)
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 10.dp),
@@ -295,16 +317,16 @@ fun CourseTextbookItem(
                 ) {
                     Icon(
                         modifier = Modifier.size(20.dp),
-                        imageVector = if (textbook.isSelected) {
-                            MiuixIcons.Useful.Undo
+                        imageVector = if (pageIndex == 1) {
+                            MiuixIcons.Regular.Undo
                         } else {
-                            MiuixIcons.Useful.Confirm
+                            MiuixIcons.Regular.Ok
                         },
                         contentDescription = null
                     )
                     Text(
                         modifier = Modifier.padding(start = 4.dp, end = 3.dp),
-                        text = if (textbook.isSelected) "退订" else "选订",
+                        text = if (pageIndex == 1) "退订" else "选订",
                         fontWeight = FontWeight.Medium,
                         fontSize = 15.sp
                     )
@@ -312,28 +334,43 @@ fun CourseTextbookItem(
             }
         }
     }
-}
-
-@Composable
-fun SingleInfo(
-    label: String,
-    content: String
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth()
+    SuperBottomSheet(
+        show = isSearchBottomSheetShow,
+        title = "搜索结果",
+        onDismissRequest = {
+            isSearchBottomSheetShow.value = false
+        },
+        insideMargin = DpSize(16.dp, 0.dp),
+        backgroundColor = MiuixTheme.colorScheme.surface
     ) {
-        Text(
-            text = label,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.3f),
-            style = MaterialTheme.typography.bodyLarge
-        )
-        Text(
-            text = content,
-            modifier = Modifier.weight(0.8f),
-            style = MaterialTheme.typography.bodyLarge
-        )
+        if (uiState.isSearching) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                top.yukonga.miuix.kmp.basic.CircularProgressIndicator()
+            }
+        } else {
+            if (uiState.bookSearchList.isNotEmpty()) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    uiState.bookSearchList.forEach {
+                        LibrarySingleBook(
+                            bookContent = it,
+                            onClick = {
+                                isSearchBottomSheetShow.value = false
+                                navController.navigate("${Destinations.LibrarySearchDetail.route}/${it.bookId}")
+                            }
+                        )
+                    }
+                }
+            } else {
+                EmptyContent(text = "没有该书籍", modifier = Modifier.height(100.dp))
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
     }
 }

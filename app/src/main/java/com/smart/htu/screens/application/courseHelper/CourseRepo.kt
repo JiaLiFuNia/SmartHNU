@@ -16,8 +16,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -36,12 +34,15 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.App.Companion.context
 import com.smart.htu.api.module.CourseItemEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
+import com.smart.htu.component.SuggestChip
+import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.utils.ToastUtil.showToast
@@ -52,6 +53,8 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.InputField
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
@@ -59,7 +62,7 @@ import top.yukonga.miuix.kmp.basic.SearchBar
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Back
+import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -67,9 +70,9 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @Composable
 fun CourseRepo(
     navController: NavController,
-    viewModel: CourseHelperViewModel,
     courseTypeName: String,
-    courseTypeId: String
+    courseTypeId: String,
+    viewModel: CourseHelperViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = MiuixScrollBehavior()
@@ -78,9 +81,17 @@ fun CourseRepo(
     val hazeState = rememberHazeState()
     val textValue = rememberSaveable { mutableStateOf("") }
 
+    val hasRequestedLoad = rememberSaveable(courseTypeId) { mutableStateOf(false) }
+
     LaunchedEffect(courseTypeId) {
-        if (uiState.courseRepo == null)
-            viewModel.getCourseRepo(courseTypeId)
+        val shouldLoad = !hasRequestedLoad.value || uiState.courseRepo == null
+        if (shouldLoad) {
+            if (uiState.courseRepo == null) {
+                viewModel.getCourseTypeInfo(courseTypeId)
+                viewModel.getCourseRepo(courseTypeId)
+                hasRequestedLoad.value = true
+            }
+        }
     }
 
     LaunchedEffect(textValue.value) {
@@ -107,7 +118,7 @@ fun CourseRepo(
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Useful.Back,
+                            imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "back"
                         )
                     }
@@ -198,11 +209,19 @@ fun CourseRepo(
                         }
                     }
                 } else {
-                    if (uiState.courseRepo == null) {
+                    if (uiState.courseRepo == null || uiState.termCode == null) {
                         item {
                             CircularProgressIndicator()
                         }
                     } else {
+                        item {
+                            SuggestChip(
+                                text = "现在是 ${uiState.selectionPhase} 阶段（${uiState.startTime}-${uiState.endTime}），${uiState.isCancelable.takeIf { it } ?: "不"}可退选课程。",
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {},
+                                type = SuggestChipType.INFO
+                            )
+                        }
                         if (uiState.courseRepo.isNullOrEmpty()) {
                             item {
                                 EmptyContent(
@@ -261,11 +280,11 @@ fun CourseRepoItem(
                     Text(
                         text = course.courseName,
                         fontSize = 17.sp,
-                        fontWeight = FontWeight(550),
+                        fontWeight = FontWeight(550)
                     )
                     if (course.category.isNotEmpty()) {
                         Text(
-                            text = course.category,
+                            text = course.courseCategoryName.ifEmpty { course.category },
                             fontSize = 12.sp,
                             color = MiuixTheme.colorScheme.onTertiaryContainer.copy(
                                 0.8f
@@ -286,26 +305,24 @@ fun CourseRepoItem(
                             maxLines = 1
                         )
                     }
-                    course.credit.let {
-                        Text(
-                            text = "${it}学分",
-                            fontSize = 12.sp,
-                            color = MiuixTheme.colorScheme.onTertiaryContainer.copy(
-                                0.8f
-                            ),
-                            modifier = Modifier
-                                .padding(start = 6.dp)
-                                .clip(ContinuousRoundedRectangle(6.dp))
-                                .background(
-                                    MiuixTheme.colorScheme.tertiaryContainer.copy(
-                                        0.6f
-                                    )
+                    Text(
+                        text = "${course.credit}学分",
+                        fontSize = 12.sp,
+                        color = MiuixTheme.colorScheme.onTertiaryContainer.copy(
+                            0.8f
+                        ),
+                        modifier = Modifier
+                            .padding(start = 6.dp)
+                            .clip(ContinuousRoundedRectangle(6.dp))
+                            .background(
+                                MiuixTheme.colorScheme.tertiaryContainer.copy(
+                                    0.6f
                                 )
-                                .padding(horizontal = 6.dp, vertical = 2.dp),
-                            fontWeight = FontWeight(750),
-                            maxLines = 1
-                        )
-                    }
+                            )
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        fontWeight = FontWeight(750),
+                        maxLines = 1
+                    )
                 }
                 Text(
                     text = "教师：${course.teacherName?.ifEmpty { "无" }}",
@@ -331,7 +348,7 @@ fun CourseRepoItem(
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
             }
-            top.yukonga.miuix.kmp.basic.IconButton(
+            IconButton(
                 backgroundColor = MiuixTheme.colorScheme.secondaryContainer.copy(
                     alpha = 0.8f
                 ),

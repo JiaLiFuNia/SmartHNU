@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -31,7 +30,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.smart.htu.BuildConfig
-import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.api.module.CaptchaVersionEntity
 import com.smart.htu.component.InfoBadge
@@ -43,7 +41,6 @@ import com.smart.htu.ui.theme.KeyColors
 import com.smart.htu.utils.APPVersion.getVersionCode
 import com.smart.htu.utils.APPVersion.getVersionName
 import com.smart.htu.utils.FileUtil.moveFile
-import com.smart.htu.utils.ToastUtil.showSnackbar
 import com.smart.htu.utils.ToastUtil.showToast
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -55,6 +52,7 @@ import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperDropdown
@@ -85,7 +83,7 @@ fun SettingScreen(
     val showCaptchaUpdateDialog = remember { mutableStateOf(false) }
 
     val captchaModelDownloadDir = File(
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+        context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
         "captcha.traineddata"
     )
     val captchaModelFileDir = File(
@@ -100,10 +98,19 @@ fun SettingScreen(
                 targetDirectory = context.filesDir,
                 targetFileName = "captcha.traineddata"
             )
-            viewModel.setLocalCaptchaVersion(
-                uiState.updateInfo?.captchaModelVersion ?: CaptchaVersionEntity()
-            )
-            showToast(context, "验证码识别模型已更新")
+                .onSuccess {
+                    if (it) {
+                        viewModel.setLocalCaptchaVersion(
+                            uiState.updateInfo?.captchaModelVersion ?: CaptchaVersionEntity()
+                        )
+                        showToast(context, "验证码识别模型已更新")
+                    } else {
+                        showToast(context, "文件不存在")
+                    }
+                }
+                .onFailure {
+                    showToast(context, it.message.toString())
+                }
         }
     }
 
@@ -225,14 +232,6 @@ fun SettingScreen(
                             viewModel.changeBlurEnabled(it)
                         }
                     )
-                    SuperSwitch(
-                        checked = false,
-                        title = "预测式返回",
-                        summary = "通过预测手势滑动方向来加快返回应用的速度（实验性功能）",
-                        onCheckedChange = {
-
-                        }
-                    )
                     SuperArrow(
                         title = "字体设置",
                         summary = "调整新闻正文字体样式及大小",
@@ -257,7 +256,7 @@ fun SettingScreen(
                     BasicComponent(
                         title = stringResource(id = R.string.check_update),
                         summary = "当前应用版本：${getVersionName()}(${getVersionCode()})\n编译时间：${BuildConfig.BUILD_TIME}",
-                        rightActions = {
+                        endActions = {
                             if (uiState.isUpdate) {
                                 InfoBadge(text = "新版本", color = MaterialTheme.colorScheme.error)
                             }
@@ -270,7 +269,7 @@ fun SettingScreen(
                                             if (it) {
                                                 showUpdateDialog.value = true
                                             } else {
-                                                showSnackbar(snackBarHostState, "当前已是最新版本")
+                                                showToast(context, "当前已是最新版本")
                                             }
                                         }
                                     }
@@ -297,8 +296,8 @@ fun SettingScreen(
                         onClick = {
                             viewModel.clearCache()
                         },
-                        rightActions = {
-                            top.yukonga.miuix.kmp.basic.Text(
+                        endActions = {
+                            Text(
                                 text = uiState.cacheSize,
                                 fontSize = MiuixTheme.textStyles.body2.fontSize,
                                 color = MiuixTheme.colorScheme.onSurfaceVariantActions,
@@ -309,7 +308,7 @@ fun SettingScreen(
                     BasicComponent(
                         title = "验证码识别模型",
                         summary = "当前版本 ${uiState.captchaLocalInfo.versionName}(${uiState.captchaLocalInfo.versionCode})",
-                        rightActions = {
+                        endActions = {
                             if (uiState.isCaptchaUpdate && !captchaModelDownloadDir.exists() && !captchaModelFileDir.exists()) {
                                 InfoBadge(text = "新版本", color = MaterialTheme.colorScheme.error)
                             } else {
@@ -334,7 +333,7 @@ fun SettingScreen(
                                                 if (it) {
                                                     showCaptchaUpdateDialog.value = true
                                                 } else {
-                                                    snackBarHostState.showSnackbar("当前已是最新版本")
+                                                    showToast(context, "当前已是最新版本")
                                                 }
                                             }
                                         }

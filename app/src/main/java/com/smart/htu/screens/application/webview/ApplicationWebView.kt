@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -25,7 +25,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.kevinnzou.web.rememberWebViewNavigator
 import com.kevinnzou.web.rememberWebViewState
@@ -39,19 +39,20 @@ import com.smart.htu.utils.copyContent
 import com.smart.htu.utils.startWebUrl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.basic.ListPopup
+import top.yukonga.miuix.kmp.basic.DropdownImpl
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
-import top.yukonga.miuix.kmp.extra.DropdownImpl
+import top.yukonga.miuix.kmp.extra.SuperListPopup
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Back
-import top.yukonga.miuix.kmp.icon.icons.useful.Cancel
-import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
-import top.yukonga.miuix.kmp.icon.icons.useful.Refresh
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.More
+import top.yukonga.miuix.kmp.icon.extended.Refresh
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -103,16 +104,16 @@ fun ApplicationWebView(
                             appWebViewViewModel.loadCookiesForUrl(url)
                         }
                     ) {
-                        Icon(MiuixIcons.Useful.Refresh, contentDescription = "Refresh")
+                        Icon(MiuixIcons.Regular.Refresh, contentDescription = "Refresh")
                     }
-                    top.yukonga.miuix.kmp.basic.IconButton(
+                    IconButton(
                         onClick = {
                             showDropDownMenu.value = true
                         },
                         holdDownState = showDropDownMenu.value,
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
-                        Icon(MiuixIcons.Useful.ImmersionMore, contentDescription = "more")
+                        Icon(MiuixIcons.Regular.More, contentDescription = "more")
                     }
                     val dropdownOptions = listOf(
                         "分享",
@@ -121,10 +122,10 @@ fun ApplicationWebView(
                         stringResource(id = R.string.forward),
                         "清除 Cookie"
                     )
-                    ListPopup(
+                    SuperListPopup(
                         show = showDropDownMenu,
                         popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
-                        alignment = PopupPositionProvider.Align.TopRight,
+                        alignment = PopupPositionProvider.Align.TopEnd,
                         onDismissRequest = {
                             showDropDownMenu.value = false
                         }
@@ -188,10 +189,10 @@ fun ApplicationWebView(
                                     navController.popBackStack()
                             }
                         ) {
-                            Icon(MiuixIcons.Useful.Back, contentDescription = "back")
+                            Icon(MiuixIcons.Regular.Back, contentDescription = "back")
                         }
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(MiuixIcons.Useful.Cancel, contentDescription = "close")
+                            Icon(Icons.Default.Close, contentDescription = "close")
                         }
                     }
                 }

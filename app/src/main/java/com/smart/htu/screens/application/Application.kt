@@ -15,7 +15,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -31,14 +30,14 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
 import com.smart.htu.R
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
-import com.smart.htu.component.card.MediumCardDisplay
-import com.smart.htu.component.card.SmallCardDisplay
+import com.smart.htu.component.card.MediumAppCard
+import com.smart.htu.component.card.SmallAppCard
 import com.smart.htu.screens.application.ApplicationEntity.ApplicationCategory
 import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.screens.login.LoginViewModel
@@ -51,6 +50,7 @@ import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
@@ -165,7 +165,7 @@ fun Application(
                 }
                 items(appList) { app ->
                     if (displayMode.intValue == 0) {
-                        MediumCardDisplay(
+                        MediumAppCard(
                             enabled = ((loginUiState.isGuestModeEnable && app.guestMode) || !loginState.value) && app.enabled,
                             content = app,
                             modifier = Modifier,
@@ -195,7 +195,7 @@ fun Application(
                             }
                         )
                     } else {
-                        SmallCardDisplay(
+                        SmallAppCard(
                             enabled = ((loginUiState.isGuestModeEnable && app.guestMode) || !loginState.value) && app.enabled,
                             content = app,
                             modifier = Modifier

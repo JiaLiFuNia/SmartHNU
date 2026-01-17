@@ -26,7 +26,6 @@ import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,7 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
@@ -58,7 +57,6 @@ import com.smart.htu.api.module.CourseGradeDetailRes.CourseGradeDetailEntity
 import com.smart.htu.api.module.CourseGradeRes.CourseGradeEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
-import com.smart.htu.component.TabRow
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
 import com.smart.htu.component.chart.LineChart
@@ -72,6 +70,7 @@ import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
+import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
@@ -83,8 +82,8 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.extra.SuperBottomSheet
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Back
-import top.yukonga.miuix.kmp.icon.icons.useful.ImmersionMore
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -101,7 +100,6 @@ fun Grade(
     val scrollBehavior = MiuixScrollBehavior()
 
     val isBottomSheetShow = remember { mutableStateOf(false) }
-    val isGradeDetailBottomSheetShow = remember { mutableStateOf(false) }
     val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
 
     val pagerState = rememberPagerState(pageCount = { 2 }, initialPage = 0)
@@ -134,7 +132,7 @@ fun Grade(
                         holdDownState = isBottomSheetShow.value
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Useful.ImmersionMore,
+                            imageVector = MiuixIcons.Regular.More,
                             contentDescription = "more"
                         )
                     }
@@ -146,8 +144,8 @@ fun Grade(
                             navController.popBackStack()
                         }
                     ) {
-                        top.yukonga.miuix.kmp.basic.Icon(
-                            imageVector = MiuixIcons.Useful.Back,
+                        Icon(
+                            imageVector = MiuixIcons.Regular.Back,
                             contentDescription = null,
                             tint = MiuixTheme.colorScheme.onBackground
                         )
@@ -177,7 +175,7 @@ fun Grade(
                     .fillMaxSize()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
-                TabRow(
+                top.yukonga.miuix.kmp.basic.TabRow(
                     tabs = tabItem,
                     selectedTabIndex = selectIndex,
                     onTabSelected = {
@@ -363,7 +361,6 @@ fun Grade(
             onClick = {
                 scope.launch {
                     viewModel.changeTermCode(it)
-                    isRefreshing = true
                 }
             }
         )
