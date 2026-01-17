@@ -1,6 +1,7 @@
 .gradle
-app
 .kotlin
+app/release
+app/mapping.txt
 build
 local.properties
 .cxx
