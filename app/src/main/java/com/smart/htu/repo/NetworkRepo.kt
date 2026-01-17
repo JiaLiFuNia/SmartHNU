@@ -24,6 +24,8 @@ import com.smart.htu.utils.ParseNewsArticleUtil.parseHTMLToNewsArticle
 import com.smart.htu.utils.ParseNewsListUtil.parseHTMLToNewsList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.dankito.readability4j.Article
+import net.dankito.readability4j.Readability4J
 import okhttp3.ResponseBody
 import org.jsoup.Jsoup
 import retrofit2.Response
@@ -42,12 +44,12 @@ class NetworkRepo @Inject constructor(
 ) {
 
     // 搜索新闻
-    suspend fun searchNewsService(searchInfo: String): List<NewsItemEntity> {
+    suspend fun searchNewsService(searchInfo: String, type: String = ""): List<NewsItemEntity> {
         try {
             val res = newsService.searchService(
-                searchInfo = searchInfo
+                searchInfo = searchInfo,
+                // type = type
             )
-            Log.e("TAG666", "searchNewsService ${res.body()?.dataList}")
             return res.body()?.dataList ?: emptyList()
         } catch (e: Exception) {
             Log.e("TAG666", "searchNewsService $e")
@@ -68,7 +70,7 @@ class NetworkRepo @Inject constructor(
             )
             return parseHTMLToNewsList(res.body()?.string().toString(), newsOptionItems.label)
         } catch (e: Exception) {
-            Log.e("TAG666", "getB $e")
+            Log.e("TAG666", "getNewsService $e")
             return emptyList()
         }
     }
@@ -77,7 +79,17 @@ class NetworkRepo @Inject constructor(
     suspend fun getNewsDetailService(url: String): NewsArticleEntity? {
         try {
             val res = newsService.getNewsDetail(url).string()
-            return parseHTMLToNewsArticle(url, res)
+            val article = parseHTMLToNewsArticle(url, res)
+            // Log.i("TAG666", "getNewsDetailService article: $article")
+            if (article.articleContent == null || article.title == null) {
+                val readability4J = Readability4J(url, res)
+                val articleContent: Article = readability4J.parse()
+                article.apply {
+                    this.articleContent = articleContent.content
+                    this.title = articleContent.title
+                }
+            }
+            return article
         } catch (e: Exception) {
             Log.e("TAG666", "getNewsDetailService $e")
             return null
@@ -206,6 +218,19 @@ class NetworkRepo @Inject constructor(
                 Log.e("TAG666", "${e.message}")
                 Result.failure(Exception("请求失败"))
             }
+        }
+    }
+
+    suspend fun getPersonalMessageService(): Result<Any> {
+        return try {
+            val res = eHallService.getPersonalMessage()
+            when (res.code()) {
+                200 -> Result.success(res)
+                else -> Result.failure(Exception("状态码：${res.code()} 获取失败"))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            Result.failure(Exception("获取失败"))
         }
     }
 

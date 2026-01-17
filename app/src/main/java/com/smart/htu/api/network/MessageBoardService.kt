@@ -16,7 +16,7 @@ interface MessageBoardService {
         @Query("page") page: Int,
         @Query("per_page") perPage: Int,
         @Query("cate_type") cateType: Int,
-        @Query("_time") _time: String
+        @Query("_time") time: String
     ): MessageBoardPostsRes
 
     @GET("service/app/posts/list_detail")
@@ -24,7 +24,7 @@ interface MessageBoardService {
     suspend fun getMessageBoardPostDetail(
         @Header("signature") signature: String,
         @Query("id") id: String,
-        @Query("_time") _time: String
+        @Query("_time") time: String
     ): MessageBoardPostDetailRes
 
 }

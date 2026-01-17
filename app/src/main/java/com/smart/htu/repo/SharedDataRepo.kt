@@ -9,16 +9,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import javax.inject.Singleton
 
 interface SharedDataRepository {
-    val loginJWCState: StateFlow<Int>
     val termIndex: StateFlow<TermIndexEntity?>
 
     suspend fun setJWCLoginState(state: Int)
@@ -33,15 +28,6 @@ class SharedDataRepoImpl @Inject constructor(
 ) : SharedDataRepository {
 
     val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
-    override val loginJWCState = dataStoreRepo.observeLoginJWCState()
-        .stateIn(
-            scope = scope,
-            started = Eagerly,
-            initialValue = runBlocking {
-                dataStoreRepo.observeLoginJWCState().first()
-            }
-        )
     override val termIndex = MutableStateFlow<TermIndexEntity?>(null)
 
     override suspend fun setJWCLoginState(state: Int) {

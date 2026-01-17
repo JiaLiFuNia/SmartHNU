@@ -47,7 +47,7 @@ object ParseNewsListUtil {
         SingleParseRule("all", "div.result_item", ""),
         SingleParseRule("title", "h3.item_title a", "text"), // title
         SingleParseRule("url", "h3.item_title a", "href"), // url
-        SingleParseRule("time", "span.item_metas:nth-of-type(2)", "text"),// time
+        SingleParseRule("time", "span.item_metas", "text"),// time
         SingleParseRule("img_url", "div.item_picture img", "src") // img_url
     )
 

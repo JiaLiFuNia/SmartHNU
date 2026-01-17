@@ -4,8 +4,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.smart.htu.api.module.CourseInfoEntity
 import com.smart.htu.api.module.CourseItemEntity
-import com.smart.htu.api.module.CourseTimeEntity
 import com.smart.htu.api.module.SelectableCourseTypeEntity
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.JWCNetworkRepo
@@ -28,9 +28,15 @@ data class CourseHelperUiState(
     val courseRepo: List<CourseItemEntity>? = null,
     val searchCourseRepo: List<CourseItemEntity> = emptyList(),
     val targetCourseList: List<CourseItemEntity> = emptyList(),
-    val courseInfo: List<CourseTimeEntity>? = null,
+    val courseInfo: List<CourseInfoEntity>? = null,
     val isSelecting: Boolean = false,
     val isInfoDialogShow: MutableState<Boolean> = mutableStateOf(false),
+    val termCode: String? = null,
+    val selectionPhase: String = "",
+    val startTime: String = "",
+    val endTime: String = "",
+    val description: String = "",
+    val isCancelable: Boolean = false
 )
 
 @HiltViewModel
@@ -113,7 +119,8 @@ class CourseHelperViewModel @Inject constructor(
                 searchCourseRepo = _uiState.value.courseRepo?.filter {
                     it.courseName.contains(text, true) ||
                             it.category.contains(text, true) ||
-                            (it.teacherName?.contains(text, true) ?: false)
+                            (it.teacherName?.contains(text, true) ?: false) ||
+                            it.courseCategoryName.contains(text, true)
                 } ?: emptyList()
             )
         }
@@ -125,6 +132,7 @@ class CourseHelperViewModel @Inject constructor(
         _uiState.update { it.copy(isSelecting = true) }
         _uiState.value.targetCourseList.forEach { course ->
             selectCourse(
+                courseTypeId = course.courseTypeId,
                 courseTaskCode = course.courseTaskCode,
                 courseName = course.courseName
             ) { result ->
@@ -135,11 +143,13 @@ class CourseHelperViewModel @Inject constructor(
     }
 
     suspend fun selectCourse(
+        courseTypeId: String,
         courseTaskCode: String,
         courseName: String,
         onResult: (String) -> Unit = {}
     ) {
         jwcNetworkRepo.selectCourseService(
+            courseTypeId = courseTypeId,
             courseTaskCode = courseTaskCode,
             courseName = courseName
         )
@@ -171,17 +181,32 @@ class CourseHelperViewModel @Inject constructor(
             }
     }
 
-    suspend fun getCourseInfo(
-        termCode: String = "202502",
-        courseCode: String
-    ) {
+    suspend fun getCourseInfo(courseCode: String) {
         _uiState.update { it.copy(courseInfo = null) }
-        jwcNetworkRepo.getCourseInfo(termCode, courseCode)
+        jwcNetworkRepo.getCourseInfo(_uiState.value.termCode!!, courseCode)
             .onSuccess { res ->
                 _uiState.update { it.copy(courseInfo = res) }
             }
-            .onFailure { res ->
+            .onFailure { _ ->
                 _uiState.update { it.copy(courseInfo = emptyList()) }
+            }
+    }
+
+    suspend fun getCourseTypeInfo(
+        courseTypeId: String
+    ) {
+        jwcNetworkRepo.getCourseTypeInfo(courseTypeId)
+            .onSuccess { res ->
+                _uiState.update {
+                    it.copy(
+                        termCode = res.termCode,
+                        selectionPhase = res.selectionPhase,
+                        startTime = res.startTime,
+                        endTime = res.endTime,
+                        description = res.description,
+                        isCancelable = res.isCancelable
+                    )
+                }
             }
     }
 
@@ -217,6 +242,7 @@ class CourseHelperViewModel @Inject constructor(
             _uiState.update { it.copy(cookie = res) }
         }
     }
+
 
     fun changeCourseRepo(courseRepo: List<CourseItemEntity>?) {
         _uiState.update { it.copy(courseRepo = courseRepo) }

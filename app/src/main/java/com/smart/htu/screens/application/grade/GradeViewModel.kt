@@ -159,8 +159,9 @@ class GradeViewModel @Inject constructor(
             }
     }
 
-    fun changeTermCode(termCode: String) {
-        _uiState.update { it.copy(termCode = termCode) }
+    suspend fun changeTermCode(termCode: String) {
+        _uiState.update { it.copy(courseGrade = null, termCode = termCode) }
+        getCourseGrade()
     }
 
 }

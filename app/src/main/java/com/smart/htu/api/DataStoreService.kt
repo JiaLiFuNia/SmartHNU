@@ -8,6 +8,7 @@ import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.api.module.SCHourEntity
 import com.smart.htu.screens.application.ApplicationEntity
+import com.smart.htu.screens.main.TaskEntity
 import kotlinx.coroutines.flow.Flow
 import okhttp3.Cookie
 
@@ -43,7 +44,7 @@ interface DataStoreService {
     suspend fun changeBionicReadingEnabled(enabled: Boolean)
     suspend fun changeLoadImgEnabled(enable: Boolean)
     suspend fun changeNewsHistoryList(newsItem: NewsMarkEntity)
-    suspend fun addNewsFavoriteList(newsItem: NewsMarkEntity)
+    suspend fun addNewsFavoriteList(newsList: List<NewsMarkEntity>)
     suspend fun changeNewsFontSize(size: Int)
     suspend fun saveExamScheduleList(examList: List<ExamEntity>)
     suspend fun savePhysicalTestCode(code: String)
@@ -52,6 +53,7 @@ interface DataStoreService {
     suspend fun saveSecondClassData(data: SCHourEntity)
     suspend fun saveUpdateRes(result: CaptchaVersionEntity)
     suspend fun saveTargetCourseList(list: List<CourseItemEntity>)
+    suspend fun saveTaskList(taskList: List<TaskEntity>)
 
     fun observeThemeMode(): Flow<Int>
     fun observeDarkTheme(): Flow<Int>
@@ -92,6 +94,6 @@ interface DataStoreService {
     fun observeLoginLibraryState(): Flow<Int>
     fun observeLibrarySession(): Flow<String>
     fun observeTargetCourseList(): Flow<List<CourseItemEntity>>
-
+    fun observeTaskList(): Flow<List<TaskEntity>>
 
 }

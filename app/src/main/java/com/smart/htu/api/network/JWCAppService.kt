@@ -7,11 +7,16 @@ import com.smart.htu.api.module.CourseGradeDetailRes
 import com.smart.htu.api.module.CourseGradeRes
 import com.smart.htu.api.module.CourseScheduleEntity
 import com.smart.htu.api.module.CourseSchedulePost
+import com.smart.htu.api.module.CourseSearchIndex
+import com.smart.htu.api.module.CourseSearchPostEntity
+import com.smart.htu.api.module.CourseSearchRes
 import com.smart.htu.api.module.CreditEntity
 import com.smart.htu.api.module.EvaluationDetail
 import com.smart.htu.api.module.GPAEntity
 import com.smart.htu.api.module.GPAPost
 import com.smart.htu.api.module.GlobalTerm
+import com.smart.htu.api.module.JWCNoticeDetailPost
+import com.smart.htu.api.module.JWCNoticeRes
 import com.smart.htu.api.module.LoginJWCEntity
 import com.smart.htu.api.module.LoginPost
 import com.smart.htu.api.module.PersonalMessageRes
@@ -82,5 +87,17 @@ interface JWCAppService {
     @GET("/new/welcome.page")
     suspend fun getWelcomePage(): Response<ResponseBody>
 
+    @GET("dev-api/appapi/appqxkb/index")
+    suspend fun courseSearchIndex(): CourseSearchIndex
+
+    @POST("dev-api/appapi/appqxkb/data")
+    suspend fun courseSearch(@Body body: CourseSearchPostEntity): CourseSearchRes
+
+    @GET("dev-api/appapi/appjwgg/index")
+    suspend fun getNotice(): JWCNoticeRes
+
+    // https://jwc.htu.edu.cn/dev-api/appapi/appjwgg/detail
+    @POST("dev-api/appapi/appjwgg/detail")
+    suspend fun getNoticeDetail(@Body body: JWCNoticeDetailPost): JWCNoticeRes
 
 }

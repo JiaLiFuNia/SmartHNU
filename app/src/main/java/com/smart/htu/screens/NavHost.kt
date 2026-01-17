@@ -2,12 +2,13 @@ package com.smart.htu.screens
 
 import android.net.Uri
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.smart.htu.api.module.CourseSearchPostEntity
 import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.component.PdfReaderView
 import com.smart.htu.component.animation.animatedComposable
@@ -19,6 +20,8 @@ import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.application.campusLife.CampusLife
 import com.smart.htu.screens.application.classroom.ClassroomSearchScreen
 import com.smart.htu.screens.application.courseHelper.CourseHelperNavHost
+import com.smart.htu.screens.application.courseSearch.CourseSearchNavHost
+import com.smart.htu.screens.application.courseSearch.CourseSearchRepo
 import com.smart.htu.screens.application.courseTable.CourseTable
 import com.smart.htu.screens.application.examSchedule.AddExamSchedule
 import com.smart.htu.screens.application.examSchedule.ExamSchedule
@@ -89,7 +92,7 @@ fun NavHostScreen() {
             PersonScreen(navController = navController, viewModel = loginViewModel)
         }
         animatedComposable(Destinations.Message.route) {
-            MessageScreen(navController = navController)
+            MessageScreen(navController = navController, viewModel = messageViewModel)
         }
         animatedComposable(Destinations.ApplicationEdit.route) {
             ApplicationEdit(navController = navController)
@@ -304,6 +307,21 @@ fun NavHostScreen() {
         animatedComposable(Destinations.CourseHelperNavHost.route) {
             CourseHelperNavHost(navController)
         }
+        animatedComposable(Destinations.CourseSearchNavHost.route) {
+            CourseSearchNavHost(navController)
+        }
+        animatedComposable(
+            route = "${Destinations.CourseSearchRepo.route}/{searchInfo}",
+            arguments = listOf(
+                navArgument(name = "searchInfo") {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            val searchInfoString = it.arguments?.getString("searchInfo") ?: ""
+            val searchInfo = Json.decodeFromString<CourseSearchPostEntity>(searchInfoString)
+            CourseSearchRepo(navController, searchInfo)
+        }
     }
 }
 
@@ -318,14 +336,14 @@ fun NavController.navigateWithCheckLoginState(
     // Log.i("TAG nav", "$route $routeType $logState")
     if (logState || isGuest) {
         when (routeType) {
-            RouteType.URL -> {
+            RouteType.Url -> {
                 this.navigateToWebView(
                     url = route ?: "",
                     label = context.getString(label)
                 )
             }
 
-            RouteType.SCREEN -> {
+            RouteType.Screen -> {
                 this.navigate(route!!)
             }
 
@@ -333,7 +351,7 @@ fun NavController.navigateWithCheckLoginState(
                 startAppUrl(route!!)
             }
 
-            RouteType.APP -> {
+            RouteType.ExternalApp -> {
                 startLaunchAPK(route!!)
             }
 

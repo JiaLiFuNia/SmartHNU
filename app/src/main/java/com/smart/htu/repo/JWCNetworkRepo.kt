@@ -10,15 +10,20 @@ import com.smart.htu.api.module.ClassroomOccupationEntity
 import com.smart.htu.api.module.CourseGradeDetailPost
 import com.smart.htu.api.module.CourseGradeDetailRes
 import com.smart.htu.api.module.CourseGradeRes
+import com.smart.htu.api.module.CourseInfoEntity
 import com.smart.htu.api.module.CourseItemEntity
 import com.smart.htu.api.module.CourseScheduleEntity
 import com.smart.htu.api.module.CourseSchedulePost
-import com.smart.htu.api.module.CourseTimeEntity
+import com.smart.htu.api.module.CourseSearchIndex
+import com.smart.htu.api.module.CourseSearchPostEntity
+import com.smart.htu.api.module.CourseTypeInfoRes
 import com.smart.htu.api.module.CreditItemEntity
 import com.smart.htu.api.module.EvaluationQuestion
 import com.smart.htu.api.module.GPAData
 import com.smart.htu.api.module.GPAPost
 import com.smart.htu.api.module.GlobalTerm
+import com.smart.htu.api.module.JWCNoticeDetailPost
+import com.smart.htu.api.module.JWCNoticeEntity
 import com.smart.htu.api.module.LoginJWCEntity
 import com.smart.htu.api.module.LoginPost
 import com.smart.htu.api.module.PersonalMessageRes
@@ -76,12 +81,48 @@ class JWCNetworkRepo @Inject constructor(
             }
         )
 
+    suspend fun searchCourseService(
+        searchInfo: CourseSearchPostEntity
+    ): Result<List<CourseInfoEntity>> {
+        try {
+            val res = jwcAppService.courseSearch(searchInfo)
+            return when (res.code) {
+                200 -> {
+                    Result.success(res.courseInfoList)
+                }
+
+                else -> Result.failure(Exception("获取失败 ${res.code}"))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666 searchCourseService", "${e.message}")
+            return Result.failure(e)
+        }
+    }
+
+    suspend fun searchCourseIndexService(): Result<CourseSearchIndex> {
+        try {
+            val res = jwcAppService.courseSearchIndex()
+            return when (res.code) {
+                200 -> {
+                    Result.success(res)
+                }
+
+                else -> Result.failure(Exception("获取失败"))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(e)
+        }
+    }
+
     suspend fun selectCourseService(
+        courseTypeId: String,
         courseTaskCode: String,
         courseName: String
     ): Result<String> {
         try {
             val res = jwcService.selectCourse(
+                courseTypeId = courseTypeId,
                 courseTaskCode = courseTaskCode,
                 courseName = courseName,
                 dynamicParam = mapOf() // 需要解析网页获取动态参数
@@ -105,7 +146,7 @@ class JWCNetworkRepo @Inject constructor(
     suspend fun getCourseInfo(
         termCode: String,
         courseCode: String
-    ): Result<List<CourseTimeEntity>> {
+    ): Result<List<CourseInfoEntity>> {
         try {
             val res = jwcService.getCourseInfo(
                 termCode = termCode,
@@ -116,8 +157,8 @@ class JWCNetworkRepo @Inject constructor(
                     val pattern = """data\s*:\s*(\[\s*[\s\S]*?\s*])""".toRegex()
                     val match =
                         pattern.find(res.body()?.string() ?: "")?.groups?.get(1)?.value ?: ""
-                    val type = object : TypeToken<List<CourseTimeEntity>>() {}.type
-                    val courseInfo: List<CourseTimeEntity> = Gson().fromJson(match, type)
+                    val type = object : TypeToken<List<CourseInfoEntity>>() {}.type
+                    val courseInfo: List<CourseInfoEntity> = Gson().fromJson(match, type)
                     Result.success(courseInfo)
                 }
 
@@ -133,8 +174,35 @@ class JWCNetworkRepo @Inject constructor(
         try {
             val res = jwcService.getCourseRepo(courseTypeId = courseTypeId)
             return when (res.code()) {
-                200 -> Result.success(res.body()?.courseRepo ?: emptyList())
+                200 -> {
+                    val courseRepo = res.body()?.courseRepo ?: emptyList()
+                    courseRepo.forEach {
+                        it.apply { this.courseTypeId = courseTypeId }
+                    }
+                    Result.success(courseRepo)
+                }
+
                 else -> Result.failure(Exception("获取失败"))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(e)
+        }
+    }
+
+    suspend fun getCourseTypeInfo(courseTypeId: String): Result<CourseTypeInfoRes.CourseTypeInfoData> {
+        try {
+            val res = jwcService.getCourseTypeConfig(courseTypeId = courseTypeId)
+            return when (res.code()) {
+                200 -> {
+                    val courseTypeInfo = res.body()?.data?.courseTypeInfoData
+                    if (courseTypeInfo != null)
+                        Result.success(courseTypeInfo)
+                    else
+                        Result.failure(Exception("获取失败"))
+                }
+
+                else -> Result.failure(Exception("获取失败, 错误码：${res.code()}"))
             }
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
@@ -166,6 +234,32 @@ class JWCNetworkRepo @Inject constructor(
                 }
 
                 else -> Result.failure(Exception("获取失败"))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(e)
+        }
+    }
+
+    suspend fun getNoticeService(): Result<List<JWCNoticeEntity>> {
+        try {
+            val res = jwcAppService.getNotice()
+            return when (res.code) {
+                200 -> Result.success(res.newsList ?: emptyList())
+                else -> Result.failure(Exception(res.msg))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(e)
+        }
+    }
+
+    suspend fun getNoticeDetailService(noticeId: String): Result<JWCNoticeEntity?> {
+        try {
+            val res = jwcAppService.getNoticeDetail(JWCNoticeDetailPost(noticeId))
+            return when (res.code) {
+                200 -> Result.success(res.news)
+                else -> Result.failure(Exception(res.msg))
             }
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
@@ -448,9 +542,8 @@ fun parseSelectableCourse(html: String): List<SelectableCourseTypeEntity> {
     try {
         val courseTypeList = mutableListOf<SelectableCourseTypeEntity>()
         val doc = Jsoup.parse(html)
-        val types =
-            doc.select("div.layui-container ul div#bb1") + doc.select("div.layui-container ul div#bb2")
-        types.forEach {
+        val typesBb2 = doc.select("div.layui-container ul div#bb2")
+        typesBb2.forEach {
             val courseTypeId = it.selectFirst("div")?.attr("data-href") ?: ""
             val courseTypeName = it.selectFirst("div div.content div.text span")?.text() ?: ""
             val description = (it.selectFirst("div")?.attr("lay-tips") ?: "").split("<br>")
@@ -464,6 +557,35 @@ fun parseSelectableCourse(html: String): List<SelectableCourseTypeEntity> {
                     courseTypeId = courseTypeId.substringAfter("="),
                     courseTermString = description.first().split(":").last(),
                     description = description.takeLast(2).joinToString("，"),
+                    startTime = convertStringDateTimeToLocalDateTime(
+                        startTimeStr,
+                        "yyyy-MM-dd HH:mm:ss"
+                    ),
+                    endTime = convertStringDateTimeToLocalDateTime(
+                        endTimeStr,
+                        "yyyy-MM-dd HH:mm:ss"
+                    )
+                )
+            )
+        }
+        val typesBb1 = doc.select("div.layui-container ul div#bb1")
+        typesBb1.forEach {
+            val courseTypeId = it.selectFirst("div")?.attr("data-href") ?: ""
+            val courseTypeName = it.selectFirst("div div.content div.text span")?.text() ?: ""
+            val description = (it.selectFirst("div")?.attr("lay-tips") ?: "").split("<br>")
+            val timePattern = """\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}""".toRegex()
+            val times = timePattern.findAll(description.last()).map { match ->
+                match.value
+            }.toList()
+            Log.i("TAG666", "times: $times")
+            val startTimeStr = times.getOrNull(0) ?: ""
+            val endTimeStr = times.getOrNull(1) ?: ""
+            courseTypeList.add(
+                SelectableCourseTypeEntity(
+                    courseTypeName = courseTypeName,
+                    courseTypeId = courseTypeId.substringAfter("="),
+                    courseTermString = description.first().split(":").last(),
+                    description = description.last().trim().replace("<hr>", ""),
                     startTime = convertStringDateTimeToLocalDateTime(
                         startTimeStr,
                         "yyyy-MM-dd HH:mm:ss"

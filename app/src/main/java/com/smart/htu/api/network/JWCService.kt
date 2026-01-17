@@ -1,6 +1,7 @@
 package com.smart.htu.api.network
 
 import com.smart.htu.api.module.CourseRepoRes
+import com.smart.htu.api.module.CourseTypeInfoRes
 import com.smart.htu.api.module.SelectCourseEntity
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -36,18 +37,26 @@ interface JWCService {
         @Header("referer") referer: String = "https://jwc.htu.edu.cn/new/desktop",
         @Field("xnxqdm") termCode: String,
         @Field("kcrwdm") courseCode: String,
-        @Field("_") timeStamp: Long = System.currentTimeMillis(),
+        @Field("_") t: Long = System.currentTimeMillis(),
     ): Response<ResponseBody>
 
     @POST("/new/student/xsxk/xklx/{courseTypeId}/add")
     @FormUrlEncoded
     suspend fun selectCourse(
         @Header("referer") referer: String = "https://jwc.htu.edu.cn/new/desktop",
+        @Path("courseTypeId") courseTypeId: String,
         @Field("kcrwdm") courseTaskCode: String,
         @Field("kcmc") courseName: String,
         @Field("qz") qz: String = "-1",
         @Field("hlct") hlct: String = "0",
         @FieldMap dynamicParam: Map<String, String>
     ): Response<SelectCourseEntity>
+
+    // https://jwc.htu.edu.cn/new/student/xsxk/xklx/06/config
+    @GET("/new/student/xsxk/xklx/{courseTypeId}/config")
+    suspend fun getCourseTypeConfig(
+        @Header("referer") referer: String = "https://jwc.htu.edu.cn/new/desktop",
+        @Path("courseTypeId") courseTypeId: String
+    ): Response<CourseTypeInfoRes>
 
 }

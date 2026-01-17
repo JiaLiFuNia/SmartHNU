@@ -5,13 +5,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import top.yukonga.miuix.kmp.basic.Card
@@ -26,7 +23,7 @@ fun SuggestChip(
     text: String,
     type: SuggestChipType,
     modifier: Modifier = Modifier,
-    icon: Any? = Icons.Outlined.Close,
+    icon: ImageVector? = null,
 ) {
     val containerColor = when (type) {
         SuggestChipType.INFO -> MiuixTheme.colorScheme.tertiaryContainer
@@ -56,15 +53,8 @@ fun SuggestChip(
                     .weight(1f),
                 color = textColor,
             )
-            when (icon) {
-                is Int -> Icon(
-                    painter = painterResource(id = icon),
-                    contentDescription = null,
-                    tint = textColor,
-                    modifier = Modifier.size(20.dp)
-                )
-
-                is ImageVector -> Icon(
+            if (icon != null) {
+                Icon(
                     imageVector = icon,
                     contentDescription = null,
                     tint = textColor,

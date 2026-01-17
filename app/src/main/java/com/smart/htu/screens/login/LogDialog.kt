@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -43,11 +41,13 @@ import com.smart.htu.R
 import com.smart.htu.component.TextButtonWithProgressIndicator
 import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.icons.useful.Rename
+import top.yukonga.miuix.kmp.icon.extended.Rename
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
@@ -171,7 +171,7 @@ fun LoginDialog(
                         modifier = Modifier.padding(end = 6.dp)
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Useful.Rename,
+                            imageVector = MiuixIcons.Regular.Rename,
                             tint = if (passwordVisible) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.onSecondaryContainer,
                             contentDescription = if (passwordVisible) "隐藏密码" else "显示密码"
                         )

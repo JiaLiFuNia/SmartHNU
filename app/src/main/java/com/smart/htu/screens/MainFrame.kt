@@ -13,12 +13,10 @@ import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationItemIconPosition
 import androidx.compose.material3.ShortNavigationBar
 import androidx.compose.material3.ShortNavigationBarItem
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,7 +48,9 @@ import com.smart.htu.screens.news.NewsScreen
 import com.smart.htu.screens.setting.SettingScreen
 import com.smart.htu.screens.setting.SettingViewModel
 import com.smart.htu.utils.DoubleBackToExitApp
+import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.NavigationItem
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,10 +66,11 @@ fun MainFrame(
     val context = LocalContext.current
     val mainUiState by mainViewModel.uiState.collectAsState()
     val settingUiState by settingViewModel.uiState.collectAsState()
+    val messageUiState by messageViewModel.uiState.collectAsState()
     val savableStateHolder = rememberSaveableStateHolder()
     val (selectedItemIndex, onSelectedItemIndex) = rememberSaveable { mutableIntStateOf(0) }
     val messageCount = remember {
-        derivedStateOf { messageViewModel.calculateNotReadIdListSize() }
+        derivedStateOf { messageUiState.notReadNoticeIdCount }
     }
     val navigationItem = listOf(
         BottomNavigationItem(
@@ -238,6 +239,7 @@ fun MainFrame(
     }
 
     DoubleBackToExitApp(
+        context = context,
         onExit = {
             (context as? Activity)?.finish()
         }

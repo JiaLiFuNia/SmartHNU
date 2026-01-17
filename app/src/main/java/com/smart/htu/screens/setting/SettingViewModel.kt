@@ -3,8 +3,7 @@ package com.smart.htu.screens.setting
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import coil.annotation.ExperimentalCoilApi
-import coil.imageLoader
+import coil3.imageLoader
 import com.smart.htu.App.Companion.context
 import com.smart.htu.api.module.AIModelEntity
 import com.smart.htu.api.module.AIRole
@@ -65,6 +64,10 @@ val AI_MODEL_LIST = listOf(
     AIModelEntity(
         name = "Qwen3-8B",
         model = "Qwen/Qwen3-8B"
+    ),
+    AIModelEntity(
+        name = "GLM-4.1V-9B-Thinking",
+        model = "THUDM/GLM-4.1V-9B-Thinking"
     ),
     AIModelEntity(
         name = "DeepSeek-R1-0528-Qwen3-8B",
@@ -385,7 +388,6 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    @OptIn(ExperimentalCoilApi::class)
     fun clearCache() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {

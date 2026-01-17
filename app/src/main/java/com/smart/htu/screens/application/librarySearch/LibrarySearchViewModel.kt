@@ -228,7 +228,6 @@ class LibrarySearchViewModel @Inject constructor(
             isbnList = books.map { it.isbn },
             bookIdList = books.map { it.bookId }
         ).onSuccess { imageResults ->
-            Log.i("TAG666", "$imageResults")
             val updatedBooks = books.map { book ->
                 book.apply {
                     imageUrl = imageResults[book.bookId]?.firstOrNull()?.coverImageUrl ?: ""

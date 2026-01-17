@@ -4,6 +4,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.GlobalTerm
+import com.smart.htu.api.module.SearchBookData
 import com.smart.htu.api.module.SingleTerm
 import com.smart.htu.api.module.Textbook
 import com.smart.htu.api.module.TextbookEntity
@@ -11,6 +12,7 @@ import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
 import com.smart.htu.repo.JWCNetworkRepo
+import com.smart.htu.repo.LibraryNetworkRepo
 import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.utils.TermUtil.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,12 +36,15 @@ data class TextbookUiState(
     val selectableList: List<Textbook>? = null,
     val selectedList: List<Textbook>? = null,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT,
-    val loginJWCState: Int = DEFAULT_LOGIN_STATE
+    val loginJWCState: Int = DEFAULT_LOGIN_STATE,
+    val bookSearchList: List<SearchBookData> = emptyList(),
+    val isSearching: Boolean = false
 )
 
 @HiltViewModel
 class TextbookViewModel @Inject constructor(
     private val jwcNetworkRepo: JWCNetworkRepo,
+    private val libraryNetworkRepo: LibraryNetworkRepo,
     private val dataStoreRepo: DataStoreRepo,
     private val sharedDataRepository: SharedDataRepository
 ) : ViewModel() {
@@ -119,7 +124,7 @@ class TextbookViewModel @Inject constructor(
         sharedDataRepository.getTermIndex()
     }
 
-    fun getTextbook(termCode: String) = viewModelScope.launch {
+    suspend fun getTextbook(termCode: String) {
         jwcNetworkRepo.getTextbookService(GlobalTerm(termCode))
             .onSuccess { res ->
                 _uiState.update { it.copy(courseList = res) }
@@ -128,10 +133,10 @@ class TextbookViewModel @Inject constructor(
             }
     }
 
-    fun getSelectableTextbookService(
+    suspend fun getSelectableTextbookService(
         courseTaskCode: String,
         termCode: String
-    ) = viewModelScope.launch {
+    ) {
         jwcNetworkRepo.getSelectableTextbookService(
             termCode = termCode,
             courseTaskCode = courseTaskCode
@@ -142,10 +147,10 @@ class TextbookViewModel @Inject constructor(
         }
     }
 
-    fun getSelectedTextbookService(
+    suspend fun getSelectedTextbookService(
         courseTaskCode: String,
         termCode: String
-    ) = viewModelScope.launch {
+    ) {
         jwcNetworkRepo.getSelectedTextbookService(
             termCode = termCode,
             courseTaskCode = courseTaskCode
@@ -156,14 +161,34 @@ class TextbookViewModel @Inject constructor(
         }
     }
 
-    fun changeTermCode(termCode: String) {
-        _uiState.update { it.copy(termCode = termCode) }
+    suspend fun librarySearch(isbn: String, page: Int) {
+        _uiState.update { it.copy(isSearching = true) }
+        libraryNetworkRepo.librarySearchService(isbn, page)
+            .onSuccess { res ->
+                fetchBookImages(res.dataList ?: emptyList(), true)
+            }
+        _uiState.update { it.copy(isSearching = false) }
     }
 
-    fun showSnackBar(message: String, actionLabel: String? = null) {
-        viewModelScope.launch {
-            snackBarHostState.showSnackbar(message, actionLabel)
+    private suspend fun fetchBookImages(books: List<SearchBookData>, isFirstLoad: Boolean = true) {
+        if (books.isEmpty()) return
+        libraryNetworkRepo.libraryBookImgService(
+            isbnList = books.map { it.isbn },
+            bookIdList = books.map { it.bookId }
+        ).onSuccess { imageResults ->
+            val updatedBooks = books.map { book ->
+                book.apply {
+                    imageUrl = imageResults[book.bookId]?.firstOrNull()?.coverImageUrl ?: ""
+                }
+            }
+            _uiState.update { it.copy(bookSearchList = if (isFirstLoad) updatedBooks else it.bookSearchList + updatedBooks) }
         }
+    }
+
+    suspend fun changeTermCode(termCode: String) {
+        _uiState.update { it.copy(courseList = null) }
+        _uiState.update { it.copy(termCode = termCode) }
+        getTextbook(_uiState.value.termCode)
     }
 
 }

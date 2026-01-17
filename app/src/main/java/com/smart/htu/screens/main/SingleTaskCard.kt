@@ -21,9 +21,7 @@ import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -44,7 +42,11 @@ import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
 import com.smart.htu.utils.CourseColorUtil.getColorByCourseName
 import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.extra.SuperArrow
 import top.yukonga.miuix.kmp.extra.SuperBottomSheet
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalTime
@@ -67,7 +69,7 @@ fun SingleTaskCard(
         onClick = {
             onClick()
         },
-        color = Color.Transparent
+        color = MiuixTheme.colorScheme.surfaceContainer
     ) {
         val iconColor = if (isPassed) MiuixTheme.colorScheme.primary.copy(0.6f)
         else MiuixTheme.colorScheme.primary
@@ -193,7 +195,11 @@ fun SingleTaskCard(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SingleCourseCard(modifier: Modifier, course: CourseEntity) {
+fun SingleCourseCard(
+    modifier: Modifier,
+    course: CourseEntity,
+    onSearchCourse: (String) -> Unit = {}
+) {
     val isBottomSheetShow = remember { mutableStateOf(false) }
     SingleTaskCard(
         taskName = course.courseName,
@@ -205,13 +211,21 @@ fun SingleCourseCard(modifier: Modifier, course: CourseEntity) {
     ) {
         isBottomSheetShow.value = true
     }
-    CourseDetailDialog(course, isBottomSheetShow)
+    CourseDetailBottomSheet(
+        course = course,
+        isBottomSheetShow = isBottomSheetShow,
+        onSearchCourse = {
+            isBottomSheetShow.value = false
+            onSearchCourse(it)
+        }
+    )
 }
 
 @Composable
-fun CourseDetailDialog(
-    message: CourseEntity,
+fun CourseDetailBottomSheet(
+    course: CourseEntity,
     isBottomSheetShow: MutableState<Boolean>,
+    onSearchCourse: (String) -> Unit = { },
     overlapCourseList: List<CourseEntity>? = null,
     onSelectOverlapCourse: (Int) -> Unit = {}
 ) {
@@ -220,11 +234,11 @@ fun CourseDetailDialog(
         onDismissRequest = {
             isBottomSheetShow.value = false
         },
-        title = message.courseName + if (message.classroomName.isNullOrEmpty()) {
-            " - ${message.projectName}"
+        title = course.courseName + if (course.classroomName.isNullOrEmpty()) {
+            " - ${course.projectName}"
         } else {
             "\n"
-        } + " ${message.startTime} - ${message.endTime}",
+        } + " ${course.startTime} - ${course.endTime}",
         insideMargin = DpSize(16.dp, 24.dp),
         backgroundColor = MiuixTheme.colorScheme.surface
     ) {
@@ -233,42 +247,51 @@ fun CourseDetailDialog(
             message = listOf(
                 SingleInfo(
                     label = "教师",
-                    content = message.teacherName ?: "暂无",
+                    content = course.teacherName ?: "暂无",
                     leadingIcon = Icons.Outlined.Person,
                     rowIndex = 1
                 ),
                 SingleInfo(
                     label = "教室",
-                    content = message.classroomName ?: "暂无",
+                    content = course.classroomName ?: "暂无",
                     leadingIcon = Icons.Outlined.Apartment,
                     rowIndex = 1
                 ),
                 SingleInfo(
                     label = "课程类型",
-                    content = "${message.assessmentMethod} / ${message.teachingEnvironment}",
+                    content = "${course.assessmentMethod} / ${course.teachingEnvironment}",
                     leadingIcon = Icons.Outlined.Category,
                     rowIndex = 2
                 ),
                 SingleInfo(
                     label = "节次",
-                    content = message.classTimeCodeDetailed,
+                    content = course.classTimeCodeDetailed,
                     leadingIcon = Icons.Outlined.Schedule,
                     rowIndex = 2
                 ),
                 SingleInfo(
                     label = "人数",
-                    content = message.totalStudents.toString(),
+                    content = course.totalStudents.toString(),
                     leadingIcon = Icons.Outlined.Groups,
                     rowIndex = 3
                 ),
                 SingleInfo(
                     label = "上课班级",
-                    content = message.className,
+                    content = course.className,
                     leadingIcon = Icons.Outlined.CoPresent,
                     rowIndex = 3
                 )
             )
         )
+        Spacer(modifier = Modifier.height(12.dp))
+        Card {
+            SuperArrow(
+                title = "搜索同课程",
+                onClick = {
+                    onSearchCourse(course.courseName)
+                }
+            )
+        }
         overlapCourseList?.size?.let {
             if (it > 2) {
                 overlapCourseList.forEach {

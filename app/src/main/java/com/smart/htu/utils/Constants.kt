@@ -50,7 +50,7 @@ class Constants {
                 guestMode = false,
                 label = R.string.dorm_air_conditioner,
                 icon = R.drawable.bolt_24px,
-                routeType = RouteType.SCREEN,
+                routeType = RouteType.Screen,
                 route = Destinations.AirCondition.route,
                 category = ApplicationCategory.CAMPUS
             ),
@@ -59,7 +59,7 @@ class Constants {
                 loginMode = LoginMode.COMMON,
                 label = R.string.classroom_search,
                 icon = R.drawable.apartment_24px,
-                routeType = RouteType.SCREEN,
+                routeType = RouteType.Screen,
                 route = Destinations.ClassroomSearch.route,
                 category = ApplicationCategory.STUDY
             ),
@@ -67,7 +67,7 @@ class Constants {
                 guestMode = true,
                 label = R.string.book_search,
                 icon = R.drawable.book_4_24px,
-                routeType = RouteType.SCREEN,
+                routeType = RouteType.Screen,
                 route = Destinations.LibrarySearch.route,
                 category = ApplicationCategory.STUDY
             ),
@@ -76,7 +76,7 @@ class Constants {
                 loginMode = LoginMode.COMMON,
                 icon = R.drawable.finance_24px,
                 label = R.string.course_grade,
-                routeType = RouteType.SCREEN,
+                routeType = RouteType.Screen,
                 route = Destinations.Grade.route,
                 category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
@@ -84,7 +84,7 @@ class Constants {
                 guestMode = true,
                 icon = R.drawable.near_me_24px,
                 label = R.string.campus_life,
-                routeType = RouteType.SCREEN,
+                routeType = RouteType.Screen,
                 route = Destinations.CampusLife.route,
                 category = ApplicationCategory.CAMPUS
             ),
@@ -93,7 +93,7 @@ class Constants {
                 loginMode = LoginMode.SECOND_CLASS,
                 icon = R.drawable.format_paint_24px,
                 label = R.string.second_class,
-                routeType = RouteType.SCREEN,
+                routeType = RouteType.Screen,
                 route = Destinations.SecondClass.route,
                 category = ApplicationCategory.CAMPUS
             ),
@@ -102,7 +102,7 @@ class Constants {
                 loginMode = LoginMode.COMMON,
                 icon = R.drawable.book_4_24px,
                 label = R.string.textbook_select,
-                routeType = RouteType.SCREEN,
+                routeType = RouteType.Screen,
                 route = "textbook",
                 category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
@@ -111,7 +111,7 @@ class Constants {
                 loginMode = LoginMode.COMMON,
                 icon = R.drawable.person_check_24px,
                 label = R.string.teacher_evaluation,
-                routeType = RouteType.SCREEN,
+                routeType = RouteType.Screen,
                 route = Destinations.TeacherEvaluation.route,
                 category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
@@ -120,7 +120,7 @@ class Constants {
                 loginMode = LoginMode.AUTH_SERVER,
                 icon = R.drawable.credit_card_24px,
                 label = R.string.school_card,
-                routeType = RouteType.URL,
+                routeType = RouteType.Url,
                 route = "https://ehall2.htu.edu.cn/appShow?appId=6548421524823376",
                 category = ApplicationCategory.TOOLS
             ),
@@ -130,7 +130,7 @@ class Constants {
                 loginMode = LoginMode.COMMON,
                 icon = R.drawable.add_task_24px,
                 label = R.string.select_course_assistance,
-                routeType = RouteType.SCREEN,
+                routeType = RouteType.Screen,
                 route = Destinations.CourseHelperNavHost.route,
                 category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
@@ -139,7 +139,7 @@ class Constants {
                 loginMode = LoginMode.AUTH_SERVER,
                 icon = R.drawable.school_24px,
                 label = R.string.academic_affairs_system,
-                routeType = RouteType.URL,
+                routeType = RouteType.Url,
                 route = AUTH_LOGIN_URL + "https://jwc.htu.edu.cn/new/ssoLogin",
                 category = ApplicationCategory.ACADEMIC_AFFAIRS
             ),
@@ -148,7 +148,7 @@ class Constants {
                 loginMode = LoginMode.AUTH_SERVER,
                 icon = R.drawable.id_card_24px,
                 label = R.string.smart_work,
-                routeType = RouteType.URL,
+                routeType = RouteType.Url,
                 route = AUTH_LOGIN_URL + "http://ehall2.htu.edu.cn/login?service=http://ehall2.htu.edu.cn/appShow?appId=6689155909292538",
                 category = ApplicationCategory.CAMPUS
             ),
@@ -157,7 +157,7 @@ class Constants {
                 loginMode = LoginMode.AUTH_SERVER,
                 icon = R.drawable.psychology_alt_24px,
                 label = R.string.htu_helper,
-                routeType = RouteType.URL,
+                routeType = RouteType.Url,
                 route = AUTH_LOGIN_URL + "https://ai.htu.edu.cn/api/cas",
                 category = ApplicationCategory.TOOLS
             ),
@@ -166,7 +166,7 @@ class Constants {
                 loginMode = LoginMode.AUTH_SERVER,
                 icon = R.drawable.captive_portal_24px,
                 label = R.string.one_stop_service,
-                routeType = RouteType.URL,
+                routeType = RouteType.Url,
                 route = AUTH_LOGIN_URL + "https://ehall2.htu.edu.cn/ywtb-mobile/index.html#/OfficeHall",
                 category = ApplicationCategory.CAMPUS
             ),
@@ -175,7 +175,7 @@ class Constants {
                 loginMode = LoginMode.COMMON,
                 icon = R.drawable.calendar_month_24px,
                 label = R.string.course_table,
-                routeType = RouteType.SCREEN,
+                routeType = RouteType.Screen,
                 route = Destinations.CourseTable.route,
                 category = ApplicationCategory.STUDY
             ),
@@ -183,7 +183,7 @@ class Constants {
                 guestMode = true,
                 icon = R.drawable.globe_book_24px,
                 label = R.string.website_navigation,
-                routeType = RouteType.SCREEN,
+                routeType = RouteType.Screen,
                 route = Destinations.WebsiteNavigation.route,
                 category = ApplicationCategory.TOOLS
             ),
@@ -192,7 +192,7 @@ class Constants {
                 loginMode = LoginMode.COMMON,
                 icon = R.drawable.speaker_notes_24px,
                 label = R.string.message_board,
-                routeType = RouteType.SCREEN,
+                routeType = RouteType.Screen,
                 route = Destinations.MessageBoard.route,
                 category = ApplicationCategory.CAMPUS
             ),
@@ -200,7 +200,7 @@ class Constants {
                 guestMode = false,
                 icon = R.drawable.lab_profile_24px,
                 label = R.string.exam,
-                routeType = RouteType.SCREEN,
+                routeType = RouteType.Screen,
                 route = Destinations.ExamSchedule.route,
                 category = ApplicationCategory.STUDY
             ),
@@ -209,9 +209,18 @@ class Constants {
                 loginMode = LoginMode.AUTH_SERVER,
                 icon = R.drawable.construction_24px,
                 label = R.string.repair,
-                routeType = RouteType.URL,
+                routeType = RouteType.Url,
                 route = AUTH_LOGIN_URL + "https://houqin.htu.edu.cn/authserver/caslogin?service=https://houqin.htu.edu.cn/h5/pages/rsp/myDeclare/repairDeclares?plat=weChat&plat=h5",
                 category = ApplicationCategory.CAMPUS
+            ),
+            ApplicationEntity(
+                guestMode = false,
+                loginMode = LoginMode.COMMON,
+                icon = R.drawable.quick_reference_all_24px,
+                label = R.string.course_search,
+                routeType = RouteType.Screen,
+                route = Destinations.CourseSearchNavHost.route,
+                category = ApplicationCategory.STUDY
             )
             /*
                         ApplicationEntity(

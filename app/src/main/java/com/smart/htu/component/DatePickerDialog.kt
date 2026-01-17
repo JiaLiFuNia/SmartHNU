@@ -4,7 +4,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.DisplayMode
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.getSelectedDate
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,13 +34,23 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalDate
 import java.time.LocalTime
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerDialog(
     date: LocalDate = LocalDate.now(),
     showDatePicker: MutableState<Boolean>,
+    yearRange: IntRange = date.year - 1..date.year + 1,
     onConfirmClick: (LocalDate) -> Unit,
 ) {
     val selectedDate = remember { mutableStateOf(date) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDate = date,
+        yearRange = yearRange,
+        initialDisplayMode = DisplayMode.Picker
+    )
+    LaunchedEffect(datePickerState.selectedDateMillis) {
+        selectedDate.value = datePickerState.getSelectedDate() ?: date
+    }
     SuperDialog(
         show = showDatePicker,
         title = "选择日期",
@@ -45,6 +60,20 @@ fun DatePickerDialog(
         }
     ) {
         Column {
+            /*DatePicker(
+                state = datePickerState,
+                title = {},
+                headline = {},
+                showModeToggle = false,
+                colors = DatePickerDefaults.colors(
+                    containerColor = MiuixTheme.colorScheme.background,
+                    selectedDayContainerColor = MiuixTheme.colorScheme.primary,
+                    selectedYearContainerColor = MiuixTheme.colorScheme.primary,
+                    currentYearContentColor = MiuixTheme.colorScheme.primary,
+                    todayDateBorderColor = MiuixTheme.colorScheme.primary,
+                    todayContentColor = MiuixTheme.colorScheme.primary
+                ),
+            )*/
             WheelDatePicker(
                 startDate = kotlinx.datetime.LocalDate(date.year, date.monthValue, date.dayOfMonth),
                 yearsRange = date.year - 1..date.year + 1,

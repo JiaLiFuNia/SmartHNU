@@ -28,7 +28,7 @@ object TermUtil {
         // 如果为9月到次年1月，为第一学期
         return if (month == 1 || month in 9..12) {
             when (length) {
-                TermType.CODE -> "${year}01"
+                TermType.CODE -> "${year.takeIf { it == 1 } ?: (year - 1)}01"
                 TermType.STRING -> "${year}-${year + 1}-1"
             }
         } else {

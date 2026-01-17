@@ -43,22 +43,22 @@ object FileUtil {
         sourceFile: File,
         targetDirectory: File,
         targetFileName: String
-    ): Boolean {
+    ): Result<Boolean> {
         return try {
             if (!targetDirectory.exists()) {
                 targetDirectory.mkdirs()
             }
             val targetFile = File(targetDirectory, targetFileName)
             if (!sourceFile.exists()) {
-                false
+                Result.success(false)
             } else {
                 sourceFile.copyTo(targetFile, overwrite = true)
                 sourceFile.delete()
-                true
+                Result.success(true)
             }
         } catch (e: Exception) {
             Log.e("TAG666 moveFile", "${e.message}")
-            false
+            Result.failure(e)
         }
     }
 

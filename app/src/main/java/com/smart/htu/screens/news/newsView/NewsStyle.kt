@@ -67,28 +67,28 @@ ${applyFontFace(fontPath)}
     --subhead-upper-case: ${if (subheadUpperCase) "uppercase" else "none"};
     --img-margin: ${imgMargin}px;
     --img-border-radius: ${imgBorderRadius}px;
-    --content-padding;
-    --bold-text-color;
-    --image-caption-margin;
+    --content-padding: ;
+    --bold-text-color: ;
+    --image-caption-margin: ;
     --blockquote-margin: 20px;
-    --blockquote-padding;
-    --blockquote-bg-color;
+    --blockquote-padding: ;
+    --blockquote-bg-color: ;
     --blockquote-border-width: 3px;
     --blockquote-border-color: ${argbToCssColor(textColor)}33;
     --table-margin: ${tableMargin}px;
-    --table-border-width;
-    --table-border-color;
+    --table-border-width: ;
+    --table-border-color: ;
     --table-cell-padding: 0.2em;
-    --table-alt-row-bg-color;
+    --table-alt-row-bg-color: ;
     --code-text-color: ${argbToCssColor(codeTextColor)};
     --code-bg-color: ${argbToCssColor(codeBgColor)};
     --code-scrollbar-color: ${argbToCssColor(codeTextColor)}22;
-    --code-border-width;
-    --code-border-color;
-    --code-padding;
+    --code-border-width: ;
+    --code-border-color: ;
+    --code-padding: ;
     --code-font-family: Menlo, Monospace, 'Courier New';
     --code-font-size: 0.9em;
-    --pre-color;
+    --pre-color: ;
 }
 
 .Signature {
@@ -112,7 +112,7 @@ article {
 /* Page  */
 body {
     margin: 0;
-    padding 0;
+    padding: 0;
 }
 
 ::selection {
@@ -181,7 +181,7 @@ video,
 embed,
 object,
 img {
-    display: $imgDisplayMode
+    display: $imgDisplayMode;
     margin-top: 0.5em !important;
     margin-left: calc(0px - var(--text-margin) + var(--img-margin)) !important;
     margin-right: calc(0px - var(--text-margin) + var(--img-margin)) !important;
@@ -259,35 +259,46 @@ blockquote blockquote {
 }
 
 blockquote img {
-    max-width 100% !important;
+    max-width: 100% !important;
     left: 0 !important;
 }
 
 /* Table  */
 table {
-    display: block;
-    max-width: var(--content-width) !important;
+    display: block !important;
     width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
     border-collapse: collapse !important;
-    margin-left: var(--table-margin) !important;
-    margin-right: var(--table-margin) !important;
+    border: 1px solid rgb(140 140 140);
+    letter-spacing: 1px;
+    margin: 10px 0 !important;
+}
+
+table tbody {
+    display: table !important;
+    width: 100%;
 }
 
 table th,
 table td {
-    border: var(--table-border-width) solid var(--table-border-color) !important;
-    padding: var(--table-cell-padding) !important;
-    line-height: var(--line-height) !important;
-    letter-spacing: var(--letter-spacing) !important;
-    text-align: var(--text-align) !important;
+    display: table-cell !important;
+    border: 1px solid rgb(160 160 160);
+    padding: 8px 4px !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    font-size: 14px !important;
+    min-width: 60px;
+}
+
+table td p {
+    text-align: center !important;
+    margin: 0 !important;
 }
 
 table tr {
-    display: block;
-}
-
-table tr table tr td {
-    display: inline-block;
+    display: table-row !important;
 }
 
 table tr:nth-child(even) {

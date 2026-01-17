@@ -39,6 +39,7 @@ fun MessageCardDisplay(
                             leadingIcon = it.leadingIcon,
                             modifier = Modifier.weight((1.0 / row.value.size.toFloat()).toFloat()),
                             rightContent = it.rightContent,
+                            onClick = it.onClick
                         )
                     }
                 }
@@ -54,6 +55,7 @@ data class SingleInfo(
     val leadingIcon: ImageVector? = null,
     val rightContent: (@Composable () -> Unit)? = null,
     val rowIndex: Int,
+    val onClick: (() -> Unit)? = null
 )
 
 @Composable

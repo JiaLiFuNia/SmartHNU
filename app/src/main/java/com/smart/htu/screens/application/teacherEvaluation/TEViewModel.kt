@@ -112,17 +112,17 @@ class TEViewModel @Inject constructor(
         }
     }
 
-    fun getTeacherListService() = viewModelScope.launch {
+    suspend fun getTeacherListService() {
         jwcNetworkRepo.getTeacherListService(GlobalTerm(_uiState.value.termCode))
             .onSuccess { res ->
                 _uiState.update { it.copy(evaluationInfo = res) }
             }
     }
 
-    fun getTEDetailService(
+    suspend fun getTEDetailService(
         syllabusEvaluateCode: String,
         teacherCode: String
-    ) = viewModelScope.launch {
+    ) {
         jwcNetworkRepo.getTEDetailService(syllabusEvaluateCode, teacherCode)
             .onSuccess { res ->
                 _uiState.update { it.copy(evaluationQuestionList = res) }
@@ -136,8 +136,9 @@ class TEViewModel @Inject constructor(
         sharedDataRepository.getTermIndex()
     }
 
-    fun changeTermCode(termCode: String) {
-        _uiState.update { it.copy(termCode = termCode) }
+    suspend fun changeTermCode(termCode: String) {
+        _uiState.update { it.copy(termCode = termCode, evaluationInfo = null) }
+        getTeacherListService()
     }
 
 }

@@ -19,6 +19,7 @@ import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.api.module.SCHourEntity
 import com.smart.htu.screens.application.ApplicationEntity
+import com.smart.htu.screens.main.TaskEntity
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import com.smart.htu.utils.TermUtil
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -79,9 +80,11 @@ class DataStoreRepo @Inject constructor(
         val SECOND_CLASS_DATA = stringPreferencesKey("SECOND_CLASS_DATA")
         val UPDATE_RES = stringPreferencesKey("UPDATE_RES")
         val TARGET_SELECT_COURSE_LIST = stringPreferencesKey("TARGET_SELECT_COURSE_LIST")
+        val TASK_LIST = stringPreferencesKey("TASK_LIST")
 
 
         const val DEFAULT_EMPTY_LIST = "[]"
+        const val DEFAULT_EMPTY_STRING = ""
         const val DEFAULT_COOKIES = "[]"
         const val DEFAULT_MESSAGE_READ_ID = "[]"
         const val DEFAULT_THEME_MODE = 0
@@ -235,17 +238,9 @@ class DataStoreRepo @Inject constructor(
         }
     }
 
-    override suspend fun addNewsFavoriteList(newsItem: NewsMarkEntity) {
+    override suspend fun addNewsFavoriteList(newsList: List<NewsMarkEntity>) {
         context.dataStore.edit {
-            val currentList = Json.decodeFromString<List<NewsMarkEntity>>(
-                it[NEWS_FAVORITE_LIST] ?: DEFAULT_NEWS_FAVORITE_LIST
-            ).toMutableList()
-            if (currentList.find { item -> item.url == newsItem.url } == null) {
-                currentList.add(0, newsItem)
-            } else {
-                currentList.removeIf { item -> item.url == newsItem.url }
-            }
-            it[NEWS_FAVORITE_LIST] = Json.encodeToString(currentList)
+            it[NEWS_FAVORITE_LIST] = Json.encodeToString(newsList)
         }
     }
 
@@ -283,6 +278,10 @@ class DataStoreRepo @Inject constructor(
 
     override suspend fun saveTargetCourseList(list: List<CourseItemEntity>) {
         context.dataStore.edit { it[TARGET_SELECT_COURSE_LIST] = Json.encodeToString(list) }
+    }
+
+    override suspend fun saveTaskList(taskList: List<TaskEntity>) {
+        context.dataStore.edit { it[TASK_LIST] = Json.encodeToString(taskList) }
     }
 
 
@@ -502,6 +501,14 @@ class DataStoreRepo @Inject constructor(
         return context.dataStore.data.map {
             Json.decodeFromString<List<CourseItemEntity>>(
                 it[TARGET_SELECT_COURSE_LIST] ?: DEFAULT_EMPTY_LIST
+            )
+        }
+    }
+
+    override fun observeTaskList(): Flow<List<TaskEntity>> {
+        return context.dataStore.data.map {
+            Json.decodeFromString<List<TaskEntity>>(
+                it[TASK_LIST] ?: DEFAULT_EMPTY_LIST
             )
         }
     }

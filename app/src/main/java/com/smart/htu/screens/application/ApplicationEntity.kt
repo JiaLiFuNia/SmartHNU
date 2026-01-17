@@ -26,10 +26,12 @@ data class ApplicationEntity(
     }
 
     enum class RouteType {
-        URL, // 网页
-        SCREEN, // 页面
+        Url, // 网页
+        Screen, // 页面
         ALIPAY, // 支付宝
-        APP // 应用
+        ExternalApp, // 应用,
+        BottomSheet,
+        Dialog
     }
 
     enum class LoginMode {

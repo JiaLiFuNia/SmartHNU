@@ -67,40 +67,37 @@ object ParseNewsArticleUtil {
         SingleParseRule("articleContent", "div.Article_Content", "all")
     )
 
+    private val XYY_PARSE_RULE = ArticleParseRule(
+        SingleParseRule("all", "div#container_page", ""),
+        SingleParseRule("title", "span.Article_Title", "text"),
+        SingleParseRule("publishDate", "span.Article_PublishDate", "text"),
+        SingleParseRule("visitCount", "span.WP_VisitCount", "text"),
+        SingleParseRule("articleContent", "div.Article_Content", "all")
+    )
+
     fun parseHTMLToNewsArticle(url: String, html: String): NewsArticleEntity {
-        try {
-            val document = Jsoup.parse(html)
-            val rule = selectParseRule(url)
-            val newsArticleElement = document.select(rule.elementPath.path)
-            val articleEntity = NewsArticleEntity(
-                title = selectElement(
-                    newsArticleElement.firstOrNull() ?: Element(""),
-                    rule.titlePath
-                ),
-                publishDate = extractDateFromString(
-                    selectElement(
-                        newsArticleElement.firstOrNull() ?: Element(""),
-                        rule.publishDatePath
-                    ).toString()
-                ),
-                visitCount = selectElement(
-                    newsArticleElement.firstOrNull() ?: Element(""),
-                    rule.visitCountPath
-                ),
-                attachment = extractAttachment(newsArticleElement),
-                articleContent = dealArticleContent(newsArticleElement.select(rule.articleContentPath.path))
-            )
-            return articleEntity
-        } catch (e: Exception) {
-            Log.e("TAG666 ParseNewsArticleUtil", "Error parsing HTML: ${e.message}")
-            return NewsArticleEntity(
-                title = null,
-                articleContent = null,
-                publishDate = null,
-                visitCount = null,
-                attachment = emptyList()
-            )
-        }
+        val document = Jsoup.parse(html)
+        val rule = selectParseRule(url)
+        val newsArticleElement = document.select(rule.elementPath.path)
+        val articleEntity = NewsArticleEntity(
+            title = selectElement(
+                newsArticleElement.firstOrNull() ?: Element("<div></div>"),
+                rule.titlePath
+            ),
+            publishDate = extractDateFromString(
+                selectElement(
+                    newsArticleElement.firstOrNull() ?: Element("<div></div>"),
+                    rule.publishDatePath
+                ).toString()
+            ),
+            visitCount = selectElement(
+                newsArticleElement.firstOrNull() ?: Element("<div></div>"),
+                rule.visitCountPath
+            ),
+            attachment = extractAttachment(newsArticleElement),
+            articleContent = dealArticleContent(newsArticleElement.select(rule.articleContentPath.path))
+        )
+        return articleEntity
     }
 
     private fun dealArticleContent(rawArticleHtml: Elements): String {
@@ -156,12 +153,21 @@ object ParseNewsArticleUtil {
         tableElements.removeAttr("style")
         tableElements.removeAttr("border")
         tableElements.removeAttr("cellspacing")
+        tableElements.removeAttr("cellpadding")
+
 
         val tdElements = rawArticleHtml.select("td")
         tdElements.removeAttr("style")
+        tdElements.removeAttr("bgcolor")
+        tdElements.removeAttr("height")
+        tdElements.removeAttr("width")
+        // tdElements.removeAttr("rowspan")
 
         val trElements = rawArticleHtml.select("tr")
         trElements.removeAttr("style")
+
+        val colGroupElements = rawArticleHtml.select("colgroup")
+        colGroupElements.remove()
 
         // 删除带有附件的元素
         /*val sudyFileElements = rawArticleHtml.select("[sudyfile-attr]")
@@ -231,6 +237,7 @@ object ParseNewsArticleUtil {
             "mhec" -> RSC_PARSE_RULE
             "lib" -> LIB_PARSE_RULE
             "bwc" -> BWC_PARSE_RULE
+            // "xyy" -> XYY_PARSE_RULE
             else -> PARSE_RULE
         }
     }

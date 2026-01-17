@@ -20,7 +20,6 @@ import javax.inject.Inject
 
 class LibraryNetworkRepo @Inject constructor(
     private val libraryService: LibraryService,
-    private val dataStoreRepo: DataStoreRepo,
     private val networkCookieJar: NetworkCookieJar
 ) {
 

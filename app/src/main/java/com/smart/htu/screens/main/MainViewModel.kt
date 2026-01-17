@@ -51,7 +51,8 @@ data class AppUiState(
     val isShowUpdateDialog: MutableState<Boolean> = mutableStateOf(false),
     val commonAppList: List<ApplicationEntity> = INIT_COMMON_APP_LIST,
     val loginJWCState: Int = DEFAULT_LOGIN_STATE,
-    val totalHour: Double? = null
+    val totalHour: Double? = null,
+    val taskList: List<TaskEntity> = emptyList(),
 )
 
 @HiltViewModel
@@ -117,8 +118,21 @@ class MainViewModel @Inject constructor(
                 dataStoreRepo.observeSecondClassData().first()
             }
         )
+    private val taskListStateFlow = dataStoreRepo.observeTaskList()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeTaskList().first()
+            }
+        )
 
     init {
+        viewModelScope.launch {
+            taskListStateFlow.collect { value ->
+                _uiState.update { it.copy(taskList = value) }
+            }
+        }
         viewModelScope.launch {
             loginJWCStateStateFlow.collect { value ->
                 _uiState.update { it.copy(loginJWCState = value) }
@@ -246,6 +260,22 @@ class MainViewModel @Inject constructor(
         } catch (e: Exception) {
             Log.i("TAG666", "getUpdateInfo: $e")
         }
+    }
+
+    suspend fun removeTaskList(task: TaskEntity) {
+        val currentTaskList = _uiState.value.taskList
+        val newTaskList = currentTaskList.toMutableList().apply {
+            remove(task)
+        }
+        dataStoreRepo.saveTaskList(newTaskList)
+    }
+
+    suspend fun addTaskList(task: TaskEntity) {
+        val currentTaskList = _uiState.value.taskList
+        val newTaskList = currentTaskList.toMutableList().apply {
+            add(task)
+        }
+        dataStoreRepo.saveTaskList(newTaskList)
     }
 
     fun changeUpdateDialogState(state: Boolean) {

@@ -45,4 +45,7 @@ sealed class Destinations(
     data object CourseHelper: Destinations("course_helper")
     data object CourseRepo: Destinations("course_repo")
     data object CourseInfo: Destinations("course_info")
+    data object CourseSearchNavHost: Destinations("course_search_nav_host")
+    data object CourseSearch: Destinations("course_search")
+    data object CourseSearchRepo: Destinations("course_search_repo")
 }

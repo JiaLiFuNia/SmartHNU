@@ -1,6 +1,5 @@
 package com.smart.htu.repo
 
-import android.util.Log
 import com.smart.htu.api.module.PostDetailData
 import com.smart.htu.api.module.PostsListData
 import com.smart.htu.api.network.AuthLoginService
@@ -33,7 +32,7 @@ class MessageBoardRepo @Inject constructor(
                 page = page,
                 perPage = perPage,
                 cateType = cateType,
-                _time = timeStamp
+                time = timeStamp
             )
             return if (res.code == 0) {
                 Result.success(res.data)
@@ -55,7 +54,7 @@ class MessageBoardRepo @Inject constructor(
                     listOf(timeStamp, postID)
                 ),
                 id = postID,
-                _time = timeStamp
+                time = timeStamp
             )
             return if (res.code == 0) {
                 Result.success(res.data.detail)
@@ -89,7 +88,7 @@ class MessageBoardRepo @Inject constructor(
         val data = md5(d.joinToString(""))
         val date = getCurrentDate("yyyyMMdd")
         val signature = md5("${data}YjYj${date}")
-        Log.i("TAG666", "generateSignature: d=$data, ${d.joinToString("")}, $date")
+        // Log.i("TAG666", "generateSignature: d=$data, ${d.joinToString("")}, $date")
         return signature
     }
 

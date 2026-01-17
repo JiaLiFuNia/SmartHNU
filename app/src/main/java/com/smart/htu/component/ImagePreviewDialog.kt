@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,6 +28,9 @@ import dev.chrisbanes.haze.rememberHazeState
 import me.saket.telephoto.zoomable.coil3.ZoomableAsyncImage
 import me.saket.telephoto.zoomable.rememberZoomableImageState
 import me.saket.telephoto.zoomable.rememberZoomableState
+import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
@@ -57,7 +57,7 @@ fun ImagePreviewDialog(
             modifier = Modifier
                 .fillMaxSize()
                 .hazeSource(state = hazeState)
-                .hazeEffect(HazeMaterials.ultraThin()) {
+                .hazeEffect(HazeMaterials.ultraThin(MiuixTheme.colorScheme.surface)) {
                     backgroundColor = Color.Transparent
                     this.blurEnabled = blurEnabled
                     this.drawContentBehind = drawContentBehind
@@ -96,11 +96,7 @@ fun ImagePreviewDialog(
 
                 IconButton(
                     onClick = onDownload,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = Color.White.copy(
-                            0.2f
-                        )
-                    ),
+                    backgroundColor = Color.White.copy(0.2f),
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(vertical = 32.dp, horizontal = 16.dp)
@@ -113,11 +109,7 @@ fun ImagePreviewDialog(
                 }
                 IconButton(
                     onClick = onDismiss,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = Color.White.copy(
-                            0.2f
-                        )
-                    ),
+                    backgroundColor = Color.White.copy(0.2f),
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .padding(vertical = 32.dp, horizontal = 16.dp)

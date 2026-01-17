@@ -13,6 +13,7 @@ import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.repo.AIChatNetworkRepo
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.NetworkRepo
+import com.smart.htu.screens.main.TaskEntity
 import com.smart.htu.screens.news.entity.NewsCategoryEntity
 import com.smart.htu.screens.news.entity.NewsType
 import com.smart.htu.screens.setting.AI_MODEL_LIST
@@ -48,6 +49,7 @@ data class NewsUiState(
     val newsHistoryList: List<NewsMarkEntity> = emptyList(),
     val newsFavoriteList: List<NewsMarkEntity> = emptyList(),
     val newsFontSize: Int = 17,
+    val taskList: List<TaskEntity> = emptyList()
 )
 
 @HiltViewModel
@@ -162,6 +164,15 @@ class NewsViewModel @Inject constructor(
             }
         )
 
+    private val taskListStateFlow = dataStoreRepo.observeTaskList()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeTaskList().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
             _blurStateFlow.collect { value ->
@@ -204,6 +215,11 @@ class NewsViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
+            taskListStateFlow.collect { value ->
+                _uiState.update { it.copy(taskList = value) }
+            }
+        }
+        viewModelScope.launch {
             if (_uiState.value.loadImgEnabled) getBannerImgList()
         }
     }
@@ -212,7 +228,7 @@ class NewsViewModel @Inject constructor(
         try {
             _uiState.update { it.copy(searchList = null) }
             val searchInfo =
-                """[{"field":"pageIndex","value":${page}},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$keyword"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":""},{"field":9,"value":""},{"field":10,"value":""}]"""
+                """[{"field":"pageIndex","value":${page}},{"field":"group","value":0},{"field":"searchType","value":""},{"field":"keyword","value":"$keyword"},{"field":"recommend","value":"1"},{"field":4,"value":""},{"field":5,"value":""},{"field":6,"value":""},{"field":7,"value":""},{"field":8,"value":"0"},{"field":9,"value":""},{"field":14,"value":""},{"field":"searchFilter","value":"1"}]"""
             val searchInfoEncode = Base64.encodeToString(searchInfo.toByteArray(), 0)
             val res = networkRepo.searchNewsService(searchInfoEncode)
             Log.i("TAG666", "searchNews: $res")
@@ -327,6 +343,16 @@ class NewsViewModel @Inject constructor(
         }
     }
 
+    fun addTaskList(task: TaskEntity) {
+        viewModelScope.launch {
+            val currentTaskList = _uiState.value.taskList
+            val newTaskList = currentTaskList.toMutableList().apply {
+                add(task)
+            }
+            dataStoreRepo.saveTaskList(newTaskList)
+            Log.i("TAG666 task", task.toString())
+        }
+    }
 
     fun addNewsHistory(newsItem: NewsMarkEntity) {
         viewModelScope.launch {
@@ -334,9 +360,17 @@ class NewsViewModel @Inject constructor(
         }
     }
 
-    fun addNewsFavorite(newsItem: NewsMarkEntity) {
+    fun addNewsFavorite(newsItem: NewsMarkEntity, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
-            dataStoreRepo.addNewsFavoriteList(newsItem)
+            val currentList = _uiState.value.newsFavoriteList.toMutableList()
+            if (newsItem.title in currentList.map { it.title }) {
+                currentList.remove(newsItem)
+                onResult(false)
+            } else {
+                currentList.add(newsItem)
+                onResult(true)
+            }
+            dataStoreRepo.addNewsFavoriteList(currentList)
         }
     }
 

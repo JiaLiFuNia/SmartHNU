@@ -1,5 +1,6 @@
 package com.smart.htu.api.module
 
+import com.google.gson.annotations.SerializedName
 import com.smart.htu.utils.DateUtil.convertStringDateTimeToLocalDateTime
 import java.time.LocalDateTime
 
@@ -31,4 +32,24 @@ enum class NoticeType {
     UPDATE,
     SCREEN,
     QUESTIONNAIRE,
+    JWC
 }
+
+data class JWCNoticeRes(
+    val msg: String,
+    val newsList: List<JWCNoticeEntity>? = null,
+    val news: JWCNoticeEntity? = null,
+    val code: Int
+)
+
+data class JWCNoticeEntity(
+    @SerializedName("cjsj") val publishDateTime: String,
+    @SerializedName("bt") val content: String,
+    @SerializedName("ggtzdm") val noticeId: String,
+    @SerializedName("nrhtml") val detail: String? = null
+)
+
+data class JWCNoticeDetailPost(
+    @SerializedName("ggtzdm") val noticeId: String,
+    @SerializedName("downloadapi") val downloadApi: String = "/dev-api/"
+)

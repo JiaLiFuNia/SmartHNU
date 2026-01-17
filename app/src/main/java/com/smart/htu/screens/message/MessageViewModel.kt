@@ -3,10 +3,12 @@ package com.smart.htu.screens.message
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.smart.htu.api.module.JWCNoticeEntity
 import com.smart.htu.api.module.NoticeEntity
 import com.smart.htu.repo.AppNetworkRepo
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
+import com.smart.htu.repo.JWCNetworkRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,15 +22,19 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class MessageUiState(
-    val noticeList: List<NoticeEntity> = emptyList(),
+    val noticeList: List<NoticeEntity>? = null,
+    val jwcNoticeList: List<JWCNoticeEntity>? = null,
+    val jwcNoticeDetail: JWCNoticeEntity? = null,
     val readNoticeIdList: MutableList<String> = mutableListOf(),
+    val notReadNoticeIdCount: Int = 0,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
 )
 
 @HiltViewModel
 class MessageViewModel @Inject constructor(
     private val dataStoreRepo: DataStoreRepo,
-    private val appNetworkRepo: AppNetworkRepo
+    private val appNetworkRepo: AppNetworkRepo,
+    private val jwcNetworkRepo: JWCNetworkRepo
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MessageUiState())
@@ -61,12 +67,17 @@ class MessageViewModel @Inject constructor(
         }
         viewModelScope.launch {
             getNotice()
+            getJWCNotice()
+            calculateNotReadIdListSize()
         }
     }
 
     suspend fun readAllNotice() {
-        _uiState.value.noticeList.forEach {
+        _uiState.value.noticeList?.forEach {
             addReadNoticeId(it.id)
+        }
+        _uiState.value.jwcNoticeList?.forEach {
+            addReadNoticeId(it.noticeId)
         }
     }
 
@@ -90,15 +101,37 @@ class MessageViewModel @Inject constructor(
         }
     }
 
-    fun calculateNotReadIdListSize(): Int {
+    suspend fun getJWCNotice() {
+        jwcNetworkRepo.getNoticeService()
+            .onSuccess { res ->
+                _uiState.update { it.copy(jwcNoticeList = res) }
+            }
+            .onFailure {
+                _uiState.update { it.copy(jwcNoticeList = emptyList()) }
+            }
+    }
+
+    suspend fun getJWCNoticeDetail(noticeId: String) {
+        jwcNetworkRepo.getNoticeDetailService(noticeId).onSuccess { res ->
+            _uiState.update { it.copy(jwcNoticeDetail = res) }
+        }
+    }
+
+    fun calculateNotReadIdListSize() {
         val noticeList = _uiState.value.noticeList
+        val jwcNoticeList = _uiState.value.jwcNoticeList
         val readIdList = _uiState.value.readNoticeIdList
         var count = 0
-        noticeList.forEach {
+        noticeList?.forEach {
             if (!readIdList.contains(it.id)) {
                 count++
             }
         }
-        return count
+        jwcNoticeList?.forEach {
+            if (!readIdList.contains(it.noticeId)) {
+                count++
+            }
+        }
+        _uiState.update { it.copy(notReadNoticeIdCount = count) }
     }
 }
