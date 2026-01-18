@@ -21,7 +21,7 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 35
-        versionCode = 202601171
+        versionCode = 202601181
         versionName = "3.1.1"
 
         val buildTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
