@@ -9,7 +9,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.smart.htu.api.module.CourseSearchPostEntity
-import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.component.PdfReaderView
 import com.smart.htu.component.animation.animatedComposable
 import com.smart.htu.screens.application.ApplicationEdit
@@ -29,7 +28,6 @@ import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
 import com.smart.htu.screens.application.messageBoard.MessageBoard
 import com.smart.htu.screens.application.messageBoard.MessageBoardDetail
 import com.smart.htu.screens.application.secondClass.SecondClass
-import com.smart.htu.screens.application.taskManager.AddExamSchedule
 import com.smart.htu.screens.application.taskManager.TaskManager
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluation
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluationDetail
@@ -287,23 +285,6 @@ fun NavHostScreen() {
         }
         animatedComposable(Destinations.TaskManager.route) {
             TaskManager(navController)
-        }
-        animatedComposable(
-            route = "${Destinations.AddExamSchedule.route}/{exam}",
-            arguments = listOf(
-                navArgument(name = "exam") {
-                    type = NavType.StringType
-                    nullable = true
-                }
-            )
-        ) {
-            val examString = it.arguments?.getString("exam")
-            val exam = if (examString.isNullOrEmpty() || examString == "null") {
-                null
-            } else {
-                Json.decodeFromString<ExamEntity>(examString)
-            }
-            AddExamSchedule(navController = navController, exam = exam)
         }
         animatedComposable(Destinations.SecondClass.route) {
             SecondClass(navController = navController)

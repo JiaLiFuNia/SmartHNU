@@ -40,7 +40,6 @@ sealed class Destinations(
     data object CampusLife : Destinations("campus_life")
     data object ArticleStyle : Destinations("article_style")
     data object TaskManager: Destinations("task_manager")
-    data object AddExamSchedule: Destinations("add_exam_schedule")
     data object SecondClass: Destinations("second_class")
     data object CourseHelperNavHost: Destinations("course_helper_nav_host")
     data object CourseHelper: Destinations("course_helper")
