@@ -27,12 +27,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
+import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
@@ -70,8 +70,6 @@ fun Application(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val loginUiState by loginViewModel.uiState.collectAsState()
-    val context = LocalContext.current
-
     val hazeState = rememberHazeState()
     val scope = rememberCoroutineScope()
     val showAuthLoginDialog = remember { mutableStateOf(false) }
