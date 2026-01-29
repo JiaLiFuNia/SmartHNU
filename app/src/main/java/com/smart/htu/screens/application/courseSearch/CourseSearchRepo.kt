@@ -42,7 +42,6 @@ import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.main.TaskEntity
 import com.smart.htu.screens.main.TaskType
 import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
-import com.smart.htu.utils.MD5Util.md5
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -236,7 +235,7 @@ fun CourseSearchResItem(
                             course.date,
                             "yyyy年M月d日"
                         )
-                    } 第 ${course.weeks} 周 周${course.day} ${course.sectionCode} 节",
+                    } 第 ${course.weekIndexString} 周 周${course.day} ${course.sectionCode} 节",
                     fontSize = 14.sp,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                     modifier = Modifier.padding(top = 2.dp),
@@ -251,13 +250,12 @@ fun CourseSearchResItem(
                 minWidth = 35.dp,
                 onClick = {
                     val task = TaskEntity(
-                        id = md5(course.courseName + course.teacherNames + course.sectionCode),
+                        id = System.currentTimeMillis().toString(),
                         type = TaskType.Course,
-                        title = course.courseName ?: "课程",
-                        content = "",
-                        location = course.teachingVenueName ?: "无",
+                        title = course.courseName.toString(),
+                        location = "${course.campusName}-${course.teachingVenueName?.ifEmpty { "无" }}",
                         startDateTime = LocalDateTime.of(2026, 1, 5, 10, 0, 0),
-                        endDateTime = LocalDateTime.of(2026, 1, 5, 11, 0, 0)
+                        endDateTime = LocalDateTime.of(2026, 1, 5, 11, 0, 0),
                     )
                     if (isInTaskList) onRemoveClick(task)
                     else onAddClick(task)

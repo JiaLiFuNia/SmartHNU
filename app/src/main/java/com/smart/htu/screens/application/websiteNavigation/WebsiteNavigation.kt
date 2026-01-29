@@ -4,12 +4,13 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import top.yukonga.miuix.kmp.basic.SnackbarHost
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -73,7 +74,9 @@ fun WebsiteNavigation(
                 title = stringResource(id = R.string.website_navigation),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() }) {
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "back"

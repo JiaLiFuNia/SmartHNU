@@ -188,7 +188,7 @@ fun Application(
                                             route = app.route,
                                             routeType = app.routeType,
                                             logState = !loginState.value,
-                                            label = app.label
+                                            label = context.getString(app.label)
                                         )
                                     }
                                 }
@@ -219,7 +219,7 @@ fun Application(
                                             route = app.route,
                                             routeType = app.routeType,
                                             logState = !loginState.value,
-                                            label = app.label
+                                            label = context.getString(app.label)
                                         )
                                     }
                                 }

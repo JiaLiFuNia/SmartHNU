@@ -2,6 +2,7 @@ package com.smart.htu.api
 
 import com.smart.htu.api.module.ACCookie
 import com.smart.htu.api.module.CaptchaVersionEntity
+import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.api.module.CourseItemEntity
 import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.api.module.LibraryDetailEntity
@@ -54,6 +55,7 @@ interface DataStoreService {
     suspend fun saveUpdateRes(result: CaptchaVersionEntity)
     suspend fun saveTargetCourseList(list: List<CourseItemEntity>)
     suspend fun saveTaskList(taskList: List<TaskEntity>)
+    suspend fun saveCourseTableData(data: Map<String, List<List<List<CourseEntity>>>>)
 
     fun observeThemeMode(): Flow<Int>
     fun observeDarkTheme(): Flow<Int>
@@ -95,5 +97,6 @@ interface DataStoreService {
     fun observeLibrarySession(): Flow<String>
     fun observeTargetCourseList(): Flow<List<CourseItemEntity>>
     fun observeTaskList(): Flow<List<TaskEntity>>
+    fun observeCourseTableData(): Flow<Map<String, List<List<List<CourseEntity>>>>>
 
 }

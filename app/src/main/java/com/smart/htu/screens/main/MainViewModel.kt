@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.CourseEntity
-import com.smart.htu.api.module.CourseScheduleEntity
 import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.api.module.HolidayData
 import com.smart.htu.api.module.NewsItemEntity
@@ -35,6 +34,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.time.LocalDate
 import javax.inject.Inject
 
 data class AppUiState(
@@ -42,7 +42,6 @@ data class AppUiState(
     val currentWeather: ResultWithStatus<NowWeatherData> = ResultWithStatus(),
     val warningWeatherData: List<WarningWeatherData> = emptyList(),
     val newsList: ResultWithStatus<List<NewsItemEntity>> = ResultWithStatus(),
-    val courseSchedule: CourseScheduleEntity? = null,
     val examScheduleList: List<ExamEntity> = emptyList(),
     val holiday: HolidayData? = null,
     val blurEnabled: Boolean = true, // DEFAULT_BLUR_EFFECT,
@@ -53,6 +52,8 @@ data class AppUiState(
     val loginJWCState: Int = DEFAULT_LOGIN_STATE,
     val totalHour: Double? = null,
     val taskList: List<TaskEntity> = emptyList(),
+    val weekIndex: Int = 0,
+    val isTermEnded: Boolean = false,
 )
 
 @HiltViewModel
@@ -61,7 +62,7 @@ class MainViewModel @Inject constructor(
     private val networkRepo: NetworkRepo,
     private val jwcNetworkRepo: JWCNetworkRepo,
     private val appNetworkRepo: AppNetworkRepo,
-    private val sharedDataRepository: SharedDataRepository
+    private val sharedDataRepo: SharedDataRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AppUiState())
@@ -140,7 +141,7 @@ class MainViewModel @Inject constructor(
         }
         viewModelScope.launch {
             blurStateFlow.collect { value ->
-                // _uiState.update { it.copy(blurEnabled = value) }
+                _uiState.update { it.copy(blurEnabled = value) }
             }
         }
         viewModelScope.launch {
@@ -166,19 +167,28 @@ class MainViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
+            sharedDataRepo.weekIndex.collect { value ->
+                _uiState.update { it.copy(weekIndex = value) }
+            }
+        }
+        viewModelScope.launch {
+            val now = LocalDate.now()
+            sharedDataRepo.endDate.collect { value ->
+                _uiState.update { it.copy(isTermEnded = now.isAfter(value)) }
+            }
+        }
+        viewModelScope.launch {
             val currentWeatherDeferred = async { getCurrentWeather() }
             val holidayDeferred = async { getHoliday() }
             val warningWeatherDeferred = async { getWarningWeather() }
             val updateInfoDeferred = async { getUpdateInfo() }
 
             checkJWCToken()
-            val termIndexDeferred = async { sharedDataRepository.getTermIndex() }
+            val termIndexDeferred = async { sharedDataRepo.refreshTermCalendar() }
             val todayCourseDeferred = async { getTodayCourse() }
-            val currentWeekDeferred = async { getCurrentWeek() }
 
             termIndexDeferred.await()
             todayCourseDeferred.await()
-            currentWeekDeferred.await()
             currentWeatherDeferred.await()
             holidayDeferred.await()
             warningWeatherDeferred.await()
@@ -190,17 +200,6 @@ class MainViewModel @Inject constructor(
         jwcNetworkRepo.checkJWCTokenService()
             .onSuccess { if (it) changeLoginJWCState(1) else changeLoginJWCState(0) }
             .onFailure { changeLoginJWCState(-2) }
-    }
-
-    suspend fun getCurrentWeek() {
-        try {
-            jwcNetworkRepo.getCourseScheduleService()
-                .onSuccess { res ->
-                    _uiState.update { it.copy(courseSchedule = res) }
-                }
-        } catch (e: Exception) {
-            Log.i("TAG666 main", "getCurrentWeek: $e")
-        }
     }
 
     suspend fun getCurrentWeather() {

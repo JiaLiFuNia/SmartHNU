@@ -7,7 +7,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -20,6 +19,7 @@ import com.smart.htu.ui.theme.keyColorFor
 import com.smart.htu.utils.Calendar.createCalendar
 import com.smart.htu.utils.Permission.Companion.checkRequestCalendarPermissions
 import dagger.hilt.android.AndroidEntryPoint
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.Surface
 
 @AndroidEntryPoint

@@ -22,10 +22,9 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.TextFields
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,11 +34,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.smart.htu.api.module.AIModelType
 import com.smart.htu.component.TextButtonWithProgressIndicator
+import com.smart.htu.utils.ToastUtil.showToast
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -53,9 +55,12 @@ import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.basic.SnackbarHost
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.SuperDropdown
+import top.yukonga.miuix.kmp.extra.SpinnerEntry
+import top.yukonga.miuix.kmp.extra.SuperSpinner
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
@@ -76,6 +81,8 @@ fun AIConfigurationScreen(
     val scope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
+
+    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
     Scaffold(
@@ -185,18 +192,32 @@ fun AIConfigurationScreen(
                         )
                         TextField(
                             label = "URL",
-                            value = "https://api.siliconflow.cn/",
+                            value = "https://api.siliconflow.cn/v1",
                             backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
-                            readOnly = true,
                             singleLine = true,
                             onValueChange = {
                                 // viewModel.changeAIModel(url = it)
                             }
                         )
                         Card {
-                            SuperDropdown(
+                            SuperSpinner(
                                 title = "模型",
-                                items = AI_MODEL_LIST.map { it.name },
+                                items = AI_MODEL_LIST.map { model ->
+                                    SpinnerEntry(
+                                        icon = {
+                                            Icon(
+                                                modifier = it,
+                                                imageVector = when (model.type) {
+                                                    AIModelType.Text -> Icons.Outlined.TextFields
+                                                    else -> Icons.Outlined.Image
+                                                },
+                                                contentDescription = null,
+                                                tint = MiuixTheme.colorScheme.onSurface
+                                            )
+                                        },
+                                        title = model.name
+                                    )
+                                },
                                 selectedIndex = uiState.selectedAIModelIndex,
                                 onSelectedIndexChange = {
                                     viewModel.selectAIModel(it)
@@ -210,14 +231,6 @@ fun AIConfigurationScreen(
                             singleLine = true,
                             onValueChange = {
                                 viewModel.saveAIModelKey(key = it, test = false)
-                            },
-                            trailingIcon = {
-                                top.yukonga.miuix.kmp.basic.IconButton(
-                                    onClick = { },
-                                    modifier = Modifier.padding(end = 8.dp)
-                                ) {
-                                    Icon(Icons.Outlined.Info, contentDescription = null)
-                                }
                             }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
@@ -229,7 +242,7 @@ fun AIConfigurationScreen(
                                     viewModel.testAIService(
                                         onResult = {
                                             scope.launch {
-                                                snackBarHostState.showSnackbar(it)
+                                                showToast(context, it)
                                             }
                                         }
                                     )

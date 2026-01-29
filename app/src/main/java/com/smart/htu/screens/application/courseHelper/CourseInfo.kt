@@ -121,12 +121,12 @@ fun CourseInfo(
                             message = listOf(
                                 SingleInfo(
                                     label = "周次",
-                                    content = "第 ${it.weeks} 周 星期${it.day}",
+                                    content = "第 ${it.weekIndexString} 周 星期${it.day}",
                                     rowIndex = 0
                                 ),
                                 SingleInfo(
                                     label = "节次",
-                                    content = it.sectionListString,
+                                    content = it.sectionListString ?: "",
                                     rowIndex = 0
                                 ),
                                 SingleInfo(

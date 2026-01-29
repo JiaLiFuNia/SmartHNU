@@ -7,12 +7,12 @@ import com.google.gson.reflect.TypeToken
 import com.smart.htu.R
 import com.smart.htu.api.module.BuildingEntity
 import com.smart.htu.api.module.ClassroomOccupationEntity
+import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.api.module.CourseGradeDetailPost
 import com.smart.htu.api.module.CourseGradeDetailRes
 import com.smart.htu.api.module.CourseGradeRes
 import com.smart.htu.api.module.CourseInfoEntity
 import com.smart.htu.api.module.CourseItemEntity
-import com.smart.htu.api.module.CourseScheduleEntity
 import com.smart.htu.api.module.CourseSchedulePost
 import com.smart.htu.api.module.CourseSearchIndex
 import com.smart.htu.api.module.CourseSearchPostEntity
@@ -40,7 +40,10 @@ import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_PASSWORD
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_TOKEN
 import com.smart.htu.repo.PasswordRepo.Companion.JWC_PASSWORD
 import com.smart.htu.utils.DateUtil.convertStringDateTimeToLocalDateTime
+import com.smart.htu.utils.DateUtil.getCurrentDate
 import com.smart.htu.utils.RSAUtil
+import com.smart.htu.utils.TermUtil
+import com.smart.htu.utils.ToastUtil.showToast
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -317,18 +320,82 @@ class JWCNetworkRepo @Inject constructor(
         }
     }
 
-    suspend fun getCourseScheduleService(
-        week: String = "",
-        section: String = ""
-    ): Result<CourseScheduleEntity> {
+    suspend fun getCourseScheduleService(week: String = ""): Result<List<List<List<CourseEntity>>>> {
         try {
-            val res = jwcAppService.getCourseSchedule(CourseSchedulePost(week, section))
-            return when (res.code) {
-                200 -> Result.success(res)
-                else -> Result.failure(Exception(res.message))
+            val res = jwcAppService.getCourseSchedule(CourseSchedulePost(week))
+            val courseSchedule: List<List<List<CourseEntity>>>
+            if (res.code != 200) {
+                return Result.failure(Exception(res.message))
             }
+            val weekNum = res.maxWeek // 周数
+            courseSchedule = List(weekNum.toInt()) {
+                List(7) { ArrayList() }
+            }
+            val courseScheduleTemp = res.courseSchedule
+            courseScheduleTemp.forEach {
+                it.forEach { (_, courseList) ->
+                    courseList.forEach { course ->
+                        val weekIndex = course.weekIndex - 1
+                        val weekdayIndex = course.dayOfWeek - 1
+                        courseSchedule[weekIndex][weekdayIndex].add(course)
+                    }
+                }
+            }
+            return Result.success(courseSchedule)
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
+            return Result.failure(e)
+        }
+    }
+
+    suspend fun getCourseScheduleJWCService(
+        week: String,
+        termCode: String,
+        totalWeeks: Int
+    ): Result<List<List<List<CourseEntity>>>> {
+        try {
+            val res = jwcService.getCourseSchedule(termCode = termCode, week = week).body()
+            if (res?.code != 0) {
+                showToast(context, "${res?.message}")
+                return Result.failure(Exception(res?.message))
+            }
+            val courseSchedule: List<List<List<CourseEntity>>>
+            courseSchedule = List(totalWeeks) {
+                List(7) { ArrayList() }
+            }
+            val courseList = res.data
+            courseList.forEach { course ->
+                val weekIndexList = course.weekIndexString.split(",")
+                val weekdayIndex = course.dayOfWeek - 1
+                weekIndexList.forEach { weekIndexStr ->
+                    val weekIndex = weekIndexStr.toIntOrNull()?.minus(1) ?: 0
+                    if (weekIndex in 0 until totalWeeks) {
+                        val convertedCourse = CourseEntity(
+                            sortString = course.startSection ?: "1",
+                            classTimeCodeDetailed = course.sectionList.joinToString(","),
+                            dayOfWeekString = course.dayOfWeek.toString(),
+                            weekIndexString = (weekIndex + 1).toString(),
+                            courseName = course.courseName ?: "",
+                            className = course.className,
+                            teacherName = course.teacherNames,
+                            startTimeString = course.startTime,
+                            endTimeString = course.endTime,
+                            startDateString = getCurrentDate("yyyy-MM-dd"),
+                            endDateString = getCurrentDate("yyyy-MM-dd"),
+                            assessmentMethod = "",
+                            totalStudents = course.studentCount,
+                            teachingEnvironment = course.teachingType,
+                            classTimeCode = course.sectionCode ?: "",
+                            termString = TermUtil.termConverter(course.termCode),
+                            classroomName = course.teachingVenueName
+                        )
+                        courseSchedule[weekIndex][weekdayIndex].add(convertedCourse)
+                    }
+                }
+            }
+            return Result.success(courseSchedule)
+        } catch (e: Exception) {
+            Log.e("TAG666 getCourseScheduleJWCService", "${e.message}")
             return Result.failure(e)
         }
     }

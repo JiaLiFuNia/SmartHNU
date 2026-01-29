@@ -1,66 +1,22 @@
-package com.smart.htu.screens.application.examSchedule
+package com.smart.htu.screens.application.taskManager
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.smart.htu.MainActivity
 import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.api.module.ExamType
-import com.smart.htu.component.DatePickerDialog
-import com.smart.htu.component.TimePickerDialog
-import com.smart.htu.utils.Calendar.addEvent
-import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
-import com.smart.htu.utils.Permission
-import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
-import com.smart.htu.utils.ToastUtil.showToast
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
-import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
-import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
-import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
-import top.yukonga.miuix.kmp.basic.Scaffold
-import top.yukonga.miuix.kmp.basic.TextButton
-import top.yukonga.miuix.kmp.basic.TextField
-import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.SuperArrow
-import top.yukonga.miuix.kmp.extra.SuperCheckbox
-import top.yukonga.miuix.kmp.extra.SuperDropdown
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Back
-import top.yukonga.miuix.kmp.icon.extended.Ok
-import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -69,7 +25,7 @@ import java.time.LocalTime
 fun AddExamSchedule(
     exam: ExamEntity? = null,
     navController: NavController,
-    viewModel: ExamScheduleViewModel = hiltViewModel(),
+    viewModel: TaskManagerViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
@@ -100,7 +56,7 @@ fun AddExamSchedule(
         )
     }
 
-    Scaffold(
+    /*Scaffold(
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -125,9 +81,9 @@ fun AddExamSchedule(
                                     showToast(context, "请填写完整信息")
                                 } else {
                                     if (exam == null) {
-                                        viewModel.addExamSchedule(examEntity.value)
+                                        viewModel.addTask(examEntity.value)
                                     } else {
-                                        viewModel.modifyExamSchedule(
+                                        viewModel.modifyTask(
                                             exam.id ?: "",
                                             examEntity.value
                                         )
@@ -339,7 +295,7 @@ fun AddExamSchedule(
                         text = "删除",
                         onClick = {
                             scope.launch {
-                                viewModel.deleteExamSchedule(it)
+                                viewModel.deleteTask(it)
                                 showToast(context, "已删除")
                                 navController.popBackStack()
                             }
@@ -373,5 +329,5 @@ fun AddExamSchedule(
                 examEntity.value = examEntity.value.copy(endTime = it)
             }
         )
-    }
+    }*/
 }

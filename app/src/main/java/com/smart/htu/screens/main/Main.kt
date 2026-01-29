@@ -1,9 +1,7 @@
 package com.smart.htu.screens.main
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -12,11 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.Bolt
@@ -41,28 +35,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.api.module.CourseSearchPostEntity
-import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.api.module.WarningWeatherData
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
-import com.smart.htu.component.card.LargeCardDisplay
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
-import com.smart.htu.component.card.SmallAppCard
 import com.smart.htu.screens.application.AddTaskBottomSheet
 import com.smart.htu.screens.application.ApplicationEntity.RouteType
 import com.smart.htu.screens.application.airCondition.AirConditionUiState
@@ -75,6 +65,7 @@ import com.smart.htu.screens.navigation.Destinations
 import com.smart.htu.screens.news.navigateToNewsDetail
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.DateUtil.getCurrentDate
+import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
 import com.smart.htu.utils.startCalendar
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -86,7 +77,6 @@ import kotlinx.serialization.json.Json
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.FloatingActionButton
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
@@ -104,7 +94,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
-import kotlin.math.ceil
 
 @SuppressLint("RestrictedApi")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
@@ -142,7 +131,6 @@ fun Main(
             mainViewModel.getCurrentWeather()
             messageViewModel.getNotice()
             mainViewModel.getTodayCourse()
-            mainViewModel.getCurrentWeek()
             isRefreshing = false
         }
     }
@@ -193,21 +181,16 @@ fun Main(
         floatingActionButton = {
             FloatingActionButton(
                 modifier = Modifier
-                    .padding(
-                        bottom = contentPadding.calculateBottomPadding(),
-                        end = 20.dp
-                    )
-                    .border(
-                        0.05.dp,
-                        MiuixTheme.colorScheme.outline.copy(alpha = 0.5f),
-                        CircleShape
-                    ),
-                shadowElevation = 0.dp,
+                    .padding(bottom = contentPadding.calculateBottomPadding()),
                 onClick = {
                     isAddTaskBottomSheetShow.value = true
-                },
+                }
             ) {
-                Icon(MiuixIcons.Add, contentDescription = null)
+                Icon(
+                    MiuixIcons.Add,
+                    contentDescription = null,
+                    tint = MiuixTheme.colorScheme.onPrimary
+                )
             }
         }
     ) {
@@ -269,36 +252,26 @@ fun Main(
                 }
                 item {
                     Card {
-                        TodayTaskCard(
-                            uiState.todayCourseList,
-                            uiState.examScheduleList,
-                            isNotLoggedIn.value,
-                            navController
+                        TodayCourseCard(
+                            todayCourseList = uiState.todayCourseList,
+                            loginState = isNotLoggedIn.value,
+                            onSearchCourse = {
+                                navController.navigate("${Destinations.CourseSearchRepo.route}/${it}")
+                            }
                         )
                     }
                 }
                 item {
-                    TaskCard(
+                    TodayTaskCard(
                         taskList = uiState.taskList,
                         navController = navController
                     )
-                }
-                /*item {
-                    ExamScheduleCard(uiState.examScheduleList, navController)
-                }*/
-                item {
-                    /*CommonAppsCard(
-                        uiState = uiState,
-                        navController = navController,
-                        loginUiState = loginUiState,
-                        loginState = isNotLoggedIn.value
-                    )*/
                 }
             }
         }
         AddTaskBottomSheet(
             show = isAddTaskBottomSheetShow,
-            onCreateTask = {
+            onTask = {
 
             }
         )
@@ -306,7 +279,7 @@ fun Main(
 }
 
 @Composable
-fun TaskCard(
+fun TodayTaskCard(
     taskList: List<TaskEntity>,
     navController: NavController
 ) {
@@ -316,12 +289,28 @@ fun TaskCard(
         ) {
             taskList.forEach {
                 Card {
-                    SingleTaskCard(
-                        taskName = it.title,
-                        taskDescription = it.content,
-                        taskColor = Color.Blue,
-                        startTime = it.startDateTime.toLocalTime(),
-                        endTime = it.endDateTime.toLocalTime(),
+                    BasicTaskCard(
+                        title = it.title,
+                        description = buildAnnotatedString {
+                            append(
+                                "${
+                                    convertLocalTimeToStringTime(
+                                        it.startDateTime.toLocalTime(),
+                                        "hh:mm"
+                                    )
+                                } - ${
+                                    convertLocalTimeToStringTime(
+                                        it.endDateTime.toLocalTime(),
+                                        "hh:mm"
+                                    )
+                                }"
+                            )
+                            if (it.location.isNotEmpty())
+                                append(" | ${it.location}")
+                            if (!it.remarkableInfo.isNullOrEmpty())
+                                append(" | ${it.remarkableInfo}")
+                        }.toString(),
+                        taskColor = it.type.lightColor.primaryColor,
                         modifier = Modifier,
                         onClick = {
                             when (it.actionType) {
@@ -334,7 +323,7 @@ fun TaskCard(
                                 }
 
                                 else -> {
-
+                                    navController.navigate(Destinations.TaskManager.route)
                                 }
                             }
                         }
@@ -362,7 +351,6 @@ fun FocusCard(
     airConditionUiState: AirConditionUiState,
     mainUiState: AppUiState
 ) {
-    val context = LocalContext.current
     val isShowWeatherBottomSheet = remember { mutableStateOf(false) }
     val isWarningWeather = remember {
         derivedStateOf { mainUiState.warningWeatherData.isNotEmpty() }
@@ -370,12 +358,13 @@ fun FocusCard(
     val today = LocalDate.now()
     val dayOfWeek = today.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.CHINA)
     val formatter = DateTimeFormatter.ofPattern("MM-dd")
+    val airConditionString = stringResource(R.string.dorm_air_conditioner)
     MessageCardDisplay(
         modifier = Modifier.fillMaxWidth(),
         message = listOf(
             SingleInfo(
                 label = "${today.format(formatter)}",
-                content = "第 ${mainUiState.courseSchedule?.week ?: "-"} 周 $dayOfWeek",
+                content = (if (mainUiState.isTermEnded) "放假中" else "第 ${mainUiState.weekIndex} 周") + " $dayOfWeek",
                 rowIndex = 1,
                 leadingIcon = Icons.Outlined.Today,
                 onClick = {
@@ -416,7 +405,7 @@ fun FocusCard(
                         route = Destinations.AirCondition.route,
                         routeType = RouteType.Screen,
                         logState = loginUiState.jwcLoginState == 1,
-                        label = R.string.dorm_air_conditioner
+                        label = airConditionString
                     )
                 }
             )
@@ -429,36 +418,12 @@ fun FocusCard(
 }
 
 @Composable
-fun TodayTaskCard(
+fun TodayCourseCard(
     todayCourseList: List<CourseEntity>?,
-    examScheduleList: List<ExamEntity>,
     loginState: Boolean,
-    navController: NavController
+    onSearchCourse: (String) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-    val examScheduleList = remember(examScheduleList) {
-        examScheduleList.filter {
-            it.date.isEqual(LocalDate.now())
-        }.sortedBy { it.startTime }
-    }
-    if (examScheduleList.isNotEmpty()) {
-        Column {
-            examScheduleList.forEach { exam ->
-                SingleTaskCard(
-                    taskName = exam.examName,
-                    taskDescription = "${exam.examRoom} | ${exam.seatNumber}",
-                    taskColor = Color(exam.examType.color),
-                    startTime = exam.startTime,
-                    endTime = exam.endTime,
-                    modifier = Modifier,
-                    onClick = {
-                        navController.navigate(Destinations.ExamSchedule.route)
-                    }
-                )
-            }
-        }
-        HorizontalDivider(modifier = Modifier.fillMaxWidth())
-    }
     Column(
         modifier = if (todayCourseList == null || todayCourseList.isEmpty()) Modifier
             .height(86.dp) else Modifier
@@ -497,7 +462,7 @@ fun TodayTaskCard(
                                     courseName = it
                                 )
                                 val searchInfoString = Json.encodeToString(searchInfo)
-                                navController.navigate("${Destinations.CourseSearchRepo.route}/${searchInfoString}")
+                                onSearchCourse(searchInfoString)
                             }
                         }
                     )
@@ -507,7 +472,7 @@ fun TodayTaskCard(
     }
 }
 
-@Composable
+/*@Composable
 fun CommonAppsCard(
     uiState: AppUiState,
     navController: NavController,
@@ -565,7 +530,7 @@ fun CommonAppsCard(
             navController.navigate(Destinations.ApplicationEdit.route)
         }
     )
-}
+}*/
 
 @Composable
 fun WeatherBottomSheet(

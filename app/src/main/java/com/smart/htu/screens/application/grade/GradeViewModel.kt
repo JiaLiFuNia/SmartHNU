@@ -1,5 +1,6 @@
 package com.smart.htu.screens.application.grade
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.CourseGradeDetailRes.CourseGradeDetailEntity
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -42,7 +44,7 @@ data class GradeUiState(
 class GradeViewModel @Inject constructor(
     private val jwcNetworkRepo: JWCNetworkRepo,
     private val dataStoreRepo: DataStoreRepo,
-    private val sharedDataRepository: SharedDataRepository
+    private val sharedDataRepo: SharedDataRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -87,16 +89,21 @@ class GradeViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            sharedDataRepository.termIndex
-                .collect { termIndex ->
-                    _uiState.update {
-                        it.copy(
-                            termList = termIndex?.termList ?: emptyList(),
-                            globalTermCode = termIndex?.termCode ?: getCurrentTerm(),
-                            termCode = termIndex?.termCode ?: getCurrentTerm(),
-                        )
-                    }
+            combine(
+                sharedDataRepo.termList,
+                sharedDataRepo.currentTermCode
+            ) { termList, termCode ->
+                termList to termCode
+            }.collect { (termList, termCode) ->
+                Log.d("TAG666 GradeViewModel", "termIndex collected: $termList $termCode")
+                _uiState.update {
+                    it.copy(
+                        termList = termList,
+                        globalTermCode = termCode,
+                        termCode = termCode
+                    )
                 }
+            }
         }
         viewModelScope.launch {
             refreshTermList()
@@ -107,7 +114,7 @@ class GradeViewModel @Inject constructor(
     }
 
     suspend fun refreshTermList() {
-        sharedDataRepository.getTermIndex()
+        sharedDataRepo.refreshTermCalendar("")
     }
 
     suspend fun getCourseGrade() {

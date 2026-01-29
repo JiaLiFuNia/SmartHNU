@@ -2,9 +2,9 @@ package com.smart.htu.utils
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
+import top.yukonga.miuix.kmp.basic.SnackbarDuration
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
+import top.yukonga.miuix.kmp.basic.SnackbarResult
 
 object ToastUtil {
     private var toast: Toast? = null
@@ -25,19 +25,22 @@ object ToastUtil {
         snackBarHostState: SnackbarHostState,
         message: String,
         actionLabel: String? = null,
-        duration: SnackbarDuration = if (actionLabel == null) SnackbarDuration.Short else SnackbarDuration.Indefinite,
+        withDismissButton: Boolean = false,
+        duration: SnackbarDuration = if (actionLabel == null) SnackbarDuration.Short else SnackbarDuration.Long,
         onConfirm: () -> Unit = {},
         onDismiss: () -> Unit = {}
     ) {
         val res = snackBarHostState.showSnackbar(
             message = message,
             actionLabel = actionLabel,
-            duration = duration
+            duration = duration,
+            withDismissAction = withDismissButton
         )
-        when(res) {
+        when (res) {
             SnackbarResult.ActionPerformed -> {
                 onConfirm()
             }
+
             SnackbarResult.Dismissed -> {
                 onDismiss()
             }

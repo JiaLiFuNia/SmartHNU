@@ -13,7 +13,7 @@ fun SelectTermBottomSheet(
     globalTermCode: String,
     termSelectedCode: String,
     termList: List<SingleTerm>,
-    isBottomSheetShow: MutableState<Boolean>,
+    show: MutableState<Boolean>,
     onClick: (String) -> Unit
 ) {
     val globalTermIndex = termList.indexOfFirst { it.termCode == globalTermCode }
@@ -31,7 +31,7 @@ fun SelectTermBottomSheet(
         title = "选择学期",
         dialogButtonString = stringResource(id = R.string.cancel),
         modifier = androidx.compose.ui.Modifier,
-        isDropdownExpanded = isBottomSheetShow,
+        isDropdownExpanded = show,
         hapticFeedback = androidx.compose.ui.platform.LocalHapticFeedback.current,
         onSelectedIndexChange = {
             onClick(termList[it].termCode)

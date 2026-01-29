@@ -2,8 +2,10 @@ package com.smart.htu.api.module
 
 import android.util.Log
 import com.google.gson.Gson
+import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
+import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -19,6 +21,7 @@ data class TodayCourseRes(
     @SerializedName("kbList") val courseList: List<CourseEntity>
 )
 
+@Serializable
 data class CourseEntity(
     @SerializedName("ps") private val sortString: String, // 排序
     @SerializedName("qssj") private val startTimeString: String, // 开始时间
@@ -38,9 +41,9 @@ data class CourseEntity(
     @SerializedName("xmmc") val projectName: String? = null, // 项目名称
     @SerializedName("jcdm2") val classTimeCodeDetailed: String, // 节次代码2
     @SerializedName("szxqmc") val campus: String? = null, // 所在校区
-    @SerializedName("xq") val weekdayString: String, // 星期（1~7）
+    @SerializedName("xq") val dayOfWeekString: String, // 星期（1~7）
     @SerializedName("xnxqmc") val termString: String, // 学年学期名称
-    @SerializedName("zc") val weekString: String, // 周次（表示在第几周的课）
+    @SerializedName("zc") val weekIndexString: String, // 周次（表示在第几周的课）
 ) {
     val startTime: LocalTime
         get() = LocalTime.parse(startTimeString)
@@ -57,14 +60,14 @@ data class CourseEntity(
     val sortNumber: Int
         get() = sortString.toInt()
 
-    val sectionList: List<Int>
-        get() = classTimeCodeDetailed.split(",").map { it.toInt() }
+    val sessionList: List<Int>
+        get() = classTimeCodeDetailed.split(",").mapNotNull { it.toIntOrNull() }
 
-    val weekday: Int
-        get() = weekdayString.toIntOrNull() ?: 1
+    val dayOfWeek: Int
+        get() = dayOfWeekString.toIntOrNull() ?: 1
 
-    val week: Int
-        get() = weekString.toIntOrNull() ?: 1
+    val weekIndex: Int
+        get() = weekIndexString.toIntOrNull() ?: 1
 }
 
 data class CourseSchedulePost(
@@ -72,6 +75,7 @@ data class CourseSchedulePost(
     val jc: String = ""  // 节次
 )
 
+// 智慧教务的课表数据类
 data class CourseScheduleEntity(
     @SerializedName("msg") val message: String,
     @SerializedName("code") val code: Int,
@@ -80,21 +84,21 @@ data class CourseScheduleEntity(
     @SerializedName("maxzc") val maxWeek: String,
     @SerializedName("curDay") private val weekday: String,
     @SerializedName("xnxqdm") val termCode: String,
-    @SerializedName("kbList") private val courseTableString: String,
+    @SerializedName("kbList") private val courseScheduleString: String,
     @SerializedName("rq") private val dateString: String? = "",
 ) {
-    val courseTable: CourseTable
+    val courseSchedule: CourseScheduleData
         get() = try {
             val gson = Gson()
-            val type = object : TypeToken<CourseTable>() {}.type
-            gson.fromJson(courseTableString, type)
+            val type = object : TypeToken<CourseScheduleData>() {}.type
+            gson.fromJson(courseScheduleString, type)
         } catch (e: Exception) {
             Log.e("TAG666 CourseEntity", "解析课程表失败: ${e.message}")
             ArrayList()
         }
 
     // 周次
-    val week: Int
+    val weekIndex: Int
         get() = weekString.toIntOrNull() ?: 0
 
     // 若是本周的则为今天的日期，若非本周返回周一的日期
@@ -102,10 +106,30 @@ data class CourseScheduleEntity(
         get() = LocalDate.parse(dateString)
 
     // 今天周几，若非本周返回0
-    val todayWeekday: Int
+    val dayOfWeek: Int
         get() = weekday.toIntOrNull() ?: 1
 }
 
-typealias CourseTable = ArrayList<Map<String, List<CourseEntity>>>
+typealias CourseScheduleData = ArrayList<Map<String, List<CourseEntity>>> // 节次 to 课程列表
 
 
+// 教务系统的课表数据类
+data class CourseScheduleJWCEntity(
+    @SerializedName("code") val code: Int,
+    @SerializedName("data") private val _data: JsonElement?,
+    @SerializedName("message") val message: String
+) {
+    val data: List<CourseInfoEntity>
+        get() {
+            if (_data != null && _data.isJsonArray) {
+                return try {
+                    val type = object : TypeToken<List<CourseInfoEntity>>() {}.type
+                    Gson().fromJson(_data, type)
+                } catch (e: Exception) {
+                    Log.e("CourseScheduleJWCEntity", "解析课程表失败: ${e.message}")
+                    emptyList()
+                }
+            }
+            return emptyList()
+        }
+}

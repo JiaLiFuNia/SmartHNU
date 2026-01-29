@@ -6,8 +6,14 @@ import kotlinx.serialization.Serializable
 data class AIModelEntity(
     val name: String,
     val model: String,
+    val type: AIModelType,
     val token: String? = null
 )
+
+enum class AIModelType {
+    Text,
+    Image
+}
 
 @Serializable
 data class Message(

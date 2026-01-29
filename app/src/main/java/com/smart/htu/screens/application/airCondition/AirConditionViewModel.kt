@@ -1,7 +1,6 @@
 package com.smart.htu.screens.application.airCondition
 
 import android.util.Log
-import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.ACCookie
@@ -23,6 +22,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import javax.inject.Inject
 
 data class AirConditionUiState(

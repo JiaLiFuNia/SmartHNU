@@ -1,7 +1,6 @@
 package com.smart.htu.screens.application.secondClass
 
 import android.util.Log
-import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.HourScoreEntity
@@ -25,6 +24,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import javax.inject.Inject
 
 data class SecondClassUiState(
@@ -125,7 +125,12 @@ class SecondClassViewModel @Inject constructor(
         if (_uiState.value.scLoginState == 1) {
             scNetworkRepo.getHourList("sid=${_uiState.value.cookie}")
                 .onSuccess { res ->
-                    _uiState.update { it.copy(hourList = res.data, termList = res.termIndex) }
+                    _uiState.update {
+                        it.copy(
+                            hourList = res.data,
+                            termList = res.termIndex.plus(Term("全部", 100))
+                        )
+                    }
                     dataStoreRepo.saveSecondClassData(res)
                 }.onFailure { res ->
                     viewModelScope.launch {

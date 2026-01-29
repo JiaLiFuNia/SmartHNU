@@ -24,7 +24,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -87,6 +86,7 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SearchBar
+import top.yukonga.miuix.kmp.basic.SnackbarHost
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
@@ -143,7 +143,7 @@ fun LibrarySearchScreen(
     val scrollBehavior = MiuixScrollBehavior()
     Scaffold(
         snackbarHost = {
-            SnackbarHost(hostState = viewModel.snackBarHostState)
+            SnackbarHost(viewModel.snackBarHostState)
         },
         topBar = {
             TopAppBar(
@@ -553,12 +553,12 @@ fun CurrentBorrowingBookList(
                                     verticalAlignment = Alignment.Bottom,
                                     modifier = Modifier
                                 ) {
-                                    top.yukonga.miuix.kmp.basic.Text(
+                                    Text(
                                         buildAnnotatedString {
                                             withStyle(
                                                 style = SpanStyle(
                                                     color = MiuixTheme.colorScheme.onBackground,
-                                                    fontWeight = FontWeight.Bold,
+                                                    fontWeight = FontWeight.SemiBold,
                                                     fontSize = 26.sp
                                                 )
                                             ) {
@@ -573,7 +573,7 @@ fun CurrentBorrowingBookList(
 
                                             withStyle(
                                                 style = SpanStyle(
-                                                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                                                    color = MiuixTheme.colorScheme.onBackground,
                                                     fontSize = 16.sp
                                                 )
                                             ) {

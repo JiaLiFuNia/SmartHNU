@@ -45,8 +45,8 @@ fun SuperSpinnerDialog(
                                 entryCount = items.size,
                                 isSelected = selectedIndex == index,
                                 index = index,
+                                spinnerColors = SpinnerDefaults.dialogSpinnerColors(),
                                 dialogMode = true,
-                                spinnerColors = SpinnerDefaults.spinnerColors()
                             ) { selectedIdx ->
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                                 onSelectedIndexChange?.invoke(selectedIdx)
@@ -60,11 +60,9 @@ fun SuperSpinnerDialog(
                             .fillMaxWidth(),
                         text = dialogButtonString,
                         minHeight = 50.dp,
-                        onClick = {
-                            isDropdownExpanded.value = false
-                        }
+                        onClick = { isDropdownExpanded.value = false },
                     )
-                }
+                },
             ) { measurables, constraints ->
                 if (measurables.size != 2) {
                     layout(0, 0) { }
@@ -72,8 +70,8 @@ fun SuperSpinnerDialog(
                     val button = measurables[1].measure(constraints)
                     val lazyList = measurables[0].measure(
                         constraints.copy(
-                            maxHeight = constraints.maxHeight - button.height
-                        )
+                            maxHeight = constraints.maxHeight - button.height,
+                        ),
                     )
                     layout(constraints.maxWidth, lazyList.height + button.height) {
                         lazyList.place(0, 0)

@@ -1,6 +1,6 @@
 package com.smart.htu.screens.application.textbook
 
-import androidx.compose.material3.SnackbarHostState
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.GlobalTerm
@@ -46,7 +46,7 @@ class TextbookViewModel @Inject constructor(
     private val jwcNetworkRepo: JWCNetworkRepo,
     private val libraryNetworkRepo: LibraryNetworkRepo,
     private val dataStoreRepo: DataStoreRepo,
-    private val sharedDataRepository: SharedDataRepository
+    private val sharedDataRepo: SharedDataRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -103,25 +103,23 @@ class TextbookViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            sharedDataRepository.termIndex
-                .collect { termIndex ->
-                    _uiState.update {
-                        it.copy(
-                            termList = termIndex?.termList ?: emptyList(),
-                            globalTermCode = termIndex?.termCode ?: getCurrentTerm(),
-                            termCode = termIndex?.termCode ?: getCurrentTerm(),
-                        )
-                    }
+            sharedDataRepo.termList
+                .collect { value ->
+                    _uiState.update { it.copy(termList = value) }
+                }
+            sharedDataRepo.currentTermCode
+                .collect { value ->
+                    _uiState.update { it.copy(globalTermCode = value, termCode = value) }
                 }
         }
         viewModelScope.launch {
-            refreshTermList()
+            refreshTermCalendar()
             getTextbook(_uiState.value.termCode)
         }
     }
 
-    suspend fun refreshTermList() {
-        sharedDataRepository.getTermIndex()
+    suspend fun refreshTermCalendar() {
+        sharedDataRepo.refreshTermCalendar()
     }
 
     suspend fun getTextbook(termCode: String) {

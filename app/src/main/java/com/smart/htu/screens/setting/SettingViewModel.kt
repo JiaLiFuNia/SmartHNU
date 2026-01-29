@@ -1,11 +1,11 @@
 package com.smart.htu.screens.setting
 
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil3.imageLoader
 import com.smart.htu.App.Companion.context
 import com.smart.htu.api.module.AIModelEntity
+import com.smart.htu.api.module.AIModelType
 import com.smart.htu.api.module.AIRole
 import com.smart.htu.api.module.CaptchaVersionEntity
 import com.smart.htu.api.module.ChatRequest
@@ -58,20 +58,16 @@ data class SettingUiState(
     val bionicReadingEnabled: Boolean = true,
 )
 
-val DEFAULT_BLUR_RADIUS = 30.dp
-
 val AI_MODEL_LIST = listOf(
     AIModelEntity(
         name = "Qwen3-8B",
-        model = "Qwen/Qwen3-8B"
+        model = "Qwen/Qwen3-8B",
+        type = AIModelType.Text
     ),
     AIModelEntity(
         name = "GLM-4.1V-9B-Thinking",
-        model = "THUDM/GLM-4.1V-9B-Thinking"
-    ),
-    AIModelEntity(
-        name = "DeepSeek-R1-0528-Qwen3-8B",
-        model = "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B"
+        model = "THUDM/GLM-4.1V-9B-Thinking",
+        type = AIModelType.Image
     )
 )
 
@@ -81,7 +77,7 @@ class SettingViewModel @Inject constructor(
     private val networkRepo: NetworkRepo,
     private val appNetworkRepo: AppNetworkRepo,
     private val aiChatNetworkRepo: AIChatNetworkRepo,
-    private val sharedDataRepository: SharedDataRepository
+    private val sharedDataRepo: SharedDataRepository
 ) : ViewModel() {
 
     /*private val languageMap = mapOf(
@@ -245,11 +241,9 @@ class SettingViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            sharedDataRepository.termIndex
-                .collect { termIndex ->
-                    _uiState.update {
-                        it.copy(termCode = termIndex?.termCode ?: getCurrentTerm())
-                    }
+            sharedDataRepo.currentTermCode
+                .collect { value ->
+                    _uiState.update { it.copy(termCode = value) }
                 }
         }
         viewModelScope.launch {
@@ -343,7 +337,7 @@ class SettingViewModel @Inject constructor(
             data = ChatRequest(
                 messages = listOf(
                     Message(
-                        content = "通过接收信息来测试API是否正常工作，不需要思考，只需要向用户回复“测试成功，欢迎使用 YunAI”即可。",
+                        content = "通过接收信息来测试API是否正常工作，需要向用户回复“测试成功，欢迎使用 YunAI”。",
                         role = AIRole.SYSTEM.value
                     ),
                     Message(

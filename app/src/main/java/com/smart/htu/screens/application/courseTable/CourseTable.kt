@@ -4,10 +4,16 @@ import android.annotation.SuppressLint
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -20,19 +26,24 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,6 +68,8 @@ import coil3.compose.rememberAsyncImagePainter
 import com.smart.htu.MainActivity
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseEntity
+import com.smart.htu.api.module.SingleTerm
+import com.smart.htu.component.BottomCircularProgressIndicator
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.SuperSlider
@@ -66,8 +79,8 @@ import com.smart.htu.utils.CourseTableBackgroundUtil
 import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
 import com.smart.htu.utils.CourseTimeRange.summerOrWinterTimeInterval
 import com.smart.htu.utils.Permission
-import com.smart.htu.utils.ToastUtil.showSnackbar
 import com.smart.htu.utils.ToastUtil.showToast
+import com.smart.htu.utils.copyContent
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -75,6 +88,7 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
 import top.yukonga.miuix.kmp.basic.Icon
@@ -85,19 +99,26 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SliderDefaults
+import top.yukonga.miuix.kmp.basic.SnackbarHost
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TextButton
+import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperBottomSheet
+import top.yukonga.miuix.kmp.extra.SuperCheckbox
+import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.extra.SuperListPopup
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
-import top.yukonga.miuix.kmp.icon.extended.Import
+import top.yukonga.miuix.kmp.icon.extended.Delete
 import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.lang.Integer.max
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 /**
@@ -118,16 +139,25 @@ fun CourseTable(
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
-    val scrollState = rememberScrollState()
     val context = LocalContext.current
 
-    val nodeColumnWeight = 0.65F
-    val screenHeight = LocalConfiguration.current.screenHeightDp
-    val minHeight = max((screenHeight - 180) / 12, 70)
+    val snackBarHostState = SnackbarHostState()
+
+    val pagerState = key(uiState.weekIndex) {
+        rememberPagerState(
+            pageCount = { uiState.totalWeekCount },
+            initialPage = uiState.weekIndex - 1
+        )
+    }
+
     val showDropDownMenu = remember { mutableStateOf(false) }
-    val showBottomSheet = remember { mutableStateOf(false) }
-    val emojiList = listOf("📚", "🎓", "📝", "🏫", "📖", "👩‍🎓", "👨‍🎓", "📆", "🕰️", "🎒", "🏅", "🏆", "🎉")
-    val randomEmoji = remember { mutableStateOf(emojiList.random()) }
+    val isMoreSettingsBottomSheetShow = remember { mutableStateOf(false) }
+    val isSharedInfoDialogShow = remember { mutableStateOf(false) }
+    val isImportCourseScheduleDialogShow = remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.selectedDataSource, uiState.selectedTermCode) {
+        viewModel.refreshCourseSchedule()
+    }
 
     var backgroundUri by remember { mutableStateOf(CourseTableBackgroundUtil.getBackground(context)) }
 
@@ -136,7 +166,7 @@ fun CourseTable(
             TopAppBar(
                 scrollBehavior = scrollBehavior,
                 color = if (backgroundUri != null) Color.Transparent else MiuixTheme.colorScheme.surface,
-                title = "第 ${uiState.week} 周",
+                title = "${uiState.termCode}学期 第 ${pagerState.currentPage + 1} 周",
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() },
@@ -151,10 +181,12 @@ fun CourseTable(
                 actions = {
                     IconButton(
                         onClick = {
-                        }
+                            isImportCourseScheduleDialogShow.value = true
+                        },
+                        holdDownState = isImportCourseScheduleDialogShow.value
                     ) {
                         Icon(
-                            imageVector = MiuixIcons.Regular.Import,
+                            imageVector = Icons.Outlined.Group,
                             contentDescription = "import"
                         )
                     }
@@ -178,31 +210,27 @@ fun CourseTable(
                             showDropDownMenu.value = false
                         }
                     ) {
-                        val optionSize = 5
+                        val optionSize = 4
                         ListPopupColumn {
                             DropdownImpl(
-                                text = "切换到上一周",
+                                text = "共享课表",
                                 isSelected = false,
                                 optionSize = optionSize,
                                 onSelectedIndexChange = {
                                     showDropDownMenu.value = false
+                                    viewModel.changeSharingState(true)
                                     scope.launch {
-                                        viewModel.getCurrentWeekCourseSchedule(uiState.week - 1)
+                                        viewModel.shareCourseSchedule(
+                                            onShareSuccess = {
+                                                isSharedInfoDialogShow.value = true
+                                            },
+                                            onShareFailure = {
+                                                showToast(context, "创建共享课表失败：$it")
+                                            }
+                                        )
                                     }
                                 },
                                 index = 0
-                            )
-                            DropdownImpl(
-                                text = "切换到下一周",
-                                isSelected = false,
-                                optionSize = optionSize,
-                                onSelectedIndexChange = {
-                                    showDropDownMenu.value = false
-                                    scope.launch {
-                                        viewModel.getCurrentWeekCourseSchedule(uiState.week + 1)
-                                    }
-                                },
-                                index = 1
                             )
                             DropdownImpl(
                                 text = "同步到日历",
@@ -212,7 +240,7 @@ fun CourseTable(
                                     showDropDownMenu.value = false
                                     if (Permission.hasCalendarPermissions(context)) {
                                         scope.launch {
-                                            showSnackbar(viewModel.snackBarHostState, "开发中...")
+                                            showToast(context, "开发中...")
                                         }
                                     } else {
                                         if (context is MainActivity) {
@@ -220,7 +248,7 @@ fun CourseTable(
                                         }
                                     }
                                 },
-                                index = 2
+                                index = 1
                             )
                             DropdownImpl(
                                 text = "导出为ICS日历文件",
@@ -228,9 +256,16 @@ fun CourseTable(
                                 optionSize = optionSize,
                                 onSelectedIndexChange = {
                                     showDropDownMenu.value = false
-                                    viewModel.exportToICS()
+                                    viewModel.exportToICS(
+                                        onSuccess = {
+                                            showToast(context, "已导出到下载文件夹")
+                                        },
+                                        onFailure = {
+                                            showToast(context, it)
+                                        }
+                                    )
                                 },
-                                index = 3
+                                index = 2
                             )
                             DropdownImpl(
                                 text = "更多设置",
@@ -238,9 +273,9 @@ fun CourseTable(
                                 optionSize = optionSize,
                                 onSelectedIndexChange = {
                                     showDropDownMenu.value = false
-                                    showBottomSheet.value = true
+                                    isMoreSettingsBottomSheetShow.value = true
                                 },
-                                index = 4
+                                index = 3
                             )
                         }
                     }
@@ -248,7 +283,7 @@ fun CourseTable(
             )
         },
         snackbarHost = {
-            SnackbarHost(viewModel.snackBarHostState)
+            SnackbarHost(snackBarHostState)
         }
     ) {
         Box(
@@ -273,206 +308,311 @@ fun CourseTable(
                     contentScale = ContentScale.Crop
                 )
             }
-            Column(
+            HorizontalPager(
+                state = pagerState,
+                pageSpacing = 12.dp,
+                contentPadding = PaddingValues(8.dp, 8.dp),
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(top = it.calculateTopPadding())
-                    .padding(horizontal = 4.dp, vertical = 8.dp)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
-                // 年份 星期 日期
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceAround
+                WeekCourseTable(
+                    isWeekendCourseShow = uiState.isWeekendCourseShow,
+                    startDatePerWeek = viewModel.getDateOfWeekMonday(it + 1),
+                    weekCourseSchedule = uiState.allCourseSchedule?.getOrNull(it)
+                )
+            }
+        }
+    }
+
+    SharedInfoDialog(
+        showDialog = isSharedInfoDialogShow,
+        shareCode = uiState.shareCode,
+        onCopyShareCode = { shareCode ->
+            copyContent(shareCode)
+            showToast(context, "分享码已复制到剪切板")
+        },
+        onShareToOtherApp = { shareCode ->
+            val shareIntent = android.content.Intent().apply {
+                action = android.content.Intent.ACTION_SEND
+                putExtra(
+                    android.content.Intent.EXTRA_TEXT,
+                    "我的课表分享码：$shareCode ，30分钟内有效。"
+                )
+                type = "text/plain"
+            }
+            context.startActivity(
+                android.content.Intent.createChooser(shareIntent, "课表分享码")
+            )
+        }
+    )
+
+    SharedCourseScheduleDialog(
+        showDialog = isImportCourseScheduleDialogShow,
+        sharedIdList = uiState.localCourseSchedule.keys.toList(),
+        onChooseTable = {
+            viewModel.changeSelectedCourseLabel(it)
+            showToast(context, "已切换到 $it")
+        },
+        onDeleteTable = {
+            viewModel.deleteLocalCourseSchedule(it)
+        },
+        selectTableId = uiState.selectedCourseLabel,
+        isImporting = uiState.isImporting,
+        onImportCourseSchedule = { shareCode ->
+            scope.launch {
+                viewModel.importSharedCourseSchedule(
+                    shareCode = shareCode,
+                    onImportSuccess = {
+                        showToast(context, "导入成功")
+                    },
+                    onImportFailure = {
+                        showToast(context, "导入失败，$it")
+                    }
+                )
+            }
+        }
+    )
+
+    BottomCircularProgressIndicator(loadingState = uiState.isSharing)
+
+    CourseTableMoreSettingBottomSheet(
+        showBottomSheet = isMoreSettingsBottomSheetShow,
+        isShowWeekendCourse = uiState.isWeekendCourseShow,
+        backgroundBlurState = uiState.backgroundBlurRadius,
+        backgroundUri = backgroundUri,
+        selectedTermCode = uiState.selectedTermCode,
+        termList = uiState.termList,
+        selectedDataSource = uiState.selectedDataSource,
+        onSelectDataSource = {
+            viewModel.changeDateSource(it)
+        },
+        onSelectTermCode = {
+            viewModel.changeSelectedTermCode(it)
+        },
+        onToggleShowWeekendCourse = {
+            viewModel.changeIsShowWeekendCourse(it)
+        },
+        onBackgroundUriChange = {
+            backgroundUri = it
+        },
+        onBackgroundBluerChange = {
+            viewModel.changeBackgroundBlurRadius(it)
+        }
+    )
+
+}
+
+@Composable
+fun WeekCourseTable(
+    currentDate: LocalDate = LocalDate.now(),
+    isWeekendCourseShow: Boolean,
+    startDatePerWeek: LocalDate?,
+    weekCourseSchedule: List<List<CourseEntity>>?,
+) {
+
+    val nodeColumnWeight = 0.65F
+    val screenHeight = LocalConfiguration.current.screenHeightDp
+    val minHeight = max((screenHeight - 180) / 12, 70)
+
+    val emojiList = listOf("📚", "🎓", "📝", "🏫", "📖", "👩‍🎓", "👨‍🎓", "📆", "🕰️", "🎒", "🏅", "🏆", "🎉")
+    val randomEmoji = remember { mutableStateOf(emojiList.random()) }
+
+    val pattern = DateTimeFormatter.ofPattern("M-d")
+
+    val scrollState = rememberScrollState()
+
+    Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(nodeColumnWeight)
+            ) {
+                IconButton(
+                    onClick = {}
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(nodeColumnWeight)
-                    ) {
-                        IconButton(
-                            onClick = {}
-                        ) {
-                            Text(
-                                text = randomEmoji.value,
-                                textAlign = TextAlign.Center,
-                                color = MiuixTheme.colorScheme.onBackground,
-                                modifier = Modifier.align(Alignment.Center),
-                            )
+                    Text(
+                        text = randomEmoji.value,
+                        textAlign = TextAlign.Center,
+                        color = MiuixTheme.colorScheme.onBackground,
+                        modifier = Modifier.align(Alignment.Center),
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .weight(7F)
+                    .align(Alignment.CenterVertically)
+            ) {
+                listOf(
+                    stringResource(R.string.monday),
+                    stringResource(R.string.tuesday),
+                    stringResource(R.string.wednesday),
+                    stringResource(R.string.thursday),
+                    stringResource(R.string.friday),
+                    stringResource(R.string.saturday),
+                    stringResource(R.string.sunday),
+                ).take(if (isWeekendCourseShow) 7 else 5)
+                    .forEachIndexed { index, week ->
+                        val date = startDatePerWeek?.plusDays(index.toLong())
+                        Box(modifier = Modifier.weight(1F)) {
+                            val color = if (date?.isEqual(currentDate) == true)
+                                MiuixTheme.colorScheme.onBackground else Color.Gray
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.align(Alignment.Center)
+                            ) {
+                                Text(
+                                    text = week,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        color = color
+                                    )
+                                )
+                                Text(
+                                    text = date?.format(pattern) ?: "",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = color
+                                    )
+                                )
+                            }
                         }
                     }
-                    Row(
-                        modifier = Modifier
-                            .weight(7F)
-                            .align(Alignment.CenterVertically)
-                    ) {
-                        listOf(
-                            stringResource(R.string.monday),
-                            stringResource(R.string.tuesday),
-                            stringResource(R.string.wednesday),
-                            stringResource(R.string.thursday),
-                            stringResource(R.string.friday),
-                            stringResource(R.string.saturday),
-                            stringResource(R.string.sunday),
-                        ).take(if (uiState.isShowWeekendCourse) 7 else 5)
-                            .forEachIndexed { index, week ->
-                                Box(modifier = Modifier.weight(1F)) {
-                                    val color = if (uiState.todayWeekday == index + 1)
-                                        MiuixTheme.colorScheme.onBackground else Color.Gray
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier.align(Alignment.Center)
-                                    ) {
-                                        Text(
-                                            text = week,
-                                            style = MaterialTheme.typography.bodyMedium.copy(
-                                                color = color
-                                            )
-                                        )
-                                        Text(
-                                            text = uiState.startDatePerWeek?.plusDays(index.toLong())
-                                                ?.format(DateTimeFormatter.ofPattern("M-d")) ?: "",
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                color = color
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-                    }
-                }
-                // 课程
+            }
+        }
+        // 课程
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(top = 2.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.Top,
+            ) {
+                // 第一列 时间和节次
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                        .padding(top = 2.dp)
+                        .weight(nodeColumnWeight),
+                    verticalArrangement = Arrangement.SpaceAround,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalAlignment = Alignment.Top,
-                    ) {
-                        // 第一列 时间和节次
-                        Column(
+                    val times = summerOrWinterTimeInterval()
+                    (0..4).forEach { node ->
+                        (node * 2..node * 2 + 1).forEach {
+                            val color = if (checkTimeInterval(true) == it)
+                                MiuixTheme.colorScheme.onBackground else Color.Gray
+                            Column(
+                                modifier = Modifier
+                                    .requiredHeight(minHeight.dp)
+                                    .padding(vertical = 2.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = "${it + 1}",
+                                    textAlign = TextAlign.Center,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        color = color
+                                    )
+                                )
+                                Text(
+                                    text = "${times[it].first}\n${times[it].second}",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = color
+                                    ),
+                                    lineHeight = 12.sp,
+                                )
+                            }
+                        }
+                    }
+                }
+                // 每一天的课程
+                Row(
+                    modifier = Modifier.weight(7F),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    if (weekCourseSchedule == null) {
+                        Box(
                             modifier = Modifier
-                                .weight(nodeColumnWeight),
-                            verticalArrangement = Arrangement.SpaceAround,
-                            horizontalAlignment = Alignment.CenterHorizontally
+                                .weight(7F)
+                                .height((minHeight * 10).dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            val times = summerOrWinterTimeInterval()
-                            (0..4).forEach { node ->
-                                (node * 2..node * 2 + 1).forEach {
-                                    val color = if (checkTimeInterval(true) == it)
-                                        MiuixTheme.colorScheme.onBackground else Color.Gray
-                                    Column(
-                                        modifier = Modifier
-                                            .requiredHeight(minHeight.dp)
-                                            .padding(vertical = 2.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        Text(
-                                            text = "${it + 1}",
-                                            textAlign = TextAlign.Center,
-                                            style = MaterialTheme.typography.bodyMedium.copy(
-                                                color = color
+                            CircularProgressIndicator()
+                        }
+                    } else {
+                        if (weekCourseSchedule.any { it.isNotEmpty() }) {
+                            // 遍历星期一到星期日的数据
+                            (0..if (isWeekendCourseShow) 6 else 4).forEach { dayIndex ->
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1F)
+                                        .padding(horizontal = 2.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Top
+                                ) {
+                                    val dayClasses =
+                                        weekCourseSchedule.getOrNull(dayIndex) ?: emptyList()
+                                    // 用于记录每个时间段是否有课程
+                                    val timeSlots = Array(10) { slot ->
+                                        dayClasses.filter { course ->
+                                            course.sessionList.firstOrNull() == (slot + 1)
+                                        }
+                                    }
+                                    // 标记哪些时间段已经被占用
+                                    val occupied = BooleanArray(10) { false }
+                                    // 遍历所有时间段
+                                    for (slot in 0 until 10) {
+                                        if (occupied[slot]) continue // 如果该时间段已被占用，跳过
+                                        val course = timeSlots[slot]
+                                        if (course.isNotEmpty()) {
+                                            val selectedOverlapCourse =
+                                                remember { mutableStateOf(0) }
+                                            val currentCourse =
+                                                course[selectedOverlapCourse.value]
+                                            // 计算这节课占用的时间段数量
+                                            val slotsOccupied =
+                                                currentCourse.sessionList.size
+                                            // 标记已占用
+                                            for (i in 0 until slotsOccupied) {
+                                                if (slot + i < 10) {
+                                                    occupied[slot + i] = true
+                                                }
+                                            }
+                                            CourseTableSingleCourseCard(
+                                                overlapCourseList = course,
+                                                course = currentCourse,
+                                                minHeight = minHeight,
+                                                slotsOccupied = slotsOccupied,
+                                                onSelectOverlapCourse = {
+                                                    selectedOverlapCourse.value = it
+                                                },
+                                                isShowWeekendCourse = isWeekendCourseShow
                                             )
-                                        )
-                                        Text(
-                                            text = "${times[it].first}\n${times[it].second}",
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                color = color
-                                            ),
-                                            lineHeight = 12.sp,
-                                        )
+                                        } else {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(minHeight.dp)
+                                                    .padding(vertical = 2.dp)
+                                            )
+                                        }
                                     }
                                 }
                             }
-                        }
-                        // 每一天的课程
-                        Row(
-                            modifier = Modifier.weight(7F),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            if (uiState.currentWeekCourseTable == null) {
-                                Box(
-                                    modifier = Modifier
-                                        .weight(7F)
-                                        .height((minHeight * 10).dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator()
-                                }
-                            } else {
-                                if (uiState.currentWeekCourseTable?.any { it.isNotEmpty() } == true) {
-                                    // 遍历星期一到星期日的数据
-                                    (0..if (uiState.isShowWeekendCourse) 6 else 4).forEach { dayIndex ->
-                                        Column(
-                                            modifier = Modifier
-                                                .weight(1F)
-                                                .padding(horizontal = 2.dp),
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            verticalArrangement = Arrangement.Top
-                                        ) {
-                                            val dayClasses =
-                                                uiState.currentWeekCourseTable?.getOrNull(dayIndex)
-                                                    ?: emptyList()
-                                            // 用于记录每个时间段是否有课程
-                                            val timeSlots = Array(10) { slot ->
-                                                dayClasses.filter { course ->
-                                                    course.sectionList.firstOrNull() == (slot + 1)
-                                                }
-                                            }
-                                            // 标记哪些时间段已经被占用
-                                            val occupied = BooleanArray(10) { false }
-                                            // 遍历所有时间段
-                                            for (slot in 0 until 10) {
-                                                if (occupied[slot]) continue // 如果该时间段已被占用，跳过
-                                                val course = timeSlots[slot]
-                                                if (course.isNotEmpty()) {
-                                                    val selectedOverlapCourse =
-                                                        remember { mutableStateOf(0) }
-                                                    val currentCourse =
-                                                        course[selectedOverlapCourse.value]
-                                                    // 计算这节课占用的时间段数量
-                                                    val slotsOccupied =
-                                                        currentCourse.sectionList.size
-                                                    // 标记已占用
-                                                    for (i in 0 until slotsOccupied) {
-                                                        if (slot + i < 10) {
-                                                            occupied[slot + i] = true
-                                                        }
-                                                    }
-                                                    CourseTableSingleCourseCard(
-                                                        overlapCourseList = course,
-                                                        course = currentCourse,
-                                                        minHeight = minHeight,
-                                                        slotsOccupied = slotsOccupied,
-                                                        onSelectOverlapCourse = {
-                                                            selectedOverlapCourse.value = it
-                                                        },
-                                                        isShowWeekendCourse = uiState.isShowWeekendCourse
-                                                    )
-                                                } else {
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .height(minHeight.dp)
-                                                            .padding(vertical = 2.dp)
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(7F)
-                                            .height((minHeight * 10).dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        EmptyContent("暂无课表数据")
-                                    }
-                                }
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .weight(7F)
+                                    .height((minHeight * 10).dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                EmptyContent("暂无课表数据")
                             }
                         }
                     }
@@ -480,25 +620,6 @@ fun CourseTable(
             }
         }
     }
-    CourseTableMoreSettingBottomSheet(
-        showBottomSheet = showBottomSheet,
-        isShowWeekendCourse = uiState.isShowWeekendCourse,
-        backgroundBlurState = uiState.backgroundBlurRadius,
-        backgroundUri = backgroundUri,
-        onToggleShowWeekendCourse = {
-            scope.launch {
-                viewModel.changeIsShowWeekendCourse(it)
-            }
-        },
-        onBackgroundUriChange = {
-            backgroundUri = it
-        },
-        onBackgroundBluerChange = {
-            scope.launch {
-                viewModel.changeBackgroundBlurRadius(it)
-            }
-        }
-    )
 }
 
 @Composable
@@ -583,6 +704,11 @@ fun CourseTableMoreSettingBottomSheet(
     isShowWeekendCourse: Boolean,
     backgroundUri: Uri?,
     backgroundBlurState: Dp,
+    selectedTermCode: String,
+    termList: List<SingleTerm>,
+    selectedDataSource: Int,
+    onSelectDataSource: (Int) -> Unit,
+    onSelectTermCode: (String) -> Unit,
     onToggleShowWeekendCourse: (Boolean) -> Unit,
     onBackgroundUriChange: (Uri?) -> Unit,
     onBackgroundBluerChange: (Dp) -> Unit
@@ -612,9 +738,26 @@ fun CourseTableMoreSettingBottomSheet(
                     SuperDropdown(
                         title = "切换数据源",
                         items = listOf("智慧教务", "教务系统"),
-                        selectedIndex = 0,
-                        enabled = false
+                        selectedIndex = selectedDataSource,
+                        onSelectedIndexChange = {
+                            onSelectDataSource(it)
+                        }
                     )
+                    AnimatedVisibility(
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically(),
+                        visible = selectedDataSource == 1
+                    ) {
+                        SuperDropdown(
+                            title = "选择学期",
+                            items = termList.map { it.termString },
+                            selectedIndex = termList.indexOfFirst { it.termCode == selectedTermCode }
+                                .coerceAtLeast(0),
+                            onSelectedIndexChange = {
+                                onSelectTermCode(termList[it].termCode)
+                            }
+                        )
+                    }
                 }
             }
             item {
@@ -688,6 +831,129 @@ fun CourseTableMoreSettingBottomSheet(
                     )
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun SharedInfoDialog(
+    showDialog: MutableState<Boolean>,
+    shareCode: String,
+    onCopyShareCode: (String) -> Unit,
+    onShareToOtherApp: (String) -> Unit
+) {
+    SuperDialog(
+        show = showDialog,
+        onDismissRequest = {
+            showDialog.value = false
+        },
+        title = "课表分享码",
+    ) {
+        Column {
+            Text(text = "已创建共享课表，30 分钟内有效，可通过课表页面右上角粘贴分享码导入已共享的课表，分享码为：$shareCode")
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.padding(top = 16.dp)
+            ) {
+                TextButton(
+                    text = "分享",
+                    onClick = {
+                        showDialog.value = false
+                        onShareToOtherApp(shareCode)
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(Modifier.width(20.dp))
+                TextButton(
+                    text = "复制",
+                    onClick = {
+                        showDialog.value = false
+                        onCopyShareCode(shareCode)
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.textButtonColorsPrimary()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SharedCourseScheduleDialog(
+    showDialog: MutableState<Boolean>,
+    onImportCourseSchedule: (String) -> Unit,
+    isImporting: Boolean,
+    sharedIdList: List<String>,
+    onChooseTable: (String) -> Unit,
+    selectTableId: String = "",
+    onDeleteTable: (String) -> Unit
+) {
+    val context = LocalContext.current
+    var shareCode by remember { mutableStateOf("") }
+    SuperDialog(
+        show = showDialog,
+        onDismissRequest = {
+            showDialog.value = false
+        },
+        title = "管理共享课表",
+    ) {
+        Column {
+            sharedIdList.forEach { id ->
+                SuperCheckbox(
+                    title = id,
+                    checked = selectTableId == id,
+                    onCheckedChange = {
+                        onChooseTable(id)
+                    },
+                    endActions = {
+                        if (id != "我的课表") {
+                            IconButton(
+                                onClick = {
+                                    onDeleteTable(id)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = MiuixIcons.Delete,
+                                    contentDescription = "delete"
+                                )
+                            }
+                        }
+                    }
+                )
+            }
+            TextField(
+                label = "请输入分享码",
+                value = shareCode,
+                onValueChange = {
+                    shareCode = it
+                },
+                singleLine = true,
+                useLabelAsPlaceholder = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            TextButton(
+                text = if (isImporting) "正在导入..." else "导入",
+                onClick = {
+                    if (shareCode.isBlank()) {
+                        showToast(context, "请输入分享码")
+                    } else {
+                        onImportCourseSchedule(shareCode)
+                    }
+                },
+                enabled = !isImporting,
+                colors = ButtonDefaults.textButtonColorsPrimary(),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            TextButton(
+                text = "取消",
+                onClick = {
+                    showDialog.value = false
+                },
+                colors = ButtonDefaults.textButtonColors(),
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

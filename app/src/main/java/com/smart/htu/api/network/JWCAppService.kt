@@ -23,7 +23,7 @@ import com.smart.htu.api.module.PersonalMessageRes
 import com.smart.htu.api.module.SelectEntity
 import com.smart.htu.api.module.TEDetailPost
 import com.smart.htu.api.module.TEEntity
-import com.smart.htu.api.module.TermIndexEntity
+import com.smart.htu.api.module.TermCalendarEntity
 import com.smart.htu.api.module.TextbookEntity
 import com.smart.htu.api.module.TextbookSelectPost
 import com.smart.htu.api.module.TodayCoursePost
@@ -42,8 +42,8 @@ interface JWCAppService {
     @GET("dev-api/appapi/getIstoken")
     suspend fun checkToken(): LoginJWCEntity
 
-    @POST("dev-api/appapi/Studentxszc/index")
-    suspend fun getTermIndex(@Body body: GlobalTerm): TermIndexEntity
+    @POST("dev-api/appapi/appxl/data")
+    suspend fun getTermCalendar(@Body body: Any): TermCalendarEntity
 
     @POST("dev-api/appapi/appkxjs/classroom")
     suspend fun classroomOccupation(@Body body: BuildingEntity): ClassroomOccupationEntity

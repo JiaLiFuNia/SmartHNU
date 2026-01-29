@@ -2,31 +2,34 @@ package com.smart.htu.screens.application.courseTable
 
 import android.os.Environment
 import android.util.Log
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.CourseEntity
-import com.smart.htu.api.module.CourseScheduleEntity
 import com.smart.htu.api.module.SingleTerm
+import com.smart.htu.repo.AppNetworkRepo
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
 import com.smart.htu.repo.JWCNetworkRepo
+import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.utils.FileUtil.saveTextToFile
 import com.smart.htu.utils.TermUtil.getCurrentTerm
-import com.smart.htu.utils.ToastUtil.showSnackbar
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -34,27 +37,34 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 data class CourseTableUiState(
-    val currentWeekCourseTable: List<List<CourseEntity>>? = null,
-    val allCourseTable: MutableList<List<MutableList<CourseEntity>>> =
-        MutableList(25) { List(7) { mutableListOf() } },
-    val startDatePerWeek: LocalDate? = null,
-    val backgroundBlurRadius: Dp = 20.dp,
-    val isShowWeekendCourse: Boolean = false,
-    val week: Int = 0,
-    val maxWeek: String = "",
-    val todayWeekday: Int? = 1,
+    val weekCourseSchedule: List<List<CourseEntity>>? = null,
+    val allCourseSchedule: List<List<List<CourseEntity>>>? = null,
+    val localCourseSchedule: Map<String, List<List<List<CourseEntity>>>> = emptyMap(),
+    val isSharing: MutableState<Boolean> = mutableStateOf(false),
+    val isImporting: Boolean = false,
+    val shareCode: String = "",
+    val selectedCourseLabel: String = "我的课表",
+
+    val weekIndex: Int = 1,
+    val totalWeekCount: Int = 0,
     val termCode: String,
     val termList: List<SingleTerm> = emptyList(),
-    val termRange: Pair<Int, Int> = Pair(0, 25),
+
+    val selectedDataSource: Int = 0,
+    val backgroundBlurRadius: Dp = 20.dp,
+    val isWeekendCourseShow: Boolean = false,
+    val isWriteCalendarEnable: Boolean = false,
     val username: String = DEFAULT_USERNAME,
-    val isWriteCalendarEnabled: Boolean = false,
-    val loginJWCState: Int = DEFAULT_LOGIN_STATE
+    val loginJWCState: Int = DEFAULT_LOGIN_STATE,
+    val selectedTermCode: String = getCurrentTerm()
 )
 
 @HiltViewModel
 class CourseTableViewModel @Inject constructor(
     private val jwcNetworkRepo: JWCNetworkRepo,
+    private val appNetworkRepo: AppNetworkRepo,
     private val dataStoreRepo: DataStoreRepo,
+    private val sharedDataRepo: SharedDataRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -63,8 +73,6 @@ class CourseTableViewModel @Inject constructor(
         )
     )
     val uiState: StateFlow<CourseTableUiState> = _uiState.asStateFlow()
-
-    val snackBarHostState = SnackbarHostState()
 
     private val usernameStateFlow = dataStoreRepo.observeUsername()
         .stateIn(
@@ -112,6 +120,15 @@ class CourseTableViewModel @Inject constructor(
             }
         )
 
+    private val localCourseScheduleStateFlow = dataStoreRepo.observeCourseTableData()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeCourseTableData().first()
+            }
+        )
+
     init {
         viewModelScope.launch {
             usernameStateFlow.collect { value ->
@@ -125,12 +142,12 @@ class CourseTableViewModel @Inject constructor(
         }
         viewModelScope.launch {
             writeCalendarPermissionStateFlow.collect { value ->
-                _uiState.update { it.copy(isWriteCalendarEnabled = value) }
+                _uiState.update { it.copy(isWriteCalendarEnable = value) }
             }
         }
         viewModelScope.launch {
             weekendCourseShowState.collect { isShow ->
-                _uiState.update { it.copy(isShowWeekendCourse = isShow) }
+                _uiState.update { it.copy(isWeekendCourseShow = isShow) }
             }
         }
         viewModelScope.launch {
@@ -139,76 +156,132 @@ class CourseTableViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            getCurrentWeekCourseSchedule(0)
+            combine(
+                sharedDataRepo.termList,
+                sharedDataRepo.totalWeekCount,
+                sharedDataRepo.weekIndex
+            ) { termList, totalTermCount, weekIndex ->
+                Triple(termList, totalTermCount, weekIndex)
+            }.collect { (termList, totalTermCount, weekIndex) ->
+                _uiState.update {
+                    it.copy(
+                        termList = termList,
+                        totalWeekCount = totalTermCount,
+                        weekIndex = weekIndex
+                    )
+                }
+            }
+        }
+        viewModelScope.launch {
+            localCourseScheduleStateFlow.collect { value ->
+                _uiState.update {
+                    it.copy(
+                        localCourseSchedule = value,
+                        allCourseSchedule = value[it.selectedCourseLabel],
+                        weekCourseSchedule = value[it.selectedCourseLabel]?.getOrNull(it.weekIndex - 1)
+                    )
+                }
+            }
+        }
+        viewModelScope.launch {
+            refreshCourseSchedule()
         }
     }
 
-    suspend fun getCourseSchedule(week: Int): CourseScheduleEntity? {
+    suspend fun refreshCourseSchedule() {
+        if (_uiState.value.selectedDataSource == 0) getCourseSchedule(0)
+        else getCourseScheduleJWC(0)
+    }
+
+    suspend fun getCourseSchedule(week: Int) {
         try {
             jwcNetworkRepo.getCourseScheduleService(
                 week = when (week) {
-                    -1 -> "all"
-                    in 1.._uiState.value.termRange.second -> week.toString()
-                    else -> ""
+                    in 1.._uiState.value.totalWeekCount -> week.toString()
+                    else -> "all"
                 }
-            ).onSuccess {
-                // Log.i("TAG666", "getCourseSchedule: $it")
-                return it
+            ).onSuccess { res ->
+                _uiState.update {
+                    it.copy(
+                        allCourseSchedule = res,
+                        weekCourseSchedule = res.getOrNull(_uiState.value.weekIndex - 1), // 本周课表
+                        termCode = sharedDataRepo.currentTermCode.first()
+                    )
+                }
+                saveCourseScheduleToLocal("我的课表", res)
             }
         } catch (e: Exception) {
             Log.i("TAG666", "getCourseSchedule: $e")
-            return null
-        }
-        return null
-    }
-
-    suspend fun getCurrentWeekCourseSchedule(week: Int) {
-        try {
-            _uiState.update { it.copy(currentWeekCourseTable = null) }
-            val res = getCourseSchedule(week)
-            val processedCourses = res?.courseTable?.map { weekMap ->
-                weekMap.values.flatten()
-            } ?: emptyList()
-            // Log.i("TAG666", "getCurrentWeekCourseSchedule: $processedCourses")
-            _uiState.update {
-                it.copy(
-                    currentWeekCourseTable = processedCourses,
-                    termCode = res?.termCode ?: getCurrentTerm(),
-                    termRange = Pair(res?.minWeek?.toInt() ?: 0, res?.maxWeek?.toInt() ?: 0),
-                    week = res?.week ?: 0,
-                    maxWeek = res?.maxWeek.toString(),
-                    todayWeekday = res?.todayWeekday,
-                    startDatePerWeek = res?.date?.minusDays(res.todayWeekday.toLong() - 1) // 往前推res?.todayWeekday - 1天
-                )
-            }
-        } catch (e: Exception) {
-            Log.i("TAG666", "getCurrentWeekCourseSchedule: $e")
         }
     }
 
-    suspend fun getAllWeekCourseSchedule(): MutableList<List<MutableList<CourseEntity>>>? {
+    suspend fun getCourseScheduleJWC(week: Int) {
         try {
-            val res = getCourseSchedule(-1)
-            // 合并成按天的课表
-            val processedCourses = res?.courseTable?.map { weekMap ->
-                weekMap.values.flatten()
-            } ?: emptyList()
-            // 处理成按周的课表 第几周 星期几 当天的课
-            val courseTable: MutableList<List<MutableList<CourseEntity>>> =
-                MutableList(25) { List(7) { mutableListOf() } }
-            processedCourses.forEach {
-                it.forEach { course ->
-                    val weekIndex = course.week
-                    val weekday = course.weekday
-                    courseTable[weekIndex - 1][weekday - 1].add(course)
+            jwcNetworkRepo.getCourseScheduleJWCService(
+                week = when (week) {
+                    in 1.._uiState.value.totalWeekCount -> week.toString()
+                    else -> ""
+                },
+                termCode = _uiState.value.selectedTermCode,
+                totalWeeks = _uiState.value.totalWeekCount
+            ).onSuccess { res ->
+                _uiState.update {
+                    it.copy(
+                        allCourseSchedule = res,
+                        weekCourseSchedule = res.getOrNull(_uiState.value.weekIndex - 1),
+                        termCode = _uiState.value.selectedTermCode
+                    )
                 }
             }
-            _uiState.update {
-                it.copy(allCourseTable = courseTable)
-            }
-            return courseTable
         } catch (e: Exception) {
-            return null
+            Log.i("TAG666", "getCourseScheduleJWC: $e")
+        }
+    }
+
+    suspend fun shareCourseSchedule(
+        onShareSuccess: (String) -> Unit,
+        onShareFailure: (String) -> Unit
+    ) {
+        try {
+            _uiState.update { it.copy(isSharing = mutableStateOf(true)) }
+            val courseData = _uiState.value.allCourseSchedule
+            if (courseData.isNullOrEmpty()) {
+                onShareFailure("没有课表数据可供分享")
+                return
+            }
+            val courseDataJson = Json.encodeToString<List<List<List<CourseEntity>>>>(courseData)
+            appNetworkRepo.shareCourseService(courseDataJson)
+                .onSuccess { res ->
+                    _uiState.update { it.copy(isSharing = mutableStateOf(false), shareCode = res) }
+                    onShareSuccess(res)
+                }
+                .onFailure { e ->
+                    onShareFailure(e.message ?: "分享课表失败，请稍后重试")
+                }
+            _uiState.update { it.copy(isSharing = mutableStateOf(false)) }
+        } catch (e: Exception) {
+            Log.e("TAG666", "shareCourseSchedule: 分享课表失败 ${e.message}")
+        }
+    }
+
+    suspend fun importSharedCourseSchedule(
+        shareCode: String,
+        onImportSuccess: () -> Unit,
+        onImportFailure: (String) -> Unit
+    ) {
+        try {
+            _uiState.update { it.copy(isImporting = true) }
+            appNetworkRepo.importSharedCourseService(shareCode)
+                .onSuccess { res ->
+                    saveCourseScheduleToLocal(res.first, res.second)
+                    onImportSuccess()
+                }
+                .onFailure { e ->
+                    onImportFailure(e.message.toString())
+                }
+            _uiState.update { it.copy(isImporting = false) }
+        } catch (e: Exception) {
+            Log.e("TAG666", "importSharedCourseSchedule: 导入课表失败 ${e.message}")
         }
     }
 
@@ -218,12 +291,15 @@ class CourseTableViewModel @Inject constructor(
         }
     }
 
-    fun exportToICS() {
+    fun exportToICS(
+        onSuccess: (String) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
         viewModelScope.launch {
             try {
-                val courseData = getAllWeekCourseSchedule()
+                val courseData = _uiState.value.allCourseSchedule
                 if (courseData.isNullOrEmpty()) {
-                    showSnackbar(snackBarHostState, "没有课表数据导出")
+                    onSuccess("没有课表数据导出")
                     return@launch
                 }
                 val icsContent = buildICSFile(
@@ -238,16 +314,16 @@ class CourseTableViewModel @Inject constructor(
                     content = icsContent,
                     targetDirectory = Environment.DIRECTORY_DOWNLOADS
                 )
-                showSnackbar(snackBarHostState, "$fileName 已成功导出到下载目录")
+                onSuccess("已成功导出到下载目录")
             } catch (e: Exception) {
                 Log.e("TAG666", "导出ICS文件失败: ${e.message}")
-                showSnackbar(snackBarHostState, "导出失败: ${e.message}")
+                onFailure("导出ICS文件失败: ${e.message}")
             }
         }
     }
 
     private fun buildICSFile(
-        courses: MutableList<List<MutableList<CourseEntity>>>,
+        courses: List<List<List<CourseEntity>>>,
         termCode: String,
         username: String
     ): String {
@@ -280,7 +356,7 @@ class CourseTableViewModel @Inject constructor(
             )
             val formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")
             sb.append("BEGIN:VEVENT\n")
-            sb.append("UID:${course.courseName}-${course.week}-${course.weekday}-${course.classTimeCode}@htu\n")
+            sb.append("UID:${course.courseName}-${course.weekIndex}-${course.dayOfWeek}-${course.classTimeCode}@htu\n")
             sb.append(
                 "DTSTAMP:${
                     ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).format(formatter)
@@ -290,7 +366,7 @@ class CourseTableViewModel @Inject constructor(
             sb.append("DTEND:${endDateTime.format(formatter)}\n")
             sb.append("SUMMARY:${course.courseName}\n")
             sb.append("LOCATION:${course.classroomName ?: course.projectName} ${course.teacherName}\n")
-            sb.append("DESCRIPTION:第${course.sectionList.first()} - ${course.sectionList.last()}节\\n${course.classroomName ?: course.projectName ?: ""}\\n${course.teacherName}\n")
+            sb.append("DESCRIPTION:第${course.sessionList.first()} - ${course.sessionList.last()}节\\n${course.classroomName ?: course.projectName ?: ""}\\n${course.teacherName}\n")
 
             sb.append("BEGIN:VALARM\n")
             sb.append("ACTION:DISPLAY\n")
@@ -306,23 +382,66 @@ class CourseTableViewModel @Inject constructor(
         return sb.toString()
     }
 
-    /* fun showSnackBar(
-         message: String,
-         actionLabel: String? = null,
-         withDismissAction: Boolean = false,
-         duration: SnackbarDuration = if (actionLabel == null) SnackbarDuration.Short else SnackbarDuration.Indefinite
-     ) {
-         viewModelScope.launch {
-             snackBarHostState.showSnackbar(message, actionLabel, withDismissAction, duration)
-         }
-     }*/
-
-    suspend fun changeBackgroundBlurRadius(blurRadius: Dp) {
-        dataStoreRepo.changeCourseTableBackgroundBlurRadius(blurRadius.value.toInt())
+    fun saveCourseScheduleToLocal(
+        label: String,
+        data: List<List<List<CourseEntity>>>
+    ) {
+        viewModelScope.launch {
+            val localData = _uiState.value.localCourseSchedule.toMutableMap()
+            localData[label] = data
+            dataStoreRepo.saveCourseTableData(localData)
+        }
     }
 
-    suspend fun changeIsShowWeekendCourse(isShow: Boolean) {
-        dataStoreRepo.changeWeekendCourseShowState(isShow)
+    fun deleteLocalCourseSchedule(label: String) {
+        viewModelScope.launch {
+            val localData = _uiState.value.localCourseSchedule.toMutableMap()
+            localData.remove(label)
+            dataStoreRepo.saveCourseTableData(localData)
+        }
+    }
+
+    fun changeSelectedCourseLabel(label: String) {
+        _uiState.update {
+            it.copy(
+                selectedCourseLabel = label,
+                allCourseSchedule = it.localCourseSchedule.get(label),
+                weekCourseSchedule = it.localCourseSchedule.get(label)
+                    ?.getOrNull(_uiState.value.weekIndex - 1),
+            )
+        }
+    }
+
+    fun changeSharingState(isSharing: Boolean) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSharing = mutableStateOf(isSharing)) }
+        }
+    }
+
+    fun getDateOfWeekMonday(weekIndex: Int): LocalDate {
+        return sharedDataRepo.getDateOfWeekMonday(weekIndex - 1)
+    }
+
+    fun changeDateSource(dateSourceIndex: Int) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(selectedDataSource = dateSourceIndex) }
+        }
+    }
+
+    fun changeBackgroundBlurRadius(blurRadius: Dp) {
+        viewModelScope.launch {
+            dataStoreRepo.changeCourseTableBackgroundBlurRadius(blurRadius.value.toInt())
+        }
+    }
+
+    fun changeIsShowWeekendCourse(isShow: Boolean) {
+        viewModelScope.launch {
+            dataStoreRepo.changeWeekendCourseShowState(isShow)
+        }
+    }
+
+    fun changeSelectedTermCode(termCode: String) {
+        _uiState.update { it.copy(selectedTermCode = termCode) }
     }
 
 }

@@ -12,8 +12,8 @@ import retrofit2.http.Streaming
 interface AIService {
 
     @Streaming
-    @POST("v1/chat/completions")
     @Headers("user-agent: SmartHNU-Android-App")
+    @POST("/chat/completions")
     suspend fun chat(
         @Header("Authorization") authorization: String,
         @Body data: ChatRequest

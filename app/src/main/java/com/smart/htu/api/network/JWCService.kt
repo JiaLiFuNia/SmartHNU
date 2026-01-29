@@ -1,6 +1,7 @@
 package com.smart.htu.api.network
 
 import com.smart.htu.api.module.CourseRepoRes
+import com.smart.htu.api.module.CourseScheduleJWCEntity
 import com.smart.htu.api.module.CourseTypeInfoRes
 import com.smart.htu.api.module.SelectCourseEntity
 import okhttp3.ResponseBody
@@ -52,11 +53,18 @@ interface JWCService {
         @FieldMap dynamicParam: Map<String, String>
     ): Response<SelectCourseEntity>
 
-    // https://jwc.htu.edu.cn/new/student/xsxk/xklx/06/config
     @GET("/new/student/xsxk/xklx/{courseTypeId}/config")
     suspend fun getCourseTypeConfig(
         @Header("referer") referer: String = "https://jwc.htu.edu.cn/new/desktop",
         @Path("courseTypeId") courseTypeId: String
     ): Response<CourseTypeInfoRes>
+
+    @POST("/new/student/xsgrkb/getCalendarWeekDatas")
+    @FormUrlEncoded
+    suspend fun getCourseSchedule(
+        @Header("referer") referer: String = "https://jwc.htu.edu.cn/new/desktop",
+        @Field("xnxqdm") termCode: String,
+        @Field("zc") week: String
+    ): Response<CourseScheduleJWCEntity>
 
 }

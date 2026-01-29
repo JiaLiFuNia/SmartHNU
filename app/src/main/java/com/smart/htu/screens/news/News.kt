@@ -443,7 +443,6 @@ fun NewsItem(
                                 id = md5(news.title + news.time),
                                 type = TaskType.Event,
                                 title = news.title,
-                                content = "",
                                 location = news.label.name,
                                 startDateTime = LocalDateTime.of(2026, 1, 5, 10, 0, 0),
                                 endDateTime = LocalDateTime.of(2026, 1, 5, 11, 0, 0),

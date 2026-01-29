@@ -21,7 +21,7 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 35
-        versionCode = 202601181
+        versionCode = 202601271
         versionName = "3.1.1"
 
         val buildTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
@@ -58,7 +58,6 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
-        freeCompilerArgs = listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
     }
     buildFeatures {
         buildConfig = true
@@ -66,7 +65,7 @@ android {
     }
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/{AL2.0,LGPL2.1,DEPENDENCIES}"
             excludes += "/META-INF/versions/9/OSGI-INF/MANIFEST.MF"
         }
     }
@@ -178,4 +177,5 @@ dependencies {
     implementation(libs.kotlinx.datetime)
 
     implementation(libs.readability4j)
+
 }

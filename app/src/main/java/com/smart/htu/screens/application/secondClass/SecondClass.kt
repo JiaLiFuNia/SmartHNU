@@ -1,14 +1,14 @@
 package com.smart.htu.screens.application.secondClass
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,7 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -81,6 +80,7 @@ import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.basic.SnackbarHost
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
@@ -105,9 +105,7 @@ fun SecondClass(
     val hazeState = rememberHazeState()
 
     val selectedTermIndex = remember(uiState.termList) {
-        mutableIntStateOf(
-            uiState.termList?.lastOrNull()?.termIndex ?: 1
-        )
+        mutableIntStateOf(100)
     }
     val showSCLoginDialog = remember { mutableStateOf(false) }
     val loginState = remember(uiState.scLoginState) { mutableStateOf(uiState.scLoginState == 1) }
@@ -257,48 +255,30 @@ fun SecondClass(
                     } else {
                         item {
                             Card {
-                                Box {
-                                    uiState.hourList?.lastOrNull().let {
-                                        Box(
-                                            modifier = Modifier
-                                                .matchParentSize()
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxHeight()
-                                                    .fillMaxWidth(
-                                                        (((it?.convertedTotalScore
-                                                            ?: 0.0) / 600f).toFloat())
-                                                    )
-                                                    .background(
-                                                        MiuixTheme.colorScheme.onPrimaryVariant
-                                                    )
+                                uiState.hourList?.lastOrNull().let {
+                                    val difference = 600 - (it?.convertedTotalScore ?: 0.0)
+                                    BasicComponent(
+                                        title = "学时总计",
+                                        summary = if (difference > 0) "距离毕业要求还差 $difference 学时" else "已满足毕业学时要求",
+                                        titleColor = BasicComponentDefaults.titleColor(
+                                            MiuixTheme.colorScheme.onBackground
+                                        ),
+                                        startAction = {
+                                            Icon(
+                                                painter = painterResource(R.drawable.format_paint_24px),
+                                                contentDescription = "学时总计",
+                                                modifier = Modifier.padding(end = 12.dp),
+                                                tint = MiuixTheme.colorScheme.onBackground
+                                            )
+                                        },
+                                        endActions = {
+                                            Text(
+                                                text = "${it?.totalScore?.toInt()} (${it?.convertedTotalScore?.toInt()})",
+                                                color = MiuixTheme.colorScheme.primary,
+                                                fontWeight = FontWeight.Bold
                                             )
                                         }
-                                        val difference = 600 - (it?.convertedTotalScore ?: 0.0)
-                                        BasicComponent(
-                                            title = "学时总计",
-                                            summary = if (difference > 0) "距离毕业要求还差 $difference 学时" else "已满足毕业学时要求",
-                                            titleColor = BasicComponentDefaults.titleColor(
-                                                MaterialTheme.colorScheme.onPrimaryContainer
-                                            ),
-                                            startAction = {
-                                                Icon(
-                                                    painter = painterResource(R.drawable.format_paint_24px),
-                                                    contentDescription = "第二课堂",
-                                                    modifier = Modifier.padding(end = 12.dp),
-                                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                                                )
-                                            },
-                                            endActions = {
-                                                top.yukonga.miuix.kmp.basic.Text(
-                                                    text = "${it?.totalScore?.toInt()} (${it?.convertedTotalScore?.toInt()})",
-                                                    color = MiuixTheme.colorScheme.primary,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            }
-                                        )
-                                    }
+                                    )
                                 }
                             }
                         }
@@ -352,27 +332,14 @@ fun SecondClass(
                                     insideMargin = PaddingValues(horizontal = 12.dp)
                                 )
                                 SelectTerm(
-                                    termList = (uiState.termList ?: emptyList()).plus(
-                                        Term(
-                                            "全部",
-                                            0
-                                        )
-                                    ),
+                                    termList = uiState.termList ?: emptyList(),
                                     selectedIndex = selectedTermIndex
                                 )
                             }
-                            val totalHour = listOf(
-                                uiState.hourList?.lastOrNull()?.classicScore,
-                                uiState.hourList?.lastOrNull()?.lectureScore,
-                                uiState.hourList?.lastOrNull()?.activityScore,
-                                uiState.hourList?.lastOrNull()?.practiceScore,
-                                uiState.hourList?.lastOrNull()?.subjectCompetitionScore,
-                                uiState.hourList?.lastOrNull()?.laborScore ?: 0.0
-                            )
                             Column {
-                                (uiState.hourList ?: emptyList()).filter {
+                                (uiState.hourList ?: emptyList()).find {
                                     it.termIndex == selectedTermIndex.intValue
-                                }.forEachIndexed { index, item ->
+                                }?.let { item ->
                                     Card(modifier = Modifier.fillMaxSize()) {
                                         Row {
                                             Column(
@@ -412,6 +379,13 @@ fun SecondClass(
                                         }
                                     }
                                 }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "注意：1. 学时以 75 为单位，即学时每满 75 加 75，不足 75 按 0 计算。\n2. 每 75 学时可转换为 0.5 学分，毕业要求为 4 学分，因此至少需要 600 学时。\n3. 每一类别至多 300 学时。",
+                                    fontSize = 14.sp,
+                                    color = MiuixTheme.colorScheme.onBackgroundVariant,
+                                    modifier = Modifier.padding(start = 12.dp)
+                                )
                             }
                         }
                     }

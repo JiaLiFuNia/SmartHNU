@@ -13,6 +13,7 @@ import com.google.gson.reflect.TypeToken
 import com.smart.htu.api.DataStoreService
 import com.smart.htu.api.module.ACCookie
 import com.smart.htu.api.module.CaptchaVersionEntity
+import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.api.module.CourseItemEntity
 import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.api.module.LibraryDetailEntity
@@ -81,10 +82,12 @@ class DataStoreRepo @Inject constructor(
         val UPDATE_RES = stringPreferencesKey("UPDATE_RES")
         val TARGET_SELECT_COURSE_LIST = stringPreferencesKey("TARGET_SELECT_COURSE_LIST")
         val TASK_LIST = stringPreferencesKey("TASK_LIST")
+        val COURSE_TABLE_DATA = stringPreferencesKey("COURSE_TABLE_DATA")
 
 
         const val DEFAULT_EMPTY_LIST = "[]"
         const val DEFAULT_EMPTY_STRING = ""
+        const val DEFAULT_EMPTY_MAP = "{}"
         const val DEFAULT_COOKIES = "[]"
         const val DEFAULT_MESSAGE_READ_ID = "[]"
         const val DEFAULT_THEME_MODE = 0
@@ -282,6 +285,12 @@ class DataStoreRepo @Inject constructor(
 
     override suspend fun saveTaskList(taskList: List<TaskEntity>) {
         context.dataStore.edit { it[TASK_LIST] = Json.encodeToString(taskList) }
+    }
+
+    override suspend fun saveCourseTableData(data: Map<String, List<List<List<CourseEntity>>>>) {
+        context.dataStore.edit {
+            it[COURSE_TABLE_DATA] = Json.encodeToString(data)
+        }
     }
 
 
@@ -509,6 +518,14 @@ class DataStoreRepo @Inject constructor(
         return context.dataStore.data.map {
             Json.decodeFromString<List<TaskEntity>>(
                 it[TASK_LIST] ?: DEFAULT_EMPTY_LIST
+            )
+        }
+    }
+
+    override fun observeCourseTableData(): Flow<Map<String, List<List<List<CourseEntity>>>>> {
+        return context.dataStore.data.map {
+            Json.decodeFromString<Map<String, List<List<List<CourseEntity>>>>>(
+                it[COURSE_TABLE_DATA] ?: DEFAULT_EMPTY_MAP
             )
         }
     }

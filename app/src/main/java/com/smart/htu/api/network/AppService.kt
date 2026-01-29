@@ -5,6 +5,9 @@ import com.smart.htu.api.module.FeedbackEntity
 import com.smart.htu.api.module.FeedbackRes
 import com.smart.htu.api.module.HolidayRes
 import com.smart.htu.api.module.NoticeRes
+import com.smart.htu.api.module.ReceiveSharedData
+import com.smart.htu.api.module.ShareCourseEntity
+import com.smart.htu.api.module.ShareCourseRes
 import com.smart.htu.api.module.UpdateRes
 import com.smart.htu.api.module.VersionEntity
 import retrofit2.Response
@@ -33,5 +36,11 @@ interface AppService {
 
     @GET("config")
     suspend fun getConfig(): Response<ConfigRes>
+
+    @POST("course")
+    suspend fun shareCourse(@Body courseData: ShareCourseEntity): Response<ShareCourseRes>
+
+    @GET("course")
+    suspend fun importSharedCourse(@Query("code") shareCode: String): Response<ReceiveSharedData>
 
 }

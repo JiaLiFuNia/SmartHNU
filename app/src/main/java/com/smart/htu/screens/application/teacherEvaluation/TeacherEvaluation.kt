@@ -188,7 +188,7 @@ fun TeacherEvaluation(
         globalTermCode = uiState.globalTermCode,
         termSelectedCode = uiState.termCode,
         termList = uiState.termList,
-        isBottomSheetShow = isBottomSheetShow,
+        show = isBottomSheetShow,
         onClick = {
             scope.launch {
                 viewModel.changeTermCode(it)

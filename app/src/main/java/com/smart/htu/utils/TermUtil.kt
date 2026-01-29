@@ -6,15 +6,16 @@ import java.time.LocalDate
 object TermUtil {
 
     fun generateTermList(grade: Int): List<SingleTerm> {
+        val year = LocalDate.now().year.toString().take(2)
         return listOf(
-            SingleTerm("${grade}01", "${grade}-${grade + 1}-1"),
-            SingleTerm("${grade}02", "${grade}-${grade + 1}-2"),
-            SingleTerm("${grade + 1}01", "${grade + 1}-${grade + 2}-1"),
-            SingleTerm("${grade + 1}02", "${grade + 1}-${grade + 2}-2"),
-            SingleTerm("${grade + 2}01", "${grade + 2}-${grade + 3}-1"),
-            SingleTerm("${grade + 2}02", "${grade + 2}-${grade + 3}-2"),
-            SingleTerm("${grade + 3}01", "${grade + 3}-${grade + 4}-1"),
-            SingleTerm("${grade + 3}02", "${grade + 3}-${grade + 4}-2")
+            SingleTerm("${year}${grade}01", "${year}${grade}-${year}${grade + 1}-1"),
+            SingleTerm("${year}${grade}02", "${year}${grade}-${year}${grade + 1}-2"),
+            SingleTerm("${year}${grade + 1}01", "${year}${grade + 1}-${year}${grade + 2}-1"),
+            SingleTerm("${year}${grade + 1}02", "${year}${grade + 1}-${year}${grade + 2}-2"),
+            SingleTerm("${year}${grade + 2}01", "${year}${grade + 2}-${year}${grade + 3}-1"),
+            SingleTerm("${year}${grade + 2}02", "${year}${grade + 2}-${year}${grade + 3}-2"),
+            SingleTerm("${year}${grade + 3}01", "${year}${grade + 3}-${year}${grade + 4}-1"),
+            SingleTerm("${year}${grade + 3}02", "${year}${grade + 3}-${year}${grade + 4}-2")
         )
     }
 

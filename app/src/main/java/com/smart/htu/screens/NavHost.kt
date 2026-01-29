@@ -23,14 +23,14 @@ import com.smart.htu.screens.application.courseHelper.CourseHelperNavHost
 import com.smart.htu.screens.application.courseSearch.CourseSearchNavHost
 import com.smart.htu.screens.application.courseSearch.CourseSearchRepo
 import com.smart.htu.screens.application.courseTable.CourseTable
-import com.smart.htu.screens.application.examSchedule.AddExamSchedule
-import com.smart.htu.screens.application.examSchedule.ExamSchedule
 import com.smart.htu.screens.application.grade.Grade
 import com.smart.htu.screens.application.librarySearch.LibrarySearchDetail
 import com.smart.htu.screens.application.librarySearch.LibrarySearchScreen
 import com.smart.htu.screens.application.messageBoard.MessageBoard
 import com.smart.htu.screens.application.messageBoard.MessageBoardDetail
 import com.smart.htu.screens.application.secondClass.SecondClass
+import com.smart.htu.screens.application.taskManager.AddExamSchedule
+import com.smart.htu.screens.application.taskManager.TaskManager
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluation
 import com.smart.htu.screens.application.teacherEvaluation.TeacherEvaluationDetail
 import com.smart.htu.screens.application.textbook.Textbook
@@ -52,6 +52,7 @@ import com.smart.htu.screens.person.PersonScreen
 import com.smart.htu.screens.setting.AIConfigurationScreen
 import com.smart.htu.screens.setting.About
 import com.smart.htu.screens.setting.ArticleStyle
+import com.smart.htu.screens.setting.HomeContentSettings
 import com.smart.htu.screens.setting.License
 import com.smart.htu.screens.setting.SettingViewModel
 import com.smart.htu.screens.setting.feedback.Feedback
@@ -239,7 +240,10 @@ fun NavHostScreen() {
             WebsiteNavigation(navController = navController)
         }
         animatedComposable(Destinations.AIConfiguration.route) {
-            AIConfigurationScreen(navController = navController)
+            AIConfigurationScreen(navController = navController, settingViewModel)
+        }
+        animatedComposable(Destinations.HomeContentSettings.route) {
+            HomeContentSettings(navController = navController, settingViewModel)
         }
         animatedComposable(
             route = "${Destinations.PdfReaderView.route}/{url}/{title}",
@@ -279,10 +283,10 @@ fun NavHostScreen() {
             CampusLife(navController)
         }
         animatedComposable(Destinations.ArticleStyle.route) {
-            ArticleStyle(navController)
+            ArticleStyle(navController, settingViewModel)
         }
-        animatedComposable(Destinations.ExamSchedule.route) {
-            ExamSchedule(navController)
+        animatedComposable(Destinations.TaskManager.route) {
+            TaskManager(navController)
         }
         animatedComposable(
             route = "${Destinations.AddExamSchedule.route}/{exam}",
@@ -329,7 +333,7 @@ fun NavController.navigateWithCheckLoginState(
     isGuest: Boolean = false,
     route: String? = null,
     routeType: RouteType? = null,
-    label: Int = 0,
+    label: String = "",
     logState: Boolean,
     loginRoute: String = Destinations.Login.route
 ) {
@@ -339,7 +343,7 @@ fun NavController.navigateWithCheckLoginState(
             RouteType.Url -> {
                 this.navigateToWebView(
                     url = route ?: "",
-                    label = context.getString(label)
+                    label = label
                 )
             }
 
@@ -358,10 +362,7 @@ fun NavController.navigateWithCheckLoginState(
             else -> {
             }
         }
-    } else {/*
-        this.currentBackStackEntry?.savedStateHandle?.set("original_route", route)
-        this.currentBackStackEntry?.savedStateHandle?.set("original_url", route)
-        this.currentBackStackEntry?.savedStateHandle?.set("original_label", label)*/
+    } else {
         this.navigate(loginRoute)
     }
 }

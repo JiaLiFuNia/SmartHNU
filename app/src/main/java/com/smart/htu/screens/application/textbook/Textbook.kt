@@ -83,7 +83,7 @@ fun Textbook(
     LaunchedEffect(isRefreshing, uiState.loginJWCState) {
         if (isRefreshing) {
             delay(500)
-            viewModel.refreshTermList()
+            viewModel.refreshTermCalendar()
             viewModel.getTextbook(uiState.termCode)
             isRefreshing = false
         }
@@ -179,7 +179,7 @@ fun Textbook(
             globalTermCode = uiState.globalTermCode,
             termSelectedCode = uiState.termCode,
             termList = uiState.termList,
-            isBottomSheetShow = isBottomSheetShow,
+            show = isBottomSheetShow,
             onClick = {
                 scope.launch {
                     viewModel.changeTermCode(it)

@@ -89,7 +89,7 @@ fun TextbookSelect(
     LaunchedEffect(isRefreshing, uiState.loginJWCState) {
         if (isRefreshing) {
             delay(1000)
-            viewModel.refreshTermList()
+            viewModel.refreshTermCalendar()
             viewModel.getSelectableTextbookService(courseTaskCode, termCode)
             viewModel.getSelectedTextbookService(courseTaskCode, termCode)
             isRefreshing = false

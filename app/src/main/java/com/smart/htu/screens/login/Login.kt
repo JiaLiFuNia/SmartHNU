@@ -17,7 +17,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -62,6 +61,7 @@ import top.yukonga.miuix.kmp.basic.ButtonDefaults.textButtonColorsPrimary
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.basic.SnackbarHost
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TopAppBar
@@ -97,7 +97,7 @@ fun LoginScreen(
             TopAppBar(title = "登录")
         },
         snackbarHost = {
-            SnackbarHost(hostState = viewModel.snackBarHostState)
+            SnackbarHost(viewModel.snackBarHostState)
         }
     ) {
         LazyColumn(

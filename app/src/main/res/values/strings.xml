@@ -161,4 +161,5 @@
     <string name="settings_theme_mode_monet_dark">Monet（深色）</string>
     <string name="course_search">课程搜索</string>
     <string name="course_search_result">搜索结果</string>
+    <string name="task_manager">任务管理</string>
 </resources>

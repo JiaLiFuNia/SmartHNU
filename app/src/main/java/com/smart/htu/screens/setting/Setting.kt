@@ -190,6 +190,13 @@ fun SettingScreen(
                             viewModel.changeLoadImgEnabled(!it)
                         }
                     )
+                    SuperArrow(
+                        title = "主页内容",
+                        summary = "选择和关闭需要在主页显示的内容",
+                        onClick = {
+                            navController.navigate(Destinations.HomeContentSettings.route)
+                        }
+                    )
                 }
             }
             item {

@@ -93,37 +93,40 @@ data class CourseInfoEntity(
     @SerializedName("jxbmc") val className: String,
     @SerializedName("teaxms") val teacherNames: String,
     @SerializedName("zdjxcdmc") val classroomName: String,
-    @SerializedName("sknrjj") val contentSummary: String,
     @SerializedName("flfzmc") val categoryName: String,
     @SerializedName("jxhjmc") val teachingType: String,
 
-    @SerializedName("zc") val weeks: String,
-    @SerializedName("xq") val dayOfWeek: String,
-    @SerializedName("jcdm2") val sectionListString: String,
+    @SerializedName("zc") val weekIndexString: String,
+    @SerializedName("xq") val dayOfWeekString: String,
+    @SerializedName("jcdm2") val sectionListString: String? = null,
     @SerializedName("jcdm") val sectionCode: String? = null,
     @SerializedName("xs") val courseHours: Int,
     @SerializedName("qssj") val startTime: String,
     @SerializedName("jssj") val endTime: String,
     @SerializedName("xnxqmc") val semesterName: String,
+    @SerializedName("ps") val startSection: String? = null,
+    @SerializedName("pe") val endSection: String? = null,
 
     @SerializedName("kcrwdm") val taskId: String,
     @SerializedName("xnxqdm") val termCode: String,
     @SerializedName("kkbmdm") val departmentId: String,
-    @SerializedName("kxh") val courseSequenceNum: Int,
     @SerializedName("pkrs") val studentCount: Int,
 
     @SerializedName("dgksdm") val examCode: String
 ) {
+    val dayOfWeek: Int
+        get() = dayOfWeekString.toIntOrNull() ?: 1
+
     val day: String
         get() = when (dayOfWeek) {
-            "1" -> "一"
-            "2" -> "二"
-            "3" -> "三"
-            "4" -> "四"
-            "5" -> "五"
-            "6" -> "六"
-            "7" -> "日"
-            else -> dayOfWeek
+            1 -> "一"
+            2 -> "二"
+            3 -> "三"
+            4 -> "四"
+            5 -> "五"
+            6 -> "六"
+            7 -> "日"
+            else -> ""
         }
 
     val date: LocalDate
@@ -131,6 +134,14 @@ data class CourseInfoEntity(
             dateString ?: getCurrentDate("yyyy-MM-dd"),
             "yyyy-MM-dd"
         )
+
+    val sectionList: List<Int>
+        get() = startSection?.toIntOrNull()?.let { start ->
+            endSection?.toIntOrNull()?.let { end ->
+                (start..end).toList()
+            }
+        } ?: emptyList()
+
 }
 
 

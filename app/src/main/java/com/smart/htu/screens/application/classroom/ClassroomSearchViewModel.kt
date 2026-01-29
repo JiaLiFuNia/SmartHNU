@@ -139,7 +139,7 @@ class ClassroomSearchViewModel @Inject constructor(
                     }
                     Log.i("TAG666", "getClassroomOccupation: $date")
                 }.onFailure {
-                    sharedDataRepo.setJWCLoginState(-2)
+                    dataStoreRepo.changeLoginJWCState(-2)
                 }
             }
             changeLoadingState(false)

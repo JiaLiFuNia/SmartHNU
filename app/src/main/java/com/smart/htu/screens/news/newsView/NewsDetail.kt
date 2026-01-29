@@ -33,7 +33,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -104,6 +103,7 @@ import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.ToolbarPosition
 import top.yukonga.miuix.kmp.extra.SuperBottomSheet
@@ -111,6 +111,7 @@ import top.yukonga.miuix.kmp.extra.SuperListPopup
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.More
+import top.yukonga.miuix.kmp.icon.extended.Share
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalDate
 
@@ -190,6 +191,22 @@ fun NewsDetail(
                 },
                 actions = {
                     IconButton(
+                        onClick = {
+                            Intent(Intent.ACTION_SEND).also {
+                                it.putExtra(
+                                    Intent.EXTRA_TEXT,
+                                    "$title $url"
+                                )
+                                it.type = "text/plain"
+                                if (it.resolveActivity(context.packageManager) != null) {
+                                    context.startActivity(it)
+                                }
+                            }
+                        }
+                    ) {
+                        Icon(MiuixIcons.Share, contentDescription = "share")
+                    }
+                    IconButton(
                         onClick = { showDropDownMenu.value = true },
                         modifier = Modifier.padding(end = 16.dp),
                         holdDownState = showDropDownMenu.value
@@ -200,7 +217,6 @@ fun NewsDetail(
                         )
                     }
                     val dropdownOptions = listOf(
-                        stringResource(R.string.share),
                         stringResource(R.string.copy_url),
                         stringResource(R.string.open_outside),
                         stringResource(R.string.forward),
@@ -224,64 +240,23 @@ fun NewsDetail(
                                         showDropDownMenu.value = false
                                         when (index) {
                                             0 -> {
-                                                Intent(Intent.ACTION_SEND).also {
-                                                    it.putExtra(
-                                                        Intent.EXTRA_TEXT,
-                                                        "$title $url"
-                                                    )
-                                                    it.type = "text/plain"
-                                                    if (it.resolveActivity(context.packageManager) != null) {
-                                                        context.startActivity(it)
-                                                    }
-                                                }
-                                            }
-
-                                            1 -> {
                                                 scope.launch {
                                                     copyContent(url)
                                                     showToast(context, "已复制到剪贴板")
                                                 }
                                             }
 
-                                            2 -> {
+                                            1 -> {
                                                 startWebUrl(url)
                                             }
 
-                                            3 -> {
+                                            2 -> {
                                                 if (navigator.canGoForward) navigator.navigateForward()
                                             }
 
-                                            4 -> {
+                                            3 -> {
                                                 scope.launch {
-                                                    copyContent(
-                                                        NewsHTML.HTML.format(
-                                                            NewsStyle.get(
-                                                                fontSize = uiState.newsFontSize,
-                                                                lineHeight = 1.0F,
-                                                                letterSpacing = 0.5F,
-                                                                textMargin = HORIZONTAL_MARGIN,
-                                                                textColor = Color.Black.toArgb(),
-                                                                textBold = false,
-                                                                textAlign = "start",
-                                                                boldTextColor = Color.Black.toArgb(),
-                                                                subheadBold = false,
-                                                                subheadUpperCase = false,
-                                                                imgMargin = HORIZONTAL_MARGIN,
-                                                                imgBorderRadius = 4,
-                                                                imgDisplayMode = if (uiState.loadImgEnabled) "block" else "none",
-                                                                linkTextColor = Color.Black.toArgb(),
-                                                                codeTextColor = Color.Black.toArgb(),
-                                                                codeBgColor = Color.Black.toArgb(),
-                                                                tableMargin = 0,
-                                                                selectionTextColor = Color.Black.toArgb(),
-                                                                selectionBgColor = Color.Blue.toArgb(),
-                                                                signatureColor = Color.Gray.toArgb()
-                                                            ),
-                                                            url,
-                                                            uiState.newsArticle?.articleContent,
-                                                            WebViewScript.get(uiState.bionicReadingEnabled)
-                                                        )
-                                                    )
+                                                    copyContent(uiState.newsArticle?.articleContent.toString())
                                                     showToast(context, "已复制到剪贴板")
                                                 }
                                             }
@@ -807,7 +782,8 @@ fun AISummaryBottomSheet(
                 }
                 aiSummaryContent?.let {
                     Spacer(modifier = Modifier.height(4.dp))
-                    top.yukonga.miuix.kmp.basic.Text(it)
+                    Text(it)
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
             }
         }

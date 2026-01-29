@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -38,6 +36,8 @@ import kotlinx.coroutines.launch
 import okhttp3.Cookie
 import org.jsoup.Jsoup
 import top.yukonga.miuix.kmp.basic.LinearProgressIndicator
+import top.yukonga.miuix.kmp.basic.SnackbarDuration
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
 
 @SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class)

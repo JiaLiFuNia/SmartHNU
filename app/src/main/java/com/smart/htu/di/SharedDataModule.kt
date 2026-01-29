@@ -20,10 +20,9 @@ object SharedDataModule {
     @Singleton
     fun provideSharedRepository(
         jwcAppService: JWCAppService,
-        appService: AppService,
         dataStoreRepo: DataStoreRepo
     ): SharedDataRepository {
-        return SharedDataRepoImpl(jwcAppService, appService, dataStoreRepo)
+        return SharedDataRepoImpl(jwcAppService, dataStoreRepo)
     }
 
 }

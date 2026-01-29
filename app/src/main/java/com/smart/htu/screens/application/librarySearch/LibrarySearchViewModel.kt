@@ -2,7 +2,6 @@ package com.smart.htu.screens.application.librarySearch
 
 import android.util.Log
 import android.webkit.CookieManager
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,6 +26,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jsoup.Jsoup
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import javax.inject.Inject
 
 data class LibrarySearchUiState(

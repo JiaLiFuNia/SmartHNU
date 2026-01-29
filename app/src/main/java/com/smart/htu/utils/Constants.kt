@@ -199,9 +199,9 @@ class Constants {
             ApplicationEntity(
                 guestMode = false,
                 icon = R.drawable.lab_profile_24px,
-                label = R.string.exam,
+                label = R.string.task_manager,
                 routeType = RouteType.Screen,
-                route = Destinations.ExamSchedule.route,
+                route = Destinations.TaskManager.route,
                 category = ApplicationCategory.STUDY
             ),
             ApplicationEntity(
