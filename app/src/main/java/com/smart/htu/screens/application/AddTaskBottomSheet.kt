@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
@@ -41,7 +40,7 @@ fun AddTaskBottomSheet(
     initTaskInfo: TaskEntity? = null,
     onTask: (TaskEntity) -> Unit
 ) {
-    val task = mutableStateOf(initTaskInfo ?: TaskEntity.emptyTask())
+    var task = initTaskInfo ?: TaskEntity.emptyTask()
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
 
@@ -56,7 +55,7 @@ fun AddTaskBottomSheet(
         endAction = {
             IconButton(
                 onClick = {
-                    onTask(task.value)
+                    onTask(task)
                     show.value = false
                 }
             ) {
@@ -81,9 +80,9 @@ fun AddTaskBottomSheet(
         ) {
             item {
                 TextField(
-                    value = task.value.title,
+                    value = task.title,
                     onValueChange = {
-                        task.value = task.value.copy(title = it)
+                        task = task.copy(title = it)
                     },
                     keyboardActions = KeyboardActions(
                         onNext = {
@@ -102,18 +101,18 @@ fun AddTaskBottomSheet(
                     SuperDropdown(
                         title = "任务类型",
                         items = TaskType.entries.map { it.label },
-                        selectedIndex = TaskType.entries.indexOf(task.value.type),
+                        selectedIndex = TaskType.entries.indexOf(task.type),
                         onSelectedIndexChange = {
-                            task.value = task.value.copy(type = TaskType.entries[it])
+                            task = task.copy(type = TaskType.entries[it])
                         }
                     )
                 }
             }
             item {
                 TextField(
-                    value = task.value.location,
+                    value = task.location,
                     onValueChange = {
-                        task.value = task.value.copy(location = it)
+                        task = task.copy(location = it)
                     },
                     keyboardActions = KeyboardActions(
                         onNext = {
@@ -133,7 +132,7 @@ fun AddTaskBottomSheet(
                         title = "开始时间",
                         endActions = {
                             top.yukonga.miuix.kmp.basic.Text(
-                                task.value.startDateTime.toString(),
+                                task.startDateTime.toString(),
                                 fontSize = MiuixTheme.textStyles.body2.fontSize,
                                 color = MiuixTheme.colorScheme.onSurfaceVariantActions
                             )
@@ -147,7 +146,7 @@ fun AddTaskBottomSheet(
                         title = "结束时间",
                         endActions = {
                             top.yukonga.miuix.kmp.basic.Text(
-                                task.value.endDateTime.toString(),
+                                task.endDateTime.toString(),
                                 fontSize = MiuixTheme.textStyles.body2.fontSize,
                                 color = MiuixTheme.colorScheme.onSurfaceVariantActions
                             )
@@ -161,9 +160,9 @@ fun AddTaskBottomSheet(
             }
             item {
                 TextField(
-                    value = task.value.remarkableInfo ?: "",
+                    value = task.remarkableInfo ?: "",
                     onValueChange = {
-                        task.value = task.value.copy(remarkableInfo = it)
+                        task = task.copy(remarkableInfo = it)
                     },
                     keyboardActions = KeyboardActions(
                         onNext = {
@@ -181,10 +180,10 @@ fun AddTaskBottomSheet(
                 Card {
                     SuperCheckbox(
                         title = "同时添加到系统日历",
-                        checked = task.value.isAddToCalendar,
+                        checked = task.isAddToCalendar,
                         onCheckedChange = {
                             if (Permission.hasCalendarPermissions(context)) {
-                                task.value = task.value.copy(isAddToCalendar = it)
+                                task = task.copy(isAddToCalendar = it)
                             } else {
                                 if (context is MainActivity) {
                                     context.requestCalendarPermissions()
