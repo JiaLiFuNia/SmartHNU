@@ -20,10 +20,12 @@ data class CourseGradeRes(
         @SerializedName("kcflmc") val courseClassification: String, // 博约 小类
         @SerializedName("xnxqmc") val termString: String, // 学期 2024-2025-1
         @SerializedName("xnxqdm") val termCode: String, // 学期 202401
+        @SerializedName("xdfsmc") val courseMode: String, // 必修 or 选修
+        @SerializedName("ksxzmc") val examType: String, // 重修？
     )
 }
 
-data class CourseGradeDetailPost(
+data class CourseGradePost(
     val cjdm: String
 )
 
@@ -46,5 +48,27 @@ data class CourseGradeDetailRes(
         @SerializedName("cj2") val gradeSecond: String?,
         @SerializedName("cj3") val gradeThird: String?,
         @SerializedName("cj4") val gradeFourth: String?
+    )
+}
+
+data class CourseGradeRankRes(
+    val msg: String,
+    val code: Int,
+    @SerializedName("info") val rankInCourse: CourseGradeRankEntity, // 课程排名
+    @SerializedName("info1") val rankInClass: CourseGradeRankEntity,  // 班级排名
+) {
+    data class CourseGradeRankEntity(
+        @SerializedName("zcj") val totalGrade: Double,
+        @SerializedName("rs") val totalStudents: String,
+        @SerializedName("mc") val className: String,
+        @SerializedName("ywmc") val classNameEnglish: String?,
+        @SerializedName("z1") val gradeCountA: String,
+        @SerializedName("z2") val gradeCountB: String,
+        @SerializedName("z3") val gradeCountC: String,
+        @SerializedName("z4") val gradeCountD: String,
+        @SerializedName("z5") val gradeCountE: String,
+        @SerializedName("lx") val courseType: String,
+        @SerializedName("pm") val ranking: Int,
+        @SerializedName("cjdm") val gradeCode: String,
     )
 }

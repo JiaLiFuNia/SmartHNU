@@ -54,6 +54,7 @@ import androidx.navigation.NavController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseGradeDetailRes.CourseGradeDetailEntity
+import com.smart.htu.api.module.CourseGradeRankRes
 import com.smart.htu.api.module.CourseGradeRes.CourseGradeEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
@@ -87,6 +88,15 @@ import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+
+data class CourseGradeDialogData(
+    val gradeDetail: CourseGradeDetailEntity? = null,
+    val gradeRankInClass: CourseGradeRankRes.CourseGradeRankEntity? = null,
+    val gradeRankInCourse: CourseGradeRankRes.CourseGradeRankEntity? = null
+) {
+    val isReady: Boolean
+        get() = gradeDetail != null && gradeRankInClass != null && gradeRankInCourse != null
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -220,12 +230,17 @@ fun Grade(
                                     items(uiState.courseGrade ?: emptyList()) {
                                         CourseGradeItem(
                                             grade = it,
+                                            gradeInfo = CourseGradeDialogData(
+                                                gradeDetail = uiState.courseGradeDetail,
+                                                gradeRankInClass = uiState.courseGradeRankInClass,
+                                                gradeRankInCourse = uiState.courseGradeRankInCourse
+                                            ),
                                             onClick = {
                                                 scope.launch {
                                                     viewModel.getCourseGradeDetail(it)
+                                                    viewModel.getCourseGradeRank(it)
                                                 }
-                                            },
-                                            gradeDetail = uiState.courseGradeDetail
+                                            }
                                         )
                                         Spacer(modifier = Modifier.height(12.dp))
                                     }
@@ -370,8 +385,8 @@ fun Grade(
 
 @Composable
 fun CourseGradeItem(
-    gradeDetail: CourseGradeDetailEntity?,
     grade: CourseGradeEntity,
+    gradeInfo: CourseGradeDialogData?,
     onClick: (String) -> Unit
 ) {
     val isGradeDetailBottomSheetShow = remember { mutableStateOf(false) }
@@ -392,21 +407,23 @@ fun CourseGradeItem(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = grade.courseName,
+                    text = if (grade.examType != "初修") "[${grade.examType}]" else "" + grade.courseName,
                     fontSize = 17.sp,
                     fontWeight = FontWeight(550),
                 )
                 Text(
                     text = buildAnnotatedString {
+                        append(grade.courseMode)
+                        append(" | ")
                         append(grade.courseCategory)
                         if (grade.courseClassification.isNotEmpty())
-                            append(" | ")
+                            append("-")
                         append(grade.courseClassification)
                     },
                     fontSize = 14.sp,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                     modifier = Modifier.padding(top = 2.dp),
-                    maxLines = 4
+                    maxLines = 1
                 )
             }
             Text(
@@ -421,7 +438,7 @@ fun CourseGradeItem(
     }
 
     CourseGradeDetailDialog(
-        gradeDetail = gradeDetail,
+        gradeInfo = gradeInfo,
         grade = grade,
         showGradeDetailBottomSheet = isGradeDetailBottomSheetShow
     )
@@ -429,8 +446,8 @@ fun CourseGradeItem(
 
 @Composable
 fun CourseGradeDetailDialog(
-    gradeDetail: CourseGradeDetailEntity?,
     grade: CourseGradeEntity,
+    gradeInfo: CourseGradeDialogData?,
     showGradeDetailBottomSheet: MutableState<Boolean>
 ) {
     SuperBottomSheet(
@@ -441,7 +458,7 @@ fun CourseGradeDetailDialog(
         },
         backgroundColor = MiuixTheme.colorScheme.surface
     ) {
-        if (gradeDetail == null) {
+        if (gradeInfo?.isReady != true) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -451,66 +468,88 @@ fun CourseGradeDetailDialog(
                 top.yukonga.miuix.kmp.basic.CircularProgressIndicator()
             }
         } else {
-            MessageCardDisplay(
-                modifier = Modifier.fillMaxWidth(),
-                labelOnTop = false,
-                message = listOf(
-                    SingleInfo(
-                        label = "绩点",
-                        content = grade.gradePoint.toString(),
-                        rowIndex = 1
-                    ),
-                    SingleInfo(
-                        label = "学分",
-                        content = grade.gradeCredits.toString(),
-                        rowIndex = 1
-                    ),
-                    SingleInfo(
-                        label = gradeDetail.percentageFirstLabel,
-                        content = gradeDetail.gradeFirst.toString().ifEmpty { "无" },
-                        rightContent = {
-                            gradeDetail.percentageFirst.toString().let {
-                                if (it.isNotEmpty())
-                                    Text("${it}%")
-                            }
-                        },
-                        rowIndex = 2
-                    ),
-                    SingleInfo(
-                        label = gradeDetail.percentageSecondLabel,
-                        content = gradeDetail.gradeSecond.toString().ifEmpty { "无" },
-                        rightContent = {
-                            gradeDetail.percentageSecond.toString().let {
-                                if (it.isNotEmpty())
-                                    Text("${it}%")
-                            }
-                        },
-                        rowIndex = 2
-                    ),
-                    SingleInfo(
-                        label = gradeDetail.percentageThirdLabel,
-                        content = gradeDetail.gradeThird.toString().ifEmpty { "无" },
-                        rightContent = {
-                            gradeDetail.percentageThird.toString().let {
-                                if (it.isNotEmpty())
-                                    Text("${it}%")
-                            }
-                        },
-                        rowIndex = 3
-                    ),
-                    SingleInfo(
-                        label = gradeDetail.percentageFourthLabel,
-                        content = gradeDetail.gradeFourth.toString().ifEmpty { "无" },
-                        rightContent = {
-                            gradeDetail.percentageFourth.toString().let {
-                                if (it.isNotEmpty())
-                                    Text("${it}%")
-                            }
-                        },
-                        rowIndex = 3
+            val gradeDetail = gradeInfo.gradeDetail!!
+            val gradeRankInClass = gradeInfo.gradeRankInClass!!
+            val gradeRankInCourse = gradeInfo.gradeRankInCourse!!
+            Column {
+                MessageCardDisplay(
+                    modifier = Modifier.fillMaxWidth(),
+                    labelOnTop = false,
+                    message = listOf(
+                        SingleInfo(
+                            label = "绩点",
+                            content = grade.gradePoint.toString(),
+                            rowIndex = 1
+                        ),
+                        SingleInfo(
+                            label = "学分",
+                            content = grade.gradeCredits.toString(),
+                            rowIndex = 1
+                        ),
+                        SingleInfo(
+                            label = gradeDetail.percentageFirstLabel,
+                            content = gradeDetail.gradeFirst.toString().ifEmpty { "无" },
+                            rightContent = {
+                                gradeDetail.percentageFirst.toString().let {
+                                    if (it.isNotEmpty())
+                                        Text("${it}%")
+                                }
+                            },
+                            rowIndex = 2
+                        ),
+                        SingleInfo(
+                            label = gradeDetail.percentageSecondLabel,
+                            content = gradeDetail.gradeSecond.toString().ifEmpty { "无" },
+                            rightContent = {
+                                gradeDetail.percentageSecond.toString().let {
+                                    if (it.isNotEmpty())
+                                        Text("${it}%")
+                                }
+                            },
+                            rowIndex = 2
+                        ),
+                        SingleInfo(
+                            label = gradeDetail.percentageThirdLabel,
+                            content = gradeDetail.gradeThird.toString().ifEmpty { "无" },
+                            rightContent = {
+                                gradeDetail.percentageThird.toString().let {
+                                    if (it.isNotEmpty())
+                                        Text("${it}%")
+                                }
+                            },
+                            rowIndex = 3
+                        ),
+                        SingleInfo(
+                            label = gradeDetail.percentageFourthLabel,
+                            content = gradeDetail.gradeFourth.toString().ifEmpty { "无" },
+                            rightContent = {
+                                gradeDetail.percentageFourth.toString().let {
+                                    if (it.isNotEmpty())
+                                        Text("${it}%")
+                                }
+                            },
+                            rowIndex = 3
+                        )
                     )
                 )
-            )
+                Spacer(modifier = Modifier.height(12.dp))
+                MessageCardDisplay(
+                    modifier = Modifier.fillMaxWidth(),
+                    labelOnTop = false,
+                    message = listOf(
+                        SingleInfo(
+                            label = "${gradeRankInClass.courseType}排名-${gradeRankInClass.className}",
+                            content = "${gradeRankInClass.ranking} / ${gradeRankInClass.totalStudents}",
+                            rowIndex = 1
+                        ),
+                        SingleInfo(
+                            label = "${gradeRankInCourse.courseType}排名",
+                            content = "${gradeRankInCourse.ranking} / ${gradeRankInCourse.totalStudents}",
+                            rowIndex = 1
+                        )
+                    )
+                )
+            }
         }
         Spacer(modifier = Modifier.height(16.dp))
     }

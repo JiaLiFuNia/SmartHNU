@@ -2,8 +2,9 @@ package com.smart.htu.api.network
 
 import com.smart.htu.api.module.BuildingEntity
 import com.smart.htu.api.module.ClassroomOccupationEntity
-import com.smart.htu.api.module.CourseGradeDetailPost
 import com.smart.htu.api.module.CourseGradeDetailRes
+import com.smart.htu.api.module.CourseGradePost
+import com.smart.htu.api.module.CourseGradeRankRes
 import com.smart.htu.api.module.CourseGradeRes
 import com.smart.htu.api.module.CourseScheduleEntity
 import com.smart.htu.api.module.CourseSchedulePost
@@ -39,6 +40,9 @@ interface JWCAppService {
     @POST("dev-api/appapi/applogin")
     suspend fun login(@Body body: LoginPost): LoginJWCEntity
 
+    @POST("dev-api/appapi/wechatlogin")
+    suspend fun wechatLogin(@Body body: LoginPost): LoginJWCEntity
+
     @GET("dev-api/appapi/getIstoken")
     suspend fun checkToken(): LoginJWCEntity
 
@@ -52,7 +56,11 @@ interface JWCAppService {
     suspend fun getCourseGrade(@Body body: GlobalTerm): CourseGradeRes
 
     @POST("dev-api/appapi/Studentcj/detail")
-    suspend fun getGradeDetail(@Body body: CourseGradeDetailPost): CourseGradeDetailRes
+    suspend fun getGradeDetail(@Body body: CourseGradePost): CourseGradeDetailRes
+
+    // https://jwc.htu.edu.cn/dev-api/appapi/Studentcj/ranking
+    @POST("dev-api/appapi/Studentcj/ranking")
+    suspend fun getGradeRank(@Body body: CourseGradePost): CourseGradeRankRes
 
     @POST("dev-api/appapi/Studentpjwj/teacher")
     suspend fun teacherEvaluation(@Body body: GlobalTerm): TEEntity

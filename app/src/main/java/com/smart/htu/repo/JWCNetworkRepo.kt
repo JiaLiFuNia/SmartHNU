@@ -8,8 +8,9 @@ import com.smart.htu.R
 import com.smart.htu.api.module.BuildingEntity
 import com.smart.htu.api.module.ClassroomOccupationEntity
 import com.smart.htu.api.module.CourseEntity
-import com.smart.htu.api.module.CourseGradeDetailPost
 import com.smart.htu.api.module.CourseGradeDetailRes
+import com.smart.htu.api.module.CourseGradePost
+import com.smart.htu.api.module.CourseGradeRankRes
 import com.smart.htu.api.module.CourseGradeRes
 import com.smart.htu.api.module.CourseInfoEntity
 import com.smart.htu.api.module.CourseItemEntity
@@ -524,7 +525,7 @@ class JWCNetworkRepo @Inject constructor(
         gradeCode: String
     ): Result<CourseGradeDetailRes> {
         try {
-            val res = jwcAppService.getGradeDetail(CourseGradeDetailPost(gradeCode))
+            val res = jwcAppService.getGradeDetail(CourseGradePost(gradeCode))
             return when (res.code) {
                 200 -> Result.success(res)
                 else -> Result.failure(Exception(res.msg))
@@ -532,6 +533,44 @@ class JWCNetworkRepo @Inject constructor(
         } catch (e: Exception) {
             Log.e("TAG666", "${e.message}")
             return Result.failure(Exception("获取失败"))
+        }
+    }
+
+    // 成绩排名查询
+    suspend fun getCourseGradeRankService(
+        gradeCode: String
+    ): Result<CourseGradeRankRes> {
+        try {
+            val res = jwcAppService.getGradeRank(CourseGradePost(gradeCode))
+            return when (res.code) {
+                200 -> Result.success(res)
+                else -> Result.failure(Exception(res.msg))
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666", "${e.message}")
+            return Result.failure(Exception("获取失败"))
+        }
+    }
+
+    suspend fun wechatLogin(
+        code: String
+    ): Result<LoginJWCEntity> {
+        try {
+            val logState = jwcAppService.wechatLogin(LoginPost(code = code))
+            return when (logState.code) {
+                200 -> {
+                    dataStoreRepo.changeLoginJWCState(1)
+                    Result.success(logState)
+                }
+
+                else -> {
+                    dataStoreRepo.changeLoginJWCState(-1)
+                    Result.failure(Exception("无效 Code"))
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("TAG666 wechatLogin", "${e.message}")
+            return Result.failure(e)
         }
     }
 
@@ -547,7 +586,6 @@ class JWCNetworkRepo @Inject constructor(
             val publicKey = RSAUtil.getPublicKeyFromRaw(context, R.raw.public_key)
             val passwordEncrypt = publicKey?.let { RSAUtil.encryptText(password, it) }
             val logState = jwcAppService.login(LoginPost(username, passwordEncrypt ?: ""))
-            Log.i("TAG666 jwcLogin", logState.toString())
             return when (logState.code) {
                 200 -> {
                     dataStoreRepo.changeLoginJWCState(1)

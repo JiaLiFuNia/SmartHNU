@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.CourseGradeDetailRes.CourseGradeDetailEntity
+import com.smart.htu.api.module.CourseGradeRankRes.CourseGradeRankEntity
 import com.smart.htu.api.module.CourseGradeRes.CourseGradeEntity
 import com.smart.htu.api.module.CreditItemEntity
 import com.smart.htu.api.module.GlobalTerm
@@ -35,6 +36,8 @@ data class GradeUiState(
     val allCredits: List<CreditItemEntity>? = null,
     val courseGrade: List<CourseGradeEntity>? = null,
     val courseGradeDetail: CourseGradeDetailEntity? = null,
+    val courseGradeRankInClass: CourseGradeRankEntity? = null,
+    val courseGradeRankInCourse: CourseGradeRankEntity? = null,
     val isLoadingGPA: Boolean = false,
     val loginJWCState: Int = DEFAULT_LOGIN_STATE,
     val blurEffect: Boolean = DEFAULT_BLUR_EFFECT
@@ -95,7 +98,6 @@ class GradeViewModel @Inject constructor(
             ) { termList, termCode ->
                 termList to termCode
             }.collect { (termList, termCode) ->
-                Log.d("TAG666 GradeViewModel", "termIndex collected: $termList $termCode")
                 _uiState.update {
                     it.copy(
                         termList = termList,
@@ -137,6 +139,27 @@ class GradeViewModel @Inject constructor(
             }
             .onFailure {
                 _uiState.update { it.copy(courseGradeDetail = null) }
+            }
+    }
+
+    suspend fun getCourseGradeRank(gradeCode: String) {
+        _uiState.update {
+            it.copy(
+                courseGradeRankInClass = null,
+                courseGradeRankInCourse = null
+            )
+        }
+        jwcNetworkRepo.getCourseGradeRankService(gradeCode)
+            .onSuccess { res ->
+                _uiState.update {
+                    it.copy(
+                        courseGradeRankInClass = res.rankInClass,
+                        courseGradeRankInCourse = res.rankInCourse
+                    )
+                }
+            }
+            .onFailure {
+                Log.e("TAG666", "getCourseGradeRank: ${it.message}" )
             }
     }
 
