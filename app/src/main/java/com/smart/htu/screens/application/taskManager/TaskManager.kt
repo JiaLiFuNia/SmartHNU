@@ -34,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -43,6 +44,7 @@ import com.smart.htu.component.InfoBadge
 import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.application.AddTaskBottomSheet
 import com.smart.htu.screens.main.TaskEntity
+import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
 import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -61,7 +63,6 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.Close
@@ -218,9 +219,10 @@ fun TaskManager(
                 uiState.taskList.groupBy { it.startDateTime.toLocalDate() }.toSortedMap()
             tasksGroupByDate.forEach { (date, tasks) ->
                 item {
+                    val dateString = convertLocalDateToStringDate(date, "yyyy年MM月dd日 E")
                     SmallTitle(
                         text = if (date.isEqual(LocalDate.now())
-                        ) "今天 ($date)" else date.toString(),
+                        ) "今天 ($dateString)" else dateString,
                         insideMargin = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
                     )
                 }
@@ -291,6 +293,11 @@ fun ExpandTaskCard(
         else MiuixTheme.colorScheme.onSurface
         val iconColor = if (isPassed) MiuixTheme.colorScheme.primary.copy(0.6f)
         else MiuixTheme.colorScheme.primary
+        val (statusText, statusColor) = when {
+            isPassed -> "已结束" to MiuixTheme.colorScheme.outline
+            isInProgress -> "进行中" to MiuixTheme.colorScheme.secondary
+            else -> "待开始" to MiuixTheme.colorScheme.primary
+        }
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -316,9 +323,11 @@ fun ExpandTaskCard(
                         ),
                         modifier = Modifier
                             .weight(1f)
-                            .padding(end = 8.dp)
+                            .padding(end = 8.dp),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
-                    InfoBadge(task.type.label, task.type.lightColor.containerColor)
+                    InfoBadge(statusText, statusColor)
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -345,9 +354,7 @@ fun ExpandTaskCard(
                                 pattern = "HH:mm"
                             )
                         }",
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
+                        modifier = Modifier.weight(1f),
                         style = MiuixTheme.textStyles.title4.copy(color = textColor),
                         textAlign = TextAlign.Start
                     )
@@ -361,9 +368,7 @@ fun ExpandTaskCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Start,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(0.5f)
+                        modifier = Modifier.weight(0.5f)
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.location_on_24px),
@@ -384,9 +389,7 @@ fun ExpandTaskCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Start,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(0.5f)
+                        modifier = Modifier.weight(0.5f)
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.chair_24px),

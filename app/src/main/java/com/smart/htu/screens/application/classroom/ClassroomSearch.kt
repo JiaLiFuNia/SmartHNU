@@ -47,7 +47,7 @@ import androidx.window.core.layout.WindowSizeClass
 import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.component.CircularProgressIndicator
-import com.smart.htu.component.DatePickerDialog
+import com.smart.htu.component.DatePicker
 import com.smart.htu.utils.Constants.Companion.COURSE_PERIOD
 import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
 import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
@@ -170,14 +170,13 @@ fun ClassroomSearchScreen(
                     SuperArrow(
                         title = "选择日期",
                         endActions = {
-                            top.yukonga.miuix.kmp.basic.Text(
+                            Text(
                                 text = convertLocalDateToStringDate(
                                     selectedDate.value,
                                     "YY年M月d日 E"
                                 ),
                                 fontSize = MiuixTheme.textStyles.body2.fontSize,
-                                color = MiuixTheme.colorScheme.onSurfaceVariantActions,
-                                modifier = Modifier.padding(end = 8.dp)
+                                color = MiuixTheme.colorScheme.onSurfaceVariantActions
                             )
                         },
                         onClick = {
@@ -328,7 +327,7 @@ fun ClassroomSearchScreen(
             }
         }
 
-        DatePickerDialog(
+        DatePicker(
             date = selectedDate.value,
             showDatePicker = showDatePicker,
             onConfirmClick = {

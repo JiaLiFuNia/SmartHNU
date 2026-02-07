@@ -12,12 +12,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.smart.htu.MainActivity
+import com.smart.htu.component.DateTimePicker
 import com.smart.htu.screens.main.TaskEntity
 import com.smart.htu.screens.main.TaskType
 import com.smart.htu.utils.Permission
@@ -30,9 +33,10 @@ import top.yukonga.miuix.kmp.extra.SuperBottomSheet
 import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Close
 import top.yukonga.miuix.kmp.icon.extended.Ok
-import top.yukonga.miuix.kmp.icon.extended.Remove
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun AddTaskBottomSheet(
@@ -40,22 +44,28 @@ fun AddTaskBottomSheet(
     initTaskInfo: TaskEntity? = null,
     onTask: (TaskEntity) -> Unit
 ) {
-    var task = initTaskInfo ?: TaskEntity.emptyTask()
+    val task = remember { mutableStateOf(initTaskInfo ?: TaskEntity.emptyTask()) }
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
+    val isStartDateTimePickerShow = remember { mutableStateOf(false) }
+    val isEndDateTimePickerShow = remember { mutableStateOf(false) }
 
     SuperBottomSheet(
         show = show,
         title = "创建任务",
         startAction = {
-            IconButton(onClick = { show.value = false }) {
-                Icon(MiuixIcons.Remove, contentDescription = null)
+            IconButton(
+                onClick = {
+                    show.value = false
+                }
+            ) {
+                Icon(MiuixIcons.Close, contentDescription = null)
             }
         },
         endAction = {
             IconButton(
                 onClick = {
-                    onTask(task)
+                    onTask(task.value)
                     show.value = false
                 }
             ) {
@@ -80,9 +90,9 @@ fun AddTaskBottomSheet(
         ) {
             item {
                 TextField(
-                    value = task.title,
+                    value = task.value.title,
                     onValueChange = {
-                        task = task.copy(title = it)
+                        task.value = task.value.copy(title = it)
                     },
                     keyboardActions = KeyboardActions(
                         onNext = {
@@ -101,18 +111,18 @@ fun AddTaskBottomSheet(
                     SuperDropdown(
                         title = "任务类型",
                         items = TaskType.entries.map { it.label },
-                        selectedIndex = TaskType.entries.indexOf(task.type),
+                        selectedIndex = TaskType.entries.indexOf(task.value.type),
                         onSelectedIndexChange = {
-                            task = task.copy(type = TaskType.entries[it])
+                            task.value = task.value.copy(type = TaskType.entries[it])
                         }
                     )
                 }
             }
             item {
                 TextField(
-                    value = task.location,
+                    value = task.value.location,
                     onValueChange = {
-                        task = task.copy(location = it)
+                        task.value = task.value.copy(location = it)
                     },
                     keyboardActions = KeyboardActions(
                         onNext = {
@@ -127,18 +137,20 @@ fun AddTaskBottomSheet(
                 )
             }
             item {
+                val formator = DateTimeFormatter.ofPattern("yyyy年M月d日E HH:mm")
                 Card {
                     SuperArrow(
                         title = "开始时间",
                         endActions = {
                             top.yukonga.miuix.kmp.basic.Text(
-                                task.startDateTime.toString(),
+                                task.value.startDateTime.format(formator),
                                 fontSize = MiuixTheme.textStyles.body2.fontSize,
                                 color = MiuixTheme.colorScheme.onSurfaceVariantActions
                             )
                         },
                         onClick = {
                             focusManager.clearFocus()
+                            isStartDateTimePickerShow.value = true
                         },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -146,13 +158,14 @@ fun AddTaskBottomSheet(
                         title = "结束时间",
                         endActions = {
                             top.yukonga.miuix.kmp.basic.Text(
-                                task.endDateTime.toString(),
+                                task.value.endDateTime.format(formator),
                                 fontSize = MiuixTheme.textStyles.body2.fontSize,
                                 color = MiuixTheme.colorScheme.onSurfaceVariantActions
                             )
                         },
                         onClick = {
                             focusManager.clearFocus()
+                            isEndDateTimePickerShow.value = true
                         },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -160,9 +173,9 @@ fun AddTaskBottomSheet(
             }
             item {
                 TextField(
-                    value = task.remarkableInfo ?: "",
+                    value = task.value.remarkableInfo ?: "",
                     onValueChange = {
-                        task = task.copy(remarkableInfo = it)
+                        task.value = task.value.copy(remarkableInfo = it)
                     },
                     keyboardActions = KeyboardActions(
                         onNext = {
@@ -180,10 +193,10 @@ fun AddTaskBottomSheet(
                 Card {
                     SuperCheckbox(
                         title = "同时添加到系统日历",
-                        checked = task.isAddToCalendar,
+                        checked = task.value.isAddToCalendar,
                         onCheckedChange = {
                             if (Permission.hasCalendarPermissions(context)) {
-                                task = task.copy(isAddToCalendar = it)
+                                task.value = task.value.copy(isAddToCalendar = it)
                             } else {
                                 if (context is MainActivity) {
                                     context.requestCalendarPermissions()
@@ -204,4 +217,22 @@ fun AddTaskBottomSheet(
             }
         }
     }
+
+    DateTimePicker(
+        title = "开始时间",
+        show = isStartDateTimePickerShow,
+        initialTime = task.value.startDateTime,
+        onConfirm = {
+            task.value = task.value.copy(startDateTime = it)
+        }
+    )
+
+    DateTimePicker(
+        title = "结束时间",
+        show = isEndDateTimePickerShow,
+        initialTime = task.value.endDateTime,
+        onConfirm = {
+            task.value = task.value.copy(endDateTime = it)
+        }
+    )
 }
