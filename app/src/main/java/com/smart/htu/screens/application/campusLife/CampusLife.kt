@@ -3,15 +3,14 @@ package com.smart.htu.screens.application.campusLife
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -27,10 +26,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.smart.htu.R
+import com.smart.htu.utils.Constants.Companion.CAINIAO_URL
 import com.smart.htu.utils.Constants.Companion.PINDUODUO_URL
 import com.smart.htu.utils.Constants.Companion.TAOBAO_URL
 import com.smart.htu.utils.startActivityWithUri
-import com.smart.htu.utils.startAppUrl
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -118,59 +117,99 @@ fun CampusLife(
                     text = "快递服务",
                     insideMargin = PaddingValues(12.dp, 8.dp)
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth()
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height((56 * 2 + 12).dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    userScrollEnabled = false
                 ) {
-                    Card(
-                        modifier = Modifier.weight(0.5f),
-                        colors = CardDefaults.defaultColors(MiuixTheme.colorScheme.surfaceContainer)
-                    ) {
-                        BasicComponent(
-                            title = "拼多多取件码",
-                            onClick = {
-                                startAppUrl(PINDUODUO_URL)
-                            },
-                            startAction = {
-                                Image(
-                                    painter = painterResource(R.drawable.ic_pinduoduo),
-                                    contentDescription = "pinduoduo",
-                                    modifier = Modifier
-                                        .padding(end = 8.dp)
-                                        .size(24.dp)
-                                )
-                            }
-                        )
+                    item {
+                        Card(
+                            modifier = Modifier,
+                            colors = CardDefaults.defaultColors(MiuixTheme.colorScheme.surfaceContainer)
+                        ) {
+                            BasicComponent(
+                                title = "拼多多取件码",
+                                onClick = {
+                                    startActivityWithUri(
+                                        appName = "拼多多",
+                                        uri = PINDUODUO_URL
+                                    )
+                                },
+                                startAction = {
+                                    Image(
+                                        painter = painterResource(R.drawable.ic_pinduoduo),
+                                        contentDescription = "pinduoduo",
+                                        modifier = Modifier
+                                            .padding(end = 8.dp)
+                                            .size(24.dp)
+                                    )
+                                }
+                            )
+                        }
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Card(
-                        modifier = Modifier.weight(0.5f),
-                        colors = CardDefaults.defaultColors(MiuixTheme.colorScheme.surfaceContainer)
-                    ) {
-                        BasicComponent(
-                            title = "淘宝取件码",
-                            onClick = {
-                                startActivityWithUri(
-                                    packageName = "com.taobao.taobao",
-                                    activityName = "com.taobao.browser.BrowserActivity",
-                                    uri = TAOBAO_URL
-                                )
-                            },
-                            startAction = {
-                                Image(
-                                    painter = painterResource(R.drawable.ic_taobao),
-                                    contentDescription = "pinduoduo",
-                                    modifier = Modifier
-                                        .padding(end = 8.dp)
-                                        .size(24.dp)
-                                )
-                            }
-                        )
+                    item {
+                        Card(
+                            modifier = Modifier,
+                            colors = CardDefaults.defaultColors(MiuixTheme.colorScheme.surfaceContainer)
+                        ) {
+                            BasicComponent(
+                                title = "淘宝取件码",
+                                onClick = {
+                                    startActivityWithUri(
+                                        appName = "淘宝",
+                                        packageName = "com.taobao.taobao",
+                                        activityName = "com.taobao.browser.BrowserActivity",
+                                        uri = TAOBAO_URL
+                                    )
+                                },
+                                startAction = {
+                                    Image(
+                                        painter = painterResource(R.drawable.ic_taobao),
+                                        contentDescription = "pinduoduo",
+                                        modifier = Modifier
+                                            .padding(end = 8.dp)
+                                            .size(24.dp)
+                                    )
+                                }
+                            )
+                        }
+                    }
+                    item {
+                        Card(
+                            modifier = Modifier,
+                            colors = CardDefaults.defaultColors(MiuixTheme.colorScheme.surfaceContainer)
+                        ) {
+                            BasicComponent(
+                                title = "菜鸟取件码",
+                                onClick = {
+                                    startActivityWithUri(
+                                        appName = "菜鸟",
+                                        packageName = "com.cainiao.wireless",
+                                        uri = CAINIAO_URL,
+                                        extra = mapOf(
+                                            "jumpPath" to "guoguo://go/station_code",
+                                            "entrance" to "pinned_shortcuts_identity_code"
+                                        )
+                                    )
+                                },
+                                startAction = {
+                                    Image(
+                                        painter = painterResource(R.drawable.ic_cainiao),
+                                        contentDescription = "cainiao",
+                                        modifier = Modifier
+                                            .padding(end = 8.dp)
+                                            .size(24.dp)
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-                Card {
 
-                }
             }
         }
     }

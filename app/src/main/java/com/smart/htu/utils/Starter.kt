@@ -31,40 +31,47 @@ fun startWebUrl(url: String) {
 
 //通过包名启动第三方应用
 @SuppressLint("QueryPermissionsNeeded")
-fun startLaunchAPK(packageName: String) {
+fun startLaunchAPK(
+    appName: String,
+    packageName: String
+) {
     try {
         val intent = context.packageManager.getLaunchIntentForPackage(packageName)
         context.startActivity(intent)
     } catch (e: Exception) {
-        ToastUtil.showToast(context, "$e")
+        if (e is android.content.ActivityNotFoundException) {
+            ToastUtil.showToast(context, "${appName}未安装或版本过低")
+        } else {
+            ToastUtil.showToast(context, "$e")
+        }
     }
 }
 
-//传入应用URL打开
-fun startAppUrl(url: String) {
-    try {
-        val intent = Intent(Intent.ACTION_DEFAULT, url.toUri())
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent)
-    } catch (e: Exception) {
-        ToastUtil.showToast(context, "$e")
-    }
-}
-
-// 通过包名和Activity 启动 activity
+// 通过包名和Activity名称启动指定应用的指定Activity，并可传入URI和额外参数
 fun startActivityWithUri(
-    packageName: String,
-    activityName: String,
-    uri: String? = null
+    appName: String,
+    packageName: String = "",
+    activityName: String = "",
+    uri: String? = null,
+    extra: Map<String, String>? = null
 ) {
     try {
         val intent = Intent().apply {
-            setClassName(packageName, activityName)
+            if (packageName.isNotEmpty() && activityName.isNotEmpty()) {
+                setClassName(packageName, activityName)
+            }
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             uri?.let { data = it.toUri() }
+            extra?.forEach { (key, value) ->
+                putExtra(key, value)
+            }
         }
         context.startActivity(intent)
     } catch (e: Exception) {
-        ToastUtil.showToast(context, "$e")
+        if (e is android.content.ActivityNotFoundException) {
+            ToastUtil.showToast(context, "${appName}未安装或版本过低")
+        } else {
+            ToastUtil.showToast(context, "$e")
+        }
     }
 }
