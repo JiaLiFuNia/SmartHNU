@@ -44,7 +44,6 @@ data class NewsUiState(
     val aiSummaryReasoningContent: String? = null,
     val isAISummaryReasoning: Boolean = false,
     val newsArticle: NewsArticleEntity? = null,
-    val bionicReadingEnabled: Boolean = true,
     val loadImgEnabled: Boolean = true,
     val newsHistoryList: List<NewsMarkEntity> = emptyList(),
     val newsFavoriteList: List<NewsMarkEntity> = emptyList(),
@@ -118,16 +117,6 @@ class NewsViewModel @Inject constructor(
             }
         )
 
-    private val bionicReadingEnabledStateFlow = dataStoreRepo.observeBionicReadingEnabled()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            runBlocking {
-                dataStoreRepo.observeBionicReadingEnabled().first()
-            }
-        )
-
-
     private val loadImgEnabledStateFlow = dataStoreRepo.observeLoadImgEnabled()
         .stateIn(
             viewModelScope,
@@ -187,11 +176,6 @@ class NewsViewModel @Inject constructor(
         viewModelScope.launch {
             selectedAIModelStateFlow.collect { value ->
                 _uiState.update { it.copy(selectedAIModelIndex = value) }
-            }
-        }
-        viewModelScope.launch {
-            bionicReadingEnabledStateFlow.collect { value ->
-                _uiState.update { it.copy(bionicReadingEnabled = value) }
             }
         }
         viewModelScope.launch {

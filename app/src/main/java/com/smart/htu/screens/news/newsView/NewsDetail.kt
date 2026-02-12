@@ -447,7 +447,7 @@ fun NewsDetail(
                                     ),
                                     url,
                                     uiState.newsArticle?.articleContent,
-                                    WebViewScript.get(uiState.bionicReadingEnabled)
+                                    WebViewScript.get()
                                 ),
                                 baseUrl = url
                             ),

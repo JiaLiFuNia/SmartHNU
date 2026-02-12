@@ -55,7 +55,11 @@ data class SettingUiState(
     val cacheSize: String = "计算中...",
     val loadImgEnabled: Boolean = true,
     val newsFontSize: Float = 17f,
-    val bionicReadingEnabled: Boolean = true,
+    val homeFocusEnabled: Boolean = true,
+    val homeTodayCourseEnabled: Boolean = true,
+    val homeTodayTaskEnabled: Boolean = true,
+    val homeFreeClassroomEnabled: Boolean = true,
+    val homeNewsEnabled: Boolean = true,
 )
 
 val AI_MODEL_LIST = listOf(
@@ -166,15 +170,6 @@ class SettingViewModel @Inject constructor(
             }
         )
 
-    private val bionicReadingEnabledStateFlow = dataStoreRepo.observeBionicReadingEnabled()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            runBlocking {
-                dataStoreRepo.observeBionicReadingEnabled().first()
-            }
-        )
-
     private val captchaLocalInfoStateFlow = dataStoreRepo.observeUpdateRes()
         .stateIn(
             viewModelScope,
@@ -183,6 +178,27 @@ class SettingViewModel @Inject constructor(
                 dataStoreRepo.observeUpdateRes().first()
             }
         )
+
+    private val homeFocusEnabledStateFlow = dataStoreRepo.observeHomeFocusEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
+            dataStoreRepo.observeHomeFocusEnabled().first()
+        })
+    private val homeTodayCourseEnabledStateFlow = dataStoreRepo.observeHomeTodayCourseEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
+            dataStoreRepo.observeHomeTodayCourseEnabled().first()
+        })
+    private val homeTodayTaskEnabledStateFlow = dataStoreRepo.observeHomeTodayTaskEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
+            dataStoreRepo.observeHomeTodayTaskEnabled().first()
+        })
+    private val homeFreeClassroomEnabledStateFlow = dataStoreRepo.observeHomeFreeClassroomEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
+            dataStoreRepo.observeHomeFreeClassroomEnabled().first()
+        })
+    private val homeNewsEnabledStateFlow = dataStoreRepo.observeHomeNewsEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
+            dataStoreRepo.observeHomeNewsEnabled().first()
+        })
 
     init {
         viewModelScope.launch {
@@ -226,8 +242,28 @@ class SettingViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            bionicReadingEnabledStateFlow.collect { value ->
-                _uiState.update { it.copy(bionicReadingEnabled = value) }
+            homeFocusEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(homeFocusEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
+            homeTodayCourseEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(homeTodayCourseEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
+            homeTodayTaskEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(homeTodayTaskEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
+            homeFreeClassroomEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(homeFreeClassroomEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
+            homeNewsEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(homeNewsEnabled = value) }
             }
         }
         viewModelScope.launch {
@@ -324,10 +360,24 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    fun changeBionicReadingEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            dataStoreRepo.changeBionicReadingEnabled(enabled)
-        }
+    fun changeHomeFocusEnabled(enabled: Boolean) {
+        viewModelScope.launch { dataStoreRepo.changeHomeFocusEnabled(enabled) }
+    }
+
+    fun changeHomeTodayCourseEnabled(enabled: Boolean) {
+        viewModelScope.launch { dataStoreRepo.changeHomeTodayCourseEnabled(enabled) }
+    }
+
+    fun changeHomeTodayTaskEnabled(enabled: Boolean) {
+        viewModelScope.launch { dataStoreRepo.changeHomeTodayTaskEnabled(enabled) }
+    }
+
+    fun changeHomeFreeClassroomEnabled(enabled: Boolean) {
+        viewModelScope.launch { dataStoreRepo.changeHomeFreeClassroomEnabled(enabled) }
+    }
+
+    fun changeHomeNewsEnabled(enabled: Boolean) {
+        viewModelScope.launch { dataStoreRepo.changeHomeNewsEnabled(enabled) }
     }
 
     suspend fun testAIService(onResult: (String) -> Unit) {

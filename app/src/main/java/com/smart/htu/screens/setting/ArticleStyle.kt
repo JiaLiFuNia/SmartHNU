@@ -45,7 +45,6 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.extra.SuperDropdown
-import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -70,7 +69,7 @@ fun ArticleStyle(
             TopAppBar(
                 scrollBehavior = scrollBehavior,
                 color = Color.Transparent,
-                title = "新闻正文样式",
+                title = "字体设置",
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() },
@@ -146,10 +145,10 @@ fun ArticleStyle(
                                         signatureColor = Color.Gray.toArgb()
                                     ),
                                     "",
-                                    "<h2>这是标题</h2><h4>二级标题</h4>" +
-                                            "<p>仅修改文章字体样式和大小，软件内其他字体不受该设置影响。</p>" +
-                                            "<p>Bionic Reading是一种新的阅读方式，通过强调词语的关键部分来引导眼睛更快地移动，从而提高阅读速度和理解力。</p>",
-                                    WebViewScript.get(uiState.bionicReadingEnabled)
+                                    "<p>这是标题</p>" +
+                                            "<p>仅修改新闻正文的字体样式和大小，软件内其他字体不受该设置影响。</p>" +
+                                            "<p>师韵 SmartHNU 是一个河南师范大学校园资讯聚合应用，提供新闻、课程表、成绩查询等功能，旨在为师生提供便捷的校园信息服务。</p>",
+                                    WebViewScript.get()
                                 )
                             ),
                             isShowLinearProgressIndicator = false,
@@ -162,7 +161,7 @@ fun ArticleStyle(
                 Card(modifier = Modifier.fillMaxWidth()) {
                     SuperSlider(
                         title = "字体大小",
-                        summary = "${fontSizeProgress.floatValue.toInt()} sp",
+                        endText = "${fontSizeProgress.floatValue.toInt()} sp",
                         value = fontSizeProgress.floatValue,
                         onValueChange = {
                             fontSizeProgress.floatValue = it
@@ -172,7 +171,8 @@ fun ArticleStyle(
                         },
                         valueRange = 15f..25f,
                         showKeyPoints = false,
-                        keyPoints = listOf(15f, 17f, 19f, 21f, 23f, 25f)
+                        keyPoints = listOf(15f, 17f, 19f, 21f, 23f, 25f),
+                        isShowValueDialog = false
                     )
                 }
             }
@@ -186,18 +186,6 @@ fun ArticleStyle(
                         onSelectedIndexChange = { mode ->
                         },
                         enabled = false
-                    )
-                }
-            }
-            item {
-                Card {
-                    SuperSwitch(
-                        checked = uiState.bionicReadingEnabled,
-                        title = "字体加粗",
-                        summary = "开启后会对新闻正文部分词语加粗，提升阅读体验",
-                        onCheckedChange = {
-                            viewModel.changeBionicReadingEnabled(it)
-                        }
                     )
                 }
             }
