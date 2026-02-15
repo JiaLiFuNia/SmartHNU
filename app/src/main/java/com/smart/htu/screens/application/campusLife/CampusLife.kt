@@ -24,8 +24,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.smart.htu.R
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.utils.Constants.Companion.CAINIAO_URL
 import com.smart.htu.utils.Constants.Companion.PINDUODUO_URL
 import com.smart.htu.utils.Constants.Companion.TAOBAO_URL
@@ -54,9 +54,9 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun CampusLife(
-    navController: NavController,
     viewModel: CampusLifeViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = MiuixScrollBehavior()
     // val scope = rememberCoroutineScope()
@@ -72,7 +72,7 @@ fun CampusLife(
                 title = stringResource(R.string.campus_life),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
