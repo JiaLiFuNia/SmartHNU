@@ -38,6 +38,8 @@
 
 -keep class com.smart.htu.** { *; }
 
+-dontwarn com.google.re2j.**
+-dontwarn org.slf4j.impl.**
 -dontwarn sun.security.x509.X509Key
 
 -keepclassmembers class * {
