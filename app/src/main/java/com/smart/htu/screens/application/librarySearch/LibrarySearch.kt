@@ -54,7 +54,6 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
@@ -68,9 +67,9 @@ import com.smart.htu.api.module.SearchBookData
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.login.LoginDialog
-import com.smart.htu.screens.navigateToWebView
-import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.screens.setting.SettingItemCard
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.DateUtil.convertStringDateToLocalDate
@@ -103,9 +102,9 @@ import kotlin.math.ceil
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibrarySearchScreen(
-    navController: NavController,
     viewModel: LibrarySearchViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
@@ -136,7 +135,7 @@ fun LibrarySearchScreen(
             onExpand(false)
             onSearch(false)
         } else {
-            navController.popBackStack()
+            navigator.pop()
         }
     }
 
@@ -151,7 +150,7 @@ fun LibrarySearchScreen(
                 title = "图书查询",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -182,9 +181,9 @@ fun LibrarySearchScreen(
                             onClick = {
                                 scope.launch {
                                     viewModel.syncCookieToWebView()
-                                    navController.navigateToWebView(
+                                    navigator.pushWebView(
                                         url = "https://opac.htu.edu.cn/space/index",
-                                        label = "图书馆"
+                                        title = "图书馆"
                                     )
                                 }
                             },
@@ -285,7 +284,7 @@ fun LibrarySearchScreen(
                                     LibrarySingleBook(
                                         bookContent = it,
                                         onClick = {
-                                            navController.navigate("${Destinations.LibrarySearchDetail.route}/${it.bookId}")
+                                            navigator.push(Route.LibrarySearchDetail(it.bookId))
                                         }
                                     )
                                 }
@@ -310,7 +309,7 @@ fun LibrarySearchScreen(
                                 bookList = uiState.currentBorrowingBookList,
                                 loginState = loginState,
                                 onClick = {
-                                    navController.navigate("${Destinations.LibrarySearchDetail.route}/$it")
+                                    navigator.push(Route.LibrarySearchDetail(it))
                                 }
                             )
                         }
@@ -318,7 +317,7 @@ fun LibrarySearchScreen(
                             WaitingToBorrowedBookList(
                                 bookList = uiState.waitingBorrowedBookList,
                                 onClick = {
-                                    navController.navigate("${Destinations.LibrarySearchDetail.route}/$it")
+                                    navigator.push(Route.LibrarySearchDetail(it))
                                 }
                             )
                         }
@@ -328,7 +327,7 @@ fun LibrarySearchScreen(
                                 bookList = uiState.borrowedBookList,
                                 loginState = loginState,
                                 onClick = {
-                                    navController.navigate("${Destinations.LibrarySearchDetail.route}/$it")
+                                    navigator.push(Route.LibrarySearchDetail(it))
                                 }
                             )
                         }

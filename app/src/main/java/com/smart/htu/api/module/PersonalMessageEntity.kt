@@ -28,10 +28,10 @@ data class PersonalMessageEntity(
 }
 
 data class LoginPost(
-    val username: String,
-    val password: String,
+    val username: String? = null,
+    val password: String? = null,
     val code: String = "",
-    val appid: Any? = null
+    val appid: String? = null
 )
 
 data class LoginJWCEntity(

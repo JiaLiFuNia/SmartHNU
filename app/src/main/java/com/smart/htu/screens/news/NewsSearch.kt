@@ -21,12 +21,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.smart.htu.App.Companion.context
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.application.grade.UpFloatingActionButton
+import com.smart.htu.screens.navigation.Route
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -42,9 +43,9 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewsSearch(
-    navController: NavController,
     viewModel: NewsViewModel
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
 
     val textValue = rememberSaveable { mutableStateOf("") }
@@ -62,7 +63,7 @@ fun NewsSearch(
                 title = "搜索",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -143,10 +144,12 @@ fun NewsSearch(
                                 NewsItem(
                                     news = it,
                                     onClick = {
-                                        navController.navigateToNewsDetail(
-                                            url = it.url,
-                                            title = it.title,
-                                            label = context.getString(it.label.label)
+                                        navigator.push(
+                                            Route.NewsDetail(
+                                                url = it.url,
+                                                title = it.title,
+                                                source = context.getString(it.label.label)
+                                            )
                                         )
                                     },
                                     onAddClick = {}

@@ -21,10 +21,10 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.smart.htu.R
 import com.smart.htu.api.module.FeedbackType
 import com.smart.htu.component.TextButtonWithProgressIndicator
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.utils.ToastUtil.showToast
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Card
@@ -45,9 +45,9 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Feedback(
-    navController: NavController,
     viewModel: FeedbackViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
 
     val context = LocalContext.current
@@ -63,7 +63,7 @@ fun Feedback(
                 title = stringResource(id = R.string.feedback),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(

@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.App.Companion.context
 import com.smart.htu.api.module.CourseItemEntity
@@ -44,7 +43,8 @@ import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.imageVectors.emptyData
-import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.LocalNavigator
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.utils.ToastUtil.showToast
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -69,11 +69,11 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun CourseRepo(
-    navController: NavController,
     courseTypeName: String,
     courseTypeId: String,
     viewModel: CourseHelperViewModel = hiltViewModel(),
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
@@ -102,7 +102,7 @@ fun CourseRepo(
         if (textValue.value.isNotEmpty()) {
             textValue.value = ""
         } else {
-            navController.popBackStack()
+            navigator.pop()
         }
     }
 
@@ -114,7 +114,7 @@ fun CourseRepo(
                 title = courseTypeName,
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -196,7 +196,7 @@ fun CourseRepo(
                             CourseRepoItem(
                                 course = it,
                                 onClick = { courseCode ->
-                                    navController.navigate("${Destinations.CourseInfo.route}/$courseCode")
+                                    navigator.push(Route.CourseInfo(courseCode))
                                 },
                                 onAddClick = { course ->
                                     scope.launch {
@@ -234,7 +234,7 @@ fun CourseRepo(
                                 CourseRepoItem(
                                     course = it,
                                     onClick = { courseCode ->
-                                        navController.navigate("${Destinations.CourseInfo.route}/$courseCode")
+                                        navigator.push(Route.CourseInfo(courseCode))
                                     },
                                     onAddClick = { course ->
                                         scope.launch {

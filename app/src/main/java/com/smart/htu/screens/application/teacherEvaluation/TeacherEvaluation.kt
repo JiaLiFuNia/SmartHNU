@@ -33,16 +33,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.api.module.EvaluationInfo
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.application.grade.SelectTermBottomSheet
 import com.smart.htu.screens.application.grade.UpFloatingActionButton
-import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.TermUtil.termConverter
 import kotlinx.coroutines.delay
@@ -66,9 +66,9 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeacherEvaluation(
-    viewModel: TEViewModel = hiltViewModel(),
-    navController: NavController
+    viewModel: TEViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -107,7 +107,7 @@ fun TeacherEvaluation(
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -174,7 +174,12 @@ fun TeacherEvaluation(
                             teacher = it,
                             onClick = { syllabusEvaluateCode, teacherCode ->
                                 if (it.evaluationCode.isEmpty())
-                                    navController.navigate("${Destinations.TeacherEvaluationDetail.route}/${syllabusEvaluateCode}/${teacherCode}")
+                                    navigator.push(
+                                        Route.TeacherEvaluationDetail(
+                                            syllabusEvaluateCode = syllabusEvaluateCode,
+                                            teacherCode = teacherCode
+                                        )
+                                    )
                             }
                         )
                         Spacer(modifier = Modifier.height(12.dp))

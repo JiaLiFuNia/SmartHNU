@@ -38,16 +38,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.api.module.PostsListData.PostsEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.application.grade.UpFloatingActionButton
-import com.smart.htu.screens.navigateToWebView
-import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.DateUtil.dateFormatter
 import dev.chrisbanes.haze.hazeEffect
@@ -75,9 +74,9 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun MessageBoard(
-    navController: NavController,
     viewModel: MessageBoardViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = MiuixScrollBehavior()
     val lazyListState = rememberLazyListState()
@@ -106,7 +105,7 @@ fun MessageBoard(
                 color = Color.Transparent,
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -120,9 +119,11 @@ fun MessageBoard(
                         onClick = {
                             scope.launch {
                                 viewModel.authLoginToMessageBoard()
-                                navController.navigateToWebView(
-                                    url = "https://yjfk.htu.edu.cn/h5/?plat=h5&token=${uiState.token}",
-                                    label = "发布留言"
+                                navigator.push(
+                                    Route.ApplicationWebView(
+                                        "https://yjfk.htu.edu.cn/h5/?plat=h5&token=${uiState.token}",
+                                        "发布留言"
+                                    )
                                 )
                             }
                         },
@@ -195,14 +196,14 @@ fun MessageBoard(
                             PostsCard(
                                 post = it,
                                 onClick = {
-                                    navController.navigate("${Destinations.MessageBoardDetail.route}/${it}")
+                                    navigator.push(Route.MessageBoardDetail(it))
                                 }
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                         }
                         item {
                             LaunchedEffect(Unit) {
-                                pageNumber.intValue = pageNumber.intValue + 1
+                                pageNumber.intValue += 1
                                 viewModel.getMessageBoardPosts(pageNumber.intValue)
                             }
                         }

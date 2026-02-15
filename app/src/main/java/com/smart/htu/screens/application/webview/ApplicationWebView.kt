@@ -24,12 +24,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.kevinnzou.web.rememberWebViewNavigator
 import com.kevinnzou.web.rememberWebViewState
 import com.smart.htu.R
 import com.smart.htu.component.WebView
 import com.smart.htu.component.updateWebViewCookies
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.utils.ToastUtil.showToast
@@ -61,12 +61,12 @@ fun ApplicationWebView(
     url: String,
     title: String,
     appWebViewViewModel: AppWebViewViewModel = hiltViewModel(),
-    loginViewModel: LoginViewModel = hiltViewModel(),
-    navController: NavController
+    loginViewModel: LoginViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val loginUiState = loginViewModel.uiState.collectAsState().value
     val context = LocalContext.current
-    val navigator = rememberWebViewNavigator()
+    val webViewNavigator = rememberWebViewNavigator()
     val scope = rememberCoroutineScope()
     val scrollBehavior = MiuixScrollBehavior()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -87,7 +87,7 @@ fun ApplicationWebView(
         if (loginUiState.authLoginState == 1) {
             showLoginDialog.value = false
             updateWebViewCookies(url, cookie.value)
-            navigator.reload()
+            webViewNavigator.reload()
         }
     }
 
@@ -100,7 +100,7 @@ fun ApplicationWebView(
                 actions = {
                     IconButton(
                         onClick = {
-                            navigator.reload()
+                            webViewNavigator.reload()
                             appWebViewViewModel.loadCookiesForUrl(url)
                         }
                     ) {
@@ -161,7 +161,7 @@ fun ApplicationWebView(
                                             }
 
                                             3 -> {
-                                                if (navigator.canGoForward) navigator.navigateForward()
+                                                if (webViewNavigator.canGoForward) webViewNavigator.navigateForward()
                                             }
 
                                             4 -> {
@@ -183,15 +183,15 @@ fun ApplicationWebView(
                     ) {
                         IconButton(
                             onClick = {
-                                if (navigator.canGoBack)
-                                    navigator.navigateBack()
+                                if (webViewNavigator.canGoBack)
+                                    webViewNavigator.navigateBack()
                                 else
-                                    navController.popBackStack()
+                                    navigator.pop()
                             }
                         ) {
                             Icon(MiuixIcons.Regular.Back, contentDescription = "back")
                         }
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(onClick = { navigator.pop() }) {
                             Icon(Icons.Default.Close, contentDescription = "close")
                         }
                     }
@@ -222,7 +222,7 @@ fun ApplicationWebView(
                     onCurrentUrl = {
                         currentUrl.value = it
                     },
-                    navigator = navigator,
+                    navigator = webViewNavigator,
                     snackBarHostState = snackBarHostState
                 )
         }

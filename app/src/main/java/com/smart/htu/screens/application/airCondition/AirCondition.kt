@@ -16,7 +16,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,7 +34,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.component.EmptyContent
@@ -45,7 +43,8 @@ import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
 import com.smart.htu.component.chart.ColumnChart
 import com.smart.htu.component.imageVectors.emptyData
-import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.LocalNavigator
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -79,9 +78,9 @@ import java.time.LocalDate
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun AirCondition(
-    navController: NavController,
     viewModel: AirConditionViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
@@ -105,7 +104,6 @@ fun AirCondition(
         }
     }
 
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     Scaffold(
         topBar = {
             TopAppBar(
@@ -114,7 +112,7 @@ fun AirCondition(
                 title = "空调电费",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -126,7 +124,7 @@ fun AirCondition(
                 actions = {
                     IconButton(
                         onClick = {
-                            navController.navigate(Destinations.AirConditionSetting.route)
+                            navigator.push(Route.AirConditionSetting)
                         },
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
@@ -169,7 +167,7 @@ fun AirCondition(
                 if (isShowSuggestChip.value) {
                     SuggestChip(
                         onClick = {
-                            navController.navigate(Destinations.AirConditionSetting.route)
+                            navigator.push(Route.AirConditionSetting)
                         },
                         text = "请设置你的宿舍楼，房间号和 Cookie",
                         type = SuggestChipType.ERROR,

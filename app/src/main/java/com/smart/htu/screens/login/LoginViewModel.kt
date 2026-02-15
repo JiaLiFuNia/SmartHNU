@@ -219,12 +219,6 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    suspend fun login(onResult: (String) -> Unit = {}) {
-        _uiState.update { it.copy(isLoading = true) }
-        if (_uiState.value.jwcLoginState != 1) jwcLogin(onResult)
-        _uiState.update { it.copy(isLoading = false) }
-    }
-
     suspend fun authLogin(
         studentID: String = _uiState.value.studentID,
         password: String = _uiState.value.password,
@@ -252,36 +246,44 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    /*private suspend fun getRefreshToken() {
+    suspend fun jwcLogin(onFailure: (String) -> Unit = {}, onSuccess: () -> Unit) {
         try {
-            val logState = networkRepo.getAppTokenService(
-                mobileCode = _uiState.value.mobileCode
-            )
-            logState.onSuccess {
-                changLoginAuthState(1)
-            }
-        } catch (_: Exception) {
-            Log.i("TAG666 viewModel", "Failed to login")
-        }
-    }*/
-
-    suspend fun jwcLogin(onResult: (String) -> Unit = {}) {
-        try {
+            _uiState.update { it.copy(isLoading = true) }
             val logState = jwcNetworkRepo.jwcLogin(
                 username = _uiState.value.studentID,
                 password = _uiState.value.jwcPassword
             )
             logState.onSuccess {
                 changeLoginJWCState(1)
-                getPersonalMessage()
                 setJWCLogToken(it.user?.token ?: DEFAULT_TOKEN)
                 changeUsername(it.user?.username ?: DEFAULT_USERNAME)
                 dataStoreRepo.saveStudentId(_uiState.value.studentID)
                 passwordRepo.savePassword(_uiState.value.jwcPassword, JWC_PASSWORD)
+                onSuccess()
             }
             logState.onFailure {
-                onResult(it.message.toString())
                 changeLoginJWCState(-1)
+                onFailure(it.message.toString())
+            }
+        } catch (e: Exception) {
+            Log.i("TAG666 viewModel", "Failed to login $e")
+        }
+        _uiState.update { it.copy(isLoading = false) }
+    }
+
+    suspend fun wechatLogin(code: String, onFailure: (String) -> Unit = {}, onSuccess: () -> Unit) {
+        try {
+            val logState = jwcNetworkRepo.wechatLogin(code)
+            logState.onSuccess {
+                changeLoginJWCState(1)
+                setJWCLogToken(it.user?.token ?: DEFAULT_TOKEN)
+                changeUsername(it.user?.username ?: DEFAULT_USERNAME)
+                dataStoreRepo.saveStudentId(it.user?.studentId ?: DEFAULT_STUDENT_ID)
+                onSuccess()
+            }
+            logState.onFailure {
+                changeLoginJWCState(-1)
+                onFailure(it.message.toString())
             }
         } catch (e: Exception) {
             Log.i("TAG666 viewModel", "Failed to login $e")
@@ -292,25 +294,6 @@ class LoginViewModel @Inject constructor(
         changeLoginJWCState(1)
     }
 
-    private suspend fun checkJWCToken() {
-        try {
-            Log.i(
-                "TAG666 check",
-                "Checking JWC token${_uiState.value.studentID} ${_uiState.value.jwcPassword}"
-            )
-            if (_uiState.value.studentID.isNotEmpty() && _uiState.value.jwcPassword.isNotEmpty()) {
-                jwcNetworkRepo.checkJWCTokenService()
-                    .onSuccess { changeLoginJWCState(1) }
-                    .onFailure { changeLoginJWCState(-2) }
-            } else {
-                changeLoginJWCState(0)
-            }
-        } catch (e: Exception) {
-            Log.i("TAG666 check", "Failed to check JWC token $e")
-            changeLoginJWCState(0)
-        }
-    }
-
     suspend fun getPersonalMessage() {
         jwcNetworkRepo.getPersonalMessageService()
             .onSuccess { res ->
@@ -319,7 +302,7 @@ class LoginViewModel @Inject constructor(
             }
     }
 
-    fun guest() = viewModelScope.launch {
+    fun guestLogin() {
         _uiState.update { it.copy(isGuestModeEnable = true) }
         changeUsername("HNUer")
     }

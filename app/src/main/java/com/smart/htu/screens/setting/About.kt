@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -25,16 +26,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import coil3.compose.AsyncImage
 import com.smart.htu.App.Companion.context
+import com.smart.htu.BuildConfig
 import com.smart.htu.R
 import com.smart.htu.component.imageVectors.appIcon
-import com.smart.htu.screens.navigateToWebView
-import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.LocalNavigator
+import com.smart.htu.screens.navigation.Route
+import com.smart.htu.utils.APPVersion.getVersionCode
+import com.smart.htu.utils.APPVersion.getVersionName
 import com.smart.htu.utils.Constants.Companion.GITHUB_PERSON_URL
 import com.smart.htu.utils.Constants.Companion.GITHUB_PROJECT_URL
 import com.smart.htu.utils.Constants.Companion.SMH_URL
@@ -45,6 +48,7 @@ import nl.dionsegijn.konfetti.compose.KonfettiView
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
+import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Icon
@@ -62,9 +66,8 @@ import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun About(
-    navController: NavController
-) {
+fun About() {
+    val navigator = LocalNavigator.current
     var showConfetti by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
@@ -93,7 +96,7 @@ fun About(
                 title = stringResource(id = R.string.about),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -162,11 +165,11 @@ fun About(
                     SuperArrow(
                         startAction = {
                             Box(
-                                contentAlignment = Alignment.TopStart,
-                                modifier = Modifier.padding(end = 16.dp)
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
                             ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.developer_icon),
+                                AsyncImage(
+                                    model = "https://avatars.githubusercontent.com/u/69774586?v=4",
                                     contentDescription = null,
                                     modifier = Modifier
                                         .size(36.dp)
@@ -174,8 +177,8 @@ fun About(
                                 )
                             }
                         },
-                        title = stringResource(id = R.string.developer_name),
-                        summary = stringResource(id = R.string.developer_description),
+                        title = stringResource(id = R.string.developer_description),
+                        summary = stringResource(id = R.string.developer_name),
                         onClick = {
                             startWebUrl(GITHUB_PERSON_URL)
                         }
@@ -186,26 +189,42 @@ fun About(
                             startWebUrl(GITHUB_PROJECT_URL)
                         }
                     )
+                    SuperArrow(
+                        title = stringResource(R.string.official_website),
+                        onClick = {
+                            navigator.pushWebView(
+                                url = SMH_URL,
+                                title = context.getString(R.string.app_name)
+                            )
+                        }
+                    )
                 }
             }
             item {
                 SettingItemCard(
-                    label = stringResource(R.string.other),
+                    label = "应用",
                     modifier = Modifier
                 ) {
-                    SuperArrow(
-                        title = stringResource(R.string.official_website),
+                    val clickCount = remember { mutableIntStateOf(0) }
+                    BasicComponent(
+                        title = "版本",
+                        summary = "${getVersionName()} (${getVersionCode()})",
                         onClick = {
-                            navController.navigateToWebView(
-                                url = SMH_URL,
-                                label = context.getString(R.string.app_name)
-                            )
+                            clickCount.intValue++
+                            if (clickCount.intValue >= 3) {
+                                clickCount.intValue = 0
+                                navigator.push(Route.EmojiEasterEgg)
+                            }
                         }
+                    )
+                    BasicComponent(
+                        title = "构建时间",
+                        summary = BuildConfig.BUILD_TIME
                     )
                     SuperArrow(
                         title = stringResource(id = R.string.open_source_license),
                         onClick = {
-                            navController.navigate(Destinations.License.route)
+                            navigator.push(Route.License)
                         }
                     )
                 }
@@ -234,6 +253,13 @@ fun About(
                         summary = "@Ashinch",
                         onClick = {
                             startWebUrl("https://github.com/Ashinch/ReadYou")
+                        }
+                    )
+                    SuperArrow(
+                        title = "jxh_next",
+                        summary = "@paditianxiu",
+                        onClick = {
+                            startWebUrl("https://github.com/paditianxiu/jxh_next")
                         }
                     )
                 }

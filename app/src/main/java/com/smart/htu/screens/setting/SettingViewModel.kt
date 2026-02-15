@@ -58,8 +58,8 @@ data class SettingUiState(
     val homeFocusEnabled: Boolean = true,
     val homeTodayCourseEnabled: Boolean = true,
     val homeTodayTaskEnabled: Boolean = true,
-    val homeFreeClassroomEnabled: Boolean = true,
-    val homeNewsEnabled: Boolean = true,
+    val homeFreeClassroomEnabled: Boolean = false,
+    val homeNewsEnabled: Boolean = false,
 )
 
 val AI_MODEL_LIST = listOf(

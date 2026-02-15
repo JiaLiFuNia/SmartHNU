@@ -38,9 +38,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.smart.htu.api.module.AIModelType
 import com.smart.htu.component.TextButtonWithProgressIndicator
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.utils.ToastUtil.showToast
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -57,9 +57,9 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.SnackbarHost
 import top.yukonga.miuix.kmp.basic.SnackbarHostState
+import top.yukonga.miuix.kmp.basic.SpinnerEntry
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.SpinnerEntry
 import top.yukonga.miuix.kmp.extra.SuperSpinner
 import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.icon.MiuixIcons
@@ -71,9 +71,9 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun AIConfigurationScreen(
-    navController: NavController,
     viewModel: SettingViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
 
     val hazeState = rememberHazeState()
@@ -96,10 +96,10 @@ fun AIConfigurationScreen(
                     IconButton(
                         modifier = Modifier.padding(start = 16.dp),
                         onClick = {
-                            navController.popBackStack()
+                            navigator.pop()
                         }
                     ) {
-                        top.yukonga.miuix.kmp.basic.Icon(
+                        Icon(
                             imageVector = MiuixIcons.Regular.Back,
                             contentDescription = null,
                             tint = MiuixTheme.colorScheme.onBackground

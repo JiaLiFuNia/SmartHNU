@@ -5,6 +5,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.smart.htu.api.module.BuildingEntity
+import com.smart.htu.api.module.ClassroomOccupationEntity
 import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.api.module.HolidayData
@@ -20,8 +22,6 @@ import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_USERNAME
 import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.SharedDataRepository
-import com.smart.htu.screens.application.ApplicationEntity
-import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import com.smart.htu.utils.DateUtil.getCurrentDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -48,12 +48,17 @@ data class AppUiState(
     val username: String = DEFAULT_USERNAME,
     val update: UpdateEntity = UpdateEntity(),
     val isShowUpdateDialog: MutableState<Boolean> = mutableStateOf(false),
-    val commonAppList: List<ApplicationEntity> = INIT_COMMON_APP_LIST,
     val loginJWCState: Int = DEFAULT_LOGIN_STATE,
     val totalHour: Double? = null,
     val taskList: List<TaskEntity> = emptyList(),
     val weekIndex: Int = 0,
     val isTermEnded: Boolean = false,
+    val selectedBuildingOccupation: ClassroomOccupationEntity? = null,
+    val homeFocusEnabled: Boolean = true,
+    val homeTodayCourseEnabled: Boolean = true,
+    val homeTodayTaskEnabled: Boolean = true,
+    val homeFreeClassroomEnabled: Boolean = true,
+    val homeNewsEnabled: Boolean = true,
 )
 
 @HiltViewModel
@@ -84,13 +89,6 @@ class MainViewModel @Inject constructor(
             runBlocking {
                 dataStoreRepo.observeUsername().first()
             }
-        )
-
-    private val commonAppListStateFlow = dataStoreRepo.observeCommonAppList()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            runBlocking { dataStoreRepo.observeCommonAppList().first() }
         )
 
     private val loginJWCStateStateFlow = dataStoreRepo.observeLoginJWCState()
@@ -127,11 +125,56 @@ class MainViewModel @Inject constructor(
                 dataStoreRepo.observeTaskList().first()
             }
         )
+    private val homeFocusEnabledStateFlow = dataStoreRepo.observeHomeFocusEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
+            dataStoreRepo.observeHomeFocusEnabled().first()
+        })
+    private val homeTodayCourseEnabledStateFlow = dataStoreRepo.observeHomeTodayCourseEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
+            dataStoreRepo.observeHomeTodayCourseEnabled().first()
+        })
+    private val homeTodayTaskEnabledStateFlow = dataStoreRepo.observeHomeTodayTaskEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
+            dataStoreRepo.observeHomeTodayTaskEnabled().first()
+        })
+    private val homeFreeClassroomEnabledStateFlow = dataStoreRepo.observeHomeFreeClassroomEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
+            dataStoreRepo.observeHomeFreeClassroomEnabled().first()
+        })
+    private val homeNewsEnabledStateFlow = dataStoreRepo.observeHomeNewsEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
+            dataStoreRepo.observeHomeNewsEnabled().first()
+        })
 
     init {
         viewModelScope.launch {
             taskListStateFlow.collect { value ->
                 _uiState.update { it.copy(taskList = value) }
+            }
+        }
+        viewModelScope.launch {
+            homeFocusEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(homeFocusEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
+            homeTodayCourseEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(homeTodayCourseEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
+            homeTodayTaskEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(homeTodayTaskEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
+            homeFreeClassroomEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(homeFreeClassroomEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
+            homeNewsEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(homeNewsEnabled = value) }
             }
         }
         viewModelScope.launch {
@@ -147,11 +190,6 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             usernameStateFlow.collect { value ->
                 _uiState.update { it.copy(username = value) }
-            }
-        }
-        viewModelScope.launch {
-            commonAppListStateFlow.collect { value ->
-                _uiState.update { it.copy(commonAppList = value) }
             }
         }
         viewModelScope.launch {
@@ -186,6 +224,12 @@ class MainViewModel @Inject constructor(
             checkJWCToken()
             val termIndexDeferred = async { sharedDataRepo.refreshTermCalendar() }
             val todayCourseDeferred = async { getTodayCourse() }
+            val getRoomOccupationDeferred = async {
+                getClassroomOccupation(
+                    buildingName = "启智楼",
+                    buildingCode = "104"
+                )
+            }
 
             termIndexDeferred.await()
             todayCourseDeferred.await()
@@ -193,6 +237,7 @@ class MainViewModel @Inject constructor(
             holidayDeferred.await()
             warningWeatherDeferred.await()
             updateInfoDeferred.await()
+            getRoomOccupationDeferred.await()
         }
     }
 
@@ -234,6 +279,24 @@ class MainViewModel @Inject constructor(
                 }
         } catch (e: Exception) {
             Log.i("TAG666", "getTodayCourse: $e")
+        }
+    }
+
+    suspend fun getClassroomOccupation(buildingName: String, buildingCode: String) {
+        try {
+            jwcNetworkRepo.getClassroomOccupationService(
+                BuildingEntity(
+                    buildingCode = buildingCode,
+                    buildingName = buildingName,
+                    date = "2025-09-01"
+                )
+            ).onSuccess { res ->
+                _uiState.update { it.copy(selectedBuildingOccupation = res) }
+            }.onFailure {
+                dataStoreRepo.changeLoginJWCState(-2)
+            }
+        } catch (e: Exception) {
+            Log.i("TAG666", "main room: $e")
         }
     }
 

@@ -82,15 +82,14 @@ fun ApplicationEdit(
             stickyHeader {
                 StickyHeader(text = "已添加应用")
             }
-            items(uiState.appList.filter { it in uiState.commonAppList }) {
+            items(uiState.appList) {
                 Card {
                     SuperCheckbox(
                         checkboxLocation = CheckboxLocation.End,
                         title = stringResource(it.label),
                         summary = stringResource(it.category.category),
-                        checked = it in uiState.commonAppList,
+                        checked = true,
                         onCheckedChange = { value ->
-                            viewModel.changeCommonAppListState(it, value)
                         },
                         endActions = {
                             /*IconButton(
@@ -111,15 +110,14 @@ fun ApplicationEdit(
             stickyHeader {
                 StickyHeader(text = "未添加应用")
             }
-            items(uiState.appList.filter { it !in uiState.commonAppList }) {
+            items(uiState.appList) {
                 Card {
                     SuperCheckbox(
                         checkboxLocation = CheckboxLocation.End,
                         title = stringResource(it.label),
                         summary = stringResource(it.category.category),
-                        checked = it in uiState.commonAppList,
+                        checked = true,
                         onCheckedChange = { value ->
-                            viewModel.changeCommonAppListState(it, value)
                         }
                     )
                 }

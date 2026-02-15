@@ -1,5 +1,6 @@
 package com.smart.htu.repo
 
+import android.util.Log
 import com.smart.htu.api.module.GlobalTerm
 import com.smart.htu.api.module.SingleTerm
 import com.smart.htu.api.module.TermCalendarEntity.TermCalendarData
@@ -111,23 +112,27 @@ class SharedDataRepoImpl @Inject constructor(
     }
 
     override suspend fun refreshTermCalendar(termCode: String) {
-        val res =
-            jwcAppService.getTermCalendar(if (termCode == "") Object() else GlobalTerm(termCode))
-        if (res.code != 200) return
-        val startDay = res.calendar.months.firstOrNull()
-            ?.weeks?.firstOrNull()
-            ?.days?.firstOrNull()
+        try {
+            val res =
+                jwcAppService.getTermCalendar(if (termCode == "") Object() else GlobalTerm(termCode))
+            if (res.code != 200) return
+            val startDay = res.calendar.months.firstOrNull()
+                ?.weeks?.firstOrNull()
+                ?.days?.firstOrNull()
 
-        val endDay = res.calendar.months.lastOrNull()
-            ?.weeks?.lastOrNull()
-            ?.days?.lastOrNull()
+            val endDay = res.calendar.months.lastOrNull()
+                ?.weeks?.lastOrNull()
+                ?.days?.lastOrNull()
 
-        _startDate.value = LocalDate.parse(startDay?.dateString)
-        _endDate.value = LocalDate.parse(endDay?.dateString)
+            _startDate.value = LocalDate.parse(startDay?.dateString)
+            _endDate.value = LocalDate.parse(endDay?.dateString)
 
-        _totalWeekCount.value = res.calendar.months.last().weeks.last().weekIndex
+            _totalWeekCount.value = res.calendar.months.last().weeks.last().weekIndex
 
-        _termCalendar.value = res.calendar
+            _termCalendar.value = res.calendar
+        } catch (e: Exception) {
+            Log.e("TAG666", e.message.toString())
+        }
     }
 
 

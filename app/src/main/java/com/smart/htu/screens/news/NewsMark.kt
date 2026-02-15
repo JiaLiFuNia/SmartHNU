@@ -32,11 +32,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
+import com.smart.htu.screens.LocalNavigator
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.utils.DateUtil.formatDateToFriendly
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.CardDefaults
@@ -55,9 +56,9 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewsMark(
-    navController: NavController,
     viewModel: NewsViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
 
@@ -72,7 +73,7 @@ fun NewsMark(
                 title = "历史与收藏",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -108,11 +109,7 @@ fun NewsMark(
                 pageSpacing = 12.dp
             ) {
                 NewsMarkList(list = if (it == 0) uiState.newsHistoryList else uiState.newsFavoriteList) { url, title, label ->
-                    navController.navigateToNewsDetail(
-                        url = url,
-                        title = title,
-                        label = label
-                    )
+                    navigator.push(Route.NewsDetail(url, title, label))
                 }
             }
         }

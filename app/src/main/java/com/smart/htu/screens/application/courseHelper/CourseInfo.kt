@@ -18,12 +18,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
 import com.smart.htu.component.imageVectors.emptyData
+import com.smart.htu.screens.LocalNavigator
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -42,10 +42,10 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun CourseInfo(
-    navController: NavController,
     viewModel: CourseHelperViewModel = hiltViewModel(),
     courseCode: String
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
@@ -64,7 +64,7 @@ fun CourseInfo(
                 title = "课程安排",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(

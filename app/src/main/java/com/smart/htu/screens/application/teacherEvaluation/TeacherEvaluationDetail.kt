@@ -26,11 +26,11 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.api.module.EvaluationQuestion
 import com.smart.htu.component.CircularProgressIndicator
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.CardDefaults
@@ -50,10 +50,10 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @Composable
 fun TeacherEvaluationDetail(
     viewModel: TEViewModel = hiltViewModel(),
-    navController: NavController,
     syllabusEvaluateCode: String,
     teacherCode: String
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
     val scrollBehavior = MiuixScrollBehavior()
@@ -79,7 +79,7 @@ fun TeacherEvaluationDetail(
                 title = stringResource(id = R.string.teacher_evaluation),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(

@@ -11,25 +11,11 @@
                   <entry key="vectorAssetStep">
                     <value>
                       <PersistentState>
-                        <option name="children">
-                          <map>
-                            <entry key="clipartAsset">
-                              <value>
-                                <PersistentState>
-                                  <option name="values">
-                                    <map>
-                                      <entry key="url" value="file:/$PROJECT_DIR$/../../../SDK/icons/material/materialicons/settings/baseline_settings_24.xml" />
-                                    </map>
-                                  </option>
-                                </PersistentState>
-                              </value>
-                            </entry>
-                          </map>
-                        </option>
                         <option name="values">
                           <map>
-                            <entry key="outputName" value="baseline_settings_24" />
-                            <entry key="sourceFile" value="D:\下载\画板 2 (1).svg" />
+                            <entry key="assetSourceType" value="FILE" />
+                            <entry key="outputName" value="ic_wechat" />
+                            <entry key="sourceFile" value="D:\下载\WeChat-Icon-Dark-Grey-Logo.wine.svg" />
                           </map>
                         </option>
                       </PersistentState>

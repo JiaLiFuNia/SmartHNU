@@ -40,7 +40,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
@@ -55,8 +54,9 @@ import com.smart.htu.component.chart.ColumnChart
 import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.component.updateWebViewCookies
 import com.smart.htu.di.NetworkModule.ApiConstants.SECOND_CLASS_BASE_URL
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.login.LoginDialog
-import com.smart.htu.screens.navigateToWebView
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.ToastUtil.showToast
 import dev.chrisbanes.haze.hazeEffect
@@ -95,9 +95,9 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun SecondClass(
-    navController: NavController,
     viewModel: SecondClassViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val scrollBehavior = MiuixScrollBehavior()
@@ -133,7 +133,7 @@ fun SecondClass(
                 title = stringResource(id = R.string.second_class),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -178,10 +178,7 @@ fun SecondClass(
                                                 .build()
                                         )
                                     )
-                                    navController.navigateToWebView(
-                                        url = SECOND_CLASS_BASE_URL,
-                                        label = "第二课堂"
-                                    )
+                                    navigator.push(Route.ApplicationWebView(SECOND_CLASS_BASE_URL, "第二课堂"))
                                 }
                             },
                             modifier = Modifier.padding(end = 16.dp)

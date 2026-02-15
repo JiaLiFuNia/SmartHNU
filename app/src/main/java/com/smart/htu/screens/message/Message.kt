@@ -25,15 +25,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.api.module.NoticeType
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
-import com.smart.htu.screens.navigateToWebView
+import com.smart.htu.screens.LocalNavigator
+import com.smart.htu.screens.navigation.Navigator
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.startWebUrl
 import dev.chrisbanes.haze.hazeEffect
@@ -60,9 +59,9 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun MessageScreen(
-    navController: NavHostController,
     viewModel: MessageViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val hazeState = rememberHazeState()
     val scope = rememberCoroutineScope()
@@ -85,7 +84,7 @@ fun MessageScreen(
                 title = stringResource(id = R.string.message_center),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -173,7 +172,7 @@ fun MessageScreen(
                                 content = notice.content,
                                 action = notice.action,
                                 type = notice.type,
-                                navController = navController
+                                navigator = navigator
                             )
                         }
                         items(
@@ -190,7 +189,7 @@ fun MessageScreen(
                                 title = "教务通知",
                                 content = notice.content,
                                 type = NoticeType.JWC,
-                                navController = navController
+                                navigator = navigator
                             )
                         }
                     }
@@ -209,16 +208,16 @@ fun SingleMessage(
     action: String = "",
     type: NoticeType = NoticeType.COMMON,
     color: Color = MiuixTheme.colorScheme.surfaceContainer,
-    navController: NavController
+    navigator: Navigator
 ) {
     Surface(
         onClick = {
             read()
             when (type) {
                 NoticeType.URL -> {
-                    navController.navigateToWebView(
+                    navigator.pushWebView(
                         url = action,
-                        label = title
+                        title = title
                     )
                 }
 
@@ -226,7 +225,7 @@ fun SingleMessage(
                 }
 
                 NoticeType.SCREEN -> {
-                    navController.navigate(action)
+
                 }
 
                 NoticeType.QUESTIONNAIRE -> {

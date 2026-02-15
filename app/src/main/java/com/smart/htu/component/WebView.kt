@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Environment
-import android.view.View
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
@@ -56,6 +55,7 @@ fun WebView(
     captureBackPresses: Boolean = true,
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
     navigator: WebViewNavigator,
+    modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -190,7 +190,7 @@ fun WebView(
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
     ) {
         val loadingState = webViewState.loadingState
@@ -217,8 +217,7 @@ fun WebView(
         }
         WebView(
             state = webViewState,
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             navigator = navigator,
             captureBackPresses = captureBackPresses,
             onCreated = { webView ->

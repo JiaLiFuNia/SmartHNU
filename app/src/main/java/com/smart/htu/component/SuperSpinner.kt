@@ -10,10 +10,10 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import top.yukonga.miuix.kmp.basic.SpinnerDefaults
+import top.yukonga.miuix.kmp.basic.SpinnerEntry
+import top.yukonga.miuix.kmp.basic.SpinnerItemImpl
 import top.yukonga.miuix.kmp.basic.TextButton
-import top.yukonga.miuix.kmp.extra.SpinnerDefaults
-import top.yukonga.miuix.kmp.extra.SpinnerEntry
-import top.yukonga.miuix.kmp.extra.SpinnerItemImpl
 import top.yukonga.miuix.kmp.extra.SuperDialog
 
 @Composable

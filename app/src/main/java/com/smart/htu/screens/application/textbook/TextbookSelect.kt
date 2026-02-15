@@ -38,14 +38,15 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.smart.htu.R
 import com.smart.htu.api.module.Textbook
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.application.librarySearch.LibrarySingleBook
-import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.navigation.Navigator
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.ToastUtil.showToast
 import kotlinx.coroutines.delay
@@ -76,10 +77,10 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @Composable
 fun TextbookSelect(
     viewModel: TextbookViewModel = hiltViewModel(),
-    navController: NavController,
     courseTaskCode: String,
     termCode: String
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     val scrollBehavior = MiuixScrollBehavior()
@@ -112,7 +113,7 @@ fun TextbookSelect(
                 title = stringResource(id = R.string.textbook_select),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -162,7 +163,7 @@ fun TextbookSelect(
                         pageIndex = it,
                         uiState = uiState,
                         viewModel = viewModel,
-                        navController = navController
+                        navigator = navigator
                     )
                 }
             }
@@ -176,7 +177,7 @@ fun PagerScope.SelectTextbook(
     pageIndex: Int,
     uiState: TextbookUiState,
     viewModel: TextbookViewModel,
-    navController: NavController
+    navigator: Navigator
 ) {
     val scope = rememberCoroutineScope()
     LazyColumn(
@@ -210,7 +211,7 @@ fun PagerScope.SelectTextbook(
                                 viewModel.librarySearch(it, 1)
                             }
                         },
-                        navController = navController
+                        navigator = navigator
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                 }
@@ -226,7 +227,7 @@ fun CourseTextbookItem(
     pageIndex: Int,
     uiState: TextbookUiState,
     onSearch: (String) -> Unit,
-    navController: NavController
+    navigator: Navigator
 ) {
     val context = LocalContext.current
     val isSearchBottomSheetShow = remember { mutableStateOf(false) }
@@ -362,7 +363,7 @@ fun CourseTextbookItem(
                             bookContent = it,
                             onClick = {
                                 isSearchBottomSheetShow.value = false
-                                navController.navigate("${Destinations.LibrarySearchDetail.route}/${it.bookId}")
+                                navigator.push(Route.LibrarySearchDetail(it.bookId))
                             }
                         )
                     }

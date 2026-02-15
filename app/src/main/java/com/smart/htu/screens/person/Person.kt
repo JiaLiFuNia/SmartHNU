@@ -16,8 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -31,18 +29,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.login.LogoutDialog
-import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.screens.setting.SettingItemCard
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.ToastUtil.showSnackbar
@@ -72,18 +71,17 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonScreen(
-    navController: NavController,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
-    val context = navController.context
+    val context = LocalContext.current
     val showLogoutDialog = remember { mutableStateOf(false) }
     val showLoginDialog = remember { mutableStateOf(false) }
     val isShowPrivateMessage = remember { mutableStateOf(true) }
     val isShowMessageDialog = remember { mutableStateOf(false) }
     val showDialogTarget = remember { mutableStateOf("") }
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
@@ -102,7 +100,7 @@ fun PersonScreen(
                 title = "账号与信息",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -255,7 +253,7 @@ fun PersonScreen(
                         SuperArrow(
                             title = "登录信息管理",
                             onClick = {
-                                navController.navigate(Destinations.AccountManage.route)
+                                navigator.push(Route.AccountManage)
                             }
                         )
                     }
@@ -267,10 +265,12 @@ fun PersonScreen(
                         onClick = {
                             showLogoutDialog.value = true
                         },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
                         colors = ButtonDefaults.textButtonColors(
-                            color = MaterialTheme.colorScheme.errorContainer,
-                            textColor = MaterialTheme.colorScheme.error
+                            color = MiuixTheme.colorScheme.secondary,
+                            textColor = MiuixTheme.colorScheme.error
                         )
                     )
                 }
@@ -282,7 +282,7 @@ fun PersonScreen(
             onConfirmClick = {
                 viewModel.logout()
                 showLogoutDialog.value = false
-                navController.popBackStack()
+                navigator.pop()
             }
         )
 

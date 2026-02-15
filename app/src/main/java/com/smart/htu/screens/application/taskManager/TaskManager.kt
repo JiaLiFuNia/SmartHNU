@@ -37,11 +37,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.smart.htu.R
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.InfoBadge
 import com.smart.htu.component.imageVectors.emptyData
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.application.AddTaskBottomSheet
 import com.smart.htu.screens.main.TaskEntity
 import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
@@ -77,9 +77,9 @@ import java.time.LocalDateTime
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun TaskManager(
-    navController: NavController,
     viewModel: TaskManagerViewModel = hiltViewModel(),
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
     val scrollBehavior = MiuixScrollBehavior()
@@ -97,7 +97,7 @@ fun TaskManager(
             isSelectMode.value = false
             selectedTaskIdList.value = emptyList()
         } else {
-            navController.popBackStack()
+            navigator.pop()
         }
     }
 
@@ -124,7 +124,7 @@ fun TaskManager(
                         }
                     } else {
                         IconButton(
-                            onClick = { navController.popBackStack() },
+                            onClick = { navigator.pop() },
                             modifier = Modifier.padding(start = 16.dp)
                         ) {
                             Icon(

@@ -24,11 +24,11 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.kevinnzou.web.rememberWebViewNavigator
 import com.kevinnzou.web.rememberWebViewStateWithHTMLData
 import com.smart.htu.component.SuperSlider
 import com.smart.htu.component.WebView
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.news.newsView.NewsHTML
 import com.smart.htu.screens.news.newsView.NewsStyle
 import com.smart.htu.screens.news.newsView.NewsStyle.HORIZONTAL_MARGIN
@@ -53,13 +53,12 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun ArticleStyle(
-    navController: NavController,
     viewModel: SettingViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
-    val navigator = rememberWebViewNavigator()
     val fontSizeProgress = remember { mutableFloatStateOf(uiState.newsFontSize) }
     val scrollBehavior = MiuixScrollBehavior()
     val hazeState = rememberHazeState()
@@ -72,7 +71,7 @@ fun ArticleStyle(
                 title = "字体设置",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -117,35 +116,43 @@ fun ArticleStyle(
                 ) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         WebView(
-                            navigator = navigator,
+                            navigator = rememberWebViewNavigator(),
                             url = "about:blank",
                             captureBackPresses = false,
                             webViewState = rememberWebViewStateWithHTMLData(
                                 data = NewsHTML.HTML.format(
                                     NewsStyle.get(
-                                        fontSize = fontSizeProgress.floatValue.toInt(),
+                                        fontSize = 17,
                                         lineHeight = 1.0F,
                                         letterSpacing = 0.5F,
                                         textMargin = HORIZONTAL_MARGIN,
-                                        textColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
+                                        textColor = MiuixTheme.colorScheme.onBackground.copy(0.8f)
+                                            .toArgb(),
                                         textBold = false,
                                         textAlign = "start",
-                                        boldTextColor = MaterialTheme.colorScheme.onSurface.toArgb(),
+                                        boldTextColor = MiuixTheme.colorScheme.onBackground.copy(
+                                            0.8f
+                                        ).toArgb(),
                                         subheadBold = false,
                                         subheadUpperCase = false,
                                         imgMargin = HORIZONTAL_MARGIN,
                                         imgBorderRadius = 4,
                                         imgDisplayMode = if (uiState.loadImgEnabled) "block" else "none",
-                                        linkTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
-                                        codeTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
-                                        codeBgColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
+                                        linkTextColor = MiuixTheme.colorScheme.onBackground.copy(
+                                            0.8f
+                                        ).toArgb(),
+                                        codeTextColor = MiuixTheme.colorScheme.onBackground.copy(
+                                            0.8f
+                                        ).toArgb(),
+                                        codeBgColor = MiuixTheme.colorScheme.onBackground.copy(0.8f)
+                                            .toArgb(),
                                         tableMargin = 0,
-                                        selectionTextColor = MaterialTheme.colorScheme.onSurface.toArgb(),
+                                        selectionTextColor = MiuixTheme.colorScheme.onBackground.toArgb(),
                                         selectionBgColor = MaterialTheme.colorScheme.primaryContainer.toArgb(),
                                         signatureColor = Color.Gray.toArgb()
                                     ),
                                     "",
-                                    "<p>这是标题</p>" +
+                                    "<p>字体设置</p>" +
                                             "<p>仅修改新闻正文的字体样式和大小，软件内其他字体不受该设置影响。</p>" +
                                             "<p>师韵 SmartHNU 是一个河南师范大学校园资讯聚合应用，提供新闻、课程表、成绩查询等功能，旨在为师生提供便捷的校园信息服务。</p>",
                                     WebViewScript.get()

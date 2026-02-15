@@ -31,7 +31,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseInfoEntity
@@ -39,6 +38,7 @@ import com.smart.htu.api.module.CourseSearchPostEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.main.TaskEntity
 import com.smart.htu.screens.main.TaskType
 import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
@@ -64,10 +64,10 @@ import java.time.LocalDateTime
 @OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun CourseSearchRepo(
-    navController: NavController,
     searchInfo: CourseSearchPostEntity,
     viewModel: CourseSearchViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
@@ -86,7 +86,7 @@ fun CourseSearchRepo(
                 title = stringResource(R.string.course_search_result),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(

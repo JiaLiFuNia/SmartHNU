@@ -28,18 +28,15 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.smart.htu.BuildConfig
 import com.smart.htu.R
 import com.smart.htu.api.module.CaptchaVersionEntity
 import com.smart.htu.component.InfoBadge
 import com.smart.htu.screens.CaptchaUpdateDialog
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.UpdateDialog
 import com.smart.htu.screens.login.LoginViewModel
-import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.ui.theme.KeyColors
-import com.smart.htu.utils.APPVersion.getVersionCode
-import com.smart.htu.utils.APPVersion.getVersionName
 import com.smart.htu.utils.FileUtil.moveFile
 import com.smart.htu.utils.ToastUtil.showToast
 import dev.chrisbanes.haze.hazeEffect
@@ -65,11 +62,11 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun SettingScreen(
-    navController: NavController,
     viewModel: SettingViewModel,
     loginViewModel: LoginViewModel,
     contentPadding: PaddingValues
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val loginUiState by loginViewModel.uiState.collectAsState()
 
@@ -161,11 +158,11 @@ fun SettingScreen(
                         title = "账号与信息",
                         summary = if (loginUiState.jwcLoginState != 1) "暂未登录，点击登录" else "个人信息、登录状态、退出登录等",
                         onClick = {
-                            if (loginUiState.jwcLoginState != 1) navController.navigate(
-                                Destinations.Login.route
-                            ) else {
-                                navController.navigate(Destinations.Person.route)
-                            }
+                            navigator.pushWithLoginCheck(
+                                route = Route.Person,
+                                isGuest = false,
+                                loginState = loginUiState.jwcLoginState == 1
+                            )
                         }
                     )
                 }
@@ -179,7 +176,7 @@ fun SettingScreen(
                         title = "YunAI 配置",
                         summary = "使用 AI 模型为应用注入新活力",
                         onClick = {
-                            navController.navigate(Destinations.AIConfiguration.route)
+                            navigator.push(Route.AIConfiguration)
                         }
                     )
                     SuperSwitch(
@@ -194,7 +191,7 @@ fun SettingScreen(
                         title = "主页内容",
                         summary = "选择和关闭需要在主页显示的内容",
                         onClick = {
-                            navController.navigate(Destinations.HomeContentSettings.route)
+                            navigator.push(Route.HomeContentSettings)
                         }
                     )
                 }
@@ -243,7 +240,7 @@ fun SettingScreen(
                         title = "字体设置",
                         summary = "调整新闻正文字体样式及大小",
                         onClick = {
-                            navController.navigate(Destinations.ArticleStyle.route)
+                            navigator.push(Route.ArticleStyle)
                         }
                     )
                 }
@@ -254,15 +251,7 @@ fun SettingScreen(
                     modifier = Modifier
                 ) {
                     SuperArrow(
-                        title = stringResource(id = R.string.about_app),
-                        summary = stringResource(id = R.string.about_app_description),
-                        onClick = {
-                            navController.navigate(Destinations.About.route)
-                        }
-                    )
-                    BasicComponent(
                         title = stringResource(id = R.string.check_update),
-                        summary = "当前应用版本：${getVersionName()}(${getVersionCode()})\n编译时间：${BuildConfig.BUILD_TIME}",
                         endActions = {
                             if (uiState.isUpdate) {
                                 InfoBadge(text = "新版本", color = MaterialTheme.colorScheme.error)
@@ -285,10 +274,17 @@ fun SettingScreen(
                         }
                     )
                     SuperArrow(
+                        title = stringResource(id = R.string.about),
+                        summary = stringResource(id = R.string.about_app_description),
+                        onClick = {
+                            navigator.push(Route.About)
+                        }
+                    )
+                    SuperArrow(
                         title = stringResource(R.string.feedback),
                         summary = "反馈问题或提出使用建议",
                         onClick = {
-                            navController.navigate(Destinations.Feedback.route)
+                            navigator.push(Route.Feedback)
                         }
                     )
                 }
@@ -307,8 +303,7 @@ fun SettingScreen(
                             Text(
                                 text = uiState.cacheSize,
                                 fontSize = MiuixTheme.textStyles.body2.fontSize,
-                                color = MiuixTheme.colorScheme.onSurfaceVariantActions,
-                                modifier = Modifier.padding(end = 8.dp)
+                                color = MiuixTheme.colorScheme.onSurfaceVariantActions
                             )
                         }
                     )

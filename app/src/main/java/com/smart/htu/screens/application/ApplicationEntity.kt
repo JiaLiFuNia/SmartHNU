@@ -2,23 +2,25 @@ package com.smart.htu.screens.application
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.navigation3.runtime.NavKey
 import com.smart.htu.R
+import kotlinx.serialization.Serializable
 
-@kotlinx.serialization.Serializable
+@Serializable
 data class ApplicationEntity(
     val enabled: Boolean = true,
     val guestMode: Boolean = true,
     val loginMode: LoginMode = LoginMode.NONE,
     val label: Int,
-    val description: String? = null,
-    @DrawableRes val icon: Int,
-    @DrawableRes val trailingIcon: Int? = null,
-    val routeType: RouteType?,
-    val route: String?,
+    @param:DrawableRes val icon: Int,
+    @param:DrawableRes val trailingIcon: Int? = null,
+    val routeType: RouteType,
+    val url: String? = null,
+    val screenRoute: NavKey? = null,
     val category: ApplicationCategory
 ) {
 
-    enum class ApplicationCategory(@StringRes val category: Int) {
+    enum class ApplicationCategory(@param:StringRes val category: Int) {
         STUDY(R.string.study),
         CAMPUS(R.string.campus),
         ACADEMIC_AFFAIRS(R.string.academic_affairs),
@@ -28,10 +30,7 @@ data class ApplicationEntity(
     enum class RouteType {
         Url, // 网页
         Screen, // 页面
-        ALIPAY, // 支付宝
-        ExternalApp, // 应用,
-        BottomSheet,
-        Dialog
+        ExternalApp, // 应用
     }
 
     enum class LoginMode {

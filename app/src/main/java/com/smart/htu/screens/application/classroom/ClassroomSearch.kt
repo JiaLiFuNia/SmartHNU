@@ -21,7 +21,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -42,12 +41,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.window.core.layout.WindowSizeClass
 import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.DatePicker
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.utils.Constants.Companion.COURSE_PERIOD
 import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
 import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
@@ -84,9 +82,9 @@ import kotlin.math.ceil
 )
 @Composable
 fun ClassroomSearchScreen(
-    navController: NavController,
     viewModel: ClassroomSearchViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val hazeState = rememberHazeState()
     val coroutineScope = rememberCoroutineScope()
@@ -116,7 +114,6 @@ fun ClassroomSearchScreen(
         )
     }
 
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val scrollBehavior = MiuixScrollBehavior()
     Scaffold(
         topBar = {
@@ -128,10 +125,10 @@ fun ClassroomSearchScreen(
                     IconButton(
                         modifier = Modifier.padding(start = 16.dp),
                         onClick = {
-                            navController.popBackStack()
+                            navigator.pop()
                         }
                     ) {
-                        top.yukonga.miuix.kmp.basic.Icon(
+                        Icon(
                             imageVector = MiuixIcons.Regular.Back,
                             contentDescription = null,
                             tint = MiuixTheme.colorScheme.onBackground
@@ -278,10 +275,7 @@ fun ClassroomSearchScreen(
                             }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        val columns = if (windowSizeClass.isWidthAtLeastBreakpoint(
-                                WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
-                            )
-                        ) 4 else 3
+                        val columns = 3
                         HorizontalPager(
                             verticalAlignment = Alignment.Top,
                             state = floorPagerState,

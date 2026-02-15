@@ -50,7 +50,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseGradeDetailRes.CourseGradeDetailEntity
@@ -62,6 +61,7 @@ import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
 import com.smart.htu.component.chart.LineChart
 import com.smart.htu.component.imageVectors.emptyData
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.GradeDivideUtil.divideGrade
 import com.smart.htu.utils.TermUtil.termConverter
@@ -101,9 +101,9 @@ data class CourseGradeDialogData(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Grade(
-    viewModel: GradeViewModel = hiltViewModel(),
-    navController: NavController
+    viewModel: GradeViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -151,7 +151,7 @@ fun Grade(
                     IconButton(
                         modifier = Modifier.padding(start = 16.dp),
                         onClick = {
-                            navController.popBackStack()
+                            navigator.pop()
                         }
                     ) {
                         Icon(
@@ -451,7 +451,7 @@ fun CourseGradeDetailDialog(
     showGradeDetailBottomSheet: MutableState<Boolean>
 ) {
     SuperBottomSheet(
-        title = "成绩详情",
+        title = "${grade.courseName} 的成绩详情",
         show = showGradeDetailBottomSheet,
         onDismissRequest = {
             showGradeDetailBottomSheet.value = false
@@ -482,8 +482,8 @@ fun CourseGradeDetailDialog(
                             rowIndex = 1
                         ),
                         SingleInfo(
-                            label = "学分",
-                            content = grade.gradeCredits.toString(),
+                            label = "总成绩",
+                            content = gradeRankInClass.totalGrade.toString(),
                             rowIndex = 1
                         ),
                         SingleInfo(
@@ -538,12 +538,29 @@ fun CourseGradeDetailDialog(
                     labelOnTop = false,
                     message = listOf(
                         SingleInfo(
+                            label = "学时",
+                            content = grade.totalHours,
+                            rowIndex = 1
+                        ),
+                        SingleInfo(
+                            label = "学分",
+                            content = grade.gradeCredits.toString(),
+                            rowIndex = 1
+                        )
+                    )
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                MessageCardDisplay(
+                    modifier = Modifier.fillMaxWidth(),
+                    labelOnTop = false,
+                    message = listOf(
+                        SingleInfo(
                             label = "${gradeRankInClass.courseType}排名-${gradeRankInClass.className}",
                             content = "${gradeRankInClass.ranking} / ${gradeRankInClass.totalStudents}",
                             rowIndex = 1
                         ),
                         SingleInfo(
-                            label = "${gradeRankInCourse.courseType}排名",
+                            label = "${gradeRankInCourse.courseType}排名-${gradeRankInCourse.className}",
                             content = "${gradeRankInCourse.ranking} / ${gradeRankInCourse.totalStudents}",
                             rowIndex = 1
                         )

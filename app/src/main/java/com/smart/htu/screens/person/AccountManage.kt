@@ -18,9 +18,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.setting.SettingItemCard
 import top.yukonga.miuix.kmp.basic.Icon
@@ -37,9 +37,9 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountManage(
-    navController: NavController,
     viewModel: LoginViewModel
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
 
     val (editable, onEditable) = remember { mutableStateOf(false) }
@@ -51,7 +51,7 @@ fun AccountManage(
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(

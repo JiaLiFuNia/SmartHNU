@@ -6,7 +6,7 @@ import androidx.compose.ui.res.stringResource
 import com.smart.htu.R
 import com.smart.htu.api.module.SingleTerm
 import com.smart.htu.component.SuperSpinnerDialog
-import top.yukonga.miuix.kmp.extra.SpinnerEntry
+import top.yukonga.miuix.kmp.basic.SpinnerEntry
 
 @Composable
 fun SelectTermBottomSheet(

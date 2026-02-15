@@ -1,6 +1,5 @@
 package com.smart.htu.screens.news
 
-import android.net.Uri
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -43,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,7 +60,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -70,10 +69,11 @@ import com.smart.htu.R
 import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.component.CircularProgressIndicator
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.application.ApplicationEntity
 import com.smart.htu.screens.main.TaskEntity
 import com.smart.htu.screens.main.TaskType
-import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.screens.news.entity.NewsType
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.DateUtil.formatDateToFriendly
@@ -83,6 +83,9 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Icon
@@ -92,62 +95,20 @@ import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-/*@OptIn(ExperimentalMaterial3AdaptiveApi::class)
-@Composable
-fun NewsScreenNavigation(
-    contentPadding: PaddingValues,
-    navController: NavController,
-    viewModel: NewsViewModel
-) {
-    val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator<NewsItemEntity>()
-    val scope = rememberCoroutineScope()
-
-    val navigator = rememberListDetailPaneScaffoldNavigator<NewsItemEntity>()
-    ListDetailPaneScaffold(
-        directive = navigator.scaffoldDirective,
-        value = navigator.scaffoldValue,
-        listPane = {
-            AnimatedPane {
-                NewsScreen(
-                    contentPadding = contentPadding,
-                    navController = navController,
-                    viewModel = viewModel,
-                    onNewsItemClick = {
-                        scope.launch {
-                            scaffoldNavigator.navigateTo(ListDetailPaneScaffoldRole.Detail, it)
-                        }
-                    }
-                )
-            }
-        },
-        detailPane = {
-            AnimatedPane {
-                scaffoldNavigator.currentDestination?.contentKey?.let {
-                    NewsDetail(
-                        url = it.url,
-                        title = stringResource(it.label.label),
-                        navController = navController
-                    )
-                }
-            }
-        }
-    )
-}*/
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun NewsScreen(
     contentPadding: PaddingValues,
-    navController: NavController,
-    viewModel: NewsViewModel = hiltViewModel(),
-    // onNewsItemClick: (NewsItemEntity) -> Unit
+    viewModel: NewsViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
 
     val hazeState = rememberHazeState()
@@ -171,27 +132,34 @@ fun NewsScreen(
     }
 
     LaunchedEffect(selectedTabIndex.value) {
-        if (uiState.newsList[selectedTabIndex.value]?.isEmpty() != false)
-            viewModel.getNewsList(selectedTabIndex.value)
+        snapshotFlow { newsPagerState.isScrollInProgress }
+            .distinctUntilChanged()
+            .filter { inProgress -> !inProgress }
+            .collectLatest {
+                val page = newsPagerState.currentPage
+                if (uiState.newsList[page] == null) {
+                    viewModel.getNewsList(page, 1)
+                }
+            }
     }
 
     Scaffold(
         topBar = {
-            top.yukonga.miuix.kmp.basic.TopAppBar(
+            TopAppBar(
                 horizontalPadding = 16.dp,
                 title = stringResource(R.string.news),
                 largeTitle = stringResource(R.string.news),
                 scrollBehavior = scrollBehavior,
                 color = Color.Transparent,
                 actions = {
-                    IconButton(onClick = { navController.navigate(Destinations.NewsHistory.route) }) {
+                    IconButton(onClick = { navigator.push(Route.NewsMark) }) {
                         Icon(
                             painter = painterResource(id = R.drawable.bookmark_24px),
                             contentDescription = "history"
                         )
                     }
                     IconButton(
-                        onClick = { navController.navigate(Destinations.NewsSearch.route) },
+                        onClick = { navigator.push(Route.NewsSearch) },
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(
@@ -315,10 +283,7 @@ fun NewsScreen(
                                             bannerUrl = bannerUrl,
                                             bannerTitle = bannerTitle
                                         ) { url, label ->
-                                            /*navController.navigateToNewsDetail(
-                                                url = url,
-                                                label = label
-                                            )*/
+                                            navigator.push(Route.NewsDetail(url, label, "Banner"))
                                         }
                                         Spacer(modifier = Modifier.height(8.dp))
                                     }
@@ -330,7 +295,6 @@ fun NewsScreen(
                                         news = news,
                                         imageLoadEnabled = uiState.loadImgEnabled,
                                         onClick = {
-                                            // onNewsItemClick(news)
                                             viewModel.addNewsHistory(
                                                 NewsMarkEntity(
                                                     title = news.title,
@@ -339,10 +303,12 @@ fun NewsScreen(
                                                     source = context.getString(news.label.label)
                                                 )
                                             )
-                                            navController.navigateToNewsDetail(
-                                                url = news.url,
-                                                title = news.title,
-                                                label = context.getString(news.label.label)
+                                            navigator.push(
+                                                Route.NewsDetail(
+                                                    url = news.url,
+                                                    title = news.title,
+                                                    source = context.getString(news.label.label)
+                                                )
                                             )
                                         },
                                         onAddClick = {
@@ -415,7 +381,7 @@ fun NewsItem(
                 )
             },
             trailingContent = {
-                if ((news.imgUrl.endsWith(".jpg") || news.imgUrl.endsWith(".png")) && imageLoadEnabled) {
+                if (imageLoadEnabled && news.imgUrl.isNotEmpty()) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(news.imgUrl)
@@ -532,13 +498,4 @@ fun HorizontalBanner(
             )
         }
     }
-}
-
-
-fun NavController.navigateToNewsDetail(
-    url: String,
-    title: String,
-    label: String
-) {
-    this.navigate("${Destinations.NewsDetail.route}/${Uri.encode(url)}/${title}/${label}")
 }

@@ -10,7 +10,7 @@ data class NewsCategoryEntity(
     val type: String
 )
 
-enum class NewsType(@StringRes val label: Int) {
+enum class NewsType(@param:StringRes val label: Int) {
     BANNER(R.string.banner_img),
     RESEARCH(R.string.research),
     NOTICE(R.string.notice),

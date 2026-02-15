@@ -312,3 +312,58 @@ fun LoginInfoDialog(
         }
     }
 }
+
+
+@Composable
+fun CodeLogDialog(
+    showDialog: MutableState<Boolean>,
+    onLoginByCode: (String) -> Unit
+) {
+    val codeValue = remember { mutableStateOf("") }
+    SuperDialog(
+        title = "便捷登录",
+        show = showDialog,
+        summary = "使用微信 Code 登录，无需输入学号和密码",
+        onDismissRequest = {
+            showDialog.value = false
+        }
+    ) {
+        TextField(
+            value = codeValue.value,
+            onValueChange = {
+                codeValue.value = it
+            },
+            label = "微信 Code",
+            useLabelAsPlaceholder = true,
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { contentType = ContentType.Password },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            )
+        )
+        Spacer(Modifier.height(16.dp))
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            TextButton(
+                text = "取消",
+                onClick = {
+                    showDialog.value = false
+                },
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(Modifier.width(20.dp))
+            TextButton(
+                text = "登录",
+                onClick = {
+                    onLoginByCode(codeValue.value)
+                },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.textButtonColorsPrimary()
+            )
+        }
+    }
+}

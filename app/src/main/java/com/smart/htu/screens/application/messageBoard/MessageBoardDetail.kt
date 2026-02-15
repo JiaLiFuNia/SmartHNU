@@ -41,7 +41,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -53,6 +52,7 @@ import com.smart.htu.api.module.PostDetailData.CommentData
 import com.smart.htu.api.module.PostDetailData.ReplyData
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.ImagePreviewDialog
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.FileUtil.downloadFile
 import com.smart.htu.utils.ToastUtil
@@ -85,9 +85,9 @@ import kotlin.math.ceil
 @Composable
 fun MessageBoardDetail(
     postID: String,
-    navController: NavController,
     viewModel: MessageBoardViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
@@ -116,7 +116,7 @@ fun MessageBoardDetail(
                 title = stringResource(R.string.detail),
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(

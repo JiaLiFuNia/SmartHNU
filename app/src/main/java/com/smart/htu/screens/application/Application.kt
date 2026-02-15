@@ -15,7 +15,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -30,19 +29,17 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
 import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.MediumAppCard
 import com.smart.htu.component.card.SmallAppCard
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.application.ApplicationEntity.ApplicationCategory
 import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.screens.login.LoginViewModel
-import com.smart.htu.screens.navigateWithCheckLoginState
-import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.utils.ToastUtil.showToast
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -64,20 +61,19 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 @Composable
 fun Application(
     contentPadding: PaddingValues,
-    navController: NavController,
     viewModel: ApplicationViewModel = hiltViewModel(),
     loginViewModel: LoginViewModel
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val loginUiState by loginViewModel.uiState.collectAsState()
     val hazeState = rememberHazeState()
     val scope = rememberCoroutineScope()
     val showAuthLoginDialog = remember { mutableStateOf(false) }
     val loginState = remember {
-        derivedStateOf { loginUiState.jwcLoginState != 1 && loginUiState.jwcLoginState != -2 }
+        derivedStateOf { loginUiState.jwcLoginState == 1 }
     }
     val displayMode = remember { mutableIntStateOf(0) } // 0 矩形 1 方形
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
     val scrollBehavior = MiuixScrollBehavior()
 
@@ -122,13 +118,7 @@ fun Application(
                 top = it.calculateTopPadding(),
                 bottom = contentPadding.calculateBottomPadding() + 12.dp
             ),
-            columns = GridCells.Fixed(
-                if (windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND)) {
-                    if (displayMode.intValue == 1) 8 else 4
-                } else {
-                    if (displayMode.intValue == 1) 4 else 2
-                }
-            ),
+            columns = GridCells.Fixed(if (displayMode.intValue == 1) 4 else 2),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
@@ -140,10 +130,10 @@ fun Application(
                 .scrollEndHaptic(),
             overscrollEffect = null,
         ) {
-            if (loginState.value) {
+            if (!loginState.value) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     SuggestChip(
-                        onClick = { navController.navigate(Destinations.Login.route) },
+                        onClick = { navigator.push(Route.Login) },
                         text = "暂未登录，登录后即可体验全部功能",
                         type = SuggestChipType.ERROR,
                         icon = Icons.AutoMirrored.Filled.ArrowForward
@@ -164,63 +154,43 @@ fun Application(
                 items(appList) { app ->
                     if (displayMode.intValue == 0) {
                         MediumAppCard(
-                            enabled = ((loginUiState.isGuestModeEnable && app.guestMode) || !loginState.value) && app.enabled,
+                            enabled = ((loginUiState.isGuestModeEnable && app.guestMode) || loginState.value) && app.enabled,
                             content = app,
                             modifier = Modifier,
                             onClick = {
-                                when {
-                                    app.loginMode == ApplicationEntity.LoginMode.AUTH_SERVER && loginUiState.authLoginState != 1 -> {
-                                        showAuthLoginDialog.value = true
-                                    }
-
-                                    /*app.loginMode == ApplicationEntity.LoginMode.SECOND_CLASS && loginUiState.scLoginState != 1 -> {
-                                        scope.launch {
-                                            loginViewModel.loadSecondClassSid()
-                                            showSCLoginDialog.value = true
+                                navigator.pushWithLoginCheck(
+                                    route = app.screenRoute,
+                                    url = app.url,
+                                    label = context.getString(app.label),
+                                    isGuest = loginUiState.isGuestModeEnable && app.guestMode,
+                                    loginState = loginState.value, // 只检查jwc_app的登录状态
+                                    onLoginRequired = {
+                                        if (app.loginMode == ApplicationEntity.LoginMode.AUTH_SERVER && loginUiState.authLoginState != 1) {
+                                            showAuthLoginDialog.value = true
                                         }
-                                    }*/
-
-                                    else -> {
-                                        navController.navigateWithCheckLoginState(
-                                            isGuest = loginUiState.isGuestModeEnable && app.guestMode,
-                                            route = app.route,
-                                            routeType = app.routeType,
-                                            logState = !loginState.value,
-                                            label = context.getString(app.label)
-                                        )
                                     }
-                                }
+                                )
                             }
                         )
                     } else {
                         SmallAppCard(
-                            enabled = ((loginUiState.isGuestModeEnable && app.guestMode) || !loginState.value) && app.enabled,
+                            enabled = ((loginUiState.isGuestModeEnable && app.guestMode) || loginState.value) && app.enabled,
                             content = app,
                             modifier = Modifier
                                 .size(76.dp),
                             onClick = {
-                                when {
-                                    app.loginMode == ApplicationEntity.LoginMode.AUTH_SERVER && loginUiState.authLoginState != 1 -> {
-                                        showAuthLoginDialog.value = true
-                                    }
-
-                                    /*app.loginMode == ApplicationEntity.LoginMode.SECOND_CLASS && loginUiState.scLoginState != 1 -> {
-                                        scope.launch {
-                                            loginViewModel.loadSecondClassSid()
-                                            showSCLoginDialog.value = true
+                                navigator.pushWithLoginCheck(
+                                    route = app.screenRoute,
+                                    url = app.url,
+                                    label = context.getString(app.label),
+                                    isGuest = loginUiState.isGuestModeEnable && app.guestMode,
+                                    loginState = loginState.value,
+                                    onLoginRequired = {
+                                        if (app.loginMode == ApplicationEntity.LoginMode.AUTH_SERVER && loginUiState.authLoginState != 1) {
+                                            showAuthLoginDialog.value = true
                                         }
-                                    }*/
-
-                                    else -> {
-                                        navController.navigateWithCheckLoginState(
-                                            isGuest = loginUiState.isGuestModeEnable && app.guestMode,
-                                            route = app.route,
-                                            routeType = app.routeType,
-                                            logState = !loginState.value,
-                                            label = context.getString(app.label)
-                                        )
                                     }
-                                }
+                                )
                             }
                         )
                     }

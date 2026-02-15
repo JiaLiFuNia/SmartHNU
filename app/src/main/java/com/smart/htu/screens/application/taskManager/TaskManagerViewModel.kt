@@ -2,11 +2,9 @@ package com.smart.htu.screens.application.taskManager
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.smart.htu.api.module.ExamEntity
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.screens.main.TaskEntity
-import com.smart.htu.utils.MD5Util.md5
 import com.smart.htu.utils.TermUtil.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +17,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
-import kotlin.apply
 
 data class TaskManagerUiState(
     val taskList: List<TaskEntity> = emptyList(),
@@ -86,11 +83,8 @@ class TaskManagerViewModel @Inject constructor(
 
     fun addTask(task: TaskEntity) {
         viewModelScope.launch {
-            val newTaskList = _uiState.value.taskList.toMutableList().apply {
-                this.add(
-                    task.copy(id = System.currentTimeMillis().toString())
-                )
-            }
+            val newTaskList = _uiState.value.taskList.toMutableList()
+            newTaskList.add(task.copy(id = System.currentTimeMillis().toString()))
             dataStoreRepo.saveTaskList(newTaskList)
         }
     }

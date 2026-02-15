@@ -29,7 +29,7 @@ data class ExamEntity(
     val isAddToCalendar: Boolean = false
 )
 
-enum class ExamType(val type: String, @ColorInt val color: Int) {
+enum class ExamType(val type: String, @param:ColorInt val color: Int) {
     FINAL("期末考试", 0xFF4CAF50.toInt()),
     MIDTERM("期中考试", 0xFFFF9800.toInt()),
     CERTIFICATE("证书考试", 0xFF2196F3.toInt()),

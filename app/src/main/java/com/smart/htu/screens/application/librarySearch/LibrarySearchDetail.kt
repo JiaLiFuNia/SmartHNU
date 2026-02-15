@@ -33,7 +33,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -41,6 +40,7 @@ import com.smart.htu.R
 import com.smart.htu.api.module.BookBorrowingDetails
 import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.component.CircularProgressIndicator
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.utils.ToastUtil.showToast
 import com.smart.htu.utils.copyContent
 import dev.chrisbanes.haze.hazeEffect
@@ -69,10 +69,10 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 @OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun LibrarySearchDetail(
-    navController: NavController,
     viewModel: LibrarySearchViewModel = hiltViewModel(),
     bookId: String
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val scrollBehavior = MiuixScrollBehavior()
@@ -97,7 +97,7 @@ fun LibrarySearchDetail(
                 title = "详情",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(

@@ -32,18 +32,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.component.EmptyContent
-import com.smart.htu.component.animation.animatedComposable
 import com.smart.htu.component.imageVectors.emptyData
-import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.LocalNavigator
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.utils.ToastUtil.showToast
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -72,64 +66,12 @@ import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.format.DateTimeFormatter
 
-@Composable
-fun CourseHelperNavHost(
-    navHostController: NavHostController
-) {
-    val navController = rememberNavController()
-    val viewModel: CourseHelperViewModel = hiltViewModel()
-    NavHost(
-        navController = navController,
-        startDestination = Destinations.CourseHelper.route
-    ) {
-        animatedComposable(Destinations.CourseHelper.route) {
-            CourseHelper(navController, { navHostController.popBackStack() }, viewModel)
-        }
-        animatedComposable(
-            route = "${Destinations.CourseRepo.route}/{courseTypeName}/{courseTypeId}",
-            arguments = listOf(
-                navArgument(name = "courseTypeName") {
-                    type = NavType.StringType
-                },
-                navArgument(name = "courseTypeId") {
-                    type = NavType.StringType
-                }
-            )
-        ) {
-            val courseTypeName = it.arguments?.getString("courseTypeName") ?: "null"
-            val courseTypeId = it.arguments?.getString("courseTypeId") ?: "null"
-            CourseRepo(
-                navController = navController,
-                courseTypeName = courseTypeName,
-                courseTypeId = courseTypeId,
-                viewModel = viewModel
-            )
-        }
-        animatedComposable(
-            route = "${Destinations.CourseInfo.route}/{courseCode}",
-            arguments = listOf(
-                navArgument(name = "courseCode") {
-                    type = NavType.StringType
-                }
-            )
-        ) {
-            val courseCode = it.arguments?.getString("courseCode") ?: "null"
-            CourseInfo(
-                navController = navController,
-                courseCode = courseCode,
-                viewModel = viewModel
-            )
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun CourseHelper(
-    navController: NavController,
-    onBack: () -> Unit,
     viewModel: CourseHelperViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
@@ -144,7 +86,7 @@ fun CourseHelper(
                 title = stringResource(R.string.select_course_assistance),
                 navigationIcon = {
                     IconButton(
-                        onClick = { onBack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -230,7 +172,7 @@ fun CourseHelper(
                                     },
                                     onClick = {
                                         scope.launch {
-                                            navController.navigate("${Destinations.CourseInfo.route}/${it.courseTaskCode}")
+                                            navigator.push(Route.CourseInfo(it.courseTaskCode))
                                         }
                                     }
                                 )
@@ -304,7 +246,7 @@ fun CourseHelper(
                             .fillMaxWidth(),
                         onClick = {
                             scope.launch {
-                                navController.navigate("${Destinations.CourseRepo.route}/${it.courseTypeName}/${it.courseTypeId}")
+                                navigator.push(Route.CourseRepo(it.courseTypeName, it.courseTypeId))
                             }
                         },
                         insideMargin = PaddingValues(16.dp),

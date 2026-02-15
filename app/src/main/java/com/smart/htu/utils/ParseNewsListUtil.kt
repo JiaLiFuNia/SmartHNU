@@ -65,14 +65,16 @@ object ParseNewsListUtil {
         val document = Jsoup.parse(html)
         val newsListSize = document.select(rules.elementPath.path)
         newsListSize.forEach {
-            val newsListElement = NewsItemEntity(
-                label = label,
-                title = selectElement(it, rules.titlePath),
-                _url = selectElement(it, rules.urlPath),
-                imgUrlWithoutHttp = selectElement(it, rules.imgUrlPath),
-                time = selectElement(it, rules.timePath)
-            )
-            if (newsListElement.imgUrlWithoutHttp != "top") resultList.add(newsListElement)
+            val title = selectElement(it, rules.titlePath)
+            val time = selectElement(it, rules.timePath)
+            val url = selectElement(it, rules.urlPath).toFullUrl()
+            var imgUrl = selectElement(it, rules.imgUrlPath).toFullUrl()
+            if (imgUrl.endsWith("jpg") || imgUrl.endsWith("png") || imgUrl.endsWith("jpeg")) {
+                // Log.i("TAG666 parseHtml imgUrl", imgUrl)
+            } else {
+                imgUrl = ""
+            }
+            resultList.add(NewsItemEntity(label, title, url, imgUrl, time))
             // Log.i("TAG666 parseHtml Element", newsListElement.toString())
         }
         return resultList
@@ -108,3 +110,16 @@ data class SingleParseRule(
     val path: String = "",
     val element: String = "",
 )
+
+fun String.toFullUrl(): String {
+    return if (this.isNotEmpty()) {
+        if (this.startsWith("http")) {
+            if (this.contains("web."))
+                this.replace("http://web", "https://www")
+                    .replace("psp", "htm")
+            else this
+        } else {
+            "https://www.htu.edu.cn$this"
+        }
+    } else ""
+}

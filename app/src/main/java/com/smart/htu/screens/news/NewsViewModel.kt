@@ -37,13 +37,14 @@ data class NewsUiState(
     val bannerPicList: List<NewsItemEntity> = emptyList(),
     val newsList: List<MutableList<NewsItemEntity>?> = List(newsOptionItems.size) { null },
     val searchList: List<NewsItemEntity>? = null,
+    val newsContent: NewsArticleEntity? = null,
     val newsPages: List<Int> = List(newsOptionItems.size) { 1 },
     val aiModelKey: String = "",
     val selectedAIModelIndex: Int = 2,
     val aiSummaryContent: String? = null,
     val aiSummaryReasoningContent: String? = null,
     val isAISummaryReasoning: Boolean = false,
-    val newsArticle: NewsArticleEntity? = null,
+    // val newsArticle: NewsArticleEntity? = null,
     val loadImgEnabled: Boolean = true,
     val newsHistoryList: List<NewsMarkEntity> = emptyList(),
     val newsFavoriteList: List<NewsMarkEntity> = emptyList(),
@@ -256,9 +257,14 @@ class NewsViewModel @Inject constructor(
         }
     }
 
-    suspend fun getNewsDetail(url: String) {
+    suspend fun fetchNewsDetail(url: String, onError: (String) -> Unit) {
         val res = networkRepo.getNewsDetailService(url)
-        _uiState.update { it.copy(newsArticle = res) }
+        if (res != null && res.title != null) {
+            _uiState.update { it.copy(newsContent = res) }
+        } else {
+            Log.e("TAG666 fetchNewsDetail", "新闻内容解析失败: $res")
+            onError("新闻内容解析失败")
+        }
     }
 
     fun aiNewsSummaryService(articleContent: String, publishDate: String, articleTitle: String) {

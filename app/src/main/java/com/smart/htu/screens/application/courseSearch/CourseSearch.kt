@@ -31,18 +31,12 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseSearchPostEntity
 import com.smart.htu.component.BottomCircularProgressIndicator
 import com.smart.htu.component.MiuixHintTextField
-import com.smart.htu.component.animation.animatedComposable
-import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.LocalNavigator
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.utils.DateUtil.getCurrentDate
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
@@ -66,40 +60,12 @@ import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
-@Composable
-fun CourseSearchNavHost(
-    navHostController: NavHostController
-) {
-    val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = Destinations.CourseSearch.route
-    ) {
-        animatedComposable(Destinations.CourseSearch.route) {
-            CourseSearch(navController, { navHostController.popBackStack() })
-        }
-        animatedComposable(
-            route = "${Destinations.CourseSearchRepo.route}/{searchInfo}",
-            arguments = listOf(
-                navArgument(name = "searchInfo") {
-                    type = NavType.StringType
-                }
-            )
-        ) {
-            val searchInfoString = it.arguments?.getString("searchInfo") ?: ""
-            val searchInfo = Json.decodeFromString<CourseSearchPostEntity>(searchInfoString)
-            CourseSearchRepo(navController, searchInfo)
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun CourseSearch(
-    navController: NavController,
-    onBack: () -> Unit,
     viewModel: CourseSearchViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
@@ -146,7 +112,7 @@ fun CourseSearch(
                 title = stringResource(R.string.course_search),
                 navigationIcon = {
                     IconButton(
-                        onClick = { onBack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -189,8 +155,7 @@ fun CourseSearch(
                         text = "搜索",
                         onClick = {
                             scope.launch {
-                                val searchInfoString = Json.encodeToString(searchInfo)
-                                navController.navigate("${Destinations.CourseSearchRepo.route}/${searchInfoString}")
+                                navigator.push(Route.CourseSearchRepo(searchInfo))
                             }
                         },
                         minHeight = 32.dp,
