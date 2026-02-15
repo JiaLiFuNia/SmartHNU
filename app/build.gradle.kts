@@ -21,8 +21,8 @@ android {
         applicationId = "com.smart.htu"
         minSdk = 29
         targetSdk = 35
-        versionCode = 202601271
-        versionName = "3.1.1"
+        versionCode = 202602071
+        versionName = "3.1.2"
 
         val buildTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
             timeZone = getDefault()
@@ -108,11 +108,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 
     implementation(libs.androidx.navigation3.runtime)
-    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.miuix.navigation3.ui)
+    implementation(libs.miuix.navigation3.adaptive)
 
-    implementation(libs.androidx.adaptive)
-    implementation(libs.androidx.adaptive.layout)
-    implementation(libs.androidx.adaptive.navigation)
     // miuix
     implementation(libs.miuix)
     implementation(libs.miuix.icons)
@@ -122,7 +120,7 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
 
     // dataStore
-    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.datastore)
 
     // Coil
     implementation(libs.coil.compose)
@@ -159,7 +157,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     // About Screen
-    implementation(libs.aboutlibraries.compose.m3)
+    implementation(libs.about.library)
 
     // chart
     implementation(libs.vico)
@@ -167,13 +165,9 @@ dependencies {
     // JWT
     implementation(libs.eddsa)
 
-    // pdf
-    implementation(libs.pdf.viewer)
-
     // reorderable
     implementation(libs.reorderable)
 
-    implementation(libs.datetime.wheel.picker)
     implementation(libs.kotlinx.datetime)
 
     implementation(libs.readability4j)
