@@ -34,7 +34,7 @@
     <string name="news_screen">News Screen</string>
     <string name="about">About</string>
     <string name="about_app">About SmartHNU</string>
-    <string name="about_app_description">A third-party educational and news reading app</string>
+    <string name="about_app_description">App Info</string>
     <string name="check_update">Check for Updates</string>
     <string name="check_update_description">Check for the latest version on GitHub</string>
     <string name="current_version">Current Version</string>
@@ -45,7 +45,7 @@
     <string name="appreciate_description">Resources and Open Source Software</string>
     <string name="developer">Developer</string>
     <string name="developer_name">JiaLiFuNia</string>
-    <string name="developer_description">Developer and Theme Designer</string>
+    <string name="developer_description">Developer</string>
     <string name="classroom_search">Classroom Search</string>
     <string name="building">Teaching Building</string>
     <string name="time">Time</string>
