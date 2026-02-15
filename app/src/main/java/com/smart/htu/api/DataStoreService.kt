@@ -9,6 +9,7 @@ import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.api.module.SCHourEntity
 import com.smart.htu.screens.application.ApplicationEntity
+import com.smart.htu.screens.application.courseTable.CourseTableSettings
 import com.smart.htu.screens.main.TaskEntity
 import kotlinx.coroutines.flow.Flow
 import okhttp3.Cookie
@@ -42,20 +43,23 @@ interface DataStoreService {
     suspend fun changeAIFunctionEnabled(enabled: Boolean)
     suspend fun changeSelectedAIModel(index: Int)
     suspend fun saveAIModelKey(key: String)
-    suspend fun changeBionicReadingEnabled(enabled: Boolean)
     suspend fun changeLoadImgEnabled(enable: Boolean)
     suspend fun changeNewsHistoryList(newsItem: NewsMarkEntity)
     suspend fun addNewsFavoriteList(newsList: List<NewsMarkEntity>)
     suspend fun changeNewsFontSize(size: Int)
     suspend fun saveExamScheduleList(examList: List<ExamEntity>)
     suspend fun savePhysicalTestCode(code: String)
-    suspend fun changeCourseTableBackgroundBlurRadius(radius: Int)
-    suspend fun changeWeekendCourseShowState(isShow: Boolean)
+    suspend fun setCourseTableSettings(data: CourseTableSettings)
     suspend fun saveSecondClassData(data: SCHourEntity)
     suspend fun saveUpdateRes(result: CaptchaVersionEntity)
     suspend fun saveTargetCourseList(list: List<CourseItemEntity>)
     suspend fun saveTaskList(taskList: List<TaskEntity>)
     suspend fun saveCourseTableData(data: Map<String, List<List<List<CourseEntity>>>>)
+    suspend fun changeHomeFocusEnabled(enabled: Boolean)
+    suspend fun changeHomeTodayCourseEnabled(enabled: Boolean)
+    suspend fun changeHomeTodayTaskEnabled(enabled: Boolean)
+    suspend fun changeHomeFreeClassroomEnabled(enabled: Boolean)
+    suspend fun changeHomeNewsEnabled(enabled: Boolean)
 
     fun observeThemeMode(): Flow<Int>
     fun observeDarkTheme(): Flow<Int>
@@ -82,15 +86,13 @@ interface DataStoreService {
     fun observeAIFunctionEnabled(): Flow<Boolean>
     fun observeSelectedAIModel(): Flow<Int>
     fun observeAIModelKey(): Flow<String>
-    fun observeBionicReadingEnabled(): Flow<Boolean>
     fun observeLoadImgEnabled(): Flow<Boolean>
     fun observeNewsHistoryList(): Flow<List<NewsMarkEntity>>
     fun observeNewsFavoriteList(): Flow<List<NewsMarkEntity>>
     fun observeNewsFontSize(): Flow<Int>
     fun observeExamScheduleList(): Flow<List<ExamEntity>>
     fun observePhysicalTestCode(): Flow<String>
-    fun observeCourseTableBackgroundBlurRadius(): Flow<Int>
-    fun observeWeekendCourseShowState(): Flow<Boolean>
+    fun observeCourseTableSettings(): Flow<CourseTableSettings>
     fun observeSecondClassData(): Flow<SCHourEntity?>
     fun observeUpdateRes(): Flow<CaptchaVersionEntity>
     fun observeLoginLibraryState(): Flow<Int>
@@ -98,5 +100,10 @@ interface DataStoreService {
     fun observeTargetCourseList(): Flow<List<CourseItemEntity>>
     fun observeTaskList(): Flow<List<TaskEntity>>
     fun observeCourseTableData(): Flow<Map<String, List<List<List<CourseEntity>>>>>
+    fun observeHomeFocusEnabled(): Flow<Boolean>
+    fun observeHomeTodayCourseEnabled(): Flow<Boolean>
+    fun observeHomeTodayTaskEnabled(): Flow<Boolean>
+    fun observeHomeFreeClassroomEnabled(): Flow<Boolean>
+    fun observeHomeNewsEnabled(): Flow<Boolean>
 
 }

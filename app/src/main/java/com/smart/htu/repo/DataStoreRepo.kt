@@ -20,6 +20,7 @@ import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.api.module.SCHourEntity
 import com.smart.htu.screens.application.ApplicationEntity
+import com.smart.htu.screens.application.courseTable.CourseTableSettings
 import com.smart.htu.screens.main.TaskEntity
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import com.smart.htu.utils.TermUtil
@@ -68,22 +69,24 @@ class DataStoreRepo @Inject constructor(
         val AI_FUNCTION_ENABLED = booleanPreferencesKey("AI_FUNCTION_ENABLED")
         val AI_MODEL_KEY = stringPreferencesKey("AI_MODEL_KEY")
         val SELECTED_AI_MODEL = intPreferencesKey("SELECTED_AI_MODEL")
-        val BIONIC_READING_ENABLED = booleanPreferencesKey("BIONIC_READING_ENABLED")
         val LOAD_IMG_ENABLED = booleanPreferencesKey("LOAD_IMG_ENABLED")
         val NEWS_HISTORY_LIST = stringPreferencesKey("NEWS_HISTORY_LIST")
         val NEWS_FAVORITE_LIST = stringPreferencesKey("NEWS_FAVORITE_LIST")
         val NEWS_FONT_SIZE = intPreferencesKey("NEWS_FONT_SIZE")
         val EXAM_SCHEDULE_LIST = stringPreferencesKey("EXAM_SCHEDULE_LIST")
         val PHYSICAL_TEST_CODE = stringPreferencesKey("PHYSICAL_TEST_CODE")
-        val COURSE_TABLE_BACKGROUND_BLUR_RADIUS =
-            intPreferencesKey("COURSE_TABLE_BACKGROUND_BLUR_RADIUS")
+        val COURSE_TABLE_SETTINGS = stringPreferencesKey("COURSE_TABLE_SETTINGS")
         val WEEKEND_COURSE_SHOW_STATE = booleanPreferencesKey("WEEKEND_COURSE_SHOW_STATE")
         val SECOND_CLASS_DATA = stringPreferencesKey("SECOND_CLASS_DATA")
         val UPDATE_RES = stringPreferencesKey("UPDATE_RES")
         val TARGET_SELECT_COURSE_LIST = stringPreferencesKey("TARGET_SELECT_COURSE_LIST")
         val TASK_LIST = stringPreferencesKey("TASK_LIST")
         val COURSE_TABLE_DATA = stringPreferencesKey("COURSE_TABLE_DATA")
-
+        val HOME_FOCUS_ENABLED = booleanPreferencesKey("HOME_FOCUS_ENABLED")
+        val HOME_TODAY_COURSE_ENABLED = booleanPreferencesKey("HOME_TODAY_COURSE_ENABLED")
+        val HOME_TODAY_TASK_ENABLED = booleanPreferencesKey("HOME_TODAY_TASK_ENABLED")
+        val HOME_FREE_CLASSROOM_ENABLED = booleanPreferencesKey("HOME_FREE_CLASSROOM_ENABLED")
+        val HOME_NEWS_ENABLED = booleanPreferencesKey("HOME_NEWS_ENABLED")
 
         const val DEFAULT_EMPTY_LIST = "[]"
         const val DEFAULT_EMPTY_STRING = ""
@@ -113,7 +116,11 @@ class DataStoreRepo @Inject constructor(
         const val DEFAULT_NEWS_FONT_SIZE = 17
         const val DEFAULT_AIR_CONDITION_USER_COOKIE = """{"shiroJID":"", "ymId":""}"""
         const val DEFAULT_AIR_CONDITION_COOKIE_TYPE = 0
-        const val DEFAULT_BIONIC_READING_ENABLED = true
+        const val DEFAULT_HOME_FOCUS_ENABLED = true
+        const val DEFAULT_HOME_TODAY_COURSE_ENABLED = true
+        const val DEFAULT_HOME_TODAY_TASK_ENABLED = false
+        const val DEFAULT_HOME_FREE_CLASSROOM_ENABLED = false
+        const val DEFAULT_HOME_NEWS_ENABLED = false
     }
 
     override suspend fun changeThemeMode(enabled: Int) {
@@ -218,10 +225,6 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[AI_MODEL_KEY] = key }
     }
 
-    override suspend fun changeBionicReadingEnabled(enabled: Boolean) {
-        context.dataStore.edit { it[BIONIC_READING_ENABLED] = enabled }
-    }
-
     override suspend fun changeLoadImgEnabled(enable: Boolean) {
         context.dataStore.edit { it[LOAD_IMG_ENABLED] = enable }
     }
@@ -259,12 +262,8 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[PHYSICAL_TEST_CODE] = code }
     }
 
-    override suspend fun changeCourseTableBackgroundBlurRadius(radius: Int) {
-        context.dataStore.edit { it[COURSE_TABLE_BACKGROUND_BLUR_RADIUS] = radius }
-    }
-
-    override suspend fun changeWeekendCourseShowState(isShow: Boolean) {
-        context.dataStore.edit { it[WEEKEND_COURSE_SHOW_STATE] = isShow }
+    override suspend fun setCourseTableSettings(data: CourseTableSettings) {
+        context.dataStore.edit { it[COURSE_TABLE_SETTINGS] = Json.encodeToString(data) }
     }
 
     override suspend fun saveSecondClassData(data: SCHourEntity) {
@@ -291,6 +290,26 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit {
             it[COURSE_TABLE_DATA] = Json.encodeToString(data)
         }
+    }
+
+    override suspend fun changeHomeFocusEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[HOME_FOCUS_ENABLED] = enabled }
+    }
+
+    override suspend fun changeHomeTodayCourseEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[HOME_TODAY_COURSE_ENABLED] = enabled }
+    }
+
+    override suspend fun changeHomeTodayTaskEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[HOME_TODAY_TASK_ENABLED] = enabled }
+    }
+
+    override suspend fun changeHomeFreeClassroomEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[HOME_FREE_CLASSROOM_ENABLED] = enabled }
+    }
+
+    override suspend fun changeHomeNewsEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[HOME_NEWS_ENABLED] = enabled }
     }
 
 
@@ -428,12 +447,6 @@ class DataStoreRepo @Inject constructor(
         return context.dataStore.data.map { it[AI_MODEL_KEY] ?: DEFAULT_AI_MODEL_KEY }
     }
 
-    override fun observeBionicReadingEnabled(): Flow<Boolean> {
-        return context.dataStore.data.map {
-            it[BIONIC_READING_ENABLED] ?: DEFAULT_BIONIC_READING_ENABLED
-        }
-    }
-
     override fun observeLoadImgEnabled(): Flow<Boolean> {
         return context.dataStore.data.map { it[LOAD_IMG_ENABLED] ?: DEFAULT_LOAD_IMG_ENABLED }
     }
@@ -470,15 +483,11 @@ class DataStoreRepo @Inject constructor(
         return context.dataStore.data.map { it[PHYSICAL_TEST_CODE] ?: DEFAULT_PHYSICAL_TEST_CODE }
     }
 
-    override fun observeCourseTableBackgroundBlurRadius(): Flow<Int> {
+    override fun observeCourseTableSettings(): Flow<CourseTableSettings> {
         return context.dataStore.data.map {
-            it[COURSE_TABLE_BACKGROUND_BLUR_RADIUS] ?: 20
-        }
-    }
-
-    override fun observeWeekendCourseShowState(): Flow<Boolean> {
-        return context.dataStore.data.map {
-            it[WEEKEND_COURSE_SHOW_STATE] ?: true
+            Json.decodeFromString<CourseTableSettings>(
+                it[COURSE_TABLE_SETTINGS] ?: Json.encodeToString(CourseTableSettings())
+            )
         }
     }
 
@@ -528,6 +537,32 @@ class DataStoreRepo @Inject constructor(
                 it[COURSE_TABLE_DATA] ?: DEFAULT_EMPTY_MAP
             )
         }
+    }
+
+    override fun observeHomeFocusEnabled(): Flow<Boolean> {
+        return context.dataStore.data.map { it[HOME_FOCUS_ENABLED] ?: DEFAULT_HOME_FOCUS_ENABLED }
+    }
+
+    override fun observeHomeTodayCourseEnabled(): Flow<Boolean> {
+        return context.dataStore.data.map {
+            it[HOME_TODAY_COURSE_ENABLED] ?: DEFAULT_HOME_TODAY_COURSE_ENABLED
+        }
+    }
+
+    override fun observeHomeTodayTaskEnabled(): Flow<Boolean> {
+        return context.dataStore.data.map {
+            it[HOME_TODAY_TASK_ENABLED] ?: DEFAULT_HOME_TODAY_TASK_ENABLED
+        }
+    }
+
+    override fun observeHomeFreeClassroomEnabled(): Flow<Boolean> {
+        return context.dataStore.data.map {
+            it[HOME_FREE_CLASSROOM_ENABLED] ?: DEFAULT_HOME_FREE_CLASSROOM_ENABLED
+        }
+    }
+
+    override fun observeHomeNewsEnabled(): Flow<Boolean> {
+        return context.dataStore.data.map { it[HOME_NEWS_ENABLED] ?: DEFAULT_HOME_NEWS_ENABLED }
     }
 
 }

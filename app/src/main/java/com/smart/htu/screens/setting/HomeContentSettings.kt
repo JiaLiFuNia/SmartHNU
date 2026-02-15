@@ -24,7 +24,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
+import com.smart.htu.screens.LocalNavigator
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -48,9 +48,9 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun HomeContentSettings(
-    navController: NavController,
     viewModel: SettingViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
 
     val hazeState = rememberHazeState()
@@ -72,7 +72,7 @@ fun HomeContentSettings(
                     IconButton(
                         modifier = Modifier.padding(start = 16.dp),
                         onClick = {
-                            navController.popBackStack()
+                            navigator.pop()
                         }
                     ) {
                         Icon(
@@ -118,9 +118,8 @@ fun HomeContentSettings(
                     SuperSwitch(
                         title = "聚焦信息",
                         summary = "展示周次、电费、学时、借书数目等信息",
-                        checked = uiState.aiFunctionEnabled,
-                        onCheckedChange = {
-                        }
+                        checked = uiState.homeFocusEnabled,
+                        onCheckedChange = { viewModel.changeHomeFocusEnabled(it) }
                     )
                 }
             }
@@ -129,9 +128,8 @@ fun HomeContentSettings(
                     SuperSwitch(
                         title = "今日课程",
                         summary = "当天的所有课程和考试项目",
-                        checked = uiState.aiFunctionEnabled,
-                        onCheckedChange = {
-                        }
+                        checked = uiState.homeTodayCourseEnabled,
+                        onCheckedChange = { viewModel.changeHomeTodayCourseEnabled(it) }
                     )
                 }
             }
@@ -140,9 +138,8 @@ fun HomeContentSettings(
                     SuperSwitch(
                         title = "今日任务",
                         summary = "通过手动创建的任务",
-                        checked = uiState.aiFunctionEnabled,
-                        onCheckedChange = {
-                        }
+                        checked = uiState.homeTodayTaskEnabled,
+                        onCheckedChange = { viewModel.changeHomeTodayTaskEnabled(it) }
                     )
                 }
             }
@@ -151,9 +148,8 @@ fun HomeContentSettings(
                     SuperSwitch(
                         title = "空闲教室",
                         summary = "快速查看偏好教学楼的占用情况",
-                        checked = uiState.aiFunctionEnabled,
-                        onCheckedChange = {
-                        }
+                        checked = uiState.homeFreeClassroomEnabled,
+                        onCheckedChange = { viewModel.changeHomeFreeClassroomEnabled(it) }
                     )
                 }
             }
@@ -162,9 +158,8 @@ fun HomeContentSettings(
                     SuperSwitch(
                         title = "今日新闻",
                         summary = "集合了校园近两日的部分新闻",
-                        checked = uiState.aiFunctionEnabled,
-                        onCheckedChange = {
-                        }
+                        checked = uiState.homeNewsEnabled,
+                        onCheckedChange = { viewModel.changeHomeNewsEnabled(it) }
                     )
                 }
             }
