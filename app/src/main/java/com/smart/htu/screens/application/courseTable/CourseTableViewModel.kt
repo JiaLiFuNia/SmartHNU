@@ -4,8 +4,6 @@ import android.os.Environment
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.api.module.CourseEntity
@@ -29,12 +27,25 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
+
+@Serializable
+data class CourseTableSettings(
+    val backgroundUri: String? = null,
+    // 背景透明
+    val backgroundAlpha: Float = 0.5f,
+    // 背景模糊
+    val backgroundBlur: Float = 40.0f,
+    // 课程块透明
+    val courseBlockAlpha: Float = 0.4f,
+    val showWeekendCourse: Boolean = true,
+)
 
 data class CourseTableUiState(
     val weekCourseSchedule: List<List<CourseEntity>>? = null,
@@ -44,6 +55,7 @@ data class CourseTableUiState(
     val isImporting: Boolean = false,
     val shareCode: String = "",
     val selectedCourseLabel: String = "我的课表",
+    val courseTableSettings: CourseTableSettings = CourseTableSettings(),
 
     val weekIndex: Int = 1,
     val totalWeekCount: Int = 0,
@@ -51,8 +63,6 @@ data class CourseTableUiState(
     val termList: List<SingleTerm> = emptyList(),
 
     val selectedDataSource: Int = 0,
-    val backgroundBlurRadius: Dp = 20.dp,
-    val isWeekendCourseShow: Boolean = false,
     val isWriteCalendarEnable: Boolean = false,
     val username: String = DEFAULT_USERNAME,
     val loginJWCState: Int = DEFAULT_LOGIN_STATE,
@@ -102,30 +112,21 @@ class CourseTableViewModel @Inject constructor(
             }
         )
 
-    private val weekendCourseShowState = dataStoreRepo.observeWeekendCourseShowState()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            runBlocking {
-                dataStoreRepo.observeWeekendCourseShowState().first()
-            }
-        )
-
-    private val backgroundBlurRadiusState = dataStoreRepo.observeCourseTableBackgroundBlurRadius()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            runBlocking {
-                dataStoreRepo.observeCourseTableBackgroundBlurRadius().first()
-            }
-        )
-
     private val localCourseScheduleStateFlow = dataStoreRepo.observeCourseTableData()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             runBlocking {
                 dataStoreRepo.observeCourseTableData().first()
+            }
+        )
+
+    private val courseTableSettingsStateFlow = dataStoreRepo.observeCourseTableSettings()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeCourseTableSettings().first()
             }
         )
 
@@ -146,13 +147,8 @@ class CourseTableViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            weekendCourseShowState.collect { isShow ->
-                _uiState.update { it.copy(isWeekendCourseShow = isShow) }
-            }
-        }
-        viewModelScope.launch {
-            backgroundBlurRadiusState.collect { radius ->
-                _uiState.update { it.copy(backgroundBlurRadius = radius.dp) }
+            courseTableSettingsStateFlow.collect { value ->
+                _uiState.update { it.copy(courseTableSettings = value) }
             }
         }
         viewModelScope.launch {
@@ -428,20 +424,59 @@ class CourseTableViewModel @Inject constructor(
         }
     }
 
-    fun changeBackgroundBlurRadius(blurRadius: Dp) {
-        viewModelScope.launch {
-            dataStoreRepo.changeCourseTableBackgroundBlurRadius(blurRadius.value.toInt())
-        }
-    }
-
-    fun changeIsShowWeekendCourse(isShow: Boolean) {
-        viewModelScope.launch {
-            dataStoreRepo.changeWeekendCourseShowState(isShow)
-        }
-    }
-
     fun changeSelectedTermCode(termCode: String) {
         _uiState.update { it.copy(selectedTermCode = termCode) }
+    }
+
+    fun setBackgroundAlpha(alpha: Float) {
+        viewModelScope.launch {
+            dataStoreRepo.setCourseTableSettings(
+                _uiState.value.courseTableSettings.copy(
+                    backgroundAlpha = alpha
+                )
+            )
+        }
+    }
+
+    fun setBackgroundBlur(blur: Float) {
+        viewModelScope.launch {
+            dataStoreRepo.setCourseTableSettings(
+                _uiState.value.courseTableSettings.copy(
+                    backgroundBlur = blur
+                )
+            )
+        }
+    }
+
+    fun setCourseBlockAlpha(alpha: Float) {
+        viewModelScope.launch {
+            dataStoreRepo.setCourseTableSettings(
+                _uiState.value.courseTableSettings.copy(
+                    courseBlockAlpha = alpha
+                )
+            )
+        }
+    }
+
+    fun setBackgroundUri(uri: String?) {
+        Log.i("TAG666", "setBackgroundUri: $uri")
+        viewModelScope.launch {
+            dataStoreRepo.setCourseTableSettings(
+                _uiState.value.courseTableSettings.copy(
+                    backgroundUri = uri
+                )
+            )
+        }
+    }
+
+    fun changeShowWeekendCourse(show: Boolean) {
+        viewModelScope.launch {
+            dataStoreRepo.setCourseTableSettings(
+                _uiState.value.courseTableSettings.copy(
+                    showWeekendCourse = show
+                )
+            )
+        }
     }
 
 }

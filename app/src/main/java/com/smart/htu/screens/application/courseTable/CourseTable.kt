@@ -2,6 +2,7 @@ package com.smart.htu.screens.application.courseTable
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -42,14 +43,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -62,8 +66,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.smart.htu.MainActivity
 import com.smart.htu.R
@@ -73,19 +77,17 @@ import com.smart.htu.component.BottomCircularProgressIndicator
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.SuperSlider
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.main.CourseDetailBottomSheet
 import com.smart.htu.utils.CourseColorUtil.getColorByCourseName
 import com.smart.htu.utils.CourseTableBackgroundUtil
+import com.smart.htu.utils.CourseTableBackgroundUtil.saveBackground
 import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
 import com.smart.htu.utils.CourseTimeRange.summerOrWinterTimeInterval
 import com.smart.htu.utils.Permission
 import com.smart.htu.utils.ToastUtil.showToast
 import com.smart.htu.utils.copyContent
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
-import dev.chrisbanes.haze.materials.HazeMaterials
-import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -98,7 +100,6 @@ import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
-import top.yukonga.miuix.kmp.basic.SliderDefaults
 import top.yukonga.miuix.kmp.basic.SnackbarHost
 import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.Surface
@@ -133,9 +134,9 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun CourseTable(
-    navController: NavController,
     viewModel: CourseTableViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = MiuixScrollBehavior()
     val scope = rememberCoroutineScope()
@@ -159,17 +160,17 @@ fun CourseTable(
         viewModel.refreshCourseSchedule()
     }
 
-    var backgroundUri by remember { mutableStateOf(CourseTableBackgroundUtil.getBackground(context)) }
+    val backgroundUri = remember { derivedStateOf { uiState.courseTableSettings.backgroundUri?.toUri() } }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
-                color = if (backgroundUri != null) Color.Transparent else MiuixTheme.colorScheme.surface,
+                color = if (backgroundUri.value != null) Color.Transparent else MiuixTheme.colorScheme.surface,
                 title = "${uiState.termCode}学期 第 ${pagerState.currentPage + 1} 周",
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp)
                     ) {
                         Icon(
@@ -290,22 +291,31 @@ fun CourseTable(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            val hazeState = rememberHazeState()
-            if (backgroundUri != null) {
+            // val hazeState = rememberHazeState()
+            if (backgroundUri.value != null) {
                 Image(
-                    painter = rememberAsyncImagePainter(backgroundUri),
+                    painter = rememberAsyncImagePainter(backgroundUri.value),
                     contentDescription = "背景",
                     modifier = Modifier
                         .fillMaxSize()
-                        .hazeSource(state = hazeState)
-                        .hazeEffect(
-                            HazeMaterials.thin(MiuixTheme.colorScheme.background)
-                        ) {
-                            this.blurEnabled = blurEnabled
-                            this.drawContentBehind = drawContentBehind
-                            this.blurRadius = uiState.backgroundBlurRadius
-                        },
-                    contentScale = ContentScale.Crop
+                        .then(
+                            if (uiState.courseTableSettings.backgroundBlur > 0f) {
+                                val blurRadius: Dp = uiState.courseTableSettings.backgroundBlur.dp
+                                Modifier.blur(blurRadius)
+                            } else {
+                                Modifier
+                            }
+                        )
+                    /*.hazeSource(state = hazeState)
+                    .hazeEffect(
+                        HazeMaterials.thick(MiuixTheme.colorScheme.surface)
+                    ) {
+                        this.blurEnabled = blurEnabled
+                        this.drawContentBehind = drawContentBehind
+                        this.blurRadius = uiState.courseTableSettings.backgroundBlur.dp
+                    }*/,
+                    contentScale = ContentScale.Crop,
+                    alpha = uiState.courseTableSettings.backgroundAlpha
                 )
             }
             HorizontalPager(
@@ -318,9 +328,10 @@ fun CourseTable(
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 WeekCourseTable(
-                    isWeekendCourseShow = uiState.isWeekendCourseShow,
+                    isWeekendCourseShow = uiState.courseTableSettings.showWeekendCourse,
                     startDatePerWeek = viewModel.getDateOfWeekMonday(it + 1),
-                    weekCourseSchedule = uiState.allCourseSchedule?.getOrNull(it)
+                    weekCourseSchedule = uiState.allCourseSchedule?.getOrNull(it),
+                    courseBlockAlpha = uiState.courseTableSettings.courseBlockAlpha
                 )
             }
         }
@@ -379,9 +390,11 @@ fun CourseTable(
 
     CourseTableMoreSettingBottomSheet(
         showBottomSheet = isMoreSettingsBottomSheetShow,
-        isShowWeekendCourse = uiState.isWeekendCourseShow,
-        backgroundBlurState = uiState.backgroundBlurRadius,
-        backgroundUri = backgroundUri,
+        isShowWeekendCourse = uiState.courseTableSettings.showWeekendCourse,
+        backgroundBlur = uiState.courseTableSettings.backgroundBlur,
+        backgroundUri = backgroundUri.value,
+        backgroundAlpha = uiState.courseTableSettings.backgroundAlpha,
+        courseBlockAlpha = uiState.courseTableSettings.courseBlockAlpha,
         selectedTermCode = uiState.selectedTermCode,
         termList = uiState.termList,
         selectedDataSource = uiState.selectedDataSource,
@@ -392,13 +405,19 @@ fun CourseTable(
             viewModel.changeSelectedTermCode(it)
         },
         onToggleShowWeekendCourse = {
-            viewModel.changeIsShowWeekendCourse(it)
+            viewModel.changeShowWeekendCourse(it)
         },
         onBackgroundUriChange = {
-            backgroundUri = it
+            viewModel.setBackgroundUri(it.toString())
         },
         onBackgroundBluerChange = {
-            viewModel.changeBackgroundBlurRadius(it)
+            viewModel.setBackgroundBlur(it)
+        },
+        onBackgroundAlphaChange = {
+            viewModel.setBackgroundAlpha(it)
+        },
+        onCourseBlockAlphaChange = {
+            viewModel.setCourseBlockAlpha(it)
         }
     )
 
@@ -410,6 +429,7 @@ fun WeekCourseTable(
     isWeekendCourseShow: Boolean,
     startDatePerWeek: LocalDate?,
     weekCourseSchedule: List<List<CourseEntity>>?,
+    courseBlockAlpha: Float = 1f
 ) {
 
     val nodeColumnWeight = 0.65F
@@ -592,7 +612,8 @@ fun WeekCourseTable(
                                                 onSelectOverlapCourse = {
                                                     selectedOverlapCourse.value = it
                                                 },
-                                                isShowWeekendCourse = isWeekendCourseShow
+                                                isShowWeekendCourse = isWeekendCourseShow,
+                                                alpha = courseBlockAlpha
                                             )
                                         } else {
                                             Box(
@@ -629,7 +650,8 @@ fun CourseTableSingleCourseCard(
     onSelectOverlapCourse: (Int) -> Unit = {},
     course: CourseEntity,
     minHeight: Int,
-    slotsOccupied: Int = 1
+    slotsOccupied: Int = 1,
+    alpha: Float = 1f
 ) {
     val isBottomSheetShow = remember { mutableStateOf(false) }
 
@@ -642,7 +664,7 @@ fun CourseTableSingleCourseCard(
             .height((minHeight * slotsOccupied).dp)
             .padding(vertical = 2.dp),
         shape = MaterialTheme.shapes.small,
-        color = getColorByCourseName(course.courseName).copy(0.7f)
+        color = getColorByCourseName(course.courseName).copy(alpha)
     ) {
         Column(
             modifier = Modifier
@@ -654,11 +676,11 @@ fun CourseTableSingleCourseCard(
             overlapCourseList?.size?.let {
                 Text(
                     text = if (it > 2) "[冲突]" else "" + course.courseName,
-                    style = MaterialTheme.typography.bodySmall
+                    style = MiuixTheme.textStyles.footnote1
                         .copy(
                             fontSize = if (isShowWeekendCourse) 12.sp else 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.DarkGray,
+                            color = MiuixTheme.colorScheme.onSurface,
                         ),
                     textAlign = TextAlign.Start,
                     maxLines = 3,
@@ -667,11 +689,11 @@ fun CourseTableSingleCourseCard(
             }
             Text(
                 text = "@${if (course.classroomName.isNullOrBlank()) course.projectName else course.classroomName}",
-                style = MaterialTheme.typography.labelSmall
+                style = MiuixTheme.textStyles.footnote1
                     .copy(
                         fontSize = if (isShowWeekendCourse) 11.sp else 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color.DarkGray.copy(alpha = 0.8f),
+                        color = MiuixTheme.colorScheme.onSurface.copy(alpha = 0.8f),
                     ),
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth()
@@ -679,11 +701,11 @@ fun CourseTableSingleCourseCard(
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = course.teacherName ?: "",
-                style = MaterialTheme.typography.labelSmall
+                style = MiuixTheme.textStyles.footnote1
                     .copy(
                         fontSize = if (isShowWeekendCourse) 11.sp else 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color.DarkGray.copy(alpha = 0.6f),
+                        color = MiuixTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     ),
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth()
@@ -702,18 +724,40 @@ fun CourseTableSingleCourseCard(
 fun CourseTableMoreSettingBottomSheet(
     showBottomSheet: MutableState<Boolean>,
     isShowWeekendCourse: Boolean,
-    backgroundUri: Uri?,
-    backgroundBlurState: Dp,
     selectedTermCode: String,
     termList: List<SingleTerm>,
     selectedDataSource: Int,
     onSelectDataSource: (Int) -> Unit,
     onSelectTermCode: (String) -> Unit,
     onToggleShowWeekendCourse: (Boolean) -> Unit,
+    backgroundUri: Uri?,
     onBackgroundUriChange: (Uri?) -> Unit,
-    onBackgroundBluerChange: (Dp) -> Unit
+    backgroundBlur: Float,
+    onBackgroundBluerChange: (Float) -> Unit,
+    backgroundAlpha: Float,
+    onBackgroundAlphaChange: (Float) -> Unit,
+    courseBlockAlpha: Float,
+    onCourseBlockAlphaChange: (Float) -> Unit
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    val backgroundBlur = remember { mutableFloatStateOf(backgroundBlur) }
+    val backgroundAlpha = remember { mutableFloatStateOf(backgroundAlpha) }
+    val courseBlockAlpha = remember { mutableFloatStateOf(courseBlockAlpha) }
+
+    val pickBackgroundImgLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri == null) {
+            showToast(context, "未选择图片")
+            return@rememberLauncherForActivityResult
+        } else {
+            val backgroundUri = saveBackground(context, uri)
+            Log.i("TAG666", "Selected image URI: $backgroundUri")
+            onBackgroundUriChange(backgroundUri)
+        }
+    }
     SuperBottomSheet(
         title = "更多设置",
         show = showBottomSheet,
@@ -722,11 +766,6 @@ fun CourseTableMoreSettingBottomSheet(
         },
         backgroundColor = MiuixTheme.colorScheme.surface
     ) {
-        val launcher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.GetContent()
-        ) { uri ->
-            uri?.let { CourseTableBackgroundUtil.saveBackground(context, it) }
-        }
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -768,9 +807,10 @@ fun CourseTableMoreSettingBottomSheet(
                         title = "课表背景",
                         summary = "更换或清除课表背景",
                         onClick = {
-                            launcher.launch("image/*")
-                            onBackgroundUriChange(backgroundUri)
-                            showToast(context, "重启生效")
+                            scope.launch {
+                                pickBackgroundImgLauncher.launch("image/*")
+                                onBackgroundUriChange(backgroundUri)
+                            }
                         },
                         endActions = {
                             Image(
@@ -797,15 +837,43 @@ fun CourseTableMoreSettingBottomSheet(
                     )
                     if (backgroundUri != null) {
                         SuperSlider(
-                            title = "模糊程度",
-                            summary = "${((backgroundBlurState.value / 80f) * 100).toInt()} %",
-                            value = backgroundBlurState.value,
+                            title = "背景模糊度",
+                            endText = "${((backgroundBlur.floatValue / 80f) * 100).toInt()} %",
+                            value = backgroundBlur.floatValue,
                             onValueChange = {
-                                onBackgroundBluerChange(it.toInt().dp)
+                                backgroundBlur.floatValue = it
                             },
-                            steps = 20,
+                            onValueChangeFinished = {
+                                onBackgroundBluerChange(backgroundBlur.floatValue)
+                            },
                             valueRange = 0f..80f,
-                            hapticEffect = SliderDefaults.SliderHapticEffect.Step
+                            isShowValueDialog = true,
+                        )
+                        SuperSlider(
+                            title = "背景透明度",
+                            endText = "${backgroundAlpha.floatValue}",
+                            value = backgroundAlpha.floatValue,
+                            onValueChange = {
+                                backgroundAlpha.floatValue = it
+                            },
+                            onValueChangeFinished = {
+                                onBackgroundAlphaChange(backgroundAlpha.floatValue)
+                            },
+                            valueRange = 0f..1f,
+                            isShowValueDialog = true,
+                        )
+                        SuperSlider(
+                            title = "课程块透明度",
+                            endText = "${courseBlockAlpha.floatValue}",
+                            value = courseBlockAlpha.floatValue,
+                            onValueChange = {
+                                courseBlockAlpha.floatValue = it
+                            },
+                            onValueChangeFinished = {
+                                onCourseBlockAlphaChange(courseBlockAlpha.floatValue)
+                            },
+                            valueRange = 0f..1f,
+                            isShowValueDialog = true,
                         )
                     }
                 }
@@ -826,8 +894,8 @@ fun CourseTableMoreSettingBottomSheet(
                 Spacer(
                     Modifier.padding(
                         bottom = WindowInsets.navigationBars.asPaddingValues()
-                            .calculateBottomPadding() + WindowInsets.captionBar.asPaddingValues()
                             .calculateBottomPadding()
+                                + WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
                     )
                 )
             }
