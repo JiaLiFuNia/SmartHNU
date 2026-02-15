@@ -10,7 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.Bolt
@@ -23,18 +28,19 @@ import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -42,8 +48,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.smart.htu.R
+import com.smart.htu.api.module.ClassroomOccupationEntity
 import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.api.module.CourseSearchPostEntity
 import com.smart.htu.api.module.WarningWeatherData
@@ -53,17 +59,19 @@ import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
+import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.application.AddTaskBottomSheet
 import com.smart.htu.screens.application.ApplicationEntity.RouteType
 import com.smart.htu.screens.application.airCondition.AirConditionUiState
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
+import com.smart.htu.screens.application.classroom.SingleRoom
 import com.smart.htu.screens.login.LoginUiState
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.message.MessageViewModel
-import com.smart.htu.screens.navigateWithCheckLoginState
-import com.smart.htu.screens.navigation.Destinations
-import com.smart.htu.screens.news.navigateToNewsDetail
+import com.smart.htu.screens.navigation.Navigator
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
+import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
 import com.smart.htu.utils.DateUtil.getCurrentDate
 import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
 import com.smart.htu.utils.startCalendar
@@ -73,7 +81,6 @@ import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.FloatingActionButton
@@ -94,6 +101,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+import kotlin.math.ceil
 
 @SuppressLint("RestrictedApi")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
@@ -103,14 +111,14 @@ fun Main(
     airConditionViewModel: AirConditionViewModel,
     loginViewModel: LoginViewModel,
     messageViewModel: MessageViewModel,
-    navController: NavController,
     contentPadding: PaddingValues
 ) {
+    val navigator = LocalNavigator.current
     val uiState by mainViewModel.uiState.collectAsState()
     val loginUiState by loginViewModel.uiState.collectAsState()
     val airConditionUiState by airConditionViewModel.uiState.collectAsState()
     val messageUiState by messageViewModel.uiState.collectAsState()
-
+    val scope = rememberCoroutineScope()
     val hazeState = rememberHazeState()
     val isNotLoggedIn = remember {
         derivedStateOf { loginUiState.jwcLoginState != 1 && loginUiState.jwcLoginState != -2 }
@@ -127,7 +135,7 @@ fun Main(
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
     LaunchedEffect(isRefreshing, uiState.loginJWCState) {
-        if (isRefreshing) {
+        if (isRefreshing || uiState.loginJWCState == 1) {
             mainViewModel.getCurrentWeather()
             messageViewModel.getNotice()
             mainViewModel.getTodayCourse()
@@ -135,7 +143,6 @@ fun Main(
         }
     }
 
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val scrollBehavior = MiuixScrollBehavior()
 
     Scaffold(
@@ -147,7 +154,7 @@ fun Main(
                 actions = {
                     IconButton(
                         onClick = {
-                            navController.navigate(Destinations.Message.route)
+                            navigator.push(Route.Message)
                         },
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
@@ -228,7 +235,9 @@ fun Main(
                     item {
                         if (isNotLoggedIn.value) {
                             SuggestChip(
-                                onClick = { navController.navigate(Destinations.Login.route) },
+                                onClick = {
+                                    navigator.push(Route.Login)
+                                },
                                 text = "暂未登录，登录后即可体验全部功能",
                                 type = SuggestChipType.ERROR,
                                 icon = Icons.AutoMirrored.Filled.ArrowForward
@@ -239,7 +248,7 @@ fun Main(
                             uiState.holiday.let {
                                 SuggestChip(
                                     onClick = { },
-                                    text = if (it?.isLieu == true) "今天是${it.holiday}，需要调休" else "今天是${it?.holiday}假期，放假愉快",
+                                    text = if (it?.isLieu == true) "今天是${it.holiday}假期调休，注意安排时间。" else "今天是${it?.holiday}假期，放假愉快。",
                                     type = SuggestChipType.INFO,
                                     icon = if (it?.isLieu == true) Icons.Outlined.Info else Icons.Outlined.Celebration
                                 )
@@ -247,32 +256,45 @@ fun Main(
                         }
                     }
                 }
-                item {
-                    FocusCard(navController, loginUiState, airConditionUiState, uiState)
+                if (uiState.homeFocusEnabled) {
+                    item { FocusCard(loginUiState, airConditionUiState, uiState) }
                 }
-                item {
-                    Card {
-                        TodayCourseCard(
-                            todayCourseList = uiState.todayCourseList,
-                            loginState = isNotLoggedIn.value,
-                            onSearchCourse = {
-                                navController.navigate("${Destinations.CourseSearchRepo.route}/${it}")
-                            }
+                if (uiState.homeTodayCourseEnabled) {
+                    item {
+                        Card {
+                            TodayCourseCard(
+                                todayCourseList = uiState.todayCourseList,
+                                loginState = isNotLoggedIn.value,
+                                onSearchCourse = {
+                                    navigator.push(Route.CourseSearchRepo(it))
+                                }
+                            )
+                        }
+                    }
+                }
+                if (uiState.homeTodayTaskEnabled) {
+                    item {
+                        TodayTaskCard(
+                            taskList = uiState.taskList,
+                            navigator = navigator
                         )
                     }
                 }
-                item {
-                    TodayTaskCard(
-                        taskList = uiState.taskList,
-                        navController = navController
-                    )
+                if (uiState.homeFreeClassroomEnabled) {
+                    item {
+                        FreeClassroomCard(
+                            selectedBuildingOccupationState = uiState.selectedBuildingOccupation
+                        )
+                    }
                 }
             }
         }
         AddTaskBottomSheet(
             show = isAddTaskBottomSheetShow,
             onTask = {
-
+                scope.launch {
+                    mainViewModel.addTaskList(it)
+                }
             }
         )
     }
@@ -281,7 +303,7 @@ fun Main(
 @Composable
 fun TodayTaskCard(
     taskList: List<TaskEntity>,
-    navController: NavController
+    navigator: Navigator
 ) {
     if (taskList.isNotEmpty()) {
         Column(
@@ -315,15 +337,17 @@ fun TodayTaskCard(
                         onClick = {
                             when (it.actionType) {
                                 RouteType.Url -> {
-                                    navController.navigateToNewsDetail(
-                                        url = it.action.toString(),
-                                        title = "新闻",
-                                        label = "新闻"
+                                    navigator.push(
+                                        Route.NewsDetail(
+                                            url = it.action.toString(),
+                                            title = "新闻",
+                                            source = "新闻"
+                                        )
                                     )
                                 }
 
                                 else -> {
-                                    navController.navigate(Destinations.TaskManager.route)
+                                    navigator.push(Route.TaskManager)
                                 }
                             }
                         }
@@ -332,25 +356,16 @@ fun TodayTaskCard(
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
-    } else {
-        Card {
-            EmptyContent(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp),
-                text = "没有任务"
-            )
-        }
     }
 }
 
 @Composable
 fun FocusCard(
-    navController: NavController,
     loginUiState: LoginUiState,
     airConditionUiState: AirConditionUiState,
     mainUiState: AppUiState
 ) {
+    val navigator = LocalNavigator.current
     val isShowWeatherBottomSheet = remember { mutableStateOf(false) }
     val isWarningWeather = remember {
         derivedStateOf { mainUiState.warningWeatherData.isNotEmpty() }
@@ -391,7 +406,7 @@ fun FocusCard(
                 rowIndex = 2,
                 leadingIcon = Icons.Outlined.Palette,
                 onClick = {
-                    navController.navigate(Destinations.SecondClass.route)
+                    navigator.push(Route.SecondClass)
                 }
             ),
             SingleInfo(
@@ -400,12 +415,10 @@ fun FocusCard(
                 rowIndex = 2,
                 leadingIcon = Icons.Outlined.Bolt,
                 onClick = {
-                    navController.navigateWithCheckLoginState(
+                    navigator.pushWithLoginCheck(
                         isGuest = false,
-                        route = Destinations.AirCondition.route,
-                        routeType = RouteType.Screen,
-                        logState = loginUiState.jwcLoginState == 1,
-                        label = airConditionString
+                        loginState = loginUiState.jwcLoginState == 1,
+                        route = Route.AirCondition
                     )
                 }
             )
@@ -421,7 +434,7 @@ fun FocusCard(
 fun TodayCourseCard(
     todayCourseList: List<CourseEntity>?,
     loginState: Boolean,
-    onSearchCourse: (String) -> Unit,
+    onSearchCourse: (CourseSearchPostEntity) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     Column(
@@ -461,11 +474,102 @@ fun TodayCourseCard(
                                     termCode = "202501",
                                     courseName = it
                                 )
-                                val searchInfoString = Json.encodeToString(searchInfo)
-                                onSearchCourse(searchInfoString)
+                                onSearchCourse(searchInfo)
                             }
                         }
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FreeClassroomCard(
+    selectedBuildingOccupationState: ClassroomOccupationEntity?
+) {
+    val scope = rememberCoroutineScope()
+    val (selectedTimeIndex, onSelectedTimeIndex) = rememberSaveable {
+        mutableIntStateOf(checkTimeInterval())
+    }
+    if (selectedBuildingOccupationState == null) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp),
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+            )
+        }
+    } else {
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            // 按楼层分组
+            val allRoomListGroupByFloor =
+                selectedBuildingOccupationState.allRoomList.groupBy {
+                    it.floorNumber
+                }.values.toList().sortedBy { it.first().floorNumber }
+            val floorPagerState = rememberPagerState(
+                pageCount = { allRoomListGroupByFloor.size }
+            )
+            val selectFloorIndex =
+                remember { derivedStateOf { floorPagerState.currentPage } }
+            val tabRowItem =
+                allRoomListGroupByFloor.map {
+                    stringResource(
+                        id = when (it.first().floorNumber) {
+                            1 -> R.string.first_floor
+                            2 -> R.string.second_floor
+                            3 -> R.string.third_floor
+                            4 -> R.string.fourth_floor
+                            5 -> R.string.fifth_floor
+                            else -> R.string.other
+                        }
+                    )
+                }
+            top.yukonga.miuix.kmp.basic.TabRow(
+                tabs = tabRowItem,
+                selectedTabIndex = selectFloorIndex.value,
+                onTabSelected = {
+                    scope.launch {
+                        floorPagerState.animateScrollToPage(it)
+                    }
+                }
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalPager(
+                verticalAlignment = Alignment.Top,
+                state = floorPagerState,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                // 当前楼层的所有教室
+                val currentFloorAllRoomList = allRoomListGroupByFloor[it]
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(3),
+                    modifier = Modifier.height((ceil(currentFloorAllRoomList.size / 3.toFloat()) * 58).dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(currentFloorAllRoomList) {
+                        val busyStateList =
+                            selectedBuildingOccupationState.getBusyState(it)
+                                ?: ArrayList(10)
+                        SingleRoom(
+                            label = it.roomName,
+                            formerPeriodBusyState = busyStateList[selectedTimeIndex * 2],
+                            latterPeriodBusyState = busyStateList[selectedTimeIndex * 2 + 1],
+                            onClick = {
+                                scope.launch {
+                                }
+                            },
+                            modifier = Modifier,
+                            occupationDetail = emptyList()
+                        )
+                    }
                 }
             }
         }
