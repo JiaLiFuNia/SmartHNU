@@ -1,7 +1,6 @@
 package com.smart.htu.screens.news.newsView
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Environment
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
@@ -37,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -65,7 +65,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.kevinnzou.web.rememberWebViewNavigator
 import com.kevinnzou.web.rememberWebViewState
 import com.kevinnzou.web.rememberWebViewStateWithHTMLData
@@ -76,7 +75,8 @@ import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.DownloadDialog
 import com.smart.htu.component.ImagePreviewDialog
 import com.smart.htu.component.WebView
-import com.smart.htu.screens.navigation.Destinations
+import com.smart.htu.screens.LocalNavigator
+import com.smart.htu.screens.navigation.Route
 import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.news.newsView.NewsStyle.HORIZONTAL_MARGIN
 import com.smart.htu.utils.DateUtil.getCurrentDate
@@ -103,6 +103,7 @@ import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.ToolbarPosition
@@ -121,32 +122,33 @@ fun NewsDetail(
     url: String,
     title: String,
     source: String,
-    newsViewModel: NewsViewModel = hiltViewModel(),
-    navController: NavController
+    newsViewModel: NewsViewModel = hiltViewModel()
 ) {
+    val navigator = LocalNavigator.current
     val uiState by newsViewModel.uiState.collectAsState()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val navigator = rememberWebViewNavigator()
-
+    val webViewNavigator = rememberWebViewNavigator()
     val hazeState = rememberHazeState()
-
     val listState = rememberLazyListState()
+    val snackBarHostState = remember { SnackbarHostState() }
 
     val showDropDownMenu = remember { mutableStateOf(false) }
     val showFloatingToolbar = remember { mutableStateOf(true) }
 
-    val isHTUNews = remember { mutableStateOf(url.toUri().host == "www.htu.edu.cn") }
-
+    val isHTUNews = remember { derivedStateOf { url.toUri().host == "www.htu.edu.cn" } }
+    val isLoadingContent = remember { mutableStateOf(true) }
     val newsViewMode = remember { mutableIntStateOf(0) }
-    val newsLoading = remember { mutableStateOf(true) }
+
     val errorMessage = remember { mutableStateOf("") }
-    val showErrorMessageDialog = remember { mutableStateOf(false) }
-    val showHtmlText = remember { mutableStateOf(false) }
+    val showErrorMessageDialog = remember(errorMessage) {
+        derivedStateOf {
+            errorMessage.value.isNotEmpty()
+        }
+    }
+
     val showImagePreview = remember { mutableStateOf(false) }
     val selectedImageData = remember { mutableStateOf("") }
-
-    val snackBarHostState = remember { SnackbarHostState() }
 
     val showAISummaryBottomSheet = remember { mutableStateOf(false) }
 
@@ -157,29 +159,28 @@ fun NewsDetail(
             }
     }
 
-    LaunchedEffect(url) {
+    LaunchedEffect(Unit) {
         if (isHTUNews.value) {
-            newsViewMode.intValue = 0
-            delay(1000)
-            newsViewModel.getNewsDetail(url)
+            delay(500)
+            newsViewModel.fetchNewsDetail(url) {
+                errorMessage.value = it
+                newsViewMode.intValue = 1
+            }
+            isLoadingContent.value = false
         } else {
             newsViewMode.intValue = 1
         }
     }
 
-    LaunchedEffect(errorMessage) {
-        showErrorMessageDialog.value = errorMessage.value.isNotEmpty()
-    }
-
     val scrollBehavior = MiuixScrollBehavior()
     Scaffold(
         topBar = {
-            top.yukonga.miuix.kmp.basic.SmallTopAppBar(
+            SmallTopAppBar(
                 title = source,
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = { navigator.pop() },
                         modifier = Modifier.padding(start = 16.dp),
                     ) {
                         Icon(
@@ -251,12 +252,12 @@ fun NewsDetail(
                                             }
 
                                             2 -> {
-                                                if (navigator.canGoForward) navigator.navigateForward()
+                                                if (webViewNavigator.canGoForward) webViewNavigator.navigateForward()
                                             }
 
                                             3 -> {
                                                 scope.launch {
-                                                    copyContent(uiState.newsArticle?.articleContent.toString())
+                                                    copyContent(uiState.newsContent?.articleContent.toString())
                                                     showToast(context, "已复制到剪贴板")
                                                 }
                                             }
@@ -298,17 +299,15 @@ fun NewsDetail(
                         IconButton(
                             onClick = {
                                 if (uiState.aiModelKey.isEmpty()) {
-                                    navController.navigate(
-                                        Destinations.AIConfiguration.route
-                                    )
+                                    navigator.push(Route.AIConfiguration)
                                 } else {
                                     showAISummaryBottomSheet.value = true
                                     if (!uiState.isAISummaryReasoning)
                                         newsViewModel.aiNewsSummaryService(
-                                            articleTitle = uiState.newsArticle?.title ?: "",
-                                            articleContent = uiState.newsArticle?.articleContent
+                                            articleTitle = uiState.newsContent?.title ?: "",
+                                            articleContent = uiState.newsContent?.articleContent
                                                 ?: "",
-                                            publishDate = uiState.newsArticle?.publishDate
+                                            publishDate = uiState.newsContent?.publishDate
                                                 ?: getCurrentDate()
                                         )
                                 }
@@ -364,7 +363,7 @@ fun NewsDetail(
                         }
                         IconButton(
                             onClick = {
-                                navController.navigate(Destinations.ArticleStyle.route)
+                                navigator.push(Route.ArticleStyle)
                             }
                         ) {
                             Icon(
@@ -380,46 +379,29 @@ fun NewsDetail(
         floatingToolbarPosition = ToolbarPosition.BottomCenter,
         modifier = Modifier.fillMaxSize()
     ) {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = if (newsViewMode.intValue == 0) 16.dp else 0.dp)
-                .hazeSource(state = hazeState),
-            contentPadding = it
-        ) {
-            if (newsViewMode.intValue == 0 && uiState.newsArticle == null && newsLoading.value) {
-                item { CircularProgressIndicator() }
-            } else {
-                item {
-                    LaunchedEffect(uiState.newsArticle) {
-                        if (uiState.newsArticle?.articleContent == null || uiState.newsArticle?.articleContent == null) {
-                            newsViewMode.intValue = 1
-                        }
-                    }
-                }
-                if (newsViewMode.intValue == 0) {
+        if (newsViewMode.intValue == 0) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .hazeSource(state = hazeState),
+                contentPadding = it
+            ) {
+                if (isLoadingContent.value) {
+                    item { CircularProgressIndicator() }
+                } else {
                     item {
                         TittleContent(
-                            title = uiState.newsArticle?.title ?: "无标题",
-                            publishDate = uiState.newsArticle?.publishDate ?: getCurrentDate(),
-                            visitCount = uiState.newsArticle?.visitCount ?: "10",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                        )
-                        if (showHtmlText.value) Text(
-                            text = uiState.newsArticle?.articleContent.toString(),
+                            title = uiState.newsContent?.title ?: "无标题",
+                            publishDate = uiState.newsContent?.publishDate ?: getCurrentDate(),
+                            visitCount = uiState.newsContent?.visitCount ?: "10",
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp)
                         )
                     }
-                }
-
-                item {
-                    when (newsViewMode.intValue) {
-                        0 -> WebView(
+                    item {
+                        WebView(
                             url = url,
                             webViewState = rememberWebViewStateWithHTMLData(
                                 data = NewsHTML.HTML.format(
@@ -428,25 +410,33 @@ fun NewsDetail(
                                         lineHeight = 1.0F,
                                         letterSpacing = 0.5F,
                                         textMargin = HORIZONTAL_MARGIN,
-                                        textColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
+                                        textColor = MiuixTheme.colorScheme.onBackground.copy(0.8f)
+                                            .toArgb(),
                                         textBold = false,
                                         textAlign = "start",
-                                        boldTextColor = MaterialTheme.colorScheme.onSurface.toArgb(),
+                                        boldTextColor = MiuixTheme.colorScheme.onBackground.copy(
+                                            0.8f
+                                        ).toArgb(),
                                         subheadBold = false,
                                         subheadUpperCase = false,
                                         imgMargin = HORIZONTAL_MARGIN,
                                         imgBorderRadius = 4,
                                         imgDisplayMode = if (uiState.loadImgEnabled) "block" else "none",
-                                        linkTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
-                                        codeTextColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
-                                        codeBgColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb(),
+                                        linkTextColor = MiuixTheme.colorScheme.onBackground.copy(
+                                            0.8f
+                                        ).toArgb(),
+                                        codeTextColor = MiuixTheme.colorScheme.onBackground.copy(
+                                            0.8f
+                                        ).toArgb(),
+                                        codeBgColor = MiuixTheme.colorScheme.onBackground.copy(0.8f)
+                                            .toArgb(),
                                         tableMargin = 0,
-                                        selectionTextColor = MaterialTheme.colorScheme.onSurface.toArgb(),
+                                        selectionTextColor = MiuixTheme.colorScheme.onBackground.toArgb(),
                                         selectionBgColor = MaterialTheme.colorScheme.primaryContainer.toArgb(),
                                         signatureColor = Color.Gray.toArgb()
                                     ),
                                     url,
-                                    uiState.newsArticle?.articleContent,
+                                    uiState.newsContent?.articleContent,
                                     WebViewScript.get()
                                 ),
                                 baseUrl = url
@@ -455,38 +445,33 @@ fun NewsDetail(
                                 errorMessage.value = it
                             },
                             onFinished = {
-                                newsLoading.value = !it
                             },
                             onImageClick = {
                                 selectedImageData.value = it
                                 showImagePreview.value = true
                             },
                             isShowLinearProgressIndicator = false,
-                            navigator = navigator,
-                            snackBarHostState = snackBarHostState
-                        )
-
-                        else -> WebView(
-                            url = url,
-                            webViewState = rememberWebViewState(url),
-                            navigator = navigator,
+                            navigator = webViewNavigator,
                             snackBarHostState = snackBarHostState
                         )
                     }
-                }
-
-                if (newsViewMode.intValue == 0) {
                     item {
-                        uiState.newsArticle?.attachment
+                        uiState.newsContent?.attachment
                             .let { attachments ->
                                 if (attachments?.isNotEmpty() == true) {
                                     AttachmentContent(
                                         attachments = attachments,
                                         modifier = Modifier
                                             .fillMaxWidth()
+                                            .padding(top = 12.dp)
                                             .padding(horizontal = 16.dp),
                                         onClick = { url, title ->
-                                            navController.navigate("${Destinations.PdfReaderView.route}/${url}/${title}")
+                                            navigator.push(
+                                                Route.PdfReaderView(
+                                                    url = url,
+                                                    title = title
+                                                )
+                                            )
                                         }
                                     )
                                 }
@@ -494,11 +479,25 @@ fun NewsDetail(
                     }
                 }
             }
-
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
+        } else {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .hazeSource(state = hazeState),
+                contentPadding = it
+            ) {
+                item {
+                    WebView(
+                        url = url,
+                        webViewState = rememberWebViewState(url),
+                        navigator = webViewNavigator,
+                        snackBarHostState = snackBarHostState
+                    )
+                }
             }
         }
+
     }
 
     if (showImagePreview.value) {
@@ -611,7 +610,7 @@ fun AttachmentContent(
                         title = attachment.fileName,
                         onClick = {
                             if (attachment.fileType == "pdf" || attachment.isNeedOnlineView)
-                                onClick(Uri.encode(attachment.url), attachment.fileName)
+                                onClick(attachment.url, attachment.fileName)
                             else
                                 showDownloadDialog.value = true
                         }
