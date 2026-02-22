@@ -122,7 +122,7 @@ fun ArticleStyle(
                             webViewState = rememberWebViewStateWithHTMLData(
                                 data = NewsHTML.HTML.format(
                                     NewsStyle.get(
-                                        fontSize = 17,
+                                        fontSize = uiState.newsFontSize.toInt(),
                                         lineHeight = 1.0F,
                                         letterSpacing = 0.5F,
                                         textMargin = HORIZONTAL_MARGIN,
