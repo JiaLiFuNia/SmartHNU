@@ -1,8 +1,8 @@
 package com.smart.htu.screens.setting
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import coil3.imageLoader
 import com.smart.htu.App.Companion.context
 import com.smart.htu.api.module.AIModelEntity
 import com.smart.htu.api.module.AIModelType
@@ -18,8 +18,8 @@ import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_THEME_MODE
 import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.SharedDataRepository
+import com.smart.htu.utils.CacheUtil
 import com.smart.htu.utils.CoilUtil.formatFileSize
-import com.smart.htu.utils.CoilUtil.getDirectorySize
 import com.smart.htu.utils.TermUtil.getCurrentTerm
 import com.smart.htu.utils.ToastUtil.showToast
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,7 +34,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import java.io.File
 import javax.inject.Inject
 
 data class SettingUiState(
@@ -417,13 +416,9 @@ class SettingViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 try {
-                    val coilCacheDir = File(context.cacheDir, "image_cache")
-                    val size = if (coilCacheDir.exists() && coilCacheDir.isDirectory) {
-                        getDirectorySize(coilCacheDir)
-                    } else {
-                        0L
-                    }
-                    _uiState.update { it.copy(cacheSize = formatFileSize(size)) }
+                    val totalSize = CacheUtil.getCacheSize(context)
+                    val formattedSize = formatFileSize(totalSize)
+                    _uiState.update { it.copy(cacheSize = formattedSize) }
                 } catch (e: Exception) {
                     e.printStackTrace()
                     _uiState.update { it.copy(cacheSize = "计算失败") }
@@ -432,28 +427,23 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    fun clearCache() {
+    fun clearCache(
+        onResult: (String) -> Unit
+    ) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 try {
-                    val imageLoader = context.imageLoader
-                    imageLoader.memoryCache?.clear()
-                    imageLoader.diskCache?.clear()
-
-                    val cacheDir = context.cacheDir
-                    if (cacheDir.exists() && cacheDir.isDirectory) {
-                        cacheDir.listFiles()?.forEach { file ->
-                            if (file.isDirectory) {
-                                file.deleteRecursively()
-                            } else {
-                                file.delete()
-                            }
+                    CacheUtil.clear(context)
+                        .onSuccess {
+                            onResult("清理成功")
                         }
-                    }
-
+                        .onFailure {
+                            onResult("清理失败: ${it.message}")
+                        }
                     calculateCacheSize()
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    Log.e("TAG666 cache", "Error clearing cache", e)
+                    calculateCacheSize()
                 }
             }
         }
