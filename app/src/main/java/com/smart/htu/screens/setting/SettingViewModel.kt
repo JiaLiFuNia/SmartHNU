@@ -1,6 +1,5 @@
 package com.smart.htu.screens.setting
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smart.htu.App.Companion.context
@@ -431,21 +430,15 @@ class SettingViewModel @Inject constructor(
         onResult: (String) -> Unit
     ) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                try {
-                    CacheUtil.clear(context)
-                        .onSuccess {
-                            onResult("清理成功")
-                        }
-                        .onFailure {
-                            onResult("清理失败: ${it.message}")
-                        }
-                    calculateCacheSize()
-                } catch (e: Exception) {
-                    Log.e("TAG666 cache", "Error clearing cache", e)
-                    calculateCacheSize()
-                }
+            val result = withContext(Dispatchers.IO) {
+                CacheUtil.clear(context)
             }
+            result.onSuccess {
+                onResult("清理成功")
+            }.onFailure {
+                onResult("清理失败: ${it.message}")
+            }
+            calculateCacheSize()
         }
     }
 

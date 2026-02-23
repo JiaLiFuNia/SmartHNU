@@ -22,6 +22,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -206,7 +208,7 @@ fun LibrarySearchScreen(
                     onClick = { scope.launch { lazyListState.scrollToItem(0) } }
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.outline_arrow_upward_24),
+                        imageVector = Icons.Outlined.ArrowUpward,
                         contentDescription = "up"
                     )
                 }

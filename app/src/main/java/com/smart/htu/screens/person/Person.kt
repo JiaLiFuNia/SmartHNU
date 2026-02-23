@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -30,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -117,10 +119,10 @@ fun PersonScreen(
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(
-                            painter = if (isShowPrivateMessage.value)
-                                painterResource(id = R.drawable.visibility_24px)
+                            imageVector = if (isShowPrivateMessage.value)
+                                Icons.Outlined.Visibility
                             else
-                                painterResource(id = R.drawable.visibility_off_24px),
+                                Icons.Outlined.VisibilityOff,
                             contentDescription = ""
                         )
                     }

@@ -16,6 +16,7 @@ import androidx.compose.material.icons.outlined.Apartment
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.CoPresent
 import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,13 +29,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import com.smart.htu.R
 import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
@@ -114,7 +113,7 @@ fun SingleCourseCard(
                         .weight(0.5f)
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.schedule_24px),
+                        imageVector = Icons.Outlined.Schedule,
                         contentDescription = "time",
                         modifier = Modifier
                             .size(22.dp)
@@ -165,7 +164,7 @@ fun SingleCourseCard(
                         .weight(0.5f)
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.location_on_24px),
+                        imageVector = Icons.Outlined.LocationOn,
                         contentDescription = "building",
                         modifier = Modifier
                             .size(22.dp)

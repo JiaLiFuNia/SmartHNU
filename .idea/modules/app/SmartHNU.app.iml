@@ -5,10 +5,4 @@
       <excludeFolder url="file://$MODULE_DIR$/../../../app/release/baselineProfiles" />
     </content>
   </component>
-  <component name="ModuleClassLoaderOverlays">
-    <paths>
-      <option value="C:\Users\woshi\AppData\Local\Temp\overlay10347625560608356321" />
-      <option value="C:\Users\woshi\AppData\Local\Temp\overlay8734554619738711333" />
-    </paths>
-  </component>
 </module>

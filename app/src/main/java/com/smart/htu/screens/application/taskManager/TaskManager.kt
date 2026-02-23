@@ -18,6 +18,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.rounded.Chair
+import androidx.compose.material.icons.rounded.LocationOn
+import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -30,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -335,7 +337,7 @@ fun ExpandTaskCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.schedule_24px),
+                        imageVector = Icons.Rounded.Schedule,
                         contentDescription = "time",
                         modifier = Modifier
                             .size(23.dp)
@@ -371,7 +373,7 @@ fun ExpandTaskCard(
                         modifier = Modifier.weight(0.5f)
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.location_on_24px),
+                            imageVector = Icons.Rounded.LocationOn,
                             contentDescription = "building",
                             modifier = Modifier
                                 .size(22.dp)
@@ -392,7 +394,7 @@ fun ExpandTaskCard(
                         modifier = Modifier.weight(0.5f)
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.chair_24px),
+                            imageVector = Icons.Rounded.Chair,
                             contentDescription = "time",
                             modifier = Modifier
                                 .size(22.dp)

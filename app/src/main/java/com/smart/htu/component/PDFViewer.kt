@@ -8,10 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.kevinnzou.web.rememberWebViewNavigator
-import com.smart.htu.R
 import com.smart.htu.screens.LocalNavigator
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -19,6 +17,7 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Download
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,7 +46,7 @@ fun PDFViewer(
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.download_24px),
+                            imageVector = MiuixIcons.Download,
                             contentDescription = "download"
                         )
                     }

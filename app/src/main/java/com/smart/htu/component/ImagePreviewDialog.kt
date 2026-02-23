@@ -13,13 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.smart.htu.R
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -30,6 +28,8 @@ import me.saket.telephoto.zoomable.rememberZoomableImageState
 import me.saket.telephoto.zoomable.rememberZoomableState
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Download
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalHazeMaterialsApi::class)
@@ -102,7 +102,7 @@ fun ImagePreviewDialog(
                         .padding(vertical = 32.dp, horizontal = 16.dp)
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.download_24px),
+                        imageVector = MiuixIcons.Download,
                         contentDescription = "下载图片",
                         tint = Color.White
                     )

@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.FormatPaint
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -154,7 +156,7 @@ fun SecondClass(
                             modifier = Modifier.padding(end = 16.dp)
                         ) {
                             Icon(
-                                painter = painterResource(R.drawable.error_24px),
+                                imageVector = Icons.Rounded.ErrorOutline,
                                 contentDescription = "Login",
                                 tint = MaterialTheme.colorScheme.error
                             )
@@ -184,7 +186,7 @@ fun SecondClass(
                             modifier = Modifier.padding(end = 16.dp)
                         ) {
                             Icon(
-                                painter = painterResource(R.drawable.format_paint_24px),
+                                imageVector = Icons.Rounded.FormatPaint,
                                 contentDescription = "paint"
                             )
                         }
@@ -262,7 +264,7 @@ fun SecondClass(
                                         ),
                                         startAction = {
                                             Icon(
-                                                painter = painterResource(R.drawable.format_paint_24px),
+                                                imageVector = Icons.Rounded.FormatPaint,
                                                 contentDescription = "学时总计",
                                                 modifier = Modifier.padding(end = 12.dp),
                                                 tint = MiuixTheme.colorScheme.onBackground

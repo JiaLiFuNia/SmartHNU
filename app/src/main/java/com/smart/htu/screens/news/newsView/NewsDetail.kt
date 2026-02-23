@@ -30,7 +30,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.FormatBold
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -111,6 +113,7 @@ import top.yukonga.miuix.kmp.extra.SuperBottomSheet
 import top.yukonga.miuix.kmp.extra.SuperListPopup
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.Copy
 import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.icon.extended.Share
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -356,7 +359,7 @@ fun NewsDetail(
                             }
                         ) {
                             Icon(
-                                painter = painterResource(R.drawable.ic_outline_article),
+                                imageVector = Icons.AutoMirrored.Outlined.Article,
                                 contentDescription = "news",
                                 tint = MiuixTheme.colorScheme.onSurface
                             )
@@ -367,7 +370,7 @@ fun NewsDetail(
                             }
                         ) {
                             Icon(
-                                painter = painterResource(R.drawable.format_bold_24px),
+                                imageVector = Icons.Outlined.FormatBold,
                                 contentDescription = "news",
                                 tint = MiuixTheme.colorScheme.onSurface
                             )
@@ -647,7 +650,7 @@ fun AISummaryBottomSheet(
                 modifier = Modifier
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.content_copy_24px),
+                    imageVector = MiuixIcons.Copy,
                     contentDescription = null
                 )
             }

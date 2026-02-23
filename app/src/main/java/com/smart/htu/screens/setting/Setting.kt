@@ -297,7 +297,9 @@ fun SettingScreen(
                     SuperArrow(
                         title = stringResource(R.string.clear_cache),
                         onClick = {
-                            viewModel.clearCache()
+                            viewModel.clearCache {
+                                showToast(context, it)
+                            }
                         },
                         endActions = {
                             Text(

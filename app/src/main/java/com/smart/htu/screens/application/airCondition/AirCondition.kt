@@ -14,6 +14,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerScope
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -30,12 +31,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
-import com.smart.htu.R
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
@@ -193,7 +192,7 @@ fun AirCondition(
                         },
                         startAction = {
                             Icon(
-                                painter = painterResource(R.drawable.climate_mini_split_24px),
+                                imageVector = Icons.Outlined.Bolt,
                                 contentDescription = null,
                                 modifier = Modifier.padding(end = 12.dp),
                                 tint = MiuixTheme.colorScheme.onSurface
