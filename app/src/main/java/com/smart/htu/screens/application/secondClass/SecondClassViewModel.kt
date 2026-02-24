@@ -88,6 +88,11 @@ class SecondClassViewModel @Inject constructor(
         )
 
     init {
+        _uiState.update {
+            it.copy(
+                password = passwordRepo.getPassword(SC_PASSWORD) ?: DEFAULT_PASSWORD,
+            )
+        }
         viewModelScope.launch {
             sidStateFlow.collect { value ->
                 _uiState.update { it.copy(cookie = value) }

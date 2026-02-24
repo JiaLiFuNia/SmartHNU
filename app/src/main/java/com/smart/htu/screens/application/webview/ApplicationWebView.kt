@@ -244,7 +244,7 @@ fun ApplicationWebView(
                     )
                 }
             },
-            logState = loginUiState.authLoginState
+            loginState = loginUiState.authLoginState
         )
 
         /*BottomCircularProgressIndicator(

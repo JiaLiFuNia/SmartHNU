@@ -108,16 +108,16 @@ fun LoginDialog(
     showDialog: MutableState<Boolean>,
     title: String = stringResource(R.string.login),
     summary: String? = null,
-    initStudentID: String = "",
-    password: String = "",
+    initAccount: String = "",
+    initPassword: String = "",
     isNeedVerifyCode: Boolean = false,
     verifyCodeModel: ImageRequest? = null,
-    onLogin: (String, String, String) -> Unit,
-    onClickVerifyCode: () -> Unit = {},
-    logState: Int
+    onLogin: (account: String, password: String, verifyCode: String) -> Unit,
+    onRefreshVerifyCode: () -> Unit = {},
+    loginState: Int
 ) {
-    val account = remember { mutableStateOf(initStudentID) }
-    val password = remember { mutableStateOf(password) }
+    val account = remember { mutableStateOf(initAccount) }
+    val password = remember { mutableStateOf(initPassword) }
     val verifyCode = remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -206,7 +206,7 @@ fun LoginDialog(
                                 .aspectRatio(14 / 5f)
                                 .fillMaxHeight()
                                 .clickable {
-                                    onClickVerifyCode()
+                                    onRefreshVerifyCode()
                                 },
                             placeholder = painterResource(id = R.drawable.ic_loading_placeholder_horizontal),
                             error = painterResource(id = R.drawable.ic_loading_placeholder_horizontal)
@@ -226,7 +226,7 @@ fun LoginDialog(
                         onClick = {
                             onLogin(account.value, password.value, verifyCode.value)
                         },
-                        isLoading = logState == 2,
+                        isLoading = loginState == 2,
                         enabled = password.value.isNotEmpty() && account.value.isNotEmpty(),
                         colors = ButtonDefaults.buttonColorsPrimary(),
                         textColors = ButtonDefaults.textButtonColorsPrimary(),
@@ -255,7 +255,7 @@ fun LoginDialog(
                         onClick = {
                             onLogin(account.value, password.value, verifyCode.value)
                         },
-                        isLoading = logState == 2,
+                        isLoading = loginState == 2,
                         enabled = password.value.isNotEmpty() && account.value.isNotEmpty(),
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColorsPrimary(),

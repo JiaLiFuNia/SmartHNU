@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.rounded.ErrorOutline
-import androidx.compose.material.icons.rounded.FormatPaint
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -180,13 +179,18 @@ fun SecondClass(
                                                 .build()
                                         )
                                     )
-                                    navigator.push(Route.ApplicationWebView(SECOND_CLASS_BASE_URL, "第二课堂"))
+                                    navigator.push(
+                                        Route.ApplicationWebView(
+                                            SECOND_CLASS_BASE_URL,
+                                            "第二课堂"
+                                        )
+                                    )
                                 }
                             },
                             modifier = Modifier.padding(end = 16.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.FormatPaint,
+                                painter = painterResource(R.drawable.format_paint_24px),
                                 contentDescription = "paint"
                             )
                         }
@@ -264,7 +268,7 @@ fun SecondClass(
                                         ),
                                         startAction = {
                                             Icon(
-                                                imageVector = Icons.Rounded.FormatPaint,
+                                                painter = painterResource(R.drawable.format_paint_24px),
                                                 contentDescription = "学时总计",
                                                 modifier = Modifier.padding(end = 12.dp),
                                                 tint = MiuixTheme.colorScheme.onBackground
@@ -417,11 +421,11 @@ fun SecondClass(
         summary = "第二课堂登录",
         isNeedVerifyCode = true,
         verifyCodeModel = verifyCodeModel,
-        onClickVerifyCode = {
+        onRefreshVerifyCode = {
             verifyCodeRefreshKey++
         },
-        initStudentID = uiState.studentID,
-        password = uiState.password,
+        initAccount = uiState.studentID,
+        initPassword = uiState.password,
         onLogin = { studentID, password, verifyCode ->
             scope.launch {
                 viewModel.secondClassLogin(
@@ -440,7 +444,7 @@ fun SecondClass(
                 )
             }
         },
-        logState = uiState.scLoginState
+        loginState = uiState.scLoginState
     )
 }
 

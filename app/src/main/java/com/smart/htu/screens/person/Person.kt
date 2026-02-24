@@ -1,5 +1,6 @@
 package com.smart.htu.screens.person
 
+import android.content.Context
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,7 +38,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.smart.htu.MainActivity.Companion.snackBarHostState
 import com.smart.htu.R
 import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.login.LoginDialog
@@ -46,7 +46,6 @@ import com.smart.htu.screens.login.LogoutDialog
 import com.smart.htu.screens.navigation.Route
 import com.smart.htu.screens.setting.SettingItemCard
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
-import com.smart.htu.utils.ToastUtil.showSnackbar
 import com.smart.htu.utils.ToastUtil.showToast
 import com.smart.htu.utils.copyContent
 import dev.chrisbanes.haze.hazeEffect
@@ -59,6 +58,7 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SnackbarHost
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
@@ -84,6 +84,8 @@ fun PersonScreen(
     val isShowPrivateMessage = remember { mutableStateOf(true) }
     val isShowMessageDialog = remember { mutableStateOf(false) }
     val showDialogTarget = remember { mutableStateOf("") }
+
+    val snackBarHostState = remember { SnackbarHostState() }
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
@@ -163,7 +165,8 @@ fun PersonScreen(
                     ) {
                         PersonalMessage(
                             label = stringResource(id = R.string.username),
-                            trailingText = uiState.personalMessage?.username
+                            trailingText = uiState.personalMessage?.username,
+                            context = context
                         )
                         Column(
                             modifier = Modifier
@@ -175,42 +178,50 @@ fun PersonScreen(
                             PersonalMessage(
                                 label = stringResource(id = R.string.birthday),
                                 trailingText = uiState.personalMessage?.birthday,
-                                isShowPrivateMessage = isShowPrivateMessage.value
+                                isShowPrivateMessage = isShowPrivateMessage.value,
+                                context = context
                             )
                             PersonalMessage(
                                 label = stringResource(id = R.string.student_id),
                                 trailingText = uiState.personalMessage?.studentId,
-                                isShowPrivateMessage = isShowPrivateMessage.value
+                                isShowPrivateMessage = isShowPrivateMessage.value,
+                                context = context
                             )
                             PersonalMessage(
                                 label = stringResource(id = R.string.class_name),
                                 trailingText = uiState.personalMessage?.className,
-                                isShowPrivateMessage = isShowPrivateMessage.value
+                                isShowPrivateMessage = isShowPrivateMessage.value,
+                                context = context
                             )
                             PersonalMessage(
                                 label = stringResource(id = R.string.academic),
                                 trailingText = uiState.personalMessage?.academic,
-                                isShowPrivateMessage = isShowPrivateMessage.value
+                                isShowPrivateMessage = isShowPrivateMessage.value,
+                                context = context
                             )
                             PersonalMessage(
                                 label = stringResource(R.string.campus_name),
                                 trailingText = uiState.personalMessage?.campusName,
-                                isShowPrivateMessage = isShowPrivateMessage.value
+                                isShowPrivateMessage = isShowPrivateMessage.value,
+                                context = context
                             )
                             PersonalMessage(
                                 label = stringResource(id = R.string.political_outlook),
                                 trailingText = uiState.personalMessage?.politicalProfile,
-                                isShowPrivateMessage = isShowPrivateMessage.value
+                                isShowPrivateMessage = isShowPrivateMessage.value,
+                                context = context
                             )
                             PersonalMessage(
                                 label = stringResource(id = R.string.phone),
                                 trailingText = uiState.personalMessage?.phoneNumber,
-                                isShowPrivateMessage = isShowPrivateMessage.value
+                                isShowPrivateMessage = isShowPrivateMessage.value,
+                                context = context
                             )
                             PersonalMessage(
                                 label = stringResource(id = R.string.email),
                                 trailingText = uiState.personalMessage?.emailNumber,
-                                isShowPrivateMessage = isShowPrivateMessage.value
+                                isShowPrivateMessage = isShowPrivateMessage.value,
+                                context = context
                             )
                         }
                     }
@@ -222,7 +233,8 @@ fun PersonScreen(
                             trailingText = stringResource(id = loginStateString(uiState.jwcLoginState)),
                             onClick = {
                                 // isShowMessageDialog.value = true
-                            }
+                            },
+                            context = context
                         )
                         PersonalMessage(
                             label = "统一身份认证",
@@ -230,7 +242,8 @@ fun PersonScreen(
                             onClick = {
                                 showDialogTarget.value = "统一身份认证"
                                 isShowMessageDialog.value = true
-                            }
+                            },
+                            context = context
                         )
                         PersonalMessage(
                             label = "第二课堂管理系统",
@@ -238,7 +251,8 @@ fun PersonScreen(
                             onClick = {
                                 showDialogTarget.value = "第二课堂管理系统"
                                 isShowMessageDialog.value = true
-                            }
+                            },
+                            context = context
                         )
                         PersonalMessage(
                             label = "图书馆书目检索系统",
@@ -246,7 +260,8 @@ fun PersonScreen(
                             onClick = {
                                 showDialogTarget.value = "图书馆书目检索系统"
                                 isShowMessageDialog.value = true
-                            }
+                            },
+                            context = context
                         )
                     }
                 }
@@ -306,7 +321,7 @@ fun PersonScreen(
                     )
                 }
             },
-            logState = uiState.authLoginState
+            loginState = uiState.authLoginState
         )
 
         DeleteMessageDialog(isShowMessageDialog, showDialogTarget) {
@@ -372,6 +387,7 @@ fun loginStateString(state: Int): Int {
 
 @Composable
 fun PersonalMessage(
+    context: Context,
     label: String,
     content: (@Composable () -> Unit)? = null,
     trailingText: String? = null,
@@ -410,12 +426,9 @@ fun PersonalMessage(
                         scope.launch {
                             if (isShowPrivateMessage) {
                                 copyContent(trailingText)
-                                showSnackbar(snackBarHostState, "已复制到剪贴板")
+                                showToast(context, "已复制到剪贴板")
                             } else {
-                                showSnackbar(
-                                    snackBarHostState,
-                                    "已开启隐私保护模式，禁止复制信息"
-                                )
+                                showToast(context, "请先显示隐私信息")
                             }
                         }
                     }

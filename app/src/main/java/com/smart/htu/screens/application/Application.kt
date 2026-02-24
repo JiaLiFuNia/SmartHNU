@@ -217,7 +217,7 @@ fun Application(
                 )
             }
         },
-        logState = loginUiState.authLoginState
+        loginState = loginUiState.authLoginState
     )
 
 }

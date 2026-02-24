@@ -355,7 +355,7 @@ fun LibrarySearchScreen(
             summary = "图书馆书目检索系统",
             isNeedVerifyCode = true,
             verifyCodeModel = verifyCodeModel,
-            onClickVerifyCode = {
+            onRefreshVerifyCode = {
                 verifyCodeRefreshKey++
             },
             onLogin = { studentID, password, verifyCode ->
@@ -376,7 +376,7 @@ fun LibrarySearchScreen(
                     verifyCodeRefreshKey++
                 }
             },
-            logState = uiState.libraryLoginState
+            loginState = uiState.libraryLoginState
         )
     }
 }
