@@ -17,6 +17,8 @@ class Navigator(
 ) {
     private val resultBus = mutableMapOf<String, MutableSharedFlow<Any>>()
 
+    fun backStackSize(): Int = backStack.size
+
     /**
      * Push a key onto the back stack.
      */

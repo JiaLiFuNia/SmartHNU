@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,22 +23,25 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.smart.htu.MainActivity.Companion.snackBarHostState
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import com.smart.htu.screens.application.Application
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.main.Main
 import com.smart.htu.screens.main.MainViewModel
 import com.smart.htu.screens.message.MessageViewModel
+import com.smart.htu.screens.navigation.Navigator
 import com.smart.htu.screens.news.NewsScreen
 import com.smart.htu.screens.setting.SettingScreen
 import com.smart.htu.screens.setting.SettingViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.NavigationBar
 import top.yukonga.miuix.kmp.basic.NavigationBarItem
 import top.yukonga.miuix.kmp.basic.NavigationItem
 import top.yukonga.miuix.kmp.basic.Scaffold
-import top.yukonga.miuix.kmp.basic.SnackbarHost
 
 val LocalMainPagerState = staticCompositionLocalOf<PagerState> { error("No pager state") }
 val LocalHandlePageChange =
@@ -82,13 +86,14 @@ fun MainFrame(
         }
     }
 
+    MainScreenBackHandler(pagerState, LocalNavigator.current, scope)
+
     CompositionLocalProvider(
         LocalMainPagerState provides pagerState,
         LocalHandlePageChange provides handlePageChange,
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            snackbarHost = { SnackbarHost(snackBarHostState) },
             bottomBar = {
                 NavigationBar {
                     navigationItems.forEachIndexed { index, item ->
@@ -149,4 +154,29 @@ fun MainFrame(
         }
     }
 
+}
+
+@Composable
+private fun MainScreenBackHandler(
+    mainState: PagerState,
+    navController: Navigator,
+    scope: CoroutineScope
+) {
+    val isPagerBackHandlerEnabled by remember {
+        derivedStateOf {
+            navController.backStackSize() == 1 && mainState.currentPage != 0
+        }
+    }
+
+    val navEventState = rememberNavigationEventState(NavigationEventInfo.None)
+
+    NavigationBackHandler(
+        state = navEventState,
+        isBackEnabled = isPagerBackHandlerEnabled,
+        onBackCompleted = {
+            scope.launch {
+                mainState.animateScrollToPage(0)
+            }
+        }
+    )
 }
