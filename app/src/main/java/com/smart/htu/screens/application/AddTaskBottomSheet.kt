@@ -1,5 +1,7 @@
 package com.smart.htu.screens.application
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -19,11 +21,11 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
-import com.smart.htu.MainActivity
 import com.smart.htu.component.DateTimePicker
 import com.smart.htu.screens.main.TaskEntity
 import com.smart.htu.screens.main.TaskType
 import com.smart.htu.utils.Permission
+import com.smart.htu.utils.ToastUtil.showToast
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -49,6 +51,14 @@ fun AddTaskBottomSheet(
     val context = LocalContext.current
     val isStartDateTimePickerShow = remember { mutableStateOf(false) }
     val isEndDateTimePickerShow = remember { mutableStateOf(false) }
+
+    val calendarPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        if (it.values.any { granted -> !granted }) {
+            showToast(context, "权限被拒绝，无法添加到系统日历")
+        }
+    }
 
     SuperBottomSheet(
         show = show,
@@ -195,12 +205,14 @@ fun AddTaskBottomSheet(
                         title = "同时添加到系统日历",
                         checked = task.value.isAddToCalendar,
                         onCheckedChange = {
-                            if (Permission.hasCalendarPermissions(context)) {
+                            if (Permission.hasPermissions(
+                                    context,
+                                    Permission.CALENDAR_PERMISSIONS
+                                )
+                            ) {
                                 task.value = task.value.copy(isAddToCalendar = it)
                             } else {
-                                if (context is MainActivity) {
-                                    context.requestCalendarPermissions()
-                                }
+                                calendarPermissionLauncher.launch(Permission.CALENDAR_PERMISSIONS)
                             }
                         }
                     )

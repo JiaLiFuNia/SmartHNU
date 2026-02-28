@@ -3,30 +3,23 @@ package com.smart.htu.utils
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat
 
-class Permission {
+object Permission {
 
-    companion object {
-        internal val CALENDAR_PERMISSIONS = arrayOf(
-            Manifest.permission.READ_CALENDAR,
-            Manifest.permission.WRITE_CALENDAR
-        )
+    val CALENDAR_PERMISSIONS = arrayOf(
+        Manifest.permission.READ_CALENDAR,
+        Manifest.permission.WRITE_CALENDAR
+    )
 
-        fun hasCalendarPermissions(context: Context): Boolean {
-            return CALENDAR_PERMISSIONS.all {
-                ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
-            }
-        }
+    val LOCATION_PERMISSIONS = arrayOf(
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    )
 
-        fun checkRequestCalendarPermissions(
-            context: Context,
-            calendarPermissionLauncher: ActivityResultLauncher<Array<String>>
-        ) {
-            if (!hasCalendarPermissions(context)) {
-                calendarPermissionLauncher.launch(CALENDAR_PERMISSIONS)
-            }
+    fun hasPermissions(context: Context, permissions: Array<String>): Boolean {
+        return permissions.all {
+            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
     }
 

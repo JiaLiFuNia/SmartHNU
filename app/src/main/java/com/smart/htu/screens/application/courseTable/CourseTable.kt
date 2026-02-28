@@ -69,7 +69,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.rememberAsyncImagePainter
-import com.smart.htu.MainActivity
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.api.module.SingleTerm
@@ -142,7 +141,7 @@ fun CourseTable(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val snackBarHostState = SnackbarHostState()
+    val snackBarHostState = remember { SnackbarHostState() }
 
     val pagerState = key(uiState.weekIndex) {
         rememberPagerState(
@@ -156,11 +155,22 @@ fun CourseTable(
     val isSharedInfoDialogShow = remember { mutableStateOf(false) }
     val isImportCourseScheduleDialogShow = remember { mutableStateOf(false) }
 
+    val backgroundUri =
+        remember { derivedStateOf { uiState.courseTableSettings.backgroundUri?.toUri() } }
+
     LaunchedEffect(uiState.selectedDataSource, uiState.selectedTermCode) {
         viewModel.refreshCourseSchedule()
     }
 
-    val backgroundUri = remember { derivedStateOf { uiState.courseTableSettings.backgroundUri?.toUri() } }
+    val calendarPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        if (it.values.any { granted -> !granted }) {
+            scope.launch {
+                snackBarHostState.showSnackbar("需要日历权限才能使用此功能")
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -239,14 +249,14 @@ fun CourseTable(
                                 optionSize = optionSize,
                                 onSelectedIndexChange = {
                                     showDropDownMenu.value = false
-                                    if (Permission.hasCalendarPermissions(context)) {
-                                        scope.launch {
-                                            showToast(context, "开发中...")
-                                        }
+                                    if (Permission.hasPermissions(
+                                            context,
+                                            Permission.CALENDAR_PERMISSIONS
+                                        )
+                                    ) {
+                                        scope.launch { showToast(context, "开发中...") }
                                     } else {
-                                        if (context is MainActivity) {
-                                            context.requestCalendarPermissions()
-                                        }
+                                        calendarPermissionLauncher.launch(Permission.CALENDAR_PERMISSIONS)
                                     }
                                 },
                                 index = 1

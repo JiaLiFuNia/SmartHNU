@@ -1,5 +1,7 @@
 package com.smart.htu.screens.application.campusLife
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,27 +16,35 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.amap.api.maps2d.MapView
 import com.smart.htu.R
 import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.utils.Constants.Companion.CAINIAO_URL
 import com.smart.htu.utils.Constants.Companion.PINDUODUO_URL
 import com.smart.htu.utils.Constants.Companion.TAOBAO_URL
+import com.smart.htu.utils.Permission
 import com.smart.htu.utils.startActivityWithUri
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
+import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
@@ -59,10 +69,39 @@ fun CampusLife(
     val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = MiuixScrollBehavior()
-    // val scope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val snackBarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
     val hazeState = rememberHazeState()
+    val context = LocalContext.current
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        if (it.values.any { granted -> !granted }) {
+            scope.launch {
+                snackBarHostState.showSnackbar("需要位置权限才能显示地图")
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (!Permission.hasPermissions(context, Permission.LOCATION_PERMISSIONS)) {
+            locationPermissionLauncher.launch(Permission.LOCATION_PERMISSIONS)
+        }
+    }
+
+    val mapView = remember {
+        MapView(context).apply {
+            onCreate(null)
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            mapView.onDestroy()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -210,6 +249,30 @@ fun CampusLife(
                     }
                 }
 
+            }
+            item {
+                SmallTitle(
+                    text = "校园地图",
+                    insideMargin = PaddingValues(12.dp, 8.dp)
+                )
+                Card(
+                    modifier = Modifier
+                        .height(300.dp)
+                        .fillMaxWidth()
+                ) {
+                    AndroidView(
+                        factory = {
+                            mapView
+                        },
+                        modifier = Modifier.fillMaxSize(),
+                        update = { mapView ->
+                            val aMap = mapView.map
+                            aMap.uiSettings.isZoomControlsEnabled = true
+                            aMap.uiSettings.isZoomControlsEnabled = false
+                            aMap.uiSettings.isMyLocationButtonEnabled = true
+                        }
+                    )
+                }
             }
         }
     }
