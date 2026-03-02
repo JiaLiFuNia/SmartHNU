@@ -9,6 +9,7 @@ import com.smart.htu.di.NetworkCookieJar
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BUILDING_ID
+import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_EMPTY_STRING
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_MOBILE_CODE
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_PASSWORD
@@ -359,7 +360,7 @@ class LoginViewModel @Inject constructor(
         changeLoginLibState(DEFAULT_LOGIN_STATE)
     }
 
-    fun logout() = viewModelScope.launch {
+    suspend fun logout() {
         clearAllCookies()
         changeLoginAuthState(DEFAULT_LOGIN_STATE)
         changeLoginJWCState(DEFAULT_LOGIN_STATE)
@@ -370,7 +371,7 @@ class LoginViewModel @Inject constructor(
         passwordRepo.clearPassword()
         dataStoreRepo.changeRoomId(DEFAULT_BUILDING_ID)
         dataStoreRepo.saveDormRoomId(DEFAULT_ROOM_ID)
-        dataStoreRepo.saveSecondClassSid("")
+        dataStoreRepo.saveSecondClassSid(DEFAULT_EMPTY_STRING)
     }
 
 }

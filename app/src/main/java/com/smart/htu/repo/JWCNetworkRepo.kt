@@ -588,12 +588,10 @@ class JWCNetworkRepo @Inject constructor(
             val logState = jwcAppService.login(LoginPost(username, passwordEncrypt ?: ""))
             return when (logState.code) {
                 200 -> {
-                    dataStoreRepo.changeLoginJWCState(1)
                     Result.success(logState)
                 }
 
                 else -> {
-                    dataStoreRepo.changeLoginJWCState(-1)
                     Result.failure(Exception(logState.msg.ifEmpty { "智慧教务登录失败" }))
                 }
             }
@@ -605,7 +603,8 @@ class JWCNetworkRepo @Inject constructor(
 
     suspend fun checkJWCTokenService(): Result<Boolean> {
         try {
-            if (tokenStateFlow.value.isEmpty())
+            val password = passwordRepo.getPassword(JWC_PASSWORD) ?: DEFAULT_PASSWORD
+            if (tokenStateFlow.value.isEmpty() || studentIdStateFlow.value.isEmpty() || password.isEmpty())
                 return Result.success(false)
             val res = jwcAppService.checkToken()
             return when (res.code) {
@@ -616,7 +615,7 @@ class JWCNetworkRepo @Inject constructor(
 
                 else -> {
                     Log.i("TAG666 check token", "invalid, try reLogin")
-                    if (reLogin()) Result.success(true)
+                    if (reLogin(studentIdStateFlow.value, password)) Result.success(true)
                     else Result.failure(Exception(res.msg))
                 }
             }
@@ -626,18 +625,20 @@ class JWCNetworkRepo @Inject constructor(
         }
     }
 
-    suspend fun reLogin(): Boolean {
-        val password = passwordRepo.getPassword(JWC_PASSWORD) ?: DEFAULT_PASSWORD
-        val res = jwcLogin(studentIdStateFlow.value, password)
+    suspend fun reLogin(studentId: String, password: String): Boolean {
+        dataStoreRepo.changeLoginJWCState(-2) // token 无效，正在重新登录
+        val res = jwcLogin(studentId, password)
         res.onSuccess {
             Log.i("TAG666 check token", "reLogin success ${it.msg}")
             dataStoreRepo.changeLoginJWCState(1)
             dataStoreRepo.setJWCToken(it.user?.token ?: DEFAULT_TOKEN)
+            return true
         }.onFailure {
+            // 重新登录失败，可能密码发生改变，重置默认登录状态
             Log.i("TAG666 check token", "reLogin failed ${it.message}")
-            dataStoreRepo.changeLoginJWCState(-2)
+            // dataStoreRepo.changeLoginJWCState(-1)
         }
-        return res.isSuccess
+        return false
     }
 
 }

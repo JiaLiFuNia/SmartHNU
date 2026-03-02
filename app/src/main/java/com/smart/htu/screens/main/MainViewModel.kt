@@ -244,7 +244,7 @@ class MainViewModel @Inject constructor(
     private suspend fun checkJWCToken() {
         jwcNetworkRepo.checkJWCTokenService()
             .onSuccess { if (it) changeLoginJWCState(1) else changeLoginJWCState(0) }
-            .onFailure { changeLoginJWCState(-2) }
+            .onFailure { changeLoginJWCState(-1) } // 发生异常 或 账号密码为空 或 登录失败
     }
 
     suspend fun getCurrentWeather() {
@@ -292,8 +292,6 @@ class MainViewModel @Inject constructor(
                 )
             ).onSuccess { res ->
                 _uiState.update { it.copy(selectedBuildingOccupation = res) }
-            }.onFailure {
-                dataStoreRepo.changeLoginJWCState(-2)
             }
         } catch (e: Exception) {
             Log.i("TAG666", "main room: $e")

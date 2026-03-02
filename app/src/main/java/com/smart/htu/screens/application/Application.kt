@@ -70,7 +70,7 @@ fun Application(
     val hazeState = rememberHazeState()
     val scope = rememberCoroutineScope()
     val showAuthLoginDialog = remember { mutableStateOf(false) }
-    val loginState = remember {
+    val isLoginSuccess = remember {
         derivedStateOf { loginUiState.jwcLoginState == 1 }
     }
     val displayMode = remember { mutableIntStateOf(0) } // 0 矩形 1 方形
@@ -130,7 +130,7 @@ fun Application(
                 .scrollEndHaptic(),
             overscrollEffect = null,
         ) {
-            if (!loginState.value) {
+            if (!isLoginSuccess.value) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     SuggestChip(
                         onClick = { navigator.push(Route.Login) },
@@ -154,7 +154,7 @@ fun Application(
                 items(appList) { app ->
                     if (displayMode.intValue == 0) {
                         MediumAppCard(
-                            enabled = ((loginUiState.isGuestModeEnable && app.guestMode) || loginState.value) && app.enabled,
+                            enabled = ((loginUiState.isGuestModeEnable && app.guestMode) || isLoginSuccess.value) && app.enabled,
                             content = app,
                             modifier = Modifier,
                             onClick = {
@@ -163,7 +163,7 @@ fun Application(
                                     url = app.url,
                                     label = context.getString(app.label),
                                     isGuest = loginUiState.isGuestModeEnable && app.guestMode,
-                                    loginState = loginState.value, // 只检查jwc_app的登录状态
+                                    loginState = isLoginSuccess.value, // 只检查jwc_app的登录状态
                                     onLoginRequired = {
                                         if (app.loginMode == ApplicationEntity.LoginMode.AUTH_SERVER && loginUiState.authLoginState != 1) {
                                             showAuthLoginDialog.value = true
@@ -174,7 +174,7 @@ fun Application(
                         )
                     } else {
                         SmallAppCard(
-                            enabled = ((loginUiState.isGuestModeEnable && app.guestMode) || loginState.value) && app.enabled,
+                            enabled = ((loginUiState.isGuestModeEnable && app.guestMode) || isLoginSuccess.value) && app.enabled,
                             content = app,
                             modifier = Modifier
                                 .size(76.dp),
@@ -184,7 +184,7 @@ fun Application(
                                     url = app.url,
                                     label = context.getString(app.label),
                                     isGuest = loginUiState.isGuestModeEnable && app.guestMode,
-                                    loginState = loginState.value,
+                                    loginState = isLoginSuccess.value,
                                     onLoginRequired = {
                                         if (app.loginMode == ApplicationEntity.LoginMode.AUTH_SERVER && loginUiState.authLoginState != 1) {
                                             showAuthLoginDialog.value = true

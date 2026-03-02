@@ -120,10 +120,10 @@ fun Main(
     val messageUiState by messageViewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     val hazeState = rememberHazeState()
-    val isNotLoggedIn = remember {
-        derivedStateOf { loginUiState.jwcLoginState != 1 && loginUiState.jwcLoginState != -2 }
+    val isLoginFailure = remember {
+        derivedStateOf { loginUiState.jwcLoginState == 0 || loginUiState.jwcLoginState == -1 } // 未登录或登陆失败
     }
-    val holidayState = remember {
+    val isHolidaySuggestChipShow = remember {
         derivedStateOf { uiState.holiday != null }
     }
     val messageCount = remember {
@@ -231,28 +231,27 @@ fun Main(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 overscrollEffect = null
             ) {
-                if (isNotLoggedIn.value || holidayState.value) {
+                if (isLoginFailure.value) {
                     item {
-                        if (isNotLoggedIn.value) {
+                        SuggestChip(
+                            onClick = {
+                                navigator.push(Route.Login)
+                            },
+                            text = "暂未登录，登录后即可体验全部功能",
+                            type = SuggestChipType.ERROR,
+                            icon = Icons.AutoMirrored.Filled.ArrowForward
+                        )
+                    }
+                }
+                if (isHolidaySuggestChipShow.value) {
+                    item {
+                        uiState.holiday.let {
                             SuggestChip(
-                                onClick = {
-                                    navigator.push(Route.Login)
-                                },
-                                text = "暂未登录，登录后即可体验全部功能",
-                                type = SuggestChipType.ERROR,
-                                icon = Icons.AutoMirrored.Filled.ArrowForward
+                                onClick = { },
+                                text = if (it?.isLieu == true) "今天是${it.holiday}假期调休，注意安排时间。" else "今天是${it?.holiday}假期，放假愉快。",
+                                type = SuggestChipType.INFO,
+                                icon = if (it?.isLieu == true) Icons.Outlined.Info else Icons.Outlined.Celebration
                             )
-                            Spacer(modifier = Modifier.height(12.dp))
-                        }
-                        if (holidayState.value) {
-                            uiState.holiday.let {
-                                SuggestChip(
-                                    onClick = { },
-                                    text = if (it?.isLieu == true) "今天是${it.holiday}假期调休，注意安排时间。" else "今天是${it?.holiday}假期，放假愉快。",
-                                    type = SuggestChipType.INFO,
-                                    icon = if (it?.isLieu == true) Icons.Outlined.Info else Icons.Outlined.Celebration
-                                )
-                            }
                         }
                     }
                 }
@@ -264,7 +263,7 @@ fun Main(
                         Card {
                             TodayCourseCard(
                                 todayCourseList = uiState.todayCourseList,
-                                loginState = isNotLoggedIn.value,
+                                loginState = isLoginFailure.value,
                                 onSearchCourse = {
                                     navigator.push(Route.CourseSearchRepo(it))
                                 }

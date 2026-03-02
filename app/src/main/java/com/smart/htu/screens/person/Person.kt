@@ -297,9 +297,11 @@ fun PersonScreen(
         LogoutDialog(
             showDialog = showLogoutDialog,
             onConfirmClick = {
-                viewModel.logout()
-                showLogoutDialog.value = false
-                navigator.pop()
+                scope.launch {
+                    viewModel.logout()
+                    showLogoutDialog.value = false
+                    navigator.pop()
+                }
             }
         )
 
