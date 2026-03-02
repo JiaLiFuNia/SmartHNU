@@ -19,6 +19,7 @@ import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.application.campusLife.CampusLife
 import com.smart.htu.screens.application.classroom.ClassroomSearchScreen
 import com.smart.htu.screens.application.courseHelper.CourseHelper
+import com.smart.htu.screens.application.courseHelper.CourseHelperViewModel
 import com.smart.htu.screens.application.courseHelper.CourseInfo
 import com.smart.htu.screens.application.courseHelper.CourseRepo
 import com.smart.htu.screens.application.courseSearch.CourseSearch
@@ -72,6 +73,7 @@ fun AppNavHost() {
     val airConditionViewModel: AirConditionViewModel = hiltViewModel()
     val settingViewModel: SettingViewModel = hiltViewModel()
     val messageViewModel: MessageViewModel = hiltViewModel()
+    val courseHelperViewModel: CourseHelperViewModel = hiltViewModel()
 
     val uiState = settingViewModel.uiState.collectAsState().value
     val backStack = remember { mutableStateListOf<NavKey>().apply { add(Route.Main) } }
@@ -207,12 +209,16 @@ fun AppNavHost() {
                             CourseHelper()
                         }
                         entry<Route.CourseInfo> {
-                            CourseInfo(courseCode = it.courseTaskCode)
+                            CourseInfo(
+                                courseCode = it.courseTaskCode,
+                                viewModel = courseHelperViewModel
+                            )
                         }
                         entry<Route.CourseRepo> {
                             CourseRepo(
                                 courseTypeId = it.courseTypeId,
-                                courseTypeName = it.courseTypeName
+                                courseTypeName = it.courseTypeName,
+                                viewModel = courseHelperViewModel
                             )
                         }
                         entry<Route.CourseSearch> {
