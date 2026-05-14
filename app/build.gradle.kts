@@ -20,8 +20,8 @@ extensions.configure<ApplicationExtension> {
         applicationId = "com.smart.htu"
         minSdk = 31
         targetSdk = 35
-        versionCode = 202605091
-        versionName = "3.1.1_beta"
+        versionCode = 202605141
+        versionName = "3.1.1"
 
         val buildTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
             timeZone = getDefault()

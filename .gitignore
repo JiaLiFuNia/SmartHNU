@@ -1,8 +1,7 @@
-.gradle
-.kotlin
-app/release
-app/mapping.txt
-build
+.gradle/
+.kotlin/
+app/
+build/
 local.properties
 .cxx
-.claude
+.claude/
