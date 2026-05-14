@@ -2,10 +2,12 @@ package com.smart.htu
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.smart.htu.screens.AppNavHost
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,6 +22,7 @@ class MainActivity : ComponentActivity() {
         lateinit var notificationManager: NotificationManager
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

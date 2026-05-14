@@ -1,7 +1,5 @@
 package com.smart.htu.api.module
 
-import android.annotation.SuppressLint
-import android.content.Context
 import com.google.gson.annotations.SerializedName
 import com.smart.htu.R
 

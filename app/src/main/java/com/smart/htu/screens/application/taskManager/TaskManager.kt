@@ -1,9 +1,5 @@
 package com.smart.htu.screens.application.taskManager
 
-import android.app.Notification
-import android.app.PendingIntent
-import android.graphics.drawable.Icon
-import android.os.Bundle
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -27,7 +23,6 @@ import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,7 +32,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toColorLong
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -47,8 +41,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.smart.htu.MainActivity.Companion.FOCUS_CHANNEL_ID
-import com.smart.htu.MainActivity.Companion.notificationManager
 import com.smart.htu.R
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.InfoBadge
@@ -56,10 +48,8 @@ import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.application.AddTaskBottomSheet
 import com.smart.htu.screens.main.TaskEntity
-import com.smart.htu.screens.main.toHexString
 import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
 import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
-import com.xzakota.hyper.notification.focus.FocusNotification
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -87,7 +77,6 @@ import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
 import java.time.LocalDateTime
-import kotlin.text.format
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable

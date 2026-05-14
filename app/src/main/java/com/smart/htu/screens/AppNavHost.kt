@@ -1,5 +1,7 @@
 package com.smart.htu.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -67,6 +69,7 @@ import top.yukonga.miuix.kmp.basic.Surface
 
 val LocalNavigator = staticCompositionLocalOf<Navigator> { error("No navigator found!") }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun AppNavHost() {
     val mainViewModel: MainViewModel = hiltViewModel()

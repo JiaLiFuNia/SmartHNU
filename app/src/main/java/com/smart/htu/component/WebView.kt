@@ -3,8 +3,6 @@ package com.smart.htu.component
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
-import android.os.Environment
-import android.util.Log
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
@@ -15,8 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -30,9 +26,7 @@ import com.kevinnzou.web.WebViewNavigator
 import com.kevinnzou.web.WebViewState
 import com.kevinnzou.web.rememberWebViewState
 import com.smart.htu.screens.news.newsView.JavaScriptInterface
-import com.smart.htu.utils.FileUtil.downloadFile
 import com.smart.htu.utils.ToastUtil.showSnackbar
-import com.smart.htu.utils.ToastUtil.showToast
 import com.smart.htu.utils.getHtml
 import com.smart.htu.utils.setDefaultSettings
 import kotlinx.coroutines.launch
@@ -40,7 +34,6 @@ import okhttp3.Cookie
 import org.json.JSONTokener
 import org.jsoup.Jsoup
 import top.yukonga.miuix.kmp.basic.LinearProgressIndicator
-import top.yukonga.miuix.kmp.basic.SnackbarDuration
 import top.yukonga.miuix.kmp.basic.SnackbarHostState
 
 @SuppressLint("SetJavaScriptEnabled")
