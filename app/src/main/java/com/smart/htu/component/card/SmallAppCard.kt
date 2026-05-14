@@ -16,7 +16,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.screens.application.ApplicationEntity
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
@@ -24,6 +23,7 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 
 @Composable
 fun SmallAppCard(
@@ -36,7 +36,7 @@ fun SmallAppCard(
         onClick = {
             onClick()
         },
-        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
+        shape = miuixShape(CardDefaults.CornerRadius),
         modifier = modifier
             .aspectRatio(1f),
         color = Color.Transparent

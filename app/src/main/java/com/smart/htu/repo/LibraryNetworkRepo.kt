@@ -10,6 +10,7 @@ import com.smart.htu.api.module.LibrarySearchImgPost
 import com.smart.htu.api.module.LibrarySearchPost
 import com.smart.htu.api.module.LibrarySearchPost.QueryFieldList
 import com.smart.htu.api.module.SearchResultData
+import com.smart.htu.api.network.AuthLoginService
 import com.smart.htu.api.network.LibraryService
 import com.smart.htu.di.NetworkCookieJar
 import com.smart.htu.di.NetworkModule.ApiConstants.LIBRARY_BASE_URL
@@ -20,6 +21,7 @@ import javax.inject.Inject
 
 class LibraryNetworkRepo @Inject constructor(
     private val libraryService: LibraryService,
+    private val authLoginService: AuthLoginService,
     private val networkCookieJar: NetworkCookieJar
 ) {
 
@@ -165,6 +167,16 @@ class LibraryNetworkRepo @Inject constructor(
             }
         } catch (e: Exception) {
             return Result.failure(Exception(e))
+        }
+    }
+
+    suspend fun libLogin(): Result<String> {
+        val res =
+            authLoginService.authServer("https://opac.htu.edu.cn:443/meta-local/opac/cas/rosetta")
+        val cookie = res.headers()["Set-Cookie"] ?: ""
+        return when (cookie.isEmpty()) {
+            true -> Result.failure(Exception("登录失败"))
+            false -> Result.success(extractSession(cookie))
         }
     }
 

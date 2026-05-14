@@ -56,8 +56,11 @@ interface DataStoreService {
     suspend fun saveTaskList(taskList: List<TaskEntity>)
     suspend fun saveCourseTableData(data: Map<String, List<List<List<CourseEntity>>>>)
     suspend fun changeHomeFocusEnabled(enabled: Boolean)
+    suspend fun changeHomeFocusItemState(item: String, state: Boolean)
     suspend fun changeHomeTodayCourseEnabled(enabled: Boolean)
+    suspend fun changeHomeShowAllTodayCourseEnabled(enabled: Boolean)
     suspend fun changeHomeTodayTaskEnabled(enabled: Boolean)
+    suspend fun changeHomeShowAllTodayTaskEnabled(enabled: Boolean)
     suspend fun changeHomeFreeClassroomEnabled(enabled: Boolean)
     suspend fun changeHomeNewsEnabled(enabled: Boolean)
 
@@ -101,8 +104,11 @@ interface DataStoreService {
     fun observeTaskList(): Flow<List<TaskEntity>>
     fun observeCourseTableData(): Flow<Map<String, List<List<List<CourseEntity>>>>>
     fun observeHomeFocusEnabled(): Flow<Boolean>
+    fun observeHomeFocusItemState(): Flow<Map<String, Boolean>>
     fun observeHomeTodayCourseEnabled(): Flow<Boolean>
     fun observeHomeTodayTaskEnabled(): Flow<Boolean>
+    fun observeHomeShowAllTodayTaskEnabled(): Flow<Boolean>
+    fun observeHomeShowAllTodayCourseEnabled(): Flow<Boolean>
     fun observeHomeFreeClassroomEnabled(): Flow<Boolean>
     fun observeHomeNewsEnabled(): Flow<Boolean>
 

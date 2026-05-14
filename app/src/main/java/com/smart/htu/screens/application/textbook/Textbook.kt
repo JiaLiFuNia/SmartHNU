@@ -34,14 +34,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
+
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseTextbook
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.LocalNavigator
-import com.smart.htu.screens.application.grade.SelectTermBottomSheet
+import com.smart.htu.screens.application.grade.SelectTermDialog
 import com.smart.htu.screens.application.grade.UpFloatingActionButton
 import com.smart.htu.screens.navigation.Route
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
@@ -61,6 +61,7 @@ import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -96,7 +97,6 @@ fun Textbook(
                 actions = {
                     IconButton(
                         onClick = { isBottomSheetShow.value = true },
-                        modifier = Modifier.padding(end = 16.dp),
                         holdDownState = isBottomSheetShow.value
                     ) {
                         Icon(
@@ -108,7 +108,7 @@ fun Textbook(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
@@ -175,16 +175,17 @@ fun Textbook(
             }
         }
 
-        SelectTermBottomSheet(
+        SelectTermDialog(
             globalTermCode = uiState.globalTermCode,
             termSelectedCode = uiState.termCode,
             termList = uiState.termList,
-            show = isBottomSheetShow,
+            show = isBottomSheetShow.value,
             onClick = {
                 scope.launch {
                     viewModel.changeTermCode(it)
                 }
-            }
+            },
+            onDismissRequest = { isBottomSheetShow.value = false }
         )
     }
 }
@@ -232,7 +233,7 @@ fun CourseTextbookItem(
                     color = MiuixTheme.colorScheme.onTertiaryContainer.copy(0.8f),
                     modifier = Modifier
                         .padding(end = 8.dp)
-                        .clip(ContinuousRoundedRectangle(6.dp))
+                        .clip(miuixShape(6.dp))
                         .background(MiuixTheme.colorScheme.tertiaryContainer.copy(0.6f))
                         .padding(horizontal = 6.dp, vertical = 2.dp),
                     fontWeight = FontWeight(750),

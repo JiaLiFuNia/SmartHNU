@@ -98,7 +98,7 @@ fun LibrarySearchDetail(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
@@ -135,8 +135,7 @@ fun LibrarySearchDetail(
                                 showToast(context, "已复制书籍信息到剪贴板")
                             }
                         },
-                        enabled = uiState.libraryBookDetail != null,
-                        modifier = Modifier.padding(end = 16.dp)
+                        enabled = uiState.libraryBookDetail != null
                     ) {
                         Icon(
                             MiuixIcons.Regular.Copy,

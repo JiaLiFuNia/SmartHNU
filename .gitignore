@@ -5,3 +5,4 @@ app/mapping.txt
 build
 local.properties
 .cxx
+.claude

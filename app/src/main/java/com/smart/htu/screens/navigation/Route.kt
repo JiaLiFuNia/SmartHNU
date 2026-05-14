@@ -144,4 +144,10 @@ sealed interface Route : NavKey {
 
     @Serializable
     data object EmojiEasterEgg : Route
+
+    @Serializable
+    data object CampusCard : Route
+
+    @Serializable
+    data object ConsumptionRecord : Route
 }

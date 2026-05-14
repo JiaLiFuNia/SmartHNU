@@ -3,6 +3,7 @@ package com.smart.htu.api.module
 import android.annotation.SuppressLint
 import android.content.Context
 import com.google.gson.annotations.SerializedName
+import com.smart.htu.R
 
 data class NowWeatherResponse(
     @SerializedName("now") val now: NowWeatherData
@@ -17,10 +18,26 @@ data class NowWeatherData(
     @SerializedName("humidity") val humidity: String, //湿度
     @SerializedName("icon") val icon: String //图标代码
 ) {
-    @SuppressLint("DiscouragedApi")
-    fun getIconResourceId(context: Context): Int {
-        return context.resources.getIdentifier("qweather$icon", "drawable", context.packageName)
-    }
+    val iconResId: Int
+        get() = when (icon) {
+            "100" -> R.drawable.icon_sunny
+            "150" -> R.drawable.icon_sunny_night
+            "101" -> R.drawable.icon_cloudy
+            "153" -> R.drawable.icon_cloudy_night
+            "104" -> R.drawable.icon_overcast
+            "305" -> R.drawable.icon_light_rain
+            "306" -> R.drawable.icon_moderate_rain
+            "307" -> R.drawable.icon_heavy_rain
+            "400" -> R.drawable.icon_light_snow
+            "401" -> R.drawable.icon_moderate_snow
+            "402" -> R.drawable.icon_heavy_snow
+            "404" -> R.drawable.icon_rain_snow
+            "456" -> R.drawable.icon_ice_rain
+            "302" -> R.drawable.icon_t_storm
+            "501" -> R.drawable.icon_fog
+            "407" -> R.drawable.icon_sand
+            else -> R.drawable.icon_sunny
+        }
 }
 
 data class WarningWeatherResponse(

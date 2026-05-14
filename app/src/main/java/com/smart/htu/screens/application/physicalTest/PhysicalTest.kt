@@ -54,7 +54,7 @@ fun PhysicalTest(
                         onClick = {
                             navController.popBackStack()
                         },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,

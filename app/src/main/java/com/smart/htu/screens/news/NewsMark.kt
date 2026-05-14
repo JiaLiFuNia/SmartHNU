@@ -32,7 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
+
 import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
@@ -51,6 +51,7 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,7 +75,7 @@ fun NewsMark(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
@@ -158,7 +159,7 @@ fun NewsItem(
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize(),
-        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
+        shape = miuixShape(CardDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surfaceContainer,
     ) {
         ListItem(

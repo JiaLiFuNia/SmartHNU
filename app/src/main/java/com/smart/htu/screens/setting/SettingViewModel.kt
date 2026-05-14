@@ -54,8 +54,11 @@ data class SettingUiState(
     val loadImgEnabled: Boolean = true,
     val newsFontSize: Float = 17f,
     val homeFocusEnabled: Boolean = true,
+    val homeFocusItemStateMap: Map<String, Boolean> = HomeFocusItem.entries.associate { it.name to it.state },
     val homeTodayCourseEnabled: Boolean = true,
+    val homeShowAllTodayCourseEnabled: Boolean = true,
     val homeTodayTaskEnabled: Boolean = true,
+    val homeShowAllTodayTaskEnabled: Boolean = false,
     val homeFreeClassroomEnabled: Boolean = false,
     val homeNewsEnabled: Boolean = false,
 )
@@ -72,6 +75,15 @@ val AI_MODEL_LIST = listOf(
         type = AIModelType.Image
     )
 )
+
+enum class HomeFocusItem(val state: Boolean) {
+    WEEK(true),
+    WEATHER(true),
+    AIR_BOLT(true),
+    STUDY_HOUR(true),
+    BOOK(false),
+    SCHOOL_CARD(false)
+}
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
@@ -181,14 +193,28 @@ class SettingViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
             dataStoreRepo.observeHomeFocusEnabled().first()
         })
+    private val homeFocusItemStateFlow = dataStoreRepo.observeHomeFocusItemState()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
+            dataStoreRepo.observeHomeFocusItemState().first()
+        })
     private val homeTodayCourseEnabledStateFlow = dataStoreRepo.observeHomeTodayCourseEnabled()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
             dataStoreRepo.observeHomeTodayCourseEnabled().first()
         })
+    private val homeShowAllTodayCourseEnabledStateFlow =
+        dataStoreRepo.observeHomeShowAllTodayCourseEnabled()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
+                dataStoreRepo.observeHomeShowAllTodayCourseEnabled().first()
+            })
     private val homeTodayTaskEnabledStateFlow = dataStoreRepo.observeHomeTodayTaskEnabled()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
             dataStoreRepo.observeHomeTodayTaskEnabled().first()
         })
+    private val homeShowAllTodayTaskEnabledStateFlow =
+        dataStoreRepo.observeHomeShowAllTodayTaskEnabled()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
+                dataStoreRepo.observeHomeShowAllTodayTaskEnabled().first()
+            })
     private val homeFreeClassroomEnabledStateFlow = dataStoreRepo.observeHomeFreeClassroomEnabled()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
             dataStoreRepo.observeHomeFreeClassroomEnabled().first()
@@ -245,13 +271,32 @@ class SettingViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
+            homeFocusItemStateFlow.collect { value ->
+                _uiState.update {
+                    it.copy(
+                        homeFocusItemStateMap = value
+                    )
+                }
+            }
+        }
+        viewModelScope.launch {
             homeTodayCourseEnabledStateFlow.collect { value ->
                 _uiState.update { it.copy(homeTodayCourseEnabled = value) }
             }
         }
         viewModelScope.launch {
+            homeShowAllTodayCourseEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(homeShowAllTodayCourseEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
             homeTodayTaskEnabledStateFlow.collect { value ->
                 _uiState.update { it.copy(homeTodayTaskEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
+            homeShowAllTodayTaskEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(homeShowAllTodayTaskEnabled = value) }
             }
         }
         viewModelScope.launch {
@@ -362,12 +407,29 @@ class SettingViewModel @Inject constructor(
         viewModelScope.launch { dataStoreRepo.changeHomeFocusEnabled(enabled) }
     }
 
+    fun changeHomeFocusItemState(
+        item: String,
+        enabled: Boolean
+    ) {
+        viewModelScope.launch {
+            dataStoreRepo.changeHomeFocusItemState(item, enabled)
+        }
+    }
+
     fun changeHomeTodayCourseEnabled(enabled: Boolean) {
         viewModelScope.launch { dataStoreRepo.changeHomeTodayCourseEnabled(enabled) }
     }
 
+    fun changeHomeShowAllTodayCourseEnabled(enabled: Boolean) {
+        viewModelScope.launch { dataStoreRepo.changeHomeShowAllTodayCourseEnabled(enabled) }
+    }
+
     fun changeHomeTodayTaskEnabled(enabled: Boolean) {
         viewModelScope.launch { dataStoreRepo.changeHomeTodayTaskEnabled(enabled) }
+    }
+
+    fun changeHomeShowAllTodayTaskEnabled(enabled: Boolean) {
+        viewModelScope.launch { dataStoreRepo.changeHomeShowAllTodayTaskEnabled(enabled) }
     }
 
     fun changeHomeFreeClassroomEnabled(enabled: Boolean) {

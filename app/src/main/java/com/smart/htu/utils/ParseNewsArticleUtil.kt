@@ -127,8 +127,17 @@ object ParseNewsArticleUtil {
             if (it.attr("style").contains("text-align:right")) {
                 it.addClass("Signature")
             }
+
             it.removeAttr("style")
             if (it.text().isEmpty() && imgElement.isEmpty()) it.remove()
+
+            // 处理 a
+            val aElement = it.select("a")
+            if (aElement.isNotEmpty()) {
+                aElement.forEach { a ->
+                    a.removeAttr("style")
+                }
+            }
 
             // 处理 span
             val spanElement = it.select("span")
@@ -177,7 +186,11 @@ object ParseNewsArticleUtil {
 
         // 原始文本
         val rawArticleHtml = rawArticleHtml.toString()
-            .replace("(&nbsp;){2,}", "").replace("&nbsp;", " ")
+            .replace("(&nbsp;){2,}", "")
+            .replace("&nbsp;", " ")
+            .replace("  ", "")
+            .replace("\u2003", "")
+            .replace("\u3000", " ")
 
         return rawArticleHtml
     }

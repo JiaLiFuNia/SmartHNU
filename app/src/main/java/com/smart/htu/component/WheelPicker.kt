@@ -22,10 +22,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.filter
+import top.yukonga.miuix.kmp.basic.NumberPicker
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import kotlin.math.abs
 
+@Deprecated("Use NumberPicker instead")
 @Composable
 fun <T> WheelPicker(
     items: List<T>,
@@ -149,5 +151,3 @@ fun <T> WheelPicker(
     }
 
 }
-
-

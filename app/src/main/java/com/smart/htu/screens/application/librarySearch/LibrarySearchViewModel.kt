@@ -42,6 +42,7 @@ data class LibrarySearchUiState(
     val currentBorrowingBookList: List<BorrowedBookEntity>? = null,
     val session: String = "",
     val libraryLoginState: Int = DEFAULT_LOGIN_STATE, // 0 未登录 1 登录成功 -1 登录失败 -2 token过期
+    val authLoginState: Int = DEFAULT_LOGIN_STATE // 0 未认证 1 认证成功 -1 认证失败
 )
 
 @HiltViewModel
@@ -92,6 +93,15 @@ class LibrarySearchViewModel @Inject constructor(
             }
         )
 
+    private val authLoginStateFlow = dataStoreRepo.observeLoginState()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            runBlocking {
+                dataStoreRepo.observeLoginState().first()
+            }
+        )
+
     private val librarySessionStateFLow = dataStoreRepo.observeLibrarySession()
         .stateIn(
             viewModelScope,
@@ -123,6 +133,11 @@ class LibrarySearchViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
+            authLoginStateFlow.collect { value ->
+                _uiState.update { it.copy(authLoginState = value) }
+            }
+        }
+        viewModelScope.launch {
             librarySessionStateFLow.collect { value ->
                 // _uiState.update { it.copy(session = value) }
             }
@@ -132,7 +147,21 @@ class LibrarySearchViewModel @Inject constructor(
                 getLibraryBorrowedBook()
                 getCurrentBorrowingBook()
             }
+            if (_uiState.value.authLoginState == 1 && _uiState.value.libraryLoginState != 1) {
+                libLogin()
+            }
         }
+    }
+
+    suspend fun libLogin() {
+        libraryNetworkRepo.libLogin()
+            .onSuccess {
+                changeLoginLibraryState(1)
+                getLibraryBorrowedBook()
+                getCurrentBorrowingBook()
+            }.onFailure {
+                changeLoginLibraryState(-1)
+            }
     }
 
     suspend fun createSession() {

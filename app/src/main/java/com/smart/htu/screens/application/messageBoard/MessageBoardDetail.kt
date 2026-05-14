@@ -44,7 +44,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
+
 import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.api.module.PostDetailData
@@ -78,6 +78,7 @@ import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import kotlin.math.ceil
 
@@ -117,7 +118,7 @@ fun MessageBoardDetail(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
@@ -241,13 +242,13 @@ fun PostCard(
             )
         },
         endActions = {
-            top.yukonga.miuix.kmp.basic.Text(
+            Text(
                 text = post.cateName,
                 fontSize = 12.sp,
                 color = MiuixTheme.colorScheme.onTertiaryContainer.copy(0.8f),
                 modifier = Modifier
                     .padding(end = 8.dp)
-                    .clip(ContinuousRoundedRectangle(6.dp))
+                    .clip(miuixShape(6.dp))
                     .background(MiuixTheme.colorScheme.tertiaryContainer.copy(0.6f))
                     .padding(horizontal = 6.dp, vertical = 2.dp),
                 fontWeight = FontWeight(750),

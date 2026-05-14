@@ -60,10 +60,10 @@ import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.SpinnerEntry
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.SuperSpinner
-import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.preference.OverlaySpinnerPreference
+import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
@@ -94,7 +94,7 @@ fun AIConfigurationScreen(
                 color = Color.Transparent,
                 navigationIcon = {
                     IconButton(
-                        modifier = Modifier.padding(start = 16.dp),
+                        
                         onClick = {
                             navigator.pop()
                         }
@@ -139,7 +139,7 @@ fun AIConfigurationScreen(
         ) {
             item {
                 Card {
-                    SuperSwitch(
+                    SwitchPreference(
                         title = "YunAI",
                         summary = "启用 YunAI, 为应用注入新活力",
                         checked = uiState.aiFunctionEnabled,
@@ -200,7 +200,7 @@ fun AIConfigurationScreen(
                             }
                         )
                         Card {
-                            SuperSpinner(
+                            OverlaySpinnerPreference(
                                 title = "模型",
                                 items = AI_MODEL_LIST.map { model ->
                                     SpinnerEntry(

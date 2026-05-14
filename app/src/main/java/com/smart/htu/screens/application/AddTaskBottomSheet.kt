@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -30,21 +29,22 @@ import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.TextField
-import top.yukonga.miuix.kmp.extra.SuperArrow
-import top.yukonga.miuix.kmp.extra.SuperBottomSheet
-import top.yukonga.miuix.kmp.extra.SuperCheckbox
-import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Close
 import top.yukonga.miuix.kmp.icon.extended.Ok
+import top.yukonga.miuix.kmp.overlay.OverlayBottomSheet
+import top.yukonga.miuix.kmp.preference.ArrowPreference
+import top.yukonga.miuix.kmp.preference.CheckboxPreference
+import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun AddTaskBottomSheet(
-    show: MutableState<Boolean>,
+    show: Boolean,
     initTaskInfo: TaskEntity? = null,
-    onTask: (TaskEntity) -> Unit
+    onTask: (TaskEntity) -> Unit,
+    onDismissRequest: () -> Unit
 ) {
     val task = remember { mutableStateOf(initTaskInfo ?: TaskEntity.emptyTask()) }
     val focusManager = LocalFocusManager.current
@@ -60,13 +60,13 @@ fun AddTaskBottomSheet(
         }
     }
 
-    SuperBottomSheet(
+    OverlayBottomSheet(
         show = show,
         title = "创建任务",
         startAction = {
             IconButton(
                 onClick = {
-                    show.value = false
+                    onDismissRequest()
                 }
             ) {
                 Icon(MiuixIcons.Close, contentDescription = null)
@@ -76,7 +76,7 @@ fun AddTaskBottomSheet(
             IconButton(
                 onClick = {
                     onTask(task.value)
-                    show.value = false
+                    onDismissRequest()
                 }
             ) {
                 Icon(MiuixIcons.Ok, contentDescription = null)
@@ -84,11 +84,11 @@ fun AddTaskBottomSheet(
         },
         onDismissRequest = {
             focusManager.clearFocus()
-            show.value = false
+            onDismissRequest()
         },
         onDismissFinished = {
             focusManager.clearFocus()
-            show.value = false
+            onDismissRequest()
         },
         allowDismiss = false,
         backgroundColor = MiuixTheme.colorScheme.surface
@@ -118,7 +118,7 @@ fun AddTaskBottomSheet(
             }
             item {
                 Card {
-                    SuperDropdown(
+                    OverlayDropdownPreference(
                         title = "任务类型",
                         items = TaskType.entries.map { it.label },
                         selectedIndex = TaskType.entries.indexOf(task.value.type),
@@ -149,7 +149,7 @@ fun AddTaskBottomSheet(
             item {
                 val formator = DateTimeFormatter.ofPattern("yyyy年M月d日E HH:mm")
                 Card {
-                    SuperArrow(
+                    ArrowPreference(
                         title = "开始时间",
                         endActions = {
                             top.yukonga.miuix.kmp.basic.Text(
@@ -164,7 +164,7 @@ fun AddTaskBottomSheet(
                         },
                         modifier = Modifier.fillMaxWidth()
                     )
-                    SuperArrow(
+                    ArrowPreference(
                         title = "结束时间",
                         endActions = {
                             top.yukonga.miuix.kmp.basic.Text(
@@ -201,7 +201,7 @@ fun AddTaskBottomSheet(
             }
             item {
                 Card {
-                    SuperCheckbox(
+                    CheckboxPreference(
                         title = "同时添加到系统日历",
                         checked = task.value.isAddToCalendar,
                         onCheckedChange = {
@@ -232,19 +232,27 @@ fun AddTaskBottomSheet(
 
     DateTimePicker(
         title = "开始时间",
-        show = isStartDateTimePickerShow,
+        show = isStartDateTimePickerShow.value,
         initialTime = task.value.startDateTime,
         onConfirm = {
             task.value = task.value.copy(startDateTime = it)
+            isStartDateTimePickerShow.value = false
+        },
+        onDismissRequest = {
+            isStartDateTimePickerShow.value = false
         }
     )
 
     DateTimePicker(
         title = "结束时间",
-        show = isEndDateTimePickerShow,
+        show = isEndDateTimePickerShow.value,
         initialTime = task.value.endDateTime,
         onConfirm = {
             task.value = task.value.copy(endDateTime = it)
+            isStartDateTimePickerShow.value = false
+        },
+        onDismissRequest = {
+            isEndDateTimePickerShow.value = false
         }
     )
 }

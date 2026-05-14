@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
+
 import com.smart.htu.api.module.CourseInfoEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
@@ -34,8 +34,9 @@ import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.extra.SuperBottomSheet
+import top.yukonga.miuix.kmp.overlay.OverlayBottomSheet
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 import java.time.LocalDate
 
 @Composable
@@ -52,7 +53,7 @@ fun SingleRoom(
 ) {
     val isOccupationDetailBottomSheetShow = remember { mutableStateOf(false) }
     Surface(
-        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
+        shape = miuixShape(CardDefaults.CornerRadius),
         modifier = modifier
             .height(50.dp),
         color = MiuixTheme.colorScheme.surfaceContainer,
@@ -107,14 +108,14 @@ fun SingleRoom(
             )
         }
     }
-    SuperBottomSheet(
+    OverlayBottomSheet(
         title = "$label ${
             date?.let {
                 if (it.isEqual(LocalDate.now())) "今天"
                 else convertLocalDateToStringDate(it, "M月d日 E")
             }
         }的课程",
-        show = isOccupationDetailBottomSheetShow,
+        show = isOccupationDetailBottomSheetShow.value,
         onDismissRequest = {
             isOccupationDetailBottomSheetShow.value = false
         },

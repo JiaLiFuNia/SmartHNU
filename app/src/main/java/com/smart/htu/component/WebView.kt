@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Environment
+import android.util.Log
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
@@ -14,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -29,10 +32,12 @@ import com.kevinnzou.web.rememberWebViewState
 import com.smart.htu.screens.news.newsView.JavaScriptInterface
 import com.smart.htu.utils.FileUtil.downloadFile
 import com.smart.htu.utils.ToastUtil.showSnackbar
+import com.smart.htu.utils.ToastUtil.showToast
 import com.smart.htu.utils.getHtml
 import com.smart.htu.utils.setDefaultSettings
 import kotlinx.coroutines.launch
 import okhttp3.Cookie
+import org.json.JSONTokener
 import org.jsoup.Jsoup
 import top.yukonga.miuix.kmp.basic.LinearProgressIndicator
 import top.yukonga.miuix.kmp.basic.SnackbarDuration
@@ -42,6 +47,7 @@ import top.yukonga.miuix.kmp.basic.SnackbarHostState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WebView(
+    modifier: Modifier = Modifier,
     url: String,
     headers: Map<String, String> = emptyMap(),
     cookie: List<Cookie> = emptyList(),
@@ -51,11 +57,11 @@ fun WebView(
     onLogin: (Boolean) -> Unit = { },
     onCurrentUrl: (String) -> Unit = { },
     onImageClick: (imgUrl: String) -> Unit = { },
+    onDownloadClick: (fileUrl: String, fileName: String) -> Unit = { _, _ -> },
     isShowLinearProgressIndicator: Boolean = true,
     captureBackPresses: Boolean = true,
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
-    navigator: WebViewNavigator,
-    modifier: Modifier = Modifier
+    navigator: WebViewNavigator
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -78,11 +84,12 @@ fun WebView(
                 scope.launch {
                     try {
                         val html = view.getHtml()
-                        val document = Jsoup.parse(html)
-                        val errorMessage = document.select("div.wp_error_msg span").text()
+                        val actualHtml = JSONTokener(html).nextValue() as String
+                        val document = Jsoup.parse(actualHtml)
+                        val errorMessage = document.select(".wp_error_msg").text()
                         onError(errorMessage)
                     } catch (e: Exception) {
-                        showSnackbar(snackBarHostState, "获取网页内容失败：${e.message}")
+                        // showSnackbar(snackBarHostState, "获取网页内容失败：${e.message}")
                     }
                 }
             }
@@ -160,26 +167,13 @@ fun WebView(
                             requestUrl.contains(".zip") ||
                             requestUrl.contains(".rar")
 
-                    if (isDownloadable && !requestUrl.startsWith("blob:") && !requestUrl.startsWith(
-                            "data:"
-                        )
+                    if (isDownloadable &&
+                        !requestUrl.startsWith("blob:") &&
+                        !requestUrl.startsWith("data:")
                     ) {
                         scope.launch {
                             val fileName = requestUrl.substringAfterLast('/')
-                            showSnackbar(
-                                snackBarHostState,
-                                message = "是否下载文件：$fileName?",
-                                actionLabel = "下载",
-                                duration = SnackbarDuration.Long,
-                                onConfirm = {
-                                    downloadFile(
-                                        context,
-                                        requestUrl,
-                                        fileName,
-                                        Environment.DIRECTORY_DOCUMENTS
-                                    )
-                                }
-                            )
+                            onDownloadClick(requestUrl, fileName)
                         }
                     }
                 }
@@ -236,6 +230,9 @@ fun WebView(
                 }, JavaScriptInterface.NAME)
 
                 updateWebViewCookies(url, cookie)
+            },
+            onDispose = {
+
             },
             client = webClient
         )

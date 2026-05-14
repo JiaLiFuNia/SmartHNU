@@ -15,7 +15,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,29 +44,30 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
-import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Rename
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun LogoutDialog(
-    showDialog: MutableState<Boolean>,
-    onConfirmClick: () -> Unit
+    showDialog: Boolean,
+    onConfirmClick: () -> Unit,
+    onDismissRequest: () -> Unit
 ) {
     var countdown by remember { mutableIntStateOf(3) }
     var isConfirmEnabled by remember { mutableStateOf(false) }
 
-    SuperDialog(
+    OverlayDialog(
         title = "提示",
         summary = stringResource(id = R.string.confirm_logout),
         show = showDialog,
         onDismissRequest = {
-            showDialog.value = false
+            onDismissRequest()
         }
     ) {
         LaunchedEffect(showDialog) {
-            if (showDialog.value) {
+            if (showDialog) {
                 countdown = 3
                 isConfirmEnabled = false
                 while (countdown > 0) {
@@ -85,7 +85,6 @@ fun LogoutDialog(
                 text = stringResource(id = R.string.confirm) + if (isConfirmEnabled) "" else " (${countdown}s)",
                 onClick = {
                     onConfirmClick()
-                    showDialog.value = false
                 },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.textButtonColorsPrimary()
@@ -94,7 +93,7 @@ fun LogoutDialog(
             TextButton(
                 text = stringResource(id = R.string.cancel),
                 onClick = {
-                    showDialog.value = false
+                    onDismissRequest()
                 },
                 modifier = Modifier.weight(1f)
             )
@@ -105,7 +104,7 @@ fun LogoutDialog(
 
 @Composable
 fun LoginDialog(
-    showDialog: MutableState<Boolean>,
+    showDialog: Boolean,
     title: String = stringResource(R.string.login),
     summary: String? = null,
     initAccount: String = "",
@@ -114,7 +113,8 @@ fun LoginDialog(
     verifyCodeModel: ImageRequest? = null,
     onLogin: (account: String, password: String, verifyCode: String) -> Unit,
     onRefreshVerifyCode: () -> Unit = {},
-    loginState: Int
+    loginState: Int,
+    onDismissRequest: () -> Unit
 ) {
     val account = remember { mutableStateOf(initAccount) }
     val password = remember { mutableStateOf(initPassword) }
@@ -123,12 +123,12 @@ fun LoginDialog(
 
     val focusManager = LocalFocusManager.current
 
-    SuperDialog(
+    OverlayDialog(
         title = title,
         summary = summary,
         show = showDialog,
         onDismissRequest = {
-            showDialog.value = false
+            onDismissRequest()
         }
     ) {
         Column(
@@ -238,7 +238,7 @@ fun LoginDialog(
                     TextButton(
                         text = stringResource(id = R.string.cancel),
                         onClick = {
-                            showDialog.value = false
+                            onDismissRequest()
                         },
                         modifier = Modifier
                             .weight(0.5f)
@@ -265,7 +265,7 @@ fun LoginDialog(
                     TextButton(
                         text = stringResource(id = R.string.cancel),
                         onClick = {
-                            showDialog.value = false
+                            onDismissRequest()
                         },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -278,15 +278,15 @@ fun LoginDialog(
 
 @Composable
 fun LoginInfoDialog(
-    showDialog: MutableState<Boolean>,
+    showDialog: Boolean,
     onDismissRequests: () -> Unit
 ) {
-    SuperDialog(
+    OverlayDialog(
         title = "提示",
         show = showDialog,
         summary = "智慧教务密码与教务系统(https://jwc.htu.edu.cn)密码一致",
         onDismissRequest = {
-            showDialog.value = false
+            onDismissRequests()
         }
     ) {
         Row(
@@ -296,7 +296,6 @@ fun LoginInfoDialog(
                 text = "真忘了",
                 onClick = {
                     onDismissRequests()
-                    showDialog.value = false
                 },
                 modifier = Modifier.weight(1f)
             )
@@ -304,7 +303,7 @@ fun LoginInfoDialog(
             TextButton(
                 text = "我知道了",
                 onClick = {
-                    showDialog.value = false
+                    onDismissRequests()
                 },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.textButtonColorsPrimary()
@@ -316,16 +315,17 @@ fun LoginInfoDialog(
 
 @Composable
 fun CodeLogDialog(
-    showDialog: MutableState<Boolean>,
-    onLoginByCode: (String) -> Unit
+    showDialog: Boolean,
+    onLoginByCode: (String) -> Unit,
+    onDismissRequest: () -> Unit
 ) {
     val codeValue = remember { mutableStateOf("") }
-    SuperDialog(
+    OverlayDialog(
         title = "便捷登录",
         show = showDialog,
         summary = "使用微信 Code 登录，无需输入学号和密码",
         onDismissRequest = {
-            showDialog.value = false
+            onDismissRequest()
         }
     ) {
         TextField(
@@ -351,7 +351,7 @@ fun CodeLogDialog(
             TextButton(
                 text = "取消",
                 onClick = {
-                    showDialog.value = false
+                    onDismissRequest()
                 },
                 modifier = Modifier.weight(1f)
             )

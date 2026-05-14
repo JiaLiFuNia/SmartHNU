@@ -58,10 +58,10 @@ import top.yukonga.miuix.kmp.basic.SnackbarHost
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Close
 import top.yukonga.miuix.kmp.icon.extended.Ok
+import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -98,7 +98,7 @@ fun AirConditionSetting(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Close,
@@ -124,8 +124,7 @@ fun AirConditionSetting(
                                 roomId.value.isNotEmpty() &&
                                 !buildingIdError &&
                                 !roomIdError &&
-                                !uiState.isCheckingConfig,
-                        modifier = Modifier.padding(end = 16.dp)
+                                !uiState.isCheckingConfig
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Ok,
@@ -179,7 +178,7 @@ fun AirConditionSetting(
                     insideMargin = PaddingValues(12.dp, 8.dp)
                 )
                 Card {
-                    SuperDropdown(
+                    OverlayDropdownPreference(
                         title = "选择校区",
                         items = listOf("建设东路西校区", "建设东路东校区"),
                         selectedIndex = selectedCampusIndex.intValue,
@@ -262,7 +261,7 @@ fun AirConditionSetting(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Card {
-                        SuperDropdown(
+                        OverlayDropdownPreference(
                             title = "Cookie 来源",
                             summary = "云端 Cookie 由开发者提供，自定义 Cookie 需用户自行抓包获取",
                             items = listOf("云端", "自定义"),
@@ -298,8 +297,9 @@ fun AirConditionSetting(
                 }
             }
         }
+        val isCheckingConfig by remember(uiState.isCheckingConfig) { mutableStateOf(uiState.isCheckingConfig) }
         BottomCircularProgressIndicator(
-            loadingState = remember(uiState.isCheckingConfig) { mutableStateOf(uiState.isCheckingConfig) }
+            loadingState = isCheckingConfig,
         )
     }
 }

@@ -26,7 +26,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.api.module.NoticeType
 import com.smart.htu.component.CircularProgressIndicator
@@ -55,6 +54,7 @@ import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
@@ -86,7 +86,7 @@ fun MessageScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
@@ -100,8 +100,7 @@ fun MessageScreen(
                             scope.launch {
                                 viewModel.readAllNotice()
                             }
-                        },
-                        modifier = Modifier.padding(end = 16.dp)
+                        }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Checklist,
@@ -244,7 +243,7 @@ fun SingleMessage(
             .fillMaxWidth()
             .animateContentSize(),
         color = color,
-        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius)
+        shape = miuixShape(CardDefaults.CornerRadius)
     ) {
         BasicComponent(
             title = title,

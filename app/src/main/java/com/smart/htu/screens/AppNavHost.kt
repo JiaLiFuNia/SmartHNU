@@ -16,6 +16,8 @@ import com.smart.htu.component.PDFViewer
 import com.smart.htu.screens.application.airCondition.AirCondition
 import com.smart.htu.screens.application.airCondition.AirConditionSetting
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
+import com.smart.htu.screens.application.campusCard.CampusCardScreen
+import com.smart.htu.screens.application.campusCard.ConsumptionRecordScreen
 import com.smart.htu.screens.application.campusLife.CampusLife
 import com.smart.htu.screens.application.classroom.ClassroomSearchScreen
 import com.smart.htu.screens.application.courseHelper.CourseHelper
@@ -80,10 +82,10 @@ fun AppNavHost() {
     val navigator = remember(backStack) { Navigator(backStack) }
 
     CompositionLocalProvider(
-        LocalNavigator provides navigator,
+        LocalNavigator provides navigator
     ) {
         SmartHNUTheme(
-            themeMode = uiState.themeMode,
+            colorMode = uiState.themeMode,
             keyColor = keyColorFor(uiState.keyColorSeedIndex)
         ) {
             Surface {
@@ -235,6 +237,12 @@ fun AppNavHost() {
                         }
                         entry<Route.EmojiEasterEgg> {
                             EmojiEasterEgg()
+                        }
+                        entry<Route.CampusCard> {
+                            CampusCardScreen()
+                        }
+                        entry<Route.ConsumptionRecord> {
+                            ConsumptionRecordScreen()
                         }
                     },
                     entryDecorators = listOf(

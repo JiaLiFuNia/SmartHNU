@@ -22,13 +22,13 @@ import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,19 +44,19 @@ import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.extra.SuperArrow
-import top.yukonga.miuix.kmp.extra.SuperBottomSheet
+import top.yukonga.miuix.kmp.overlay.OverlayBottomSheet
+import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalTime
 
-
 @Composable
 fun BasicTaskCard(
+    modifier: Modifier = Modifier,
     title: String,
     description: String? = null,
     descriptionContent: @Composable (() -> Unit)? = null,
     taskColor: Color,
-    modifier: Modifier = Modifier,
+    holdDownState: Boolean = false,
     onClick: () -> Unit
 ) {
     Surface(
@@ -67,8 +67,9 @@ fun BasicTaskCard(
         color = MiuixTheme.colorScheme.surfaceContainer
     ) {
         BasicComponent(
-            title = title,
-            summary = description,
+            modifier = modifier,
+            onClick = onClick,
+            holdDownState = holdDownState,
             startAction = {
                 Box(
                     modifier = Modifier
@@ -78,9 +79,24 @@ fun BasicTaskCard(
                         .background(taskColor)
                 )
             },
-            bottomAction = descriptionContent
-
-        )
+            bottomAction = descriptionContent,
+        ) {
+            Text(
+                text = title,
+                fontSize = MiuixTheme.textStyles.headline1.fontSize,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MiuixTheme.colorScheme.onBackground
+            )
+            if (description != null) {
+                Text(
+                    text = description,
+                    fontSize = MiuixTheme.textStyles.body2.fontSize,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                )
+            }
+        }
     }
 }
 
@@ -196,10 +212,13 @@ fun SingleCourseCard(
     }
     CourseDetailBottomSheet(
         course = course,
-        isBottomSheetShow = isBottomSheetShow,
+        isBottomSheetShow = isBottomSheetShow.value,
         onSearchCourse = {
             isBottomSheetShow.value = false
             onSearchCourse(it)
+        },
+        onDismissRequest = {
+            isBottomSheetShow.value = false
         }
     )
 }
@@ -207,15 +226,16 @@ fun SingleCourseCard(
 @Composable
 fun CourseDetailBottomSheet(
     course: CourseEntity,
-    isBottomSheetShow: MutableState<Boolean>,
+    isBottomSheetShow: Boolean,
     onSearchCourse: (String) -> Unit = { },
     overlapCourseList: List<CourseEntity>? = null,
-    onSelectOverlapCourse: (Int) -> Unit = {}
+    onSelectOverlapCourse: (Int) -> Unit = {},
+    onDismissRequest: () -> Unit
 ) {
-    SuperBottomSheet(
+    OverlayBottomSheet(
         show = isBottomSheetShow,
         onDismissRequest = {
-            isBottomSheetShow.value = false
+            onDismissRequest()
         },
         title = course.courseName + if (course.classroomName.isNullOrEmpty()) {
             " - ${course.projectName}"
@@ -268,7 +288,7 @@ fun CourseDetailBottomSheet(
         )
         Spacer(modifier = Modifier.height(12.dp))
         Card {
-            SuperArrow(
+            ArrowPreference(
                 title = "搜索同课程",
                 onClick = {
                     onSearchCourse(course.courseName)

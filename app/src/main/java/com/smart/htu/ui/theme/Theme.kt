@@ -3,7 +3,9 @@ package com.smart.htu.ui.theme
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
@@ -12,14 +14,16 @@ import top.yukonga.miuix.kmp.theme.ColorSchemeMode
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.ThemeController
 
+val LocalColorMode = compositionLocalOf { 0 }
+
 @Composable
 fun SmartHNUTheme(
-    themeMode: Int,
+    colorMode: Int = 0,
     keyColor: Color? = null,
     content: @Composable () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
-    val darkTheme = when (themeMode) {
+    val darkTheme = when (colorMode) {
         2, 5 -> true
         1, 4 -> false
         else -> isSystemInDarkTheme()
@@ -35,8 +39,8 @@ fun SmartHNUTheme(
         }
     }
 
-    val controller = remember(themeMode, keyColor, isDark) {
-        when (themeMode) {
+    val controller = remember(colorMode, keyColor, isDark) {
+        when (colorMode) {
             1 -> ThemeController(ColorSchemeMode.Light)
             2 -> ThemeController(ColorSchemeMode.Dark)
             3 -> ThemeController(ColorSchemeMode.MonetSystem, keyColor = keyColor, isDark = isDark)
@@ -45,12 +49,22 @@ fun SmartHNUTheme(
             else -> ThemeController(ColorSchemeMode.System)
         }
     }
-    MiuixTheme(
-        controller = controller,
-        content = content
-    )
+    CompositionLocalProvider(
+        LocalColorMode provides colorMode,
+    ) {
+        MiuixTheme(
+            controller = controller,
+            content = content
+        )
+    }
 }
 
+@Composable
+fun isInDarkTheme(): Boolean = when (LocalColorMode.current) {
+    1, 4 -> false
+    2, 5, 6 -> true
+    else -> isSystemInDarkTheme()
+}
 
 val KeyColors: List<Pair<String, Color>> = listOf(
     "Blue" to Color(0xFF3482FF),
@@ -62,4 +76,5 @@ val KeyColors: List<Pair<String, Color>> = listOf(
     "Teal" to Color(0xFF00BCD4)
 )
 
-fun keyColorFor(index: Int): Color? = if (index <= 0) null else KeyColors.getOrNull(index - 1)?.second
+fun keyColorFor(index: Int): Color? =
+    if (index <= 0) null else KeyColors.getOrNull(index - 1)?.second

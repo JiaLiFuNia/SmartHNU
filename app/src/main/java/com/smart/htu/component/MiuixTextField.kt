@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -32,7 +34,12 @@ fun MiuixHintTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    focusedBorderColor: Color = Color.Transparent
+    focusedBorderColor: Color = Color.Transparent,
+    enabled: Boolean = true,
+    readOnly: Boolean = false,
+    singleLine: Boolean = true,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
     // Setup InteractionSource to detect focus changes.
     val interactionSource = remember { MutableInteractionSource() }
@@ -64,6 +71,10 @@ fun MiuixHintTextField(
                 color = animatedBorderColor,
                 shape = RoundedCornerShape(cornerRadius)
             ),
+        enabled = enabled,
+        readOnly = readOnly,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         interactionSource = interactionSource,
         textStyle = TextStyle.Default.copy(
             textAlign = TextAlign.End, // Text inside innerTextField aligns right
@@ -71,7 +82,7 @@ fun MiuixHintTextField(
             fontSize = MiuixTheme.textStyles.main.fontSize
         ),
         cursorBrush = SolidColor(MiuixTheme.colorScheme.primary),
-        singleLine = true,
+        singleLine = singleLine,
         decorationBox = { innerTextField ->
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),

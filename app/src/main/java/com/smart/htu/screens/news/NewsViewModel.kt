@@ -261,6 +261,9 @@ class NewsViewModel @Inject constructor(
         val res = networkRepo.getNewsDetailService(url)
         if (res != null && res.title != null) {
             _uiState.update { it.copy(newsContent = res) }
+            if (res.title == "提示信息") {
+                onError("新闻内容解析失败，可能是因为该新闻链接已失效或需要登录才能访问")
+            }
         } else {
             Log.e("TAG666 fetchNewsDetail", "新闻内容解析失败: $res")
             onError("新闻内容解析失败")

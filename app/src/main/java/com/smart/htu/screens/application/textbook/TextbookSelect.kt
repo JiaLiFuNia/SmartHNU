@@ -63,7 +63,7 @@ import top.yukonga.miuix.kmp.basic.TabRowWithContour
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
-import top.yukonga.miuix.kmp.extra.SuperBottomSheet
+import top.yukonga.miuix.kmp.overlay.OverlayBottomSheet
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.Ok
@@ -114,7 +114,7 @@ fun TextbookSelect(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
@@ -335,8 +335,8 @@ fun CourseTextbookItem(
             }
         }
     }
-    SuperBottomSheet(
-        show = isSearchBottomSheetShow,
+    OverlayBottomSheet(
+        show = isSearchBottomSheetShow.value,
         title = "搜索结果",
         onDismissRequest = {
             isSearchBottomSheetShow.value = false

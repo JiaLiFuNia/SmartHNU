@@ -6,6 +6,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -32,7 +33,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -41,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -55,22 +56,23 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
-import coil3.network.NetworkHeaders
-import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.api.module.LibraryBorrowedBookRes.BorrowedBookEntity
 import com.smart.htu.api.module.LibraryDetailEntity
 import com.smart.htu.api.module.SearchBookData
+import com.smart.htu.component.BlurredBar
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
+import com.smart.htu.component.rememberBlurBackdrop
 import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.login.LoginDialog
+import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigation.Route
 import com.smart.htu.screens.setting.SettingItemCard
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
@@ -92,11 +94,14 @@ import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.Info
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 import java.time.Duration
 import java.time.LocalDate
 import kotlin.math.ceil
@@ -104,7 +109,8 @@ import kotlin.math.ceil
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibrarySearchScreen(
-    viewModel: LibrarySearchViewModel = hiltViewModel()
+    viewModel: LibrarySearchViewModel = hiltViewModel(),
+    loginViewModel: LoginViewModel = hiltViewModel()
 ) {
     val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
@@ -117,9 +123,12 @@ fun LibrarySearchScreen(
     var searchValue by rememberSaveable { mutableStateOf("") }
 
     val fabVisible by remember { derivedStateOf { lazyListState.firstVisibleItemIndex == 0 } }
-    val showLoginDialog = rememberSaveable { mutableStateOf(false) }
-    val loginState =
-        remember(uiState.libraryLoginState) { mutableStateOf(uiState.libraryLoginState == 1) }
+    val showLoginDialog = remember(uiState.authLoginState) {
+        mutableStateOf(uiState.authLoginState != 1)
+    }
+    val loginState = remember(uiState.libraryLoginState, uiState.authLoginState) {
+        mutableStateOf(uiState.libraryLoginState == 1 || uiState.authLoginState == 1)
+    }
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
@@ -141,61 +150,49 @@ fun LibrarySearchScreen(
         }
     }
 
+    val backdrop = rememberBlurBackdrop(true)
+    val blurActive = backdrop != null
+    val barColor = if (blurActive) Color.Transparent else MiuixTheme.colorScheme.surface
+
     val scrollBehavior = MiuixScrollBehavior()
     Scaffold(
         snackbarHost = {
             SnackbarHost(viewModel.snackBarHostState)
         },
         topBar = {
-            TopAppBar(
-                scrollBehavior = scrollBehavior,
-                title = "图书查询",
-                navigationIcon = {
-                    IconButton(
-                        onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
-                    ) {
-                        Icon(
-                            imageVector = MiuixIcons.Regular.Back,
-                            contentDescription = "back"
-                        )
-                    }
-                },
-                actions = {
-                    if (uiState.libraryLoginState != 1) {
+            BlurredBar(backdrop = backdrop, blurEnabled = blurActive) {
+                TopAppBar(
+                    scrollBehavior = scrollBehavior,
+                    title = "图书查询",
+                    color = barColor,
+                    navigationIcon = {
                         IconButton(
-                            onClick = {
-                                scope.launch {
-                                    viewModel.createSession()
-                                    showLoginDialog.value = true
-                                }
-                            },
-                            modifier = Modifier.padding(end = 16.dp)
-                        ) {
+                            onClick = { navigator.pop() },
+
+                            ) {
                             Icon(
-                                imageVector = MiuixIcons.Regular.Info,
-                                contentDescription = "info",
-                                tint = MaterialTheme.colorScheme.error
+                                imageVector = MiuixIcons.Regular.Back,
+                                contentDescription = "back"
                             )
                         }
-                    } else {
+                    },
+                    actions = {
                         IconButton(
                             onClick = {
                                 scope.launch {
                                     viewModel.syncCookieToWebView()
                                     navigator.pushWebView(
-                                        url = "https://opac.htu.edu.cn/space/index",
+                                        url = "https://opac.htu.edu.cn/space/reader/readerHome",
                                         title = "图书馆"
                                     )
                                 }
-                            },
-                            modifier = Modifier.padding(end = 16.dp)
+                            }
                         ) {
                             Icon(imageVector = MiuixIcons.Regular.Info, contentDescription = "info")
                         }
                     }
-                }
-            )
+                )
+            }
         },
         floatingActionButton = {
             AnimatedVisibility(
@@ -215,24 +212,21 @@ fun LibrarySearchScreen(
             }
         }
     ) {
-        PullToRefresh(
-            pullToRefreshState = pullToRefreshState,
-            onRefresh = { isRefreshing = true },
-            isRefreshing = isRefreshing,
-            refreshTexts = PULL_TO_REFRESH_TEXT,
-            modifier = Modifier
-                .fillMaxSize(),
-            contentPadding = it
+        Box(
+            modifier = Modifier.fillMaxSize()
         ) {
-            Column(
+            BlurredBar(
+                backdrop = backdrop,
+                blurEnabled = blurActive,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = it.calculateTopPadding() + 16.dp)
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .overScrollVertical()
+                    .fillMaxWidth()
+                    .zIndex(1f)
             ) {
                 SearchBar(
-                    modifier = Modifier.padding(bottom = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = it.calculateTopPadding() + 12.dp)
+                        .padding(bottom = 8.dp),
                     inputField = {
                         InputField(
                             query = searchValue,
@@ -267,11 +261,32 @@ fun LibrarySearchScreen(
                     onExpandedChange = { onExpand(it) },
                     insideMargin = DpSize(16.dp, 0.dp)
                 ) { }
+            }
 
+            PullToRefresh(
+                pullToRefreshState = pullToRefreshState,
+                onRefresh = { isRefreshing = true },
+                isRefreshing = isRefreshing,
+                refreshTexts = PULL_TO_REFRESH_TEXT,
+                contentPadding = PaddingValues(top = it.calculateTopPadding() + 68.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .let {
+                        if (backdrop != null) it.layerBackdrop(backdrop) else it
+                    },
+            ) {
                 LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = it.calculateTopPadding() + 68.dp,
+                        bottom = it.calculateBottomPadding() + 16.dp
+                    ),
                     modifier = Modifier
-                        .fillMaxSize(),
+                        .fillMaxSize()
+                        .overScrollVertical()
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
+                        .scrollEndHaptic(),
                     overscrollEffect = null,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -338,7 +353,33 @@ fun LibrarySearchScreen(
             }
         }
 
-        var verifyCodeRefreshKey by remember { mutableIntStateOf(0) }
+        LoginDialog(
+            showDialog = showLoginDialog.value,
+            summary = "统一身份认证系统",
+            onLogin = { studentID, password, _ ->
+                scope.launch {
+                    loginViewModel.authLogin(
+                        studentID = studentID,
+                        password = password,
+                        onSuccess = {
+                            scope.launch {
+                                showToast(context, "登录成功!")
+                                viewModel.libLogin()
+                            }
+                        },
+                        onFailure = {
+                            showToast(context, "登录失败！请检查账号密码是否正确")
+                        }
+                    )
+                }
+            },
+            loginState = uiState.libraryLoginState,
+            onDismissRequest = {
+                showLoginDialog.value = false
+            }
+        )
+
+        /*var verifyCodeRefreshKey by remember { mutableIntStateOf(0) }
         val verifyCodeModel = remember(verifyCodeRefreshKey, uiState.session) {
             val headers = NetworkHeaders.Builder()
                 .set("Cookie", "meta-opac.session=${uiState.session}")
@@ -351,7 +392,7 @@ fun LibrarySearchScreen(
         }
 
         LoginDialog(
-            showDialog = showLoginDialog,
+            showDialog = showLoginDialog.value,
             summary = "图书馆书目检索系统",
             isNeedVerifyCode = true,
             verifyCodeModel = verifyCodeModel,
@@ -376,8 +417,11 @@ fun LibrarySearchScreen(
                     verifyCodeRefreshKey++
                 }
             },
-            loginState = uiState.libraryLoginState
-        )
+            loginState = uiState.libraryLoginState,
+            onDismissRequest = {
+                showLoginDialog.value = false
+            }
+        )*/
     }
 }
 
@@ -388,6 +432,7 @@ fun WaitingToBorrowedBookList(
 ) {
     SettingItemCard(
         modifier = Modifier,
+        titlePaddingValues = PaddingValues(start = 12.dp, bottom = 8.dp, top = 4.dp),
         label = "待借清单"
     ) {
         if (bookList.isNotEmpty()) {
@@ -409,7 +454,7 @@ fun WaitingToBorrowedBookList(
                         onClick = {
                             onClick(it.bookId.toString())
                         },
-                        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
+                        shape = miuixShape(CardDefaults.CornerRadius),
                         modifier = Modifier,
                         color = MiuixTheme.colorScheme.surfaceContainer,
                     ) {
@@ -470,6 +515,7 @@ fun BorrowedBookList(
 ) {
     SettingItemCard(
         modifier = modifier,
+        titlePaddingValues = PaddingValues(start = 12.dp, bottom = 8.dp, top = 4.dp),
         label = "借阅历史"
     ) {
         if (loginState.value) {
@@ -516,6 +562,7 @@ fun CurrentBorrowingBookList(
 ) {
     SettingItemCard(
         modifier = modifier,
+        titlePaddingValues = PaddingValues(start = 12.dp, bottom = 8.dp, top = 4.dp),
         label = "当前借阅"
     ) {
         if (loginState.value) {
@@ -602,7 +649,7 @@ fun LibrarySingleBook(
     onClick: () -> Unit = {}
 ) {
     Surface(
-        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
+        shape = miuixShape(CardDefaults.CornerRadius),
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
         color = MiuixTheme.colorScheme.surfaceContainer

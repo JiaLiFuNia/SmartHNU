@@ -28,10 +28,10 @@ import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.SnackbarHost
 import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.CheckboxLocation
-import top.yukonga.miuix.kmp.extra.SuperCheckbox
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.preference.CheckboxLocation
+import top.yukonga.miuix.kmp.preference.CheckboxPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -52,7 +52,7 @@ fun ApplicationEdit(
                 navigationIcon = {
                     IconButton(
                         onClick = { navController.popBackStack() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
@@ -84,7 +84,7 @@ fun ApplicationEdit(
             }
             items(uiState.appList) {
                 Card {
-                    SuperCheckbox(
+                    CheckboxPreference(
                         checkboxLocation = CheckboxLocation.End,
                         title = stringResource(it.label),
                         summary = stringResource(it.category.category),
@@ -112,7 +112,7 @@ fun ApplicationEdit(
             }
             items(uiState.appList) {
                 Card {
-                    SuperCheckbox(
+                    CheckboxPreference(
                         checkboxLocation = CheckboxLocation.End,
                         title = stringResource(it.label),
                         summary = stringResource(it.category.category),

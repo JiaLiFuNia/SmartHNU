@@ -17,6 +17,10 @@ object Permission {
         Manifest.permission.ACCESS_FINE_LOCATION
     )
 
+    val NOTIFICATION_PERMISSION = arrayOf(
+        Manifest.permission.POST_NOTIFICATIONS
+    )
+
     fun hasPermissions(context: Context, permissions: Array<String>): Boolean {
         return permissions.all {
             ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED

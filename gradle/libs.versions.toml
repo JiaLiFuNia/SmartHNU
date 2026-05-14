@@ -1,11 +1,10 @@
 [versions]
-agp = "8.13.2"
-capsule = "2.1.1-patch2"
+agp = "9.1.0"
 eddsa = "0.3.0"
-kotlin = "2.2.21"
+kotlin = "2.3.20"
 kotlinxDatetimeVersion = "0.7.1-0.6.x-compat"
 ksp = "2.3.4"
-aboutlibraries = "13.2.1"
+aboutlibraries = "14.0.0"
 readability4j = "1.0.8"
 reorderable = "3.0.0"
 webview = "0.33.6"
@@ -14,13 +13,13 @@ scalars = "3.0.0"
 coreSplashscreen = "1.2.0"
 datastore = "1.2.0"
 haze = "1.7.2"
-hiltAndroid = "2.57.2"
+hiltAndroid = "2.59.2"
 hiltNavigationCompose = "1.3.0"
 konfetti = "2.0.5"
-material = "1.10.3"
+material = "1.10.6"
 material3 = "1.4.0"
 materialIconsCore = "1.7.8"
-nav3 = "1.1.0-alpha04"
+nav3 = "1.1.0-rc01"
 jsoup = "1.22.1"
 coreKtx = "1.17.0"
 junit = "4.13.2"
@@ -30,20 +29,19 @@ coroutines = "1.10.2"
 serialization = "1.9.0"
 lifecycleRuntimeKtx = "2.10.0"
 lifecycleViewmodelNav3 = "2.10.0"
-activityCompose = "1.12.2"
-composeBom = "2026.02.00"
-miuix = "0.8.3"
-navigationCompose = "2.9.6"
-coil = "3.3.0"
+activityCompose = "1.13.0"
+composeBom = "2026.03.01"
+miuix = "0.9.0"
+navigationCompose = "2.9.7"
+coil = "3.4.0"
 appcompat = "1.7.1"
 retrofit = "3.0.0"
 webkit = "1.15.0"
 vico = "2.4.0"
-zoomableCoil3 = "0.18.0"
+zoomableCoil3 = "0.19.0"
 
 [libraries]
 about-library = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutlibraries" }
-capsule = { module = "com.mocharealm.gaze:capsule", version.ref = "capsule" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetimeVersion" }
 androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "materialIconsCore" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsCore" }
@@ -55,8 +53,6 @@ androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecy
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "nav3" }
-miuix-navigation3-ui = { module = "top.yukonga.miuix.kmp:miuix-navigation3-ui", version.ref = "miuix" }
-miuix-navigation3-adaptive = { module = "top.yukonga.miuix.kmp:miuix-navigation3-adaptive", version.ref = "miuix" }
 
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
@@ -76,6 +72,14 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+
+miuix-ui = { module = "top.yukonga.miuix.kmp:miuix-ui-android", version.ref = "miuix" }
+miuix-preference = { module = "top.yukonga.miuix.kmp:miuix-preference-android", version.ref = "miuix" }
+miuix-icons = { module = "top.yukonga.miuix.kmp:miuix-icons-android", version.ref = "miuix" }
+miuix-shapes = { module = "top.yukonga.miuix.kmp:miuix-shapes-android", version.ref = "miuix" }
+miuix-blur = { module = "top.yukonga.miuix.kmp:miuix-blur-android", version.ref = "miuix" }
+miuix-navigation3-ui = { module = "top.yukonga.miuix.kmp:miuix-navigation3-ui-android", version.ref = "miuix" }
+
 readability4j = { module = "net.dankito.readability4j:readability4j", version.ref = "readability4j" }
 zoomable-image-coil3 = { module = "me.saket.telephoto:zoomable-image-coil3", version.ref = "zoomableCoil3" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
@@ -86,9 +90,6 @@ hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltA
 hilt-android-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
-
-miuix = { module = "top.yukonga.miuix.kmp:miuix-android", version.ref = "miuix" }
-miuix-icons = { module = "top.yukonga.miuix.kmp:miuix-icons-android", version.ref = "miuix" }
 
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "scalars" }
@@ -103,7 +104,6 @@ eddsa = { module = "net.i2p.crypto:eddsa", version.ref = "eddsa" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 about-library = { id = "com.mikepenz.aboutlibraries.plugin.android", version.ref = "aboutlibraries" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

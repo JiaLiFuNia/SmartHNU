@@ -79,7 +79,7 @@ fun LoginScreen(
     val scope = rememberCoroutineScope()
 
     val showLoginInfoDialog = remember { mutableStateOf(false) }
-    val isCodeLogDialogShow = remember { mutableStateOf(false) }
+    var isCodeLogDialogShow by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.jwcLoginState) {
         if (uiState.jwcLoginState == 1) {
@@ -98,7 +98,7 @@ fun LoginScreen(
                         onClick = {
                             navigator.pop()
                         },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Remove,
@@ -109,10 +109,9 @@ fun LoginScreen(
                 actions = {
                     IconButton(
                         onClick = {
-                            isCodeLogDialogShow.value = true
+                            isCodeLogDialogShow = true
                         },
-                        modifier = Modifier.padding(end = 16.dp),
-                        holdDownState = isCodeLogDialogShow.value
+                        holdDownState = isCodeLogDialogShow
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Tune,
@@ -307,33 +306,38 @@ fun LoginScreen(
                 )
             }
         }
+
+        LoginInfoDialog(
+            showDialog = showLoginInfoDialog.value,
+            onDismissRequests = {
+                scope.launch {
+                    showLoginInfoDialog.value = false
+                    showSnackbar(
+                        viewModel.snackBarHostState,
+                        "请前往河南师大智慧教务微信公众号进行密码重置"
+                    )
+                }
+            }
+        )
+        CodeLogDialog(
+            showDialog = isCodeLogDialogShow,
+            onLoginByCode = {
+                scope.launch {
+                    viewModel.wechatLogin(
+                        code = it,
+                        onSuccess = {
+                            showToast(context, "登录成功！")
+                            isCodeLogDialogShow = false
+                        },
+                        onFailure = {
+                            showToast(context, it)
+                        }
+                    )
+                }
+            },
+            onDismissRequest = {
+                isCodeLogDialogShow = false
+            }
+        )
     }
-    LoginInfoDialog(
-        showDialog = showLoginInfoDialog,
-        onDismissRequests = {
-            scope.launch {
-                showSnackbar(
-                    viewModel.snackBarHostState,
-                    "请前往河南师大智慧教务微信公众号进行密码重置"
-                )
-            }
-        }
-    )
-    CodeLogDialog(
-        showDialog = isCodeLogDialogShow,
-        onLoginByCode = {
-            scope.launch {
-                viewModel.wechatLogin(
-                    code = it,
-                    onSuccess = {
-                        showToast(context, "登录成功！")
-                        isCodeLogDialogShow.value = false
-                    },
-                    onFailure = {
-                        showToast(context, it)
-                    }
-                )
-            }
-        }
-    )
 }

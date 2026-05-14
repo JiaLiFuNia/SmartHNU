@@ -22,6 +22,7 @@ import com.smart.htu.api.module.SCHourEntity
 import com.smart.htu.screens.application.ApplicationEntity
 import com.smart.htu.screens.application.courseTable.CourseTableSettings
 import com.smart.htu.screens.main.TaskEntity
+import com.smart.htu.screens.setting.HomeFocusItem
 import com.smart.htu.utils.Constants.Companion.INIT_COMMON_APP_LIST
 import com.smart.htu.utils.TermUtil
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -83,8 +84,12 @@ class DataStoreRepo @Inject constructor(
         val TASK_LIST = stringPreferencesKey("TASK_LIST")
         val COURSE_TABLE_DATA = stringPreferencesKey("COURSE_TABLE_DATA")
         val HOME_FOCUS_ENABLED = booleanPreferencesKey("HOME_FOCUS_ENABLED")
+        val HOME_FOCUS_ITEM_STATE = stringPreferencesKey("HOME_FOCUS_ITEM_STATE")
         val HOME_TODAY_COURSE_ENABLED = booleanPreferencesKey("HOME_TODAY_COURSE_ENABLED")
+        val HOME_SHOW_ALL_TODAY_COURSE_ENABLED =
+            booleanPreferencesKey("HOME_SHOW_ALL_TODAY_COURSE_ENABLED")
         val HOME_TODAY_TASK_ENABLED = booleanPreferencesKey("HOME_TODAY_TASK_ENABLED")
+        val HOME_SHOW_ALL_TODAY_TASK_ENABLED = booleanPreferencesKey("HOME_SHOW_ALL_TODAY_TASK_ENABLED")
         val HOME_FREE_CLASSROOM_ENABLED = booleanPreferencesKey("HOME_FREE_CLASSROOM_ENABLED")
         val HOME_NEWS_ENABLED = booleanPreferencesKey("HOME_NEWS_ENABLED")
 
@@ -118,7 +123,9 @@ class DataStoreRepo @Inject constructor(
         const val DEFAULT_AIR_CONDITION_COOKIE_TYPE = 0
         const val DEFAULT_HOME_FOCUS_ENABLED = true
         const val DEFAULT_HOME_TODAY_COURSE_ENABLED = true
+        const val DEFAULT_HOME_SHOW_ALL_TODAY_COURSE_ENABLED = true
         const val DEFAULT_HOME_TODAY_TASK_ENABLED = false
+        const val DEFAULT_HOME_SHOW_ALL_TODAY_TASK_ENABLED = false
         const val DEFAULT_HOME_FREE_CLASSROOM_ENABLED = false
         const val DEFAULT_HOME_NEWS_ENABLED = false
     }
@@ -296,12 +303,30 @@ class DataStoreRepo @Inject constructor(
         context.dataStore.edit { it[HOME_FOCUS_ENABLED] = enabled }
     }
 
+    override suspend fun changeHomeFocusItemState(item: String, state: Boolean) {
+        context.dataStore.edit {
+            val currentState = Json.decodeFromString<Map<String, Boolean>>(
+                it[HOME_FOCUS_ITEM_STATE] ?: DEFAULT_EMPTY_MAP
+            ).toMutableMap()
+            currentState[item] = state
+            it[HOME_FOCUS_ITEM_STATE] = Json.encodeToString(currentState)
+        }
+    }
+
     override suspend fun changeHomeTodayCourseEnabled(enabled: Boolean) {
         context.dataStore.edit { it[HOME_TODAY_COURSE_ENABLED] = enabled }
     }
 
+    override suspend fun changeHomeShowAllTodayCourseEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[HOME_SHOW_ALL_TODAY_COURSE_ENABLED] = enabled }
+    }
+
     override suspend fun changeHomeTodayTaskEnabled(enabled: Boolean) {
         context.dataStore.edit { it[HOME_TODAY_TASK_ENABLED] = enabled }
+    }
+
+    override suspend fun changeHomeShowAllTodayTaskEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[HOME_SHOW_ALL_TODAY_TASK_ENABLED] = enabled }
     }
 
     override suspend fun changeHomeFreeClassroomEnabled(enabled: Boolean) {
@@ -543,15 +568,36 @@ class DataStoreRepo @Inject constructor(
         return context.dataStore.data.map { it[HOME_FOCUS_ENABLED] ?: DEFAULT_HOME_FOCUS_ENABLED }
     }
 
+    override fun observeHomeFocusItemState(): Flow<Map<String, Boolean>> {
+        return context.dataStore.data.map {
+            Json.decodeFromString<Map<String, Boolean>>(
+                it[HOME_FOCUS_ITEM_STATE]
+                    ?: Json.encodeToString(HomeFocusItem.entries.associate { it.name to it.state })
+            )
+        }
+    }
+
     override fun observeHomeTodayCourseEnabled(): Flow<Boolean> {
         return context.dataStore.data.map {
             it[HOME_TODAY_COURSE_ENABLED] ?: DEFAULT_HOME_TODAY_COURSE_ENABLED
         }
     }
 
+    override fun observeHomeShowAllTodayCourseEnabled(): Flow<Boolean> {
+        return context.dataStore.data.map {
+            it[HOME_SHOW_ALL_TODAY_COURSE_ENABLED] ?: DEFAULT_HOME_SHOW_ALL_TODAY_COURSE_ENABLED
+        }
+    }
+
     override fun observeHomeTodayTaskEnabled(): Flow<Boolean> {
         return context.dataStore.data.map {
             it[HOME_TODAY_TASK_ENABLED] ?: DEFAULT_HOME_TODAY_TASK_ENABLED
+        }
+    }
+
+    override fun observeHomeShowAllTodayTaskEnabled(): Flow<Boolean> {
+        return context.dataStore.data.map {
+            it[HOME_SHOW_ALL_TODAY_TASK_ENABLED] ?: DEFAULT_HOME_SHOW_ALL_TODAY_TASK_ENABLED
         }
     }
 

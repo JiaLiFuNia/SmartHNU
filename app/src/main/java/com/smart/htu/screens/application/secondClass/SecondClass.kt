@@ -86,7 +86,7 @@ import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
-import top.yukonga.miuix.kmp.extra.SuperListPopup
+import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -135,7 +135,7 @@ fun SecondClass(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
@@ -151,8 +151,7 @@ fun SecondClass(
                                     viewModel.loadSecondClassSid()
                                     showSCLoginDialog.value = true
                                 }
-                            },
-                            modifier = Modifier.padding(end = 16.dp)
+                            }
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.ErrorOutline,
@@ -186,8 +185,7 @@ fun SecondClass(
                                         )
                                     )
                                 }
-                            },
-                            modifier = Modifier.padding(end = 16.dp)
+                            }
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.format_paint_24px),
@@ -402,50 +400,54 @@ fun SecondClass(
                 }
             }
         }
-    }
 
-    var verifyCodeRefreshKey by remember { mutableIntStateOf(0) }
-    val verifyCodeModel = remember(verifyCodeRefreshKey, uiState.cookie) {
-        val headers = NetworkHeaders.Builder()
-            .set("Cookie", "sid=${uiState.cookie}")
-            .build()
-        ImageRequest.Builder(context)
-            .data("http://dekt.htu.edu.cn/img/resources-code.jpg?${System.currentTimeMillis()}")
-            .httpHeaders(headers)
-            .crossfade(true)
-            .build()
-    }
 
-    LoginDialog(
-        showDialog = showSCLoginDialog,
-        summary = "第二课堂登录",
-        isNeedVerifyCode = true,
-        verifyCodeModel = verifyCodeModel,
-        onRefreshVerifyCode = {
-            verifyCodeRefreshKey++
-        },
-        initAccount = uiState.studentID,
-        initPassword = uiState.password,
-        onLogin = { studentID, password, verifyCode ->
-            scope.launch {
-                viewModel.secondClassLogin(
-                    studentID = studentID,
-                    password = password,
-                    verifyCode = verifyCode,
-                    onSuccess = {
-                        showSCLoginDialog.value = false
-                        isRefreshing = true
-                        showToast(context, "登录成功!")
-                    },
-                    onFailure = {
-                        showToast(context, "登录失败！$it")
-                        verifyCodeRefreshKey++
-                    }
-                )
+        var verifyCodeRefreshKey by remember { mutableIntStateOf(0) }
+        val verifyCodeModel = remember(verifyCodeRefreshKey, uiState.cookie) {
+            val headers = NetworkHeaders.Builder()
+                .set("Cookie", "sid=${uiState.cookie}")
+                .build()
+            ImageRequest.Builder(context)
+                .data("http://dekt.htu.edu.cn/img/resources-code.jpg?${System.currentTimeMillis()}")
+                .httpHeaders(headers)
+                .crossfade(true)
+                .build()
+        }
+
+        LoginDialog(
+            showDialog = showSCLoginDialog.value,
+            summary = "第二课堂登录",
+            isNeedVerifyCode = true,
+            verifyCodeModel = verifyCodeModel,
+            onRefreshVerifyCode = {
+                verifyCodeRefreshKey++
+            },
+            initAccount = uiState.studentID,
+            initPassword = uiState.password,
+            onLogin = { studentID, password, verifyCode ->
+                scope.launch {
+                    viewModel.secondClassLogin(
+                        studentID = studentID,
+                        password = password,
+                        verifyCode = verifyCode,
+                        onSuccess = {
+                            showSCLoginDialog.value = false
+                            isRefreshing = true
+                            showToast(context, "登录成功!")
+                        },
+                        onFailure = {
+                            showToast(context, "登录失败！$it")
+                            verifyCodeRefreshKey++
+                        }
+                    )
+                }
+            },
+            loginState = uiState.scLoginState,
+            onDismissRequest = {
+                showSCLoginDialog.value = false
             }
-        },
-        loginState = uiState.scLoginState
-    )
+        )
+    }
 }
 
 @Composable
@@ -483,8 +485,8 @@ fun SelectTerm(
             )
         }
 
-        SuperListPopup(
-            show = expanded,
+        OverlayListPopup(
+            show = expanded.value,
             popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
             alignment = PopupPositionProvider.Align.TopEnd,
             onDismissRequest = {

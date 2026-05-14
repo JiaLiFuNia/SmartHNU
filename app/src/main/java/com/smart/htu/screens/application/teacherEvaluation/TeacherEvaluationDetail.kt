@@ -26,7 +26,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
+
 import com.smart.htu.R
 import com.smart.htu.api.module.EvaluationQuestion
 import com.smart.htu.component.CircularProgressIndicator
@@ -44,6 +44,7 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,7 +81,7 @@ fun TeacherEvaluationDetail(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
@@ -135,7 +136,7 @@ fun QuestionItem(
         modifier = Modifier
             .semantics { role = androidx.compose.ui.semantics.Role.Button }
             .fillMaxWidth(),
-        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
+        shape = miuixShape(CardDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surfaceContainer
     ) {
         Column(

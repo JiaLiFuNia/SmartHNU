@@ -63,8 +63,8 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
-import top.yukonga.miuix.kmp.extra.SuperArrow
-import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.preference.ArrowPreference
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -105,7 +105,7 @@ fun PersonScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
@@ -117,8 +117,7 @@ fun PersonScreen(
                     IconButton(
                         onClick = {
                             isShowPrivateMessage.value = !isShowPrivateMessage.value
-                        },
-                        modifier = Modifier.padding(end = 16.dp)
+                        }
                     ) {
                         Icon(
                             imageVector = if (isShowPrivateMessage.value)
@@ -267,7 +266,7 @@ fun PersonScreen(
                 }
                 item {
                     Card {
-                        SuperArrow(
+                        ArrowPreference(
                             title = "登录信息管理",
                             onClick = {
                                 navigator.push(Route.AccountManage)
@@ -295,18 +294,21 @@ fun PersonScreen(
         }
 
         LogoutDialog(
-            showDialog = showLogoutDialog,
+            showDialog = showLogoutDialog.value,
             onConfirmClick = {
                 scope.launch {
                     viewModel.logout()
                     showLogoutDialog.value = false
                     navigator.pop()
                 }
+            },
+            onDismissRequest = {
+                showLogoutDialog.value = false
             }
         )
 
         LoginDialog(
-            showDialog = showLoginDialog,
+            showDialog = showLoginDialog.value,
             summary = "统一身份认证系统",
             onLogin = { studentID, password, _ ->
                 scope.launch {
@@ -323,29 +325,39 @@ fun PersonScreen(
                     )
                 }
             },
-            loginState = uiState.authLoginState
+            loginState = uiState.authLoginState,
+            onDismissRequest = {
+                showLoginDialog.value = false
+            }
         )
 
-        DeleteMessageDialog(isShowMessageDialog, showDialogTarget) {
-            scope.launch {
-                viewModel.clearAllCookies()
+        DeleteMessageDialog(
+            showDialog = isShowMessageDialog.value,
+            target = showDialogTarget,
+            onDismissRequest = {
+                isShowMessageDialog.value = false
+            },
+            onConfirmClick = {
+                scope.launch {
+                    isShowMessageDialog.value = false
+                    viewModel.clearAllCookies()
+                }
             }
-        }
+        )
     }
 }
 
 @Composable
 fun DeleteMessageDialog(
-    showDialog: MutableState<Boolean>,
+    showDialog: Boolean,
     target: MutableState<String>,
-    onConfirmClick: () -> Unit
+    onConfirmClick: () -> Unit,
+    onDismissRequest: () -> Unit
 ) {
-    SuperDialog(
+    OverlayDialog(
         title = "提示",
         summary = "是否清除 ${target.value} 的登录信息？",
-        onDismissRequest = {
-            showDialog.value = false
-        },
+        onDismissRequest = onDismissRequest,
         show = showDialog
     ) {
         Column {
@@ -356,7 +368,7 @@ fun DeleteMessageDialog(
                 TextButton(
                     text = "取消",
                     onClick = {
-                        showDialog.value = false
+                        onDismissRequest()
                     },
                     modifier = Modifier.weight(1f)
                 )
@@ -365,7 +377,6 @@ fun DeleteMessageDialog(
                     text = "确认",
                     onClick = {
                         onConfirmClick()
-                        showDialog.value = false
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.textButtonColorsPrimary()

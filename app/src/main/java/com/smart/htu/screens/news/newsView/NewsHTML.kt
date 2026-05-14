@@ -17,15 +17,17 @@ object NewsHTML {
         %s
     </style>
     <base href="%s" />
+    <script src="https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js" defer></script>
 </head>
 <body>
 <main>
-    <article>
+    <article id="article"> 
         %s
     </article>
 </main>
 <script>
-%s
+    %s
+    document.addEventListener('DOMContentLoaded', function () { pangu.spacingElementById('article'); });  
 </script>
 </body>
 </html>

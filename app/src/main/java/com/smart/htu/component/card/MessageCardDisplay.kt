@@ -87,7 +87,7 @@ fun InfoItem(
             top.yukonga.miuix.kmp.basic.Icon(
                 imageVector = leadingIcon,
                 contentDescription = null,
-                modifier = Modifier.padding(end = 16.dp)
+                modifier = Modifier.padding(end = 12.dp)
             )
         }
         Column(

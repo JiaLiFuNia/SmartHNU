@@ -41,7 +41,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -106,16 +105,16 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.SuperBottomSheet
-import top.yukonga.miuix.kmp.extra.SuperCheckbox
-import top.yukonga.miuix.kmp.extra.SuperDialog
-import top.yukonga.miuix.kmp.extra.SuperDropdown
-import top.yukonga.miuix.kmp.extra.SuperListPopup
-import top.yukonga.miuix.kmp.extra.SuperSwitch
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.Delete
 import top.yukonga.miuix.kmp.icon.extended.More
+import top.yukonga.miuix.kmp.overlay.OverlayBottomSheet
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
+import top.yukonga.miuix.kmp.overlay.OverlayListPopup
+import top.yukonga.miuix.kmp.preference.CheckboxPreference
+import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
+import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.lang.Integer.max
 import java.time.LocalDate
@@ -181,7 +180,7 @@ fun CourseTable(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
@@ -205,7 +204,6 @@ fun CourseTable(
                         onClick = {
                             showDropDownMenu.value = true
                         },
-                        modifier = Modifier.padding(end = 16.dp),
                         holdDownState = showDropDownMenu.value
                     ) {
                         Icon(
@@ -213,8 +211,8 @@ fun CourseTable(
                             contentDescription = "more"
                         )
                     }
-                    SuperListPopup(
-                        show = showDropDownMenu,
+                    OverlayListPopup(
+                        show = showDropDownMenu.value,
                         popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
                         alignment = PopupPositionProvider.Align.TopEnd,
                         onDismissRequest = {
@@ -345,92 +343,100 @@ fun CourseTable(
                 )
             }
         }
+
+        SharedInfoDialog(
+            showDialog = isSharedInfoDialogShow.value,
+            shareCode = uiState.shareCode,
+            onCopyShareCode = { shareCode ->
+                copyContent(shareCode)
+                showToast(context, "分享码已复制到剪切板")
+            },
+            onShareToOtherApp = { shareCode ->
+                val shareIntent = android.content.Intent().apply {
+                    action = android.content.Intent.ACTION_SEND
+                    putExtra(
+                        android.content.Intent.EXTRA_TEXT,
+                        "我的课表分享码：$shareCode ，30分钟内有效。"
+                    )
+                    type = "text/plain"
+                }
+                context.startActivity(
+                    android.content.Intent.createChooser(shareIntent, "课表分享码")
+                )
+            },
+            onDismissRequest = {
+                isSharedInfoDialogShow.value = false
+            }
+        )
+
+        SharedCourseScheduleDialog(
+            showDialog = isImportCourseScheduleDialogShow.value,
+            sharedIdList = uiState.localCourseSchedule.keys.toList(),
+            onChooseTable = {
+                viewModel.changeSelectedCourseLabel(it)
+                showToast(context, "已切换到 $it")
+            },
+            onDeleteTable = {
+                viewModel.deleteLocalCourseSchedule(it)
+            },
+            selectTableId = uiState.selectedCourseLabel,
+            isImporting = uiState.isImporting,
+            onImportCourseSchedule = { shareCode ->
+                scope.launch {
+                    viewModel.importSharedCourseSchedule(
+                        shareCode = shareCode,
+                        onImportSuccess = {
+                            showToast(context, "导入成功")
+                        },
+                        onImportFailure = {
+                            showToast(context, "导入失败，$it")
+                        }
+                    )
+                }
+            },
+            onDismissRequest = {
+                isImportCourseScheduleDialogShow.value = false
+            }
+        )
+
+        BottomCircularProgressIndicator(loadingState = uiState.isSharing.value)
+
+        CourseTableMoreSettingBottomSheet(
+            showBottomSheet = isMoreSettingsBottomSheetShow.value,
+            isShowWeekendCourse = uiState.courseTableSettings.showWeekendCourse,
+            backgroundBlur = uiState.courseTableSettings.backgroundBlur,
+            backgroundUri = backgroundUri.value,
+            backgroundAlpha = uiState.courseTableSettings.backgroundAlpha,
+            courseBlockAlpha = uiState.courseTableSettings.courseBlockAlpha,
+            selectedTermCode = uiState.selectedTermCode,
+            termList = uiState.termList,
+            selectedDataSource = uiState.selectedDataSource,
+            onSelectDataSource = {
+                viewModel.changeDateSource(it)
+            },
+            onSelectTermCode = {
+                viewModel.changeSelectedTermCode(it)
+            },
+            onToggleShowWeekendCourse = {
+                viewModel.changeShowWeekendCourse(it)
+            },
+            onBackgroundUriChange = {
+                viewModel.setBackgroundUri(it.toString())
+            },
+            onBackgroundBluerChange = {
+                viewModel.setBackgroundBlur(it)
+            },
+            onBackgroundAlphaChange = {
+                viewModel.setBackgroundAlpha(it)
+            },
+            onCourseBlockAlphaChange = {
+                viewModel.setCourseBlockAlpha(it)
+            },
+            onDismissRequest = {
+                isMoreSettingsBottomSheetShow.value = false
+            }
+        )
     }
-
-    SharedInfoDialog(
-        showDialog = isSharedInfoDialogShow,
-        shareCode = uiState.shareCode,
-        onCopyShareCode = { shareCode ->
-            copyContent(shareCode)
-            showToast(context, "分享码已复制到剪切板")
-        },
-        onShareToOtherApp = { shareCode ->
-            val shareIntent = android.content.Intent().apply {
-                action = android.content.Intent.ACTION_SEND
-                putExtra(
-                    android.content.Intent.EXTRA_TEXT,
-                    "我的课表分享码：$shareCode ，30分钟内有效。"
-                )
-                type = "text/plain"
-            }
-            context.startActivity(
-                android.content.Intent.createChooser(shareIntent, "课表分享码")
-            )
-        }
-    )
-
-    SharedCourseScheduleDialog(
-        showDialog = isImportCourseScheduleDialogShow,
-        sharedIdList = uiState.localCourseSchedule.keys.toList(),
-        onChooseTable = {
-            viewModel.changeSelectedCourseLabel(it)
-            showToast(context, "已切换到 $it")
-        },
-        onDeleteTable = {
-            viewModel.deleteLocalCourseSchedule(it)
-        },
-        selectTableId = uiState.selectedCourseLabel,
-        isImporting = uiState.isImporting,
-        onImportCourseSchedule = { shareCode ->
-            scope.launch {
-                viewModel.importSharedCourseSchedule(
-                    shareCode = shareCode,
-                    onImportSuccess = {
-                        showToast(context, "导入成功")
-                    },
-                    onImportFailure = {
-                        showToast(context, "导入失败，$it")
-                    }
-                )
-            }
-        }
-    )
-
-    BottomCircularProgressIndicator(loadingState = uiState.isSharing)
-
-    CourseTableMoreSettingBottomSheet(
-        showBottomSheet = isMoreSettingsBottomSheetShow,
-        isShowWeekendCourse = uiState.courseTableSettings.showWeekendCourse,
-        backgroundBlur = uiState.courseTableSettings.backgroundBlur,
-        backgroundUri = backgroundUri.value,
-        backgroundAlpha = uiState.courseTableSettings.backgroundAlpha,
-        courseBlockAlpha = uiState.courseTableSettings.courseBlockAlpha,
-        selectedTermCode = uiState.selectedTermCode,
-        termList = uiState.termList,
-        selectedDataSource = uiState.selectedDataSource,
-        onSelectDataSource = {
-            viewModel.changeDateSource(it)
-        },
-        onSelectTermCode = {
-            viewModel.changeSelectedTermCode(it)
-        },
-        onToggleShowWeekendCourse = {
-            viewModel.changeShowWeekendCourse(it)
-        },
-        onBackgroundUriChange = {
-            viewModel.setBackgroundUri(it.toString())
-        },
-        onBackgroundBluerChange = {
-            viewModel.setBackgroundBlur(it)
-        },
-        onBackgroundAlphaChange = {
-            viewModel.setBackgroundAlpha(it)
-        },
-        onCourseBlockAlphaChange = {
-            viewModel.setCourseBlockAlpha(it)
-        }
-    )
-
 }
 
 @Composable
@@ -724,15 +730,18 @@ fun CourseTableSingleCourseCard(
     }
     CourseDetailBottomSheet(
         course = course,
-        isBottomSheetShow = isBottomSheetShow,
+        isBottomSheetShow = isBottomSheetShow.value,
         overlapCourseList = overlapCourseList,
-        onSelectOverlapCourse = onSelectOverlapCourse
+        onSelectOverlapCourse = onSelectOverlapCourse,
+        onDismissRequest = {
+            isBottomSheetShow.value = false
+        }
     )
 }
 
 @Composable
 fun CourseTableMoreSettingBottomSheet(
-    showBottomSheet: MutableState<Boolean>,
+    showBottomSheet: Boolean,
     isShowWeekendCourse: Boolean,
     selectedTermCode: String,
     termList: List<SingleTerm>,
@@ -747,7 +756,8 @@ fun CourseTableMoreSettingBottomSheet(
     backgroundAlpha: Float,
     onBackgroundAlphaChange: (Float) -> Unit,
     courseBlockAlpha: Float,
-    onCourseBlockAlphaChange: (Float) -> Unit
+    onCourseBlockAlphaChange: (Float) -> Unit,
+    onDismissRequest: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -768,11 +778,11 @@ fun CourseTableMoreSettingBottomSheet(
             onBackgroundUriChange(backgroundUri)
         }
     }
-    SuperBottomSheet(
+    OverlayBottomSheet(
         title = "更多设置",
         show = showBottomSheet,
         onDismissRequest = {
-            showBottomSheet.value = false
+            onDismissRequest()
         },
         backgroundColor = MiuixTheme.colorScheme.surface
     ) {
@@ -784,7 +794,7 @@ fun CourseTableMoreSettingBottomSheet(
                 Card(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    SuperDropdown(
+                    OverlayDropdownPreference(
                         title = "切换数据源",
                         items = listOf("智慧教务", "教务系统"),
                         selectedIndex = selectedDataSource,
@@ -797,7 +807,7 @@ fun CourseTableMoreSettingBottomSheet(
                         exit = fadeOut() + shrinkVertically(),
                         visible = selectedDataSource == 1
                     ) {
-                        SuperDropdown(
+                        OverlayDropdownPreference(
                             title = "选择学期",
                             items = termList.map { it.termString },
                             selectedIndex = termList.indexOfFirst { it.termCode == selectedTermCode }
@@ -892,7 +902,7 @@ fun CourseTableMoreSettingBottomSheet(
                 Card(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    SuperSwitch(
+                    SwitchPreference(
                         title = "是否显示周末课程",
                         summary = "开启后，周六、周日的课程将会显示在课表中",
                         checked = isShowWeekendCourse,
@@ -915,15 +925,16 @@ fun CourseTableMoreSettingBottomSheet(
 
 @Composable
 fun SharedInfoDialog(
-    showDialog: MutableState<Boolean>,
+    showDialog: Boolean,
     shareCode: String,
     onCopyShareCode: (String) -> Unit,
-    onShareToOtherApp: (String) -> Unit
+    onShareToOtherApp: (String) -> Unit,
+    onDismissRequest: () -> Unit
 ) {
-    SuperDialog(
+    OverlayDialog(
         show = showDialog,
         onDismissRequest = {
-            showDialog.value = false
+            onDismissRequest()
         },
         title = "课表分享码",
     ) {
@@ -936,7 +947,7 @@ fun SharedInfoDialog(
                 TextButton(
                     text = "分享",
                     onClick = {
-                        showDialog.value = false
+                        onDismissRequest()
                         onShareToOtherApp(shareCode)
                     },
                     modifier = Modifier.weight(1f)
@@ -945,7 +956,7 @@ fun SharedInfoDialog(
                 TextButton(
                     text = "复制",
                     onClick = {
-                        showDialog.value = false
+                        onDismissRequest()
                         onCopyShareCode(shareCode)
                     },
                     modifier = Modifier.weight(1f),
@@ -958,26 +969,27 @@ fun SharedInfoDialog(
 
 @Composable
 fun SharedCourseScheduleDialog(
-    showDialog: MutableState<Boolean>,
+    showDialog: Boolean,
     onImportCourseSchedule: (String) -> Unit,
     isImporting: Boolean,
     sharedIdList: List<String>,
     onChooseTable: (String) -> Unit,
     selectTableId: String = "",
-    onDeleteTable: (String) -> Unit
+    onDeleteTable: (String) -> Unit,
+    onDismissRequest: () -> Unit
 ) {
     val context = LocalContext.current
     var shareCode by remember { mutableStateOf("") }
-    SuperDialog(
+    OverlayDialog(
         show = showDialog,
         onDismissRequest = {
-            showDialog.value = false
+            onDismissRequest()
         },
         title = "管理共享课表",
     ) {
         Column {
             sharedIdList.forEach { id ->
-                SuperCheckbox(
+                CheckboxPreference(
                     title = id,
                     checked = selectTableId == id,
                     onCheckedChange = {
@@ -1027,7 +1039,7 @@ fun SharedCourseScheduleDialog(
             TextButton(
                 text = "取消",
                 onClick = {
-                    showDialog.value = false
+                    onDismissRequest()
                 },
                 colors = ButtonDefaults.textButtonColors(),
                 modifier = Modifier.fillMaxWidth()

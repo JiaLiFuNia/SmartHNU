@@ -79,6 +79,7 @@ fun WebView.setDefaultSettings() {
         useWideViewPort = true
         loadWithOverviewMode = true
         isHorizontalScrollBarEnabled = false
+        isVerticalScrollBarEnabled = false  // Add this line
         cacheMode = WebSettings.LOAD_DEFAULT
         offscreenPreRaster = true
 

@@ -2,6 +2,7 @@ package com.smart.htu.screens.news.newsView
 
 import android.content.Intent
 import android.os.Environment
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -16,8 +17,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,7 +28,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -44,6 +46,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,11 +70,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.kevinnzou.web.WebViewNavigator
 import com.kevinnzou.web.rememberWebViewNavigator
 import com.kevinnzou.web.rememberWebViewState
 import com.kevinnzou.web.rememberWebViewStateWithHTMLData
 import com.smart.htu.R
 import com.smart.htu.api.module.AttachmentEntity
+import com.smart.htu.api.module.NewsArticleEntity
 import com.smart.htu.api.module.NewsMarkEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.DownloadDialog
@@ -86,14 +91,14 @@ import com.smart.htu.utils.FileUtil.downloadFile
 import com.smart.htu.utils.ToastUtil.showToast
 import com.smart.htu.utils.copyContent
 import com.smart.htu.utils.startWebUrl
-import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
-import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.DropdownImpl
@@ -108,14 +113,20 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.ToolbarPosition
-import top.yukonga.miuix.kmp.extra.SuperBottomSheet
-import top.yukonga.miuix.kmp.extra.SuperListPopup
+import top.yukonga.miuix.kmp.basic.VerticalScrollBar
+import top.yukonga.miuix.kmp.basic.rememberScrollBarAdapter
+import top.yukonga.miuix.kmp.overlay.OverlayBottomSheet
+import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.Copy
 import top.yukonga.miuix.kmp.icon.extended.More
+import top.yukonga.miuix.kmp.icon.extended.Refresh
 import top.yukonga.miuix.kmp.icon.extended.Share
+import top.yukonga.miuix.kmp.interfaces.ExperimentalScrollBarApi
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalDate
 
@@ -134,6 +145,7 @@ fun NewsDetail(
     val webViewNavigator = rememberWebViewNavigator()
     val hazeState = rememberHazeState()
     val listState = rememberLazyListState()
+    val scrollState = rememberScrollState()
     val snackBarHostState = remember { SnackbarHostState() }
 
     val showDropDownMenu = remember { mutableStateOf(false) }
@@ -143,15 +155,19 @@ fun NewsDetail(
     val isLoadingContent = remember { mutableStateOf(true) }
     val newsViewMode = remember { mutableIntStateOf(0) }
 
-    val errorMessage = remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf("") }
     val showErrorMessageDialog = remember(errorMessage) {
-        derivedStateOf {
-            errorMessage.value.isNotEmpty()
-        }
+        mutableStateOf(errorMessage.isNotEmpty())
     }
 
     val showImagePreview = remember { mutableStateOf(false) }
     val selectedImageData = remember { mutableStateOf("") }
+
+    var downloadedFileUrl by remember { mutableStateOf("") }
+    var downloadFileName by remember { mutableStateOf("") }
+    val showDownloadDialog = remember(downloadFileName, downloadedFileUrl) {
+        mutableStateOf(downloadedFileUrl.isNotEmpty() && downloadFileName.isNotEmpty())
+    }
 
     val showAISummaryBottomSheet = remember { mutableStateOf(false) }
 
@@ -166,7 +182,7 @@ fun NewsDetail(
         if (isHTUNews.value) {
             delay(500)
             newsViewModel.fetchNewsDetail(url) {
-                errorMessage.value = it
+                errorMessage = it
                 newsViewMode.intValue = 1
             }
             isLoadingContent.value = false
@@ -184,8 +200,8 @@ fun NewsDetail(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp),
-                    ) {
+
+                        ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "close",
@@ -194,6 +210,14 @@ fun NewsDetail(
                     }
                 },
                 actions = {
+                    /*IconButton(onClick = {
+                        webViewNavigator.reload()
+                    }) {
+                        Icon(
+                            imageVector = MiuixIcons.Refresh,
+                            contentDescription = "refresh",
+                        )
+                    }*/
                     IconButton(
                         onClick = {
                             Intent(Intent.ACTION_SEND).also {
@@ -212,7 +236,6 @@ fun NewsDetail(
                     }
                     IconButton(
                         onClick = { showDropDownMenu.value = true },
-                        modifier = Modifier.padding(end = 16.dp),
                         holdDownState = showDropDownMenu.value
                     ) {
                         Icon(
@@ -226,8 +249,8 @@ fun NewsDetail(
                         stringResource(R.string.forward),
                         "复制 HTML 文本"
                     )
-                    SuperListPopup(
-                        show = showDropDownMenu,
+                    OverlayListPopup(
+                        show = showDropDownMenu.value,
                         popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
                         alignment = PopupPositionProvider.Align.TopEnd,
                         onDismissRequest = {
@@ -272,14 +295,7 @@ fun NewsDetail(
                         }
                     }
                 },
-                modifier = Modifier.hazeEffect(
-                    state = hazeState,
-                    style = HazeMaterials.thick(MiuixTheme.colorScheme.surface)
-                ) {
-                    blurRadius = 30.dp
-                    noiseFactor = 0f
-                    blurEnabled = uiState.blurEffect
-                }
+                modifier = Modifier
             )
         },
         floatingToolbar = {
@@ -295,7 +311,7 @@ fun NewsDetail(
                     Row(
                         modifier = Modifier
                             .background(Color.Transparent)
-                            .hazeEffect(state = hazeState)
+                            //.hazeEffect(state = hazeState)
                             .padding(8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
@@ -383,123 +399,76 @@ fun NewsDetail(
         modifier = Modifier.fillMaxSize()
     ) {
         if (newsViewMode.intValue == 0) {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .hazeSource(state = hazeState),
-                contentPadding = it
-            ) {
-                if (isLoadingContent.value) {
-                    item { CircularProgressIndicator() }
-                } else {
-                    item {
-                        TittleContent(
-                            title = uiState.newsContent?.title ?: "无标题",
-                            publishDate = uiState.newsContent?.publishDate ?: getCurrentDate(),
-                            visitCount = uiState.newsContent?.visitCount ?: "10",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                        )
-                    }
-                    item {
-                        WebView(
-                            url = url,
-                            webViewState = rememberWebViewStateWithHTMLData(
-                                data = NewsHTML.HTML.format(
-                                    NewsStyle.get(
-                                        fontSize = uiState.newsFontSize,
-                                        lineHeight = 1.0F,
-                                        letterSpacing = 0.5F,
-                                        textMargin = HORIZONTAL_MARGIN,
-                                        textColor = MiuixTheme.colorScheme.onBackground.copy(0.8f)
-                                            .toArgb(),
-                                        textBold = false,
-                                        textAlign = "start",
-                                        boldTextColor = MiuixTheme.colorScheme.onBackground.copy(
-                                            0.8f
-                                        ).toArgb(),
-                                        subheadBold = false,
-                                        subheadUpperCase = false,
-                                        imgMargin = HORIZONTAL_MARGIN,
-                                        imgBorderRadius = 4,
-                                        imgDisplayMode = if (uiState.loadImgEnabled) "block" else "none",
-                                        linkTextColor = MiuixTheme.colorScheme.onBackground.copy(
-                                            0.8f
-                                        ).toArgb(),
-                                        codeTextColor = MiuixTheme.colorScheme.onBackground.copy(
-                                            0.8f
-                                        ).toArgb(),
-                                        codeBgColor = MiuixTheme.colorScheme.onBackground.copy(0.8f)
-                                            .toArgb(),
-                                        tableMargin = 0,
-                                        selectionTextColor = MiuixTheme.colorScheme.onBackground.toArgb(),
-                                        selectionBgColor = MaterialTheme.colorScheme.primaryContainer.toArgb(),
-                                        signatureColor = Color.Gray.toArgb()
-                                    ),
-                                    url,
-                                    uiState.newsContent?.articleContent,
-                                    WebViewScript.get()
-                                ),
-                                baseUrl = url
-                            ),
-                            onError = {
-                                errorMessage.value = it
-                            },
-                            onFinished = {
-                            },
-                            onImageClick = {
-                                selectedImageData.value = it
-                                showImagePreview.value = true
-                            },
-                            isShowLinearProgressIndicator = false,
-                            navigator = webViewNavigator,
-                            snackBarHostState = snackBarHostState
-                        )
-                    }
-                    item {
-                        uiState.newsContent?.attachment
-                            .let { attachments ->
-                                if (attachments?.isNotEmpty() == true) {
-                                    AttachmentContent(
-                                        attachments = attachments,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(top = 12.dp)
-                                            .padding(horizontal = 16.dp),
-                                        onClick = { url, title ->
-                                            navigator.push(
-                                                Route.PdfReaderView(
-                                                    url = url,
-                                                    title = title
-                                                )
-                                            )
-                                        }
-                                    )
-                                }
-                            }
-                    }
-                }
-            }
+            ParsedArticleView(
+                padding = it,
+                hazeState = hazeState,
+                isLoadingContent = isLoadingContent,
+                newsContent = uiState.newsContent,
+                url = url,
+                fontSize = uiState.newsFontSize,
+                loadImgEnabled = uiState.loadImgEnabled,
+                onImgClick = {
+                    selectedImageData.value = it
+                    showImagePreview.value = true
+                },
+                onError = {
+                    errorMessage = it
+                    Log.e("TAG666 NewsDetail", "Error loading news content: $it")
+                },
+                onDownloadClick = { fileUrl, fileName ->
+                    downloadedFileUrl = fileUrl
+                    downloadFileName = fileName
+                },
+                webViewNavigator = webViewNavigator,
+                snackBarHostState = snackBarHostState
+            )
         } else {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .hazeSource(state = hazeState),
-                contentPadding = it
-            ) {
-                item {
-                    WebView(
-                        url = url,
-                        webViewState = rememberWebViewState(url),
-                        navigator = webViewNavigator,
-                        snackBarHostState = snackBarHostState
-                    )
-                }
-            }
+            RawArticleView(
+                modifier = Modifier.padding(top = it.calculateTopPadding()),
+                url = url,
+                onError = {
+                    errorMessage = it
+                    Log.e("TAG666 NewsDetail", "Error loading news content: $it")
+                },
+                onDownloadClick = { fileUrl, fileName ->
+                    downloadedFileUrl = fileUrl
+                    downloadFileName = fileName
+                },
+                webViewNavigator = webViewNavigator,
+                snackBarHostState = snackBarHostState
+            )
         }
+
+        DownloadDialog(
+            showDialog = showDownloadDialog.value,
+            fileName = downloadFileName,
+            url = downloadedFileUrl,
+            onDismissRequest = {
+                showDownloadDialog.value = false
+                downloadFileName = ""
+                downloadedFileUrl = ""
+            }
+        )
+
+        AISummaryBottomSheet(
+            showDialog = showAISummaryBottomSheet.value,
+            aiSummaryContent = uiState.aiSummaryContent,
+            aiSummaryReasoningContent = uiState.aiSummaryReasoningContent,
+            onDismissRequest = { showAISummaryBottomSheet.value = false }
+        )
+
+        ErrorMessageDialog(
+            showDialog = showErrorMessageDialog.value,
+            errorMessage = errorMessage,
+            onDismissRequest = {
+                showErrorMessageDialog.value = false
+                navigator.pop()
+            },
+            onReload = {
+                errorMessage = ""
+                webViewNavigator.reload()
+            }
+        )
 
     }
 
@@ -521,11 +490,150 @@ fun NewsDetail(
             }
         )
     }
+}
 
-    AISummaryBottomSheet(
-        showDialog = showAISummaryBottomSheet,
-        aiSummaryContent = uiState.aiSummaryContent,
-        aiSummaryReasoningContent = uiState.aiSummaryReasoningContent
+@OptIn(ExperimentalScrollBarApi::class)
+@Composable
+private fun ParsedArticleView(
+    padding: PaddingValues,
+    hazeState: HazeState,
+    isLoadingContent: MutableState<Boolean>,
+    newsContent: NewsArticleEntity? = null,
+    url: String,
+    fontSize: Int,
+    loadImgEnabled: Boolean,
+    onImgClick: (imgUrl: String) -> Unit,
+    onError: (String) -> Unit,
+    onDownloadClick: (fileUrl: String, fileName: String) -> Unit,
+    webViewNavigator: WebViewNavigator,
+    snackBarHostState: SnackbarHostState
+) {
+    val scrollState = rememberScrollState()
+    val navigator = LocalNavigator.current
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = padding.calculateTopPadding())
+                .hazeSource(state = hazeState)
+                .verticalScroll(scrollState)
+        ) {
+            if (isLoadingContent.value) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 100.dp)
+                )
+            } else {
+                TittleContent(
+                    title = newsContent?.title ?: "无标题",
+                    publishDate = newsContent?.publishDate ?: getCurrentDate(),
+                    visitCount = newsContent?.visitCount ?: "10",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                )
+                WebView(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    url = url,
+                    webViewState = rememberWebViewStateWithHTMLData(
+                        data = NewsHTML.HTML.format(
+                            NewsStyle.get(
+                                fontSize = fontSize,
+                                lineHeight = 1.0F,
+                                letterSpacing = 0.5F,
+                                textMargin = HORIZONTAL_MARGIN,
+                                textColor = MiuixTheme.colorScheme.onBackground.copy(0.8f)
+                                    .toArgb(),
+                                textBold = false,
+                                textAlign = "start",
+                                boldTextColor = MiuixTheme.colorScheme.onBackground.copy(
+                                    0.8f
+                                ).toArgb(),
+                                subheadBold = false,
+                                subheadUpperCase = false,
+                                imgMargin = HORIZONTAL_MARGIN,
+                                imgBorderRadius = 4,
+                                imgDisplayMode = if (loadImgEnabled) "block" else "none",
+                                linkTextColor = MiuixTheme.colorScheme.onBackground.copy(
+                                    0.8f
+                                ).toArgb(),
+                                codeTextColor = MiuixTheme.colorScheme.onBackground.copy(
+                                    0.8f
+                                ).toArgb(),
+                                codeBgColor = MiuixTheme.colorScheme.onBackground.copy(0.8f)
+                                    .toArgb(),
+                                tableMargin = 0,
+                                selectionTextColor = MiuixTheme.colorScheme.onBackground.toArgb(),
+                                selectionBgColor = MaterialTheme.colorScheme.primaryContainer.toArgb(),
+                                signatureColor = Color.Gray.toArgb()
+                            ),
+                            url,
+                            newsContent?.articleContent,
+                            WebViewScript.get()
+                        ),
+                        baseUrl = url
+                    ),
+                    onError = { onError(it) },
+                    onFinished = {
+                    },
+                    onImageClick = { onImgClick(it) },
+                    onDownloadClick = { fileUrl, fileName -> onDownloadClick(fileUrl, fileName) },
+                    isShowLinearProgressIndicator = false,
+                    navigator = webViewNavigator,
+                    snackBarHostState = snackBarHostState
+                )
+                newsContent?.attachment
+                    .let { attachments ->
+                        if (attachments?.isNotEmpty() == true) {
+                            AttachmentContent(
+                                attachments = attachments,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 12.dp)
+                                    .padding(horizontal = 16.dp),
+                                onClick = { url, title ->
+                                    navigator.push(
+                                        Route.PdfReaderView(
+                                            url = url,
+                                            title = title
+                                        )
+                                    )
+                                }
+                            )
+                        }
+                    }
+                Spacer(modifier = Modifier.height(padding.calculateBottomPadding() + 12.dp))
+            }
+        }
+        VerticalScrollBar(
+            adapter = rememberScrollBarAdapter(scrollState),
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .fillMaxHeight(),
+            trackPadding = padding,
+        )
+    }
+}
+
+@Composable
+private fun RawArticleView(
+    modifier: Modifier = Modifier,
+    url: String,
+    onError: (String) -> Unit,
+    onDownloadClick: (fileUrl: String, fileName: String) -> Unit,
+    webViewNavigator: WebViewNavigator,
+    snackBarHostState: SnackbarHostState
+) {
+    WebView(
+        modifier = modifier,
+        url = url,
+        webViewState = rememberWebViewState(url),
+        navigator = webViewNavigator,
+        snackBarHostState = snackBarHostState,
+        onError = { onError(it) },
+        onDownloadClick = { fileUrl, fileName -> onDownloadClick(fileUrl, fileName) }
     )
 }
 
@@ -544,9 +652,7 @@ fun TittleContent(
         Text(
             text = title,
             textAlign = TextAlign.Start,
-            style = MaterialTheme.typography.headlineSmall.copy(
-                color = MaterialTheme.colorScheme.onSurface
-            ),
+            style = MiuixTheme.textStyles.title2,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(6.dp))
@@ -555,16 +661,14 @@ fun TittleContent(
         ) {
             Text(
                 text = "发布时间：${publishDate}",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = Color.Gray
-                )
+                fontSize = MiuixTheme.textStyles.body2.fontSize,
+                color = MiuixTheme.colorScheme.onBackground.copy(0.6f)
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
                 text = "浏览次数：${visitCount}",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = Color.Gray
-                )
+                fontSize = MiuixTheme.textStyles.body2.fontSize,
+                color = MiuixTheme.colorScheme.onBackground.copy(0.6f)
             )
         }
     }
@@ -619,9 +723,12 @@ fun AttachmentContent(
                         }
                     )
                     DownloadDialog(
-                        showDialog = showDownloadDialog,
+                        showDialog = showDownloadDialog.value,
                         fileName = attachment.fileName,
-                        url = attachment.url
+                        url = attachment.url,
+                        onDismissRequest = {
+                            showDownloadDialog.value = false
+                        }
                     )
                 }
             }
@@ -632,15 +739,16 @@ fun AttachmentContent(
 @OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun AISummaryBottomSheet(
-    showDialog: MutableState<Boolean>,
+    showDialog: Boolean,
     aiSummaryContent: String? = null,
-    aiSummaryReasoningContent: String? = null
+    aiSummaryReasoningContent: String? = null,
+    onDismissRequest: () -> Unit
 ) {
-    SuperBottomSheet(
+    OverlayBottomSheet(
         title = "YunAI 智能摘要",
         show = showDialog,
         onDismissRequest = {
-            showDialog.value = false
+            onDismissRequest()
         },
         startAction = {
             IconButton(
@@ -787,6 +895,48 @@ fun AISummaryBottomSheet(
                     Text(it)
                     Spacer(modifier = Modifier.height(12.dp))
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun ErrorMessageDialog(
+    showDialog: Boolean,
+    errorMessage: String,
+    onDismissRequest: () -> Unit,
+    onReload: () -> Unit
+) {
+    OverlayDialog(
+        title = "提示信息",
+        summary = errorMessage,
+        show = showDialog,
+        onDismissRequest = onDismissRequest
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(),
+        ) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TextButton(
+                    text = "返回",
+                    onClick = {
+                        onDismissRequest()
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(Modifier.width(20.dp))
+                TextButton(
+                    text = "刷新",
+                    onClick = {
+                        onReload()
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.textButtonColorsPrimary()
+                )
             }
         }
     }

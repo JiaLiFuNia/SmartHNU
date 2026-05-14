@@ -6,6 +6,7 @@ import com.smart.htu.api.network.AirConditionService
 import com.smart.htu.api.network.AppLoginService
 import com.smart.htu.api.network.AppService
 import com.smart.htu.api.network.AuthLoginService
+import com.smart.htu.api.network.CampusCardService
 import com.smart.htu.api.network.EHallService
 import com.smart.htu.api.network.JWCAppService
 import com.smart.htu.api.network.JWCService
@@ -53,6 +54,7 @@ object NetworkModule {
         const val APP_BASE_URL = "http://app.htu.edu.cn/appapi/"
         const val EHALL_BASE_URL = "https://ehall2.htu.edu.cn/"
         const val LIBRARY_BASE_URL = "https://opac.htu.edu.cn/"
+        const val CAMPUS_CARD_BASE_URL = "https://ecardh5.17wanxiao.com/"
         const val MESSAGE_BOARD_BASE_URL = "https://yjfk.htu.edu.cn/"
 
         const val SECOND_CLASS_BASE_URL = "http://dekt.htu.edu.cn/"
@@ -62,8 +64,7 @@ object NetworkModule {
 
         const val SILICON_BASE_URL = "https://api.siliconflow.cn/"
 
-        const val SMH_BASE_URL = "https://xhand.edu.deal/api/"
-        //"https://shtu.xubohan04.tk/api/"
+        const val SMH_BASE_URL = "https://smh.xubohan04.tk/api/"
     }
 
     @Provides
@@ -151,6 +152,23 @@ object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(LibraryService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCampusCardService(
+        cookieJar: NetworkCookieJar
+    ): CampusCardService {
+        val clientWithInterceptor = OkHttpClient.Builder()
+            .cookieJar(cookieJar)
+            .build()
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl(ApiConstants.CAMPUS_CARD_BASE_URL)
+            .client(clientWithInterceptor)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(CampusCardService::class.java)
     }
 
     @Provides
@@ -299,9 +317,18 @@ class NetworkCookieJar @Inject constructor(
         scope.launch {
             val cookies = dataStoreRepo.observeAuthCookie().first()
             cookies.forEach { cookie ->
-                cookie.toHttpCookie()?.let { httpCookie ->
+                cookie.toHttpCookie().let { httpCookie ->
                     cookieManager.cookieStore.add(URI.create(cookie.domain), httpCookie)
                 }
+            }
+        }
+    }
+
+    fun editCookie(url: String, name: String, value: String) {
+        val uri = URI.create(url)
+        cookieManager.cookieStore.get(uri).forEach {
+            if (it.name == name) {
+                it.value = value
             }
         }
     }
@@ -323,7 +350,7 @@ class NetworkCookieJar @Inject constructor(
 
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
         cookies.forEach { cookie ->
-            cookie.toHttpCookie()?.let { httpCookie ->
+            cookie.toHttpCookie().let { httpCookie ->
                 cookieManager.cookieStore.add(url.toUri(), httpCookie)
             }
         }
@@ -334,7 +361,7 @@ class NetworkCookieJar @Inject constructor(
         }
     }
 
-    private fun Cookie.toHttpCookie(): HttpCookie? {
+    private fun Cookie.toHttpCookie(): HttpCookie {
         return HttpCookie(name, value).apply {
             domain = this@toHttpCookie.domain
             path = this@toHttpCookie.path
@@ -366,6 +393,14 @@ class NetworkCookieJar @Inject constructor(
     fun clearCookies() {
         scope.launch {
             cookieManager.cookieStore.removeAll()
+            dataStoreRepo.saveAuthCookie(emptyList())
+        }
+    }
+
+    fun clearCookieForUrl(url: String) {
+        scope.launch {
+            val uri = URI.create(url)
+            cookieManager.cookieStore.remove(uri, HttpCookie("empty", ""))
             dataStoreRepo.saveAuthCookie(emptyList())
         }
     }

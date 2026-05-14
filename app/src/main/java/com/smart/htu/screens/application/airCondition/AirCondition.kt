@@ -34,7 +34,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
+
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.SuggestChip
 import com.smart.htu.component.SuggestChipType
@@ -71,6 +71,7 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.Settings
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
 
@@ -112,7 +113,7 @@ fun AirCondition(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
@@ -124,8 +125,7 @@ fun AirCondition(
                     IconButton(
                         onClick = {
                             navigator.push(Route.AirConditionSetting)
-                        },
-                        modifier = Modifier.padding(end = 16.dp)
+                        }
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Settings,
@@ -317,7 +317,7 @@ fun AirConditionChart(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
+        shape = miuixShape(CardDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surfaceContainer
     ) {
         Box(
@@ -349,7 +349,7 @@ fun SingleMessage(
     }
     /*Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
+        shape = miuixShape(CardDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surfaceContainer
     ) {
         ListItem(

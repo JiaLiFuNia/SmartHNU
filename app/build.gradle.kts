@@ -1,11 +1,10 @@
-import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+import com.android.build.api.dsl.ApplicationExtension
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.TimeZone.getDefault
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.about.library)
     alias(libs.plugins.ksp)
@@ -13,16 +12,16 @@ plugins {
     kotlin("plugin.serialization") version "2.1.20"
 }
 
-android {
+extensions.configure<ApplicationExtension> {
     namespace = "com.smart.htu"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.smart.htu"
-        minSdk = 29
+        minSdk = 31
         targetSdk = 35
-        versionCode = 202602151
-        versionName = "3.1.2_beta"
+        versionCode = 202605091
+        versionName = "3.1.1_beta"
 
         val buildTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
             timeZone = getDefault()
@@ -36,9 +35,20 @@ android {
         buildConfigField("String", "BUILD_TIME", "\"$buildTime\"")
     }
 
-    aboutLibraries {
-        export {
-            outputFile = file("res/raw/aboutlibraries.json")
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        buildConfig = true
+        compose = true
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1,DEPENDENCIES}"
+            excludes += "/META-INF/versions/9/OSGI-INF/MANIFEST.MF"
         }
     }
 
@@ -52,32 +62,12 @@ android {
             )
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-    buildFeatures {
-        buildConfig = true
-        compose = true
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1,DEPENDENCIES}"
-            excludes += "/META-INF/versions/9/OSGI-INF/MANIFEST.MF"
-        }
-    }
 
-    android.applicationVariants.configureEach {
-        val variant = this
-        outputs.configureEach {
-            if (this is BaseVariantOutputImpl) {
-                outputFileName =
-                    "SmartHNU_v${variant.versionName}(${variant.versionCode}).apk"
-            }
-        }
+}
+
+aboutLibraries {
+    export {
+        outputFile = file("res/raw/aboutlibraries.json")
     }
 }
 
@@ -108,13 +98,14 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 
     implementation(libs.androidx.navigation3.runtime)
-    implementation(libs.miuix.navigation3.ui)
-    implementation(libs.miuix.navigation3.adaptive)
 
     // miuix
-    implementation(libs.miuix)
+    implementation(libs.miuix.ui)
+    implementation(libs.miuix.preference)
     implementation(libs.miuix.icons)
-    implementation(libs.capsule)
+    implementation(libs.miuix.shapes)
+    implementation(libs.miuix.blur)
+    implementation(libs.miuix.navigation3.ui)
 
     // Splash
     implementation(libs.androidx.core.splashscreen)
@@ -165,11 +156,13 @@ dependencies {
     // JWT
     implementation(libs.eddsa)
 
-    // reorderable
-    implementation(libs.reorderable)
-
     implementation(libs.kotlinx.datetime)
 
     implementation(libs.readability4j)
+
+    // implementation("com.amap.api:map2d:6.0.0")
+
+    // 为 HyperOS 提供焦点通知 需要解除白名单限制，A16 以上系统可以选择使用原生 LiveData
+    implementation("com.xzakota.hyper.notification:focus-api:1.4")
 
 }

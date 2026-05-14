@@ -51,8 +51,7 @@ fun AccountManage(
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
                     IconButton(
-                        onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        onClick = { navigator.pop() }
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
@@ -102,19 +101,21 @@ fun AccountManage(
                 }
             }
             item {
-                uiState.cookies.groupBy { it.domain }.forEach {
-                    SettingItemCard(label = "Cookie-${it.key}", modifier = Modifier) {
+                uiState.cookies.groupBy { it.domain }.forEach { items ->
+                    SettingItemCard(label = "Cookie-${items.key}", modifier = Modifier) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            it.value.forEach {
+                            items.value.forEach { item ->
                                 TextField(
                                     backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
-                                    value = it.value,
-                                    onValueChange = {},
-                                    label = it.name,
+                                    value = item.value,
+                                    onValueChange = {
+                                        // viewModel.editCookie(item.domain, item.name, it)
+                                    },
+                                    label = item.name,
                                     enabled = false,
                                     modifier = Modifier.fillMaxWidth()
                                 )

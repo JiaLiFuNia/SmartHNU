@@ -23,6 +23,7 @@ import com.smart.htu.repo.JWCNetworkRepo
 import com.smart.htu.repo.NetworkRepo
 import com.smart.htu.repo.SharedDataRepository
 import com.smart.htu.utils.DateUtil.getCurrentDate
+import com.smart.htu.utils.TermUtil.getCurrentTerm
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,9 +57,11 @@ data class AppUiState(
     val selectedBuildingOccupation: ClassroomOccupationEntity? = null,
     val homeFocusEnabled: Boolean = true,
     val homeTodayCourseEnabled: Boolean = true,
+    val homeShowAllTodayCourseEnabled: Boolean = false,
     val homeTodayTaskEnabled: Boolean = true,
     val homeFreeClassroomEnabled: Boolean = true,
     val homeNewsEnabled: Boolean = true,
+    val termCode: String = getCurrentTerm()
 )
 
 @HiltViewModel
@@ -133,6 +136,10 @@ class MainViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
             dataStoreRepo.observeHomeTodayCourseEnabled().first()
         })
+    private val homeShowAllTodayCourseEnabledStateFlow = dataStoreRepo.observeHomeShowAllTodayCourseEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
+            dataStoreRepo.observeHomeShowAllTodayCourseEnabled().first()
+        })
     private val homeTodayTaskEnabledStateFlow = dataStoreRepo.observeHomeTodayTaskEnabled()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
             dataStoreRepo.observeHomeTodayTaskEnabled().first()
@@ -160,6 +167,11 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             homeTodayCourseEnabledStateFlow.collect { value ->
                 _uiState.update { it.copy(homeTodayCourseEnabled = value) }
+            }
+        }
+        viewModelScope.launch {
+            homeShowAllTodayCourseEnabledStateFlow.collect { value ->
+                _uiState.update { it.copy(homeShowAllTodayCourseEnabled = value) }
             }
         }
         viewModelScope.launch {
@@ -213,6 +225,11 @@ class MainViewModel @Inject constructor(
             val now = LocalDate.now()
             sharedDataRepo.endDate.collect { value ->
                 _uiState.update { it.copy(isTermEnded = now.isAfter(value)) }
+            }
+        }
+        viewModelScope.launch {
+            sharedDataRepo.currentTermCode.collect { value ->
+                _uiState.update { it.copy(termCode = value) }
             }
         }
         viewModelScope.launch {

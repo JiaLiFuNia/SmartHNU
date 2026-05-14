@@ -32,7 +32,7 @@ import top.yukonga.miuix.kmp.basic.SliderDefaults
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
-import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -120,34 +120,38 @@ fun SuperSlider(
     )
     SliderDialog(
         title = title,
-        showDialog = showValueDialog,
+        showDialog = showValueDialog.value,
         valueState = { value },
         onValueChange = { onValueChange(it) },
-        valueRange = valueRange
+        valueRange = valueRange,
+        onDismissRequest = {
+            showValueDialog.value = false
+        }
     )
 }
 
 @Composable
 fun SliderDialog(
-    showDialog: MutableState<Boolean>,
+    showDialog: Boolean,
     valueState: () -> Float,
     onValueChange: (Float) -> Unit,
     title: String? = null,
     summary: String? = null,
     valueRange: ClosedFloatingPointRange<Float>,
+    onDismissRequest: () -> Unit
 ) {
     val isPercentageMode = valueRange.start == 0f && valueRange.endInclusive == 1f
 
-    SuperDialog(
+    OverlayDialog(
         title = title,
         summary = summary,
         show = showDialog,
-        onDismissRequest = { showDialog.value = false },
+        onDismissRequest = onDismissRequest,
     ) {
         var text by remember { mutableStateOf("") }
 
-        LaunchedEffect(showDialog.value) {
-            if (showDialog.value) {
+        LaunchedEffect(showDialog) {
+            if (showDialog) {
                 val currentVal = valueState()
                 text = if (isPercentageMode) {
                     (currentVal * 100).toInt().toString()
@@ -174,7 +178,7 @@ fun SliderDialog(
         Row(horizontalArrangement = Arrangement.SpaceBetween) {
             TextButton(
                 text = "取消",
-                onClick = { showDialog.value = false },
+                onClick = { onDismissRequest() },
                 modifier = Modifier.weight(1f),
             )
             Spacer(Modifier.width(20.dp))
@@ -187,7 +191,7 @@ fun SliderDialog(
                         val clamped = finalValue.coerceIn(valueRange)
                         onValueChange(clamped)
                     }
-                    showDialog.value = false
+                    onDismissRequest()
                 },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.textButtonColorsPrimary(),

@@ -23,7 +23,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -65,12 +64,12 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.SuperArrow
-import top.yukonga.miuix.kmp.extra.SuperDialog
-import top.yukonga.miuix.kmp.extra.SuperDropdown
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.Help
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
+import top.yukonga.miuix.kmp.preference.ArrowPreference
+import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
@@ -123,7 +122,7 @@ fun ClassroomSearchScreen(
                 title = stringResource(id = R.string.classroom_search),
                 navigationIcon = {
                     IconButton(
-                        modifier = Modifier.padding(start = 16.dp),
+                        
                         onClick = {
                             navigator.pop()
                         }
@@ -164,7 +163,7 @@ fun ClassroomSearchScreen(
         ) {
             item {
                 Card {
-                    SuperArrow(
+                    ArrowPreference(
                         title = "选择日期",
                         endActions = {
                             Text(
@@ -180,7 +179,7 @@ fun ClassroomSearchScreen(
                             showDatePicker.value = true
                         }
                     )
-                    SuperDropdown(
+                    OverlayDropdownPreference(
                         items = COURSE_PERIOD.keys.toList().map { stringResource(it) },
                         selectedIndex = selectedTimeIndex,
                         title = "选择时间段",
@@ -191,7 +190,7 @@ fun ClassroomSearchScreen(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Card {
-                    SuperDropdown(
+                    OverlayDropdownPreference(
                         items = campusList,
                         selectedIndex = selectedCampusIndex,
                         title = "选择校区",
@@ -200,7 +199,7 @@ fun ClassroomSearchScreen(
                             onSelectedCampusIndex(it)
                         }
                     )
-                    SuperDropdown(
+                    OverlayDropdownPreference(
                         items = viewModel.buildingsList[selectedCampusIndex].map { it.buildingName },
                         selectedIndex = selectedRoomIndex,
                         title = "选择教学楼",
@@ -323,26 +322,31 @@ fun ClassroomSearchScreen(
 
         DatePicker(
             date = selectedDate.value,
-            showDatePicker = showDatePicker,
+            showDatePicker = showDatePicker.value,
             onConfirmClick = {
                 selectedDate.value = it
+                showDatePicker.value = false
+            },
+            onDismissRequest = {
+                showDatePicker.value = false
             }
         )
-        TipDialog(showTooltip)
+        TipDialog(showTooltip.value) {
+            showTooltip.value = false
+        }
     }
 }
 
 @Composable
 fun TipDialog(
-    showDialog: MutableState<Boolean>
+    showDialog: Boolean,
+    onDismissRequest: () -> Unit
 ) {
-    SuperDialog(
+    OverlayDialog(
         show = showDialog,
         title = "说明",
         summary = "若当天教学楼为考场，请以实际为准",
-        onDismissRequest = {
-            showDialog.value = false
-        }
+        onDismissRequest = onDismissRequest
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -395,7 +399,7 @@ fun TipDialog(
             top.yukonga.miuix.kmp.basic.TextButton(
                 text = "我知道了",
                 onClick = {
-                    showDialog.value = false
+                    onDismissRequest()
                 },
                 colors = ButtonDefaults.textButtonColors(),
                 modifier = Modifier

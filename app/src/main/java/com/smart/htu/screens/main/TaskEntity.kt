@@ -1,6 +1,7 @@
 package com.smart.htu.screens.main
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import com.smart.htu.screens.application.ApplicationEntity
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -82,4 +83,8 @@ object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
     override fun deserialize(decoder: Decoder): LocalDateTime {
         return LocalDateTime.parse(decoder.decodeString())
     }
+}
+
+fun Color.toHexString(): String {
+    return String.format("#%06X", 0xFFFFFF and this.toArgb())
 }

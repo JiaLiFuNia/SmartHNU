@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
+
 import com.smart.htu.App.Companion.context
 import com.smart.htu.api.module.CourseItemEntity
 import com.smart.htu.component.CircularProgressIndicator
@@ -64,6 +64,7 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalHazeMaterialsApi::class)
@@ -115,7 +116,7 @@ fun CourseRepo(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
@@ -291,7 +292,7 @@ fun CourseRepoItem(
                             ),
                             modifier = Modifier
                                 .padding(start = 6.dp)
-                                .clip(ContinuousRoundedRectangle(6.dp))
+                                .clip(miuixShape(6.dp))
                                 .background(
                                     MiuixTheme.colorScheme.tertiaryContainer.copy(
                                         0.6f
@@ -313,7 +314,7 @@ fun CourseRepoItem(
                         ),
                         modifier = Modifier
                             .padding(start = 6.dp)
-                            .clip(ContinuousRoundedRectangle(6.dp))
+                            .clip(miuixShape(6.dp))
                             .background(
                                 MiuixTheme.colorScheme.tertiaryContainer.copy(
                                     0.6f

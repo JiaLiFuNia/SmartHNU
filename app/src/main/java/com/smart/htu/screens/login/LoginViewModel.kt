@@ -351,6 +351,10 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    fun editCookie(url: String, name: String, value: String) {
+        networkCookieJar.editCookie(url, name, value)
+    }
+
     suspend fun clearAllCookies() {
         val cookieManager = CookieManager.getInstance()
         cookieManager.removeAllCookies(null)

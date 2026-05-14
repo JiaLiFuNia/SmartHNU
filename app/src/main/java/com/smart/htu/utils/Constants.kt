@@ -23,13 +23,13 @@ class Constants {
         const val ACADEMIC_APP_URL = "https://jwc.htu.edu.cn/app/"
         const val SECOND_CLASS_URL = "http://dekt.htu.edu.cn/"
 
-        const val SMH_URL = "https://xhand.edu.deal/"
-        // "https://shtu.xubohan04.tk/"
+        const val SMH_URL = "https://smh.xubohan04.tk/"
 
         const val SHOWER_ALIPAY_URL =
             "alipays://platformapi/startapp?appId=20000067&url=https://ur.alipay.com/_3Zz793BHBpUQsAf6r8hLXZ"
         const val HOT_WATER_WASHER_ALIPAY_URL =
             "alipays://platformapi/startapp?appId=20000067&url=https://ur.alipay.com/_5vgVGlXsaUEmCUjnaEvLJL"
+        const val WAN_XIAO_ALIPAY_URL = "alipays://platformapi/startapp?appId=20000067&url=https://ur.alipay.com/_5ClmUoZYbBgQMkYRw4ew41"
         const val PINDUODUO_URL =
             "pinduoduo://com.xunmeng.pinduoduo/mdkd/package?tab=ID_CODE&entry_source=11&refer_page_name=login&refer_page_id=10169_1751901995470_3gdprcfjhr&refer_page_sn=10169"
         const val TAOBAO_URL =
@@ -65,7 +65,7 @@ class Constants {
                 category = ApplicationCategory.STUDY
             ),
             ApplicationEntity(
-                guestMode = true,
+                guestMode = false,
                 label = R.string.book_search,
                 icon = R.drawable.book_4_24px,
                 routeType = RouteType.Screen,
@@ -121,9 +121,9 @@ class Constants {
                 loginMode = LoginMode.AUTH_SERVER,
                 icon = R.drawable.credit_card_24px,
                 label = R.string.school_card,
-                routeType = RouteType.Url,
-                url = "https://ehall2.htu.edu.cn/appShow?appId=6548421524823376",
-                category = ApplicationCategory.TOOLS
+                routeType = RouteType.Screen,
+                screenRoute = Route.CampusCard,
+                category = ApplicationCategory.CAMPUS
             ),
             ApplicationEntity(
                 enabled = true,

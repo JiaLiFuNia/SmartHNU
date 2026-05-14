@@ -29,7 +29,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -50,7 +49,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseGradeDetailRes.CourseGradeDetailEntity
 import com.smart.htu.api.module.CourseGradeRankRes
@@ -81,11 +79,12 @@ import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
-import top.yukonga.miuix.kmp.extra.SuperBottomSheet
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.More
+import top.yukonga.miuix.kmp.overlay.OverlayBottomSheet
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
@@ -138,7 +137,6 @@ fun Grade(
                 actions = {
                     IconButton(
                         onClick = { isBottomSheetShow.value = true },
-                        modifier = Modifier.padding(end = 16.dp),
                         holdDownState = isBottomSheetShow.value
                     ) {
                         Icon(
@@ -149,7 +147,7 @@ fun Grade(
                 },
                 navigationIcon = {
                     IconButton(
-                        modifier = Modifier.padding(start = 16.dp),
+                        
                         onClick = {
                             navigator.pop()
                         }
@@ -274,7 +272,7 @@ fun Grade(
                                     }
                                     Surface(
                                         modifier = Modifier.fillMaxWidth(),
-                                        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
+                                        shape = miuixShape(CardDefaults.CornerRadius),
                                         color = MiuixTheme.colorScheme.surfaceContainer
                                     ) {
                                         Box(
@@ -368,16 +366,17 @@ fun Grade(
             }
         }
 
-        SelectTermBottomSheet(
+        SelectTermDialog(
             globalTermCode = uiState.globalTermCode,
             termSelectedCode = uiState.termCode,
             termList = uiState.termList,
-            show = isBottomSheetShow,
+            show = isBottomSheetShow.value,
             onClick = {
                 scope.launch {
                     viewModel.changeTermCode(it)
                 }
-            }
+            },
+            onDismissRequest = { isBottomSheetShow.value = false }
         )
     }
 }
@@ -440,7 +439,8 @@ fun CourseGradeItem(
     CourseGradeDetailDialog(
         gradeInfo = gradeInfo,
         grade = grade,
-        showGradeDetailBottomSheet = isGradeDetailBottomSheetShow
+        showGradeDetailBottomSheet = isGradeDetailBottomSheetShow.value,
+        onDismissRequest = { isGradeDetailBottomSheetShow.value = false }
     )
 }
 
@@ -448,13 +448,14 @@ fun CourseGradeItem(
 fun CourseGradeDetailDialog(
     grade: CourseGradeEntity,
     gradeInfo: CourseGradeDialogData?,
-    showGradeDetailBottomSheet: MutableState<Boolean>
+    showGradeDetailBottomSheet: Boolean,
+    onDismissRequest: () -> Unit
 ) {
-    SuperBottomSheet(
+    OverlayBottomSheet(
         title = "${grade.courseName} 的成绩详情",
         show = showGradeDetailBottomSheet,
         onDismissRequest = {
-            showGradeDetailBottomSheet.value = false
+            onDismissRequest()
         },
         backgroundColor = MiuixTheme.colorScheme.surface
     ) {

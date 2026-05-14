@@ -164,6 +164,7 @@ a > strong {
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
     font-weight: 600 !important;
     color: var(--link-text-color) !important;
+    text-decoration: none !important;
 }
 div > a {
     display: block;

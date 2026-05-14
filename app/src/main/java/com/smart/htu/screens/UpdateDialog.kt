@@ -21,28 +21,29 @@ import com.smart.htu.utils.ToastUtil
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun UpdateDialog(
-    showDialog: MutableState<Boolean>,
+    showDialog: Boolean,
     updateInfo: UpdateEntity,
     targetDirectory: String = Environment.DIRECTORY_DOWNLOADS,
     onConfirmClick: (() -> Unit)? = null,
     contentText: String? = null,
     confirmButtonText: String = "下载并更新",
     dismissButtonText: String = "关闭",
-    title: String = "发现新版本"
+    title: String = "发现新版本",
+    onDismissRequest: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    SuperDialog(
+    OverlayDialog(
         title = title,
         show = showDialog,
         summary = "版本：${updateInfo.versionName}(${updateInfo.versionCode})",
         onDismissRequest = {
-            showDialog.value = false
+            onDismissRequest()
         }
     ) {
         Column {
@@ -57,7 +58,7 @@ fun UpdateDialog(
                 top.yukonga.miuix.kmp.basic.TextButton(
                     text = dismissButtonText,
                     onClick = {
-                        showDialog.value = false
+                        onDismissRequest()
                     },
                     modifier = Modifier.weight(1f)
                 )
@@ -75,7 +76,7 @@ fun UpdateDialog(
                                         targetDirectory = targetDirectory
                                     )
                                 }
-                                showDialog.value = false
+                                onDismissRequest()
                                 ToastUtil.showToast(context, "下拉通知栏，查看进度")
                             } else {
                                 onConfirmClick()
@@ -92,8 +93,9 @@ fun UpdateDialog(
 
 @Composable
 fun CaptchaUpdateDialog(
-    showDialog: MutableState<Boolean>,
-    updateInfo: CaptchaVersionEntity
+    showDialog: Boolean,
+    updateInfo: CaptchaVersionEntity,
+    onDismissRequest: () -> Unit
 ) {
     UpdateDialog(
         showDialog = showDialog,
@@ -108,6 +110,7 @@ fun CaptchaUpdateDialog(
             isForceUpdate = false
         ),
         targetDirectory = Environment.DIRECTORY_DOWNLOADS,
-        title = "模块更新"
+        title = "模块更新",
+        onDismissRequest = onDismissRequest
     )
 }

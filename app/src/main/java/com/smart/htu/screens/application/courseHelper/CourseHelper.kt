@@ -19,7 +19,6 @@ import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,10 +56,10 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.Info
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -87,7 +86,7 @@ fun CourseHelper(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
@@ -99,8 +98,7 @@ fun CourseHelper(
                     IconButton(
                         onClick = {
                             viewModel.changeInfoDialogShow(true)
-                        },
-                        modifier = Modifier.padding(end = 16.dp)
+                        }
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Info,
@@ -290,7 +288,7 @@ fun CourseHelper(
             }
         }
         CourseHelperDialog(
-            uiState.isInfoDialogShow
+            uiState.isInfoDialogShow.value
         ) {
             viewModel.changeInfoDialogShow(false)
         }
@@ -299,10 +297,10 @@ fun CourseHelper(
 
 @Composable
 fun CourseHelperDialog(
-    show: MutableState<Boolean>,
+    show: Boolean,
     onConfirmClick: () -> Unit
 ) {
-    SuperDialog(
+    OverlayDialog(
         show = show,
         title = "说明"
     ) {

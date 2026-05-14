@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -18,23 +17,22 @@ import com.smart.htu.utils.FileUtil.downloadFile
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.TextButton
-import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
 
 @Composable
 fun DownloadDialog(
-    showDialog: MutableState<Boolean>,
+    showDialog: Boolean,
     url: String,
-    fileName: String
+    fileName: String,
+    onDismissRequest: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    SuperDialog(
+    OverlayDialog(
         title = "下载附件",
         summary = "是否下载 $fileName",
         show = showDialog,
-        onDismissRequest = {
-            showDialog.value = false
-        }
+        onDismissRequest = onDismissRequest
     ) {
         Column(
             modifier = Modifier
@@ -47,7 +45,7 @@ fun DownloadDialog(
                 TextButton(
                     text = "取消",
                     onClick = {
-                        showDialog.value = false
+                        onDismissRequest()
                     },
                     modifier = Modifier.weight(1f)
                 )
@@ -62,8 +60,8 @@ fun DownloadDialog(
                                 fileName = fileName,
                                 targetDirectory = Environment.DIRECTORY_DOCUMENTS
                             )
+                            onDismissRequest()
                         }
-                        showDialog.value = false
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.textButtonColorsPrimary()

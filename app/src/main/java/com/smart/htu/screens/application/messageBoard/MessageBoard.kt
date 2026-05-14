@@ -38,7 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
+
 import com.smart.htu.R
 import com.smart.htu.api.module.PostsListData.PostsEntity
 import com.smart.htu.component.CircularProgressIndicator
@@ -69,6 +69,7 @@ import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
@@ -106,7 +107,7 @@ fun MessageBoard(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
@@ -126,8 +127,7 @@ fun MessageBoard(
                                     )
                                 )
                             }
-                        },
-                        modifier = Modifier.padding(end = 16.dp)
+                        }
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.SpeakerNotes,
@@ -221,7 +221,7 @@ fun PostsCard(
 ) {
     Surface(
         onClick = { onClick(post.postID) },
-        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
+        shape = miuixShape(CardDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surfaceContainer,
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -246,7 +246,7 @@ fun PostsCard(
                     color = MiuixTheme.colorScheme.onTertiaryContainer.copy(0.8f),
                     modifier = Modifier
                         .padding(end = 8.dp)
-                        .clip(ContinuousRoundedRectangle(6.dp))
+                        .clip(miuixShape(6.dp))
                         .background(MiuixTheme.colorScheme.tertiaryContainer.copy(0.6f))
                         .padding(horizontal = 6.dp, vertical = 2.dp),
                     fontWeight = FontWeight(750),

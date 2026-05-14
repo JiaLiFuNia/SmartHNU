@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -19,25 +18,31 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
+import top.yukonga.miuix.kmp.basic.NumberPicker
+import top.yukonga.miuix.kmp.basic.NumberPickerDefaults
 import top.yukonga.miuix.kmp.basic.TextButton
-import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 const val VISIBLE_COUNT = 3
+val ITEM_HEIGHT = 52.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePicker(
     date: LocalDate = LocalDate.now(),
-    showDatePicker: MutableState<Boolean>,
+    showDatePicker: Boolean,
     yearRange: IntRange = date.year - 1..date.year + 1,
     onConfirmClick: (LocalDate) -> Unit,
+    onDismissRequest: () -> Unit
 ) {
     val startDate = remember(yearRange) { LocalDate.of(yearRange.first, 1, 1) }
     val endDate = remember(yearRange) { LocalDate.of(yearRange.last, 12, 31) }
@@ -55,13 +60,11 @@ fun DatePicker(
     }
     var currentSelection by remember { mutableStateOf(safeInitialDate) }
 
-    SuperDialog(
+    OverlayDialog(
         show = showDatePicker,
         title = "选择日期",
         summary = convertLocalDateToStringDate(currentSelection, "yyyy年MM月dd日 E"),
-        onDismissRequest = {
-            showDatePicker.value = false
-        }
+        onDismissRequest = onDismissRequest
     ) {
         Column(
             modifier = Modifier,
@@ -93,32 +96,47 @@ fun DatePicker(
                 currentSelection = LocalDate.of(selectedYear, selectedMonth, selectedDay)
 
                 Box(modifier = Modifier.weight(10 / 3f)) {
-                    WheelPicker(
-                        items = years,
-                        initialSelectedItem = selectedYear,
-                        visibleCount = VISIBLE_COUNT,
-                        formatItem = { "$it 年" },
-                        onSelectedItemChange = { selectedYear = it }
+                    NumberPicker(
+                        value = selectedYear,
+                        onValueChange = { selectedYear = it },
+                        range = yearRange,
+                        label = { "$it 年" },
+                        visibleItemCount = VISIBLE_COUNT,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = NumberPickerDefaults.colors(selectedTextColor = MiuixTheme.colorScheme.primary),
+                        textStyle = MiuixTheme.textStyles.title2.copy(fontWeight = FontWeight.Medium),
+                        itemHeight = ITEM_HEIGHT,
+                        wrapAround = true
                     )
                 }
 
                 Box(modifier = Modifier.weight(10 / 3f)) {
-                    WheelPicker(
-                        items = (1..12).toList(),
-                        initialSelectedItem = selectedMonth,
-                        visibleCount = VISIBLE_COUNT,
-                        formatItem = { "%02d 月".format(it) },
-                        onSelectedItemChange = { selectedMonth = it }
+                    NumberPicker(
+                        value = selectedMonth,
+                        onValueChange = { selectedMonth = it },
+                        range = 1..12,
+                        label = { "%02d 月".format(it) },
+                        visibleItemCount = VISIBLE_COUNT,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = NumberPickerDefaults.colors(selectedTextColor = MiuixTheme.colorScheme.primary),
+                        textStyle = MiuixTheme.textStyles.title2.copy(fontWeight = FontWeight.Medium),
+                        itemHeight = ITEM_HEIGHT,
+                        wrapAround = true
                     )
                 }
 
                 Box(modifier = Modifier.weight(10 / 3f)) {
-                    WheelPicker(
-                        items = (1..currentMaxDay).toList(),
-                        initialSelectedItem = selectedDay.coerceIn(1, currentMaxDay),
-                        visibleCount = VISIBLE_COUNT,
-                        formatItem = { "%02d 日".format(it) },
-                        onSelectedItemChange = { selectedDay = it }
+                    NumberPicker(
+                        value = selectedDay,
+                        onValueChange = { selectedDay = it },
+                        range = 1..currentMaxDay,
+                        label = { "%02d 日".format(it) },
+                        visibleItemCount = VISIBLE_COUNT,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = NumberPickerDefaults.colors(selectedTextColor = MiuixTheme.colorScheme.primary),
+                        textStyle = MiuixTheme.textStyles.title2.copy(fontWeight = FontWeight.Medium),
+                        itemHeight = ITEM_HEIGHT,
+                        wrapAround = true
                     )
                 }
             }
@@ -131,7 +149,7 @@ fun DatePicker(
                 TextButton(
                     text = "取消",
                     onClick = {
-                        showDatePicker.value = false
+                        onDismissRequest()
                     },
                     modifier = Modifier.weight(1f)
                 )
@@ -140,7 +158,6 @@ fun DatePicker(
                     text = "确定",
                     onClick = {
                         onConfirmClick(currentSelection)
-                        showDatePicker.value = false
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.textButtonColorsPrimary()
@@ -152,19 +169,21 @@ fun DatePicker(
 
 @Composable
 fun DateTimePicker(
-    show: MutableState<Boolean>,
+    show: Boolean,
     initialTime: LocalDateTime = LocalDateTime.now(),
     title: String,
-    onConfirm: (LocalDateTime) -> Unit
+    onConfirm: (LocalDateTime) -> Unit,
+    onDismissRequest: () -> Unit
 ) {
     val startDate = LocalDate.now()
     val dates = remember {
         (0..365).map { startDate.plusDays(it.toLong()) }
     }
-    val hours = remember { (0..23).toList() }
-    val minutes = remember { (0..59).toList() }
 
     var selectedDate by remember { mutableStateOf(initialTime.toLocalDate()) }
+    val selectedDateIndex = remember(selectedDate, dates) {
+        dates.indexOfFirst { it == selectedDate }.takeIf { it >= 0 } ?: 0
+    }
     var selectedHour by remember { mutableIntStateOf(initialTime.hour) }
     var selectedMinute by remember { mutableIntStateOf(initialTime.minute) }
 
@@ -175,7 +194,7 @@ fun DateTimePicker(
         LocalDateTime.of(selectedDate, LocalTime.of(selectedHour, selectedMinute))
 
 
-    SuperDialog(
+    OverlayDialog(
         show = show,
         title = title,
         summary = currentSelection.format(titleFormatter)
@@ -192,36 +211,51 @@ fun DateTimePicker(
             ) {
                 // 日期滚轮 (权重较大)
                 Box(modifier = Modifier.weight(1.8f)) {
-                    WheelPicker(
-                        items = dates,
-                        initialSelectedItem = selectedDate,
-                        visibleCount = VISIBLE_COUNT,
-                        formatItem = { date ->
-                            date.format(DateTimeFormatter.ofPattern("M月d日 E"))
+                    NumberPicker(
+                        value = selectedDateIndex,
+                        onValueChange = { selectedDate = dates[it] },
+                        range = 0 until dates.size,
+                        label = {
+                            dates[it].format(DateTimeFormatter.ofPattern("M月d日 E"))
                         },
-                        onSelectedItemChange = { selectedDate = it }
+                        visibleItemCount = VISIBLE_COUNT,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = NumberPickerDefaults.colors(selectedTextColor = MiuixTheme.colorScheme.primary),
+                        textStyle = MiuixTheme.textStyles.title2.copy(fontWeight = FontWeight.Medium),
+                        itemHeight = ITEM_HEIGHT,
+                        wrapAround = true
                     )
                 }
 
                 // 小时滚轮
                 Box(modifier = Modifier.weight(1f)) {
-                    WheelPicker(
-                        items = hours,
-                        initialSelectedItem = selectedHour,
-                        visibleCount = VISIBLE_COUNT,
-                        formatItem = { "$it 时" },
-                        onSelectedItemChange = { selectedHour = it }
+                    NumberPicker(
+                        value = selectedHour,
+                        onValueChange = { selectedHour = it },
+                        range = 0..23,
+                        label = { "$it 时" },
+                        visibleItemCount = VISIBLE_COUNT,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = NumberPickerDefaults.colors(selectedTextColor = MiuixTheme.colorScheme.primary),
+                        textStyle = MiuixTheme.textStyles.title2.copy(fontWeight = FontWeight.Medium),
+                        itemHeight = ITEM_HEIGHT,
+                        wrapAround = true
                     )
                 }
 
                 // 分钟滚轮
                 Box(modifier = Modifier.weight(1f)) {
-                    WheelPicker(
-                        items = minutes,
-                        initialSelectedItem = selectedMinute,
-                        visibleCount = VISIBLE_COUNT,
-                        formatItem = { "%02d 分".format(it) },
-                        onSelectedItemChange = { selectedMinute = it }
+                    NumberPicker(
+                        value = selectedMinute,
+                        onValueChange = { selectedMinute = it },
+                        range = 0..59,
+                        label = { "%02d 分".format(it) },
+                        visibleItemCount = VISIBLE_COUNT,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = NumberPickerDefaults.colors(selectedTextColor = MiuixTheme.colorScheme.primary),
+                        textStyle = MiuixTheme.textStyles.title2.copy(fontWeight = FontWeight.Medium),
+                        itemHeight = ITEM_HEIGHT,
+                        wrapAround = true
                     )
                 }
             }
@@ -232,7 +266,7 @@ fun DateTimePicker(
                 TextButton(
                     text = "取消",
                     onClick = {
-                        show.value = false
+                        onDismissRequest()
                     },
                     modifier = Modifier.weight(1f)
                 )
@@ -241,7 +275,6 @@ fun DateTimePicker(
                     text = "确定",
                     onClick = {
                         onConfirm(currentSelection)
-                        show.value = false
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.textButtonColorsPrimary()

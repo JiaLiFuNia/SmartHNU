@@ -1,6 +1,7 @@
 package com.smart.htu.screens.main
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -30,7 +31,6 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -65,7 +65,6 @@ import com.smart.htu.screens.application.ApplicationEntity.RouteType
 import com.smart.htu.screens.application.airCondition.AirConditionUiState
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.application.classroom.SingleRoom
-import com.smart.htu.screens.login.LoginUiState
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.message.MessageViewModel
 import com.smart.htu.screens.navigation.Navigator
@@ -74,7 +73,6 @@ import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
 import com.smart.htu.utils.DateUtil.getCurrentDate
 import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
-import com.smart.htu.utils.startCalendar
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -84,20 +82,23 @@ import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.FloatingActionButton
+import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
-import top.yukonga.miuix.kmp.extra.SuperBottomSheet
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Add
+import top.yukonga.miuix.kmp.overlay.OverlayBottomSheet
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -155,8 +156,7 @@ fun Main(
                     IconButton(
                         onClick = {
                             navigator.push(Route.Message)
-                        },
-                        modifier = Modifier.padding(end = 16.dp)
+                        }
                     ) {
                         BadgedBox(
                             badge = {
@@ -184,7 +184,6 @@ fun Main(
                     }
             )
         },
-        popupHost = {},
         floatingActionButton = {
             FloatingActionButton(
                 modifier = Modifier
@@ -256,14 +255,16 @@ fun Main(
                     }
                 }
                 if (uiState.homeFocusEnabled) {
-                    item { FocusCard(loginUiState, airConditionUiState, uiState) }
+                    item { FocusCard(!isLoginFailure.value, airConditionUiState, uiState) }
                 }
                 if (uiState.homeTodayCourseEnabled) {
                     item {
                         Card {
                             TodayCourseCard(
                                 todayCourseList = uiState.todayCourseList,
-                                loginState = isLoginFailure.value,
+                                loginState = !isLoginFailure.value,
+                                termCode = uiState.termCode,
+                                isShowAllCourse = uiState.homeShowAllTodayCourseEnabled,
                                 onSearchCourse = {
                                     navigator.push(Route.CourseSearchRepo(it))
                                 }
@@ -289,11 +290,14 @@ fun Main(
             }
         }
         AddTaskBottomSheet(
-            show = isAddTaskBottomSheetShow,
+            show = isAddTaskBottomSheetShow.value,
             onTask = {
                 scope.launch {
                     mainViewModel.addTaskList(it)
                 }
+            },
+            onDismissRequest = {
+                isAddTaskBottomSheetShow.value = false
             }
         )
     }
@@ -360,7 +364,7 @@ fun TodayTaskCard(
 
 @Composable
 fun FocusCard(
-    loginUiState: LoginUiState,
+    loginState: Boolean,
     airConditionUiState: AirConditionUiState,
     mainUiState: AppUiState
 ) {
@@ -373,110 +377,154 @@ fun FocusCard(
     val dayOfWeek = today.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.CHINA)
     val formatter = DateTimeFormatter.ofPattern("MM-dd")
     val airConditionString = stringResource(R.string.dorm_air_conditioner)
-    MessageCardDisplay(
-        modifier = Modifier.fillMaxWidth(),
-        message = listOf(
-            SingleInfo(
-                label = "${today.format(formatter)}",
-                content = (if (mainUiState.isTermEnded) "放假中" else "第 ${mainUiState.weekIndex} 周") + " $dayOfWeek",
-                rowIndex = 1,
-                leadingIcon = Icons.Outlined.Today,
-                onClick = {
-                    startCalendar()
-                }
-            ),
-            SingleInfo(
-                label = "即时天气",
-                content = "${mainUiState.currentWeather.data?.weather ?: "--"} ${mainUiState.currentWeather.data?.temperature ?: "--"} ℃",
-                rowIndex = 1,
-                leadingIcon = Icons.Outlined.WbSunny,
-                rightContent = {
-                    if (isWarningWeather.value) Badge()
-                },
-                onClick = {
-                    if (isWarningWeather.value) {
-                        isShowWeatherBottomSheet.value = true
+    Card() {
+        BasicComponent(
+            title = "聚焦信息",
+            insideMargin = PaddingValues(16.dp)
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+        MessageCardDisplay(
+            modifier = Modifier.fillMaxWidth(),
+            message = listOf(
+                SingleInfo(
+                    label = "${today.format(formatter)}",
+                    content = (if (mainUiState.isTermEnded) "放假中" else "第 ${mainUiState.weekIndex} 周") + " $dayOfWeek",
+                    rowIndex = 1,
+                    leadingIcon = Icons.Outlined.Today,
+                    onClick = {
+                        navigator.pushWithLoginCheck(
+                            route = Route.CourseTable,
+                            loginState = loginState,
+                            isGuest = false
+                        )
                     }
-                }
-            ),
-            SingleInfo(
-                label = "第二课堂",
-                content = "${mainUiState.totalHour?.toInt() ?: "--"} 学时",
-                rowIndex = 2,
-                leadingIcon = Icons.Outlined.Palette,
-                onClick = {
-                    navigator.push(Route.SecondClass)
-                }
-            ),
-            SingleInfo(
-                label = "寝室电费",
-                content = "${airConditionUiState.billData?.data?.soc ?: "--"} 度",
-                rowIndex = 2,
-                leadingIcon = Icons.Outlined.Bolt,
-                onClick = {
-                    navigator.pushWithLoginCheck(
-                        isGuest = false,
-                        loginState = loginUiState.jwcLoginState == 1,
-                        route = Route.AirCondition
-                    )
-                }
+                ),
+                SingleInfo(
+                    label = "即时天气",
+                    content = "${mainUiState.currentWeather.data?.weather ?: "--"} ${mainUiState.currentWeather.data?.temperature ?: "--"} ℃",
+                    rowIndex = 1,
+                    leadingIcon = Icons.Outlined.WbSunny,
+                    rightContent = {
+                        if (isWarningWeather.value) Badge()
+                    },
+                    onClick = {
+                        if (isWarningWeather.value) {
+                            isShowWeatherBottomSheet.value = true
+                        }
+                    }
+                ),
+                SingleInfo(
+                    label = "第二课堂",
+                    content = "${mainUiState.totalHour?.toInt() ?: "--"} 学时",
+                    rowIndex = 2,
+                    leadingIcon = Icons.Outlined.Palette,
+                    onClick = {
+                        navigator.pushWithLoginCheck(
+                            isGuest = false,
+                            loginState = loginState,
+                            route = Route.SecondClass
+                        )
+                    }
+                ),
+                SingleInfo(
+                    label = airConditionString,
+                    content = "${airConditionUiState.billData?.data?.soc ?: "--"} 度",
+                    rowIndex = 2,
+                    leadingIcon = Icons.Outlined.Bolt,
+                    onClick = {
+                        navigator.pushWithLoginCheck(
+                            isGuest = false,
+                            loginState = loginState,
+                            route = Route.AirCondition
+                        )
+                    }
+                )
             )
         )
-    )
+    }
     WeatherBottomSheet(
-        isShowWeatherBottomSheet = isShowWeatherBottomSheet,
-        warningWeatherData = mainUiState.warningWeatherData
+        isShowWeatherBottomSheet = isShowWeatherBottomSheet.value,
+        warningWeatherData = mainUiState.warningWeatherData,
+        onDismissRequest = {
+            isShowWeatherBottomSheet.value = false
+        }
     )
 }
 
 @Composable
 fun TodayCourseCard(
     todayCourseList: List<CourseEntity>?,
+    isShowAllCourse: Boolean,
+    termCode: String,
     loginState: Boolean,
     onSearchCourse: (CourseSearchPostEntity) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-    Column(
-        modifier = if (todayCourseList == null || todayCourseList.isEmpty()) Modifier
-            .height(86.dp) else Modifier
-    ) {
-        if (todayCourseList == null) {
-            if (loginState) {
-                EmptyContent(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = "请登录教务系统"
-                )
-            } else {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(86.dp)
+    val navigator = LocalNavigator.current
+    Card() {
+        BasicComponent(
+            title = "今日课程",
+            insideMargin = PaddingValues(16.dp),
+            endActions = {
+                Text(
+                    text = "查看课表",
+                    color = MiuixTheme.colorScheme.primary,
+                    style = MiuixTheme.textStyles.headline2,
+                    modifier = Modifier.clickable {
+                        navigator.pushWithLoginCheck(
+                            route = Route.CourseTable,
+                            loginState = loginState,
+                            isGuest = false
+                        )
+                    }
                 )
             }
-        } else {
-            if (todayCourseList.isEmpty()) {
-                EmptyContent(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = "今日无课程"
-                )
-            } else {
-                todayCourseList.forEachIndexed { _, it ->
-                    SingleCourseCard(
-                        modifier = Modifier.fillMaxSize(),
-                        course = it,
-                        onSearchCourse = {
-                            scope.launch {
-                                val searchInfo = CourseSearchPostEntity(
-                                    date = getCurrentDate(),
-                                    termCode = "202501",
-                                    courseName = it
-                                )
-                                onSearchCourse(searchInfo)
-                            }
-                        }
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+        Column(
+            modifier = if (todayCourseList.isNullOrEmpty()) Modifier
+                .height(96.dp) else Modifier
+        ) {
+            if (todayCourseList == null) {
+                if (!loginState) {
+                    EmptyContent(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        text = "请登录后查看今日课程"
                     )
+                } else {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(96.dp)
+                    )
+                }
+            } else {
+                if (todayCourseList.isEmpty()) {
+                    EmptyContent(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        text = "今日无课程"
+                    )
+                } else {
+                    todayCourseList.forEachIndexed { _, it ->
+                        if (isShowAllCourse || it.endTime.isAfter(LocalTime.now())) {
+                            SingleCourseCard(
+                                modifier = Modifier.fillMaxSize(),
+                                course = it,
+                                onSearchCourse = {
+                                    scope.launch {
+                                        val searchInfo = CourseSearchPostEntity(
+                                            date = getCurrentDate(),
+                                            termCode = termCode,
+                                            courseName = it
+                                        )
+                                        onSearchCourse(searchInfo)
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -556,7 +604,6 @@ fun FreeClassroomCard(
                     items(currentFloorAllRoomList) {
                         val busyStateList =
                             selectedBuildingOccupationState.getBusyState(it)
-                                ?: ArrayList(10)
                         SingleRoom(
                             label = it.roomName,
                             formerPeriodBusyState = busyStateList[selectedTimeIndex * 2],
@@ -637,14 +684,15 @@ fun CommonAppsCard(
 
 @Composable
 fun WeatherBottomSheet(
-    isShowWeatherBottomSheet: MutableState<Boolean>,
-    warningWeatherData: List<WarningWeatherData>
+    isShowWeatherBottomSheet: Boolean,
+    warningWeatherData: List<WarningWeatherData>,
+    onDismissRequest: () -> Unit
 ) {
-    SuperBottomSheet(
+    OverlayBottomSheet(
         show = isShowWeatherBottomSheet,
         title = "天气预警",
         onDismissRequest = {
-            isShowWeatherBottomSheet.value = false
+            onDismissRequest()
         },
         insideMargin = DpSize(16.dp, 24.dp)
     ) {

@@ -1,6 +1,8 @@
 package com.smart.htu.screens
 
 import android.os.Environment
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -26,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import com.smart.htu.App
 import com.smart.htu.screens.application.Application
 import com.smart.htu.screens.application.airCondition.AirConditionViewModel
 import com.smart.htu.screens.login.LoginViewModel
@@ -36,6 +39,7 @@ import com.smart.htu.screens.navigation.Navigator
 import com.smart.htu.screens.news.NewsScreen
 import com.smart.htu.screens.setting.SettingScreen
 import com.smart.htu.screens.setting.SettingViewModel
+import com.smart.htu.utils.Permission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.NavigationBar
@@ -57,6 +61,16 @@ fun MainFrame(
 ) {
     val mainUiState by mainViewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { }
+
+    LaunchedEffect(Unit) {
+        if (!Permission.hasPermissions(App.context, Permission.NOTIFICATION_PERMISSION)) {
+            notificationPermissionLauncher.launch(Permission.NOTIFICATION_PERMISSION)
+        }
+    }
 
     val navigationItems = listOf(
         NavigationItem(
@@ -147,9 +161,12 @@ fun MainFrame(
                     mainUiState.update.isNeedUpdate && mainUiState.isShowUpdateDialog.value
             }
             UpdateDialog(
-                showDialog = showUpdateDialog,
+                showDialog = showUpdateDialog.value,
                 updateInfo = mainUiState.update,
-                targetDirectory = Environment.DIRECTORY_DOWNLOADS
+                targetDirectory = Environment.DIRECTORY_DOWNLOADS,
+                onDismissRequest = {
+                    showUpdateDialog.value = false
+                }
             )
         }
     }

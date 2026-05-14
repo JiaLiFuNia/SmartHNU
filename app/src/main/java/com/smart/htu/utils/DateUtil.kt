@@ -14,7 +14,7 @@ object DateUtil {
         return date
     }
 
-    fun convertLocalDateToStringDate(date: LocalDate, pattern: String): String {
+    fun convertLocalDateToStringDate(date: LocalDate, pattern: String = "yyyy-MM-dd"): String {
         val formatter = DateTimeFormatter.ofPattern(pattern)
         return date.format(formatter)
     }

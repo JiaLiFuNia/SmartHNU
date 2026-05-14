@@ -31,7 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
+
 import com.smart.htu.R
 import com.smart.htu.api.module.CourseInfoEntity
 import com.smart.htu.api.module.CourseSearchPostEntity
@@ -58,6 +58,7 @@ import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDateTime
 
@@ -87,8 +88,8 @@ fun CourseSearchRepo(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
-                    ) {
+
+                        ) {
                         Icon(
                             imageVector = MiuixIcons.Regular.Back,
                             contentDescription = "back"
@@ -110,7 +111,6 @@ fun CourseSearchRepo(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 16.dp)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .hazeSource(hazeState)
                 .overScrollVertical()
@@ -118,9 +118,9 @@ fun CourseSearchRepo(
             overscrollEffect = null,
             contentPadding = PaddingValues(
                 start = 16.dp,
-                top = it.calculateTopPadding(),
+                top = it.calculateTopPadding() + 16.dp,
                 end = 16.dp,
-                bottom = it.calculateBottomPadding() + 12.dp
+                bottom = it.calculateBottomPadding() + 16.dp
             ),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -194,7 +194,7 @@ fun CourseSearchResItem(
                         ),
                         modifier = Modifier
                             .padding(start = 6.dp)
-                            .clip(ContinuousRoundedRectangle(6.dp))
+                            .clip(miuixShape(6.dp))
                             .background(
                                 MiuixTheme.colorScheme.tertiaryContainer.copy(
                                     0.6f

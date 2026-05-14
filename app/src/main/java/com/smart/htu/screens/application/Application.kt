@@ -80,7 +80,7 @@ fun Application(
     Scaffold(
         topBar = {
             TopAppBar(
-                horizontalPadding = 16.dp,
+                titlePadding = 16.dp,
                 title = stringResource(R.string.application),
                 largeTitle = stringResource(R.string.application),
                 scrollBehavior = scrollBehavior,
@@ -98,8 +98,7 @@ fun Application(
                     top.yukonga.miuix.kmp.basic.IconButton(
                         onClick = {
                             displayMode.intValue = if (displayMode.intValue == 0) 1 else 0
-                        },
-                        modifier = Modifier.padding(end = 16.dp)
+                        }
                     ) {
                         Icon(
                             imageVector = if (displayMode.intValue == 0) Icons.Outlined.ViewAgenda else Icons.Outlined.GridView,
@@ -108,8 +107,7 @@ fun Application(
                     }
                 }
             )
-        },
-        popupHost = {},
+        }
     ) {
         LazyVerticalGrid(
             contentPadding = PaddingValues(
@@ -200,7 +198,7 @@ fun Application(
     }
 
     LoginDialog(
-        showDialog = showAuthLoginDialog,
+        showDialog = showAuthLoginDialog.value,
         summary = "统一身份认证系统",
         onLogin = { studentID, password, _ ->
             scope.launch {
@@ -217,7 +215,10 @@ fun Application(
                 )
             }
         },
-        loginState = loginUiState.authLoginState
+        loginState = loginUiState.authLoginState,
+        onDismissRequest = {
+            showAuthLoginDialog.value = false
+        }
     )
 
 }

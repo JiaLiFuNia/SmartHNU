@@ -35,15 +35,14 @@ fun PDFViewer(
                 navigationIcon = {
                     IconButton(
                         onClick = { navigator.pop() },
-                        modifier = Modifier.padding(start = 16.dp)
+                        
                     ) {
                         Icon(imageVector = MiuixIcons.Regular.Back, contentDescription = "close")
                     }
                 },
                 actions = {
                     IconButton(
-                        onClick = { showDownloadDialog.value = true },
-                        modifier = Modifier.padding(end = 16.dp)
+                        onClick = { showDownloadDialog.value = true }
                     ) {
                         Icon(
                             imageVector = MiuixIcons.Download,
@@ -71,9 +70,10 @@ fun PDFViewer(
         }
 
         DownloadDialog(
-            showDialog = showDownloadDialog,
+            showDialog = showDownloadDialog.value,
             fileName = title,
-            url = url
+            url = url,
+            onDismissRequest = { showDownloadDialog.value = false }
         )
     }
 }

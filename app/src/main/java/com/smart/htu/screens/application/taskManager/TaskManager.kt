@@ -1,5 +1,9 @@
 package com.smart.htu.screens.application.taskManager
 
+import android.app.Notification
+import android.app.PendingIntent
+import android.graphics.drawable.Icon
+import android.os.Bundle
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +27,7 @@ import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,13 +37,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toColorLong
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.smart.htu.MainActivity.Companion.FOCUS_CHANNEL_ID
+import com.smart.htu.MainActivity.Companion.notificationManager
 import com.smart.htu.R
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.InfoBadge
@@ -46,8 +56,10 @@ import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.application.AddTaskBottomSheet
 import com.smart.htu.screens.main.TaskEntity
+import com.smart.htu.screens.main.toHexString
 import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
 import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
+import com.xzakota.hyper.notification.focus.FocusNotification
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -75,6 +87,7 @@ import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlin.text.format
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
@@ -83,6 +96,8 @@ fun TaskManager(
 ) {
     val navigator = LocalNavigator.current
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
     val lazyListState = rememberLazyListState()
     val scrollBehavior = MiuixScrollBehavior()
     val hazeState = rememberHazeState()
@@ -103,6 +118,69 @@ fun TaskManager(
         }
     }
 
+    /*LaunchedEffect(Unit) {
+
+        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val random = System.currentTimeMillis().toInt()
+
+        val tickerText = "还有 ${uiState.taskList.size} 个任务未完成"
+        val baseInfoTitleText = uiState.taskList.lastOrNull()?.title
+        val baseInfoContentText = uiState.taskList.lastOrNull()?.location
+        val colorString = uiState.taskList.lastOrNull()?.type?.lightColor?.primaryColor?.toHexString()
+
+        val picRes = Icon.createWithResource(context, R.mipmap.ic_launcher)
+
+        val extras = FocusNotification.buildV3 {
+            enableFloat = true
+            ticker = tickerText
+            showSmallIcon = true
+
+            picInfo {
+                pic = createPicture("pic_info", picRes)
+                picDark = createPicture("pic_info_dark", picRes)
+            }
+
+            baseInfo {
+                type = 2
+                title = baseInfoTitleText
+                content = baseInfoContentText
+            }
+
+            hintInfo {
+                type = 2
+                content = "时间"
+                colorContent = colorString
+                title = uiState.taskList.firstOrNull()?.startDateTime?.toLocalTime()
+                    ?.let {
+                        convertLocalTimeToStringTime(it, "HH:mm")
+                    }
+                actionInfo {
+                    type = 2
+                    actionTitle = "开启静音"
+
+                }
+            }
+        }
+
+        notificationManager.notify(
+            random,
+            Notification.Builder(context, FOCUS_CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setTicker(tickerText)
+                .setContentTitle(baseInfoTitleText)
+                .setContentText(baseInfoContentText)
+                .setContentIntent(pendingIntent)
+                .addExtras(extras)
+                .build()
+        )
+    }*/
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -117,8 +195,8 @@ fun TaskManager(
                                 isSelectMode.value = false
                                 selectedTaskIdList.value = emptyList()
                             },
-                            modifier = Modifier.padding(start = 16.dp)
-                        ) {
+
+                            ) {
                             Icon(
                                 imageVector = MiuixIcons.Regular.Close,
                                 contentDescription = "cancel select"
@@ -127,8 +205,8 @@ fun TaskManager(
                     } else {
                         IconButton(
                             onClick = { navigator.pop() },
-                            modifier = Modifier.padding(start = 16.dp)
-                        ) {
+
+                            ) {
                             Icon(
                                 imageVector = MiuixIcons.Regular.Back,
                                 contentDescription = "back"
@@ -161,7 +239,6 @@ fun TaskManager(
                             }
                             isSelectMode.value = true
                         },
-                        modifier = Modifier.padding(end = 16.dp),
                         enabled = uiState.taskList.isNotEmpty()
                     ) {
                         Icon(
@@ -200,13 +277,12 @@ fun TaskManager(
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
-                top = it.calculateTopPadding(),
-                bottom = it.calculateBottomPadding() + 12.dp
+                top = it.calculateTopPadding() + 16.dp,
+                bottom = it.calculateBottomPadding() + 16.dp
             ),
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .padding(top = 16.dp)
                 .hazeSource(hazeState)
                 .overScrollVertical(),
             overscrollEffect = null
@@ -216,6 +292,7 @@ fun TaskManager(
                     EmptyContent(text = "暂无任务", image = emptyData())
                 }
             }
+
             val currentDateTime = LocalDateTime.now()
             val tasksGroupByDate =
                 uiState.taskList.groupBy { it.startDateTime.toLocalDate() }.toSortedMap()
@@ -257,7 +334,7 @@ fun TaskManager(
         }
 
         AddTaskBottomSheet(
-            show = isAddTaskBottomSheetShow,
+            show = isAddTaskBottomSheetShow.value,
             initTaskInfo = initTaskInfo.value,
             onTask = {
                 if (initTaskInfo.value != null) {
@@ -265,7 +342,8 @@ fun TaskManager(
                 } else {
                     viewModel.addTask(it)
                 }
-            }
+            },
+            onDismissRequest = { isAddTaskBottomSheetShow.value = false }
         )
     }
 }
@@ -416,8 +494,8 @@ fun ExpandTaskCard(
                 visible = selectable.value
             ) {
                 Checkbox(
-                    checked = checked,
-                    onCheckedChange = { onCheckedChange(it) },
+                    state = ToggleableState(checked),
+                    onClick = { onCheckedChange(!checked) }
                 )
             }
         }

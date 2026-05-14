@@ -3,7 +3,6 @@ package com.smart.htu.screens.news
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -63,12 +62,14 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.App.Companion.context
 import com.smart.htu.R
 import com.smart.htu.api.module.NewsItemEntity
 import com.smart.htu.api.module.NewsMarkEntity
+import com.smart.htu.component.AdaptiveTopAppBar
+import com.smart.htu.component.BlurredBar
 import com.smart.htu.component.CircularProgressIndicator
+import com.smart.htu.component.rememberBlurBackdrop
 import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.application.ApplicationEntity
 import com.smart.htu.screens.main.TaskEntity
@@ -78,10 +79,8 @@ import com.smart.htu.screens.news.entity.NewsType
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.DateUtil.formatDateToFriendly
 import com.smart.htu.utils.MD5Util.md5
-import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
-import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -95,9 +94,10 @@ import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
-import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -142,63 +142,49 @@ fun NewsScreen(
                 }
             }
     }
+    val backdrop = rememberBlurBackdrop(uiState.blurEffect)
+    val blurActive = backdrop != null
+    val barColor = if (blurActive) Color.Transparent else MiuixTheme.colorScheme.surface
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                horizontalPadding = 16.dp,
-                title = stringResource(R.string.news),
-                largeTitle = stringResource(R.string.news),
-                scrollBehavior = scrollBehavior,
-                color = Color.Transparent,
-                actions = {
-                    IconButton(onClick = { navigator.push(Route.NewsMark) }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.bookmark_24px),
-                            contentDescription = "history"
-                        )
+            BlurredBar(backdrop = backdrop, blurEnabled = blurActive) {
+                AdaptiveTopAppBar(
+                    title = stringResource(R.string.news),
+                    scrollBehavior = scrollBehavior,
+                    color = barColor,
+                    actions = {
+                        IconButton(onClick = { navigator.push(Route.NewsMark) }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.bookmark_24px),
+                                contentDescription = "history"
+                            )
+                        }
+                        IconButton(
+                            onClick = { navigator.push(Route.NewsSearch) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "search"
+                            )
+                        }
                     }
-                    IconButton(
-                        onClick = { navigator.push(Route.NewsSearch) },
-                        modifier = Modifier.padding(end = 16.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "search"
-                        )
-                    }
-                },
-                modifier = Modifier
-                    .hazeEffect(
-                        state = hazeState,
-                        style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
-                    ) {
-                        blurRadius = 30.dp
-                        noiseFactor = 0f
-                        blurEnabled = uiState.blurEffect
-                    }
-            )
-        },
-        popupHost = {},
+                )
+            }
+        }
     ) {
         Box(
             modifier = Modifier
         ) {
-            Column(
+            BlurredBar(
+                backdrop = backdrop,
+                blurEnabled = uiState.blurEffect,
                 modifier = Modifier
-                    .hazeEffect(
-                        state = hazeState,
-                        style = HazeMaterials.regular(MiuixTheme.colorScheme.surface)
-                    ) {
-                        blurRadius = 30.dp
-                        noiseFactor = 0f
-                        blurEnabled = uiState.blurEffect
-                    }
                     .zIndex(1f)
                     .padding(top = it.calculateTopPadding())
             ) {
                 PrimaryScrollableTabRow(
-                    containerColor = Color.Transparent,
+                    containerColor = if (uiState.blurEffect) Color.Transparent else MiuixTheme.colorScheme.surface,
                     selectedTabIndex = newsPagerState.currentPage,
                     modifier = Modifier
                         .padding(horizontal = 16.dp),
@@ -241,19 +227,24 @@ fun NewsScreen(
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
-                    top = it.calculateTopPadding() + 8.dp + 25.dp,
+                    top = it.calculateTopPadding() + 36.dp,
                     bottom = contentPadding.calculateBottomPadding() + 12.dp
                 ),
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 16.dp)
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-
+                    .let {
+                        if (backdrop != null) {
+                            it.layerBackdrop(backdrop)
+                        } else {
+                            it
+                        }
+                    }
             ) {
                 HorizontalPager(
                     state = newsPagerState,
                     modifier = Modifier
                         .fillMaxSize()
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
                         .hazeSource(hazeState),
                     pageSpacing = 12.dp
                 ) { pageIndex ->
@@ -272,10 +263,13 @@ fun NewsScreen(
                                 contentPadding = PaddingValues(
                                     start = 16.dp,
                                     end = 16.dp,
-                                    top = it.calculateTopPadding() + 8.dp + 25.dp,
+                                    top = it.calculateTopPadding() + 36.dp,
                                     bottom = contentPadding.calculateBottomPadding() + 12.dp
                                 ),
                             ) {
+                                item {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                }
                                 if (pageIndex == 1 && uiState.loadImgEnabled) {
                                     item {
                                         HorizontalBanner(
@@ -358,7 +352,7 @@ fun NewsItem(
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize(),
-        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
+        shape = miuixShape(CardDefaults.CornerRadius),
         color = MiuixTheme.colorScheme.surfaceContainer,
     ) {
         ListItem(
@@ -443,7 +437,7 @@ fun HorizontalBanner(
     HorizontalMultiBrowseCarousel(
         state = rememberCarouselState { bannerPicUrl.count() },
         modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(32.dp))
             .fillMaxWidth(),
         preferredItemWidth = 320.dp,
         itemSpacing = 4.dp
@@ -464,7 +458,7 @@ fun HorizontalBanner(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(16 / 9f)
-                    .maskClip(MaterialTheme.shapes.extraLarge)
+                    .maskClip(RoundedCornerShape(32.dp))
                     .drawWithContent {
                         drawContent()
                         drawRect(

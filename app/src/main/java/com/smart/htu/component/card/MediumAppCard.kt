@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.mocharealm.gaze.capsule.ContinuousRoundedRectangle
 import com.smart.htu.R
 import com.smart.htu.screens.application.ApplicationEntity
 import top.yukonga.miuix.kmp.basic.BasicComponent
@@ -23,8 +22,9 @@ import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Surface
-import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 
 @Composable
 fun MediumAppCard(
@@ -40,7 +40,7 @@ fun MediumAppCard(
         enabled = enabled,
         modifier = modifier
             .fillMaxWidth(),
-        shape = ContinuousRoundedRectangle(CardDefaults.CornerRadius),
+        shape = miuixShape(CardDefaults.CornerRadius),
         color = if (enabled) MiuixTheme.colorScheme.surfaceContainer
         else MiuixTheme.colorScheme.disabledSecondaryVariant
     ) {
@@ -77,10 +77,10 @@ fun JumpToAlipayDialog(
     showDialog: MutableState<Boolean>,
     onConfirmClick: () -> Unit
 ) {
-    SuperDialog(
+    OverlayDialog(
         title = "提示",
         summary = "是否跳转到支付宝小程序？",
-        show = showDialog,
+        show = showDialog.value,
         onDismissRequest = {
             showDialog.value = false
         }

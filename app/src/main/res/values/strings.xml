@@ -149,6 +149,9 @@
     <string name="theme">主题</string>
     <string name="display">样式</string>
     <string name="pinduoduo">拼多多取件码</string>
+    <string name="shortcut_pinduoduo_pickup_code">拼多多取件码</string>
+    <string name="shortcut_taobao_pickup_code">淘宝取件码</string>
+    <string name="shortcut_cainiao_pickup_code">菜鸟取件码</string>
     <string name="logging_in">登录中</string>
     <string name="repair">报修</string>
     <string name="login_failed">登录失败</string>
