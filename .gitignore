@@ -1,5 +1,7 @@
 .kotlin/
-app/
+app/build/
+app/release/
+app/mapping.txt
 build/
 local.properties
 .cxx
