@@ -44,8 +44,8 @@ import com.smart.htu.component.VISIBLE_COUNT
 import com.smart.htu.component.rememberBlurBackdrop
 import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.navigation.Route
-import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
 import com.smart.htu.utils.DateUtil.getCurrentDate
+import com.smart.htu.utils.DateUtil.toStringDate
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -259,10 +259,7 @@ fun CourseSearch(
                                 },
                                 endActions = {
                                     Text(
-                                        text = convertLocalDateToStringDate(
-                                            selectedDate.value,
-                                            "YYYY年M月d日 E"
-                                        ),
+                                        text = selectedDate.value.toStringDate("YYYY年M月d日 E"),
                                         fontSize = MiuixTheme.textStyles.body2.fontSize,
                                         color = MiuixTheme.colorScheme.onSurfaceVariantActions
                                     )
@@ -414,7 +411,7 @@ fun CourseSearch(
                 onConfirmClick = {
                     selectedDate.value = it
                     searchInfo =
-                        searchInfo.copy(date = convertLocalDateToStringDate(it, "yyyy-MM-dd"))
+                        searchInfo.copy(date = it.toStringDate("yyyy-MM-dd"))
                     isDatePickerShow.value = false
                 },
                 onDismissRequest = { isDatePickerShow.value = false }

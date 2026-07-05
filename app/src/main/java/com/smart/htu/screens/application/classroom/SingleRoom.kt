@@ -31,7 +31,7 @@ import com.smart.htu.api.module.CourseInfoEntity
 import com.smart.htu.component.CircularProgressIndicator
 import com.smart.htu.component.EmptyContent
 import com.smart.htu.screens.application.courseSearch.CourseSearchResItem
-import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
+import com.smart.htu.utils.DateUtil.toStringDate
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
@@ -112,7 +112,7 @@ fun SingleRoom(
         title = "$label ${
             date?.let {
                 if (it.isEqual(LocalDate.now())) "今天"
-                else convertLocalDateToStringDate(it, "M月d日 E")
+                else it.toStringDate("M月d日 E")
             }
         }的课程",
         show = isOccupationDetailBottomSheetShow.value,

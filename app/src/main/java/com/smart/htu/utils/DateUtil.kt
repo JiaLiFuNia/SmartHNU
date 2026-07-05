@@ -10,13 +10,12 @@ object DateUtil {
     // 获取当前日期
     fun getCurrentDate(pattern: String = "yyyy-MM-dd"): String {
         val currentDate = LocalDate.now()
-        val date = convertLocalDateToStringDate(currentDate, pattern)
-        return date
+        return currentDate.toStringDate(pattern)
     }
 
-    fun convertLocalDateToStringDate(date: LocalDate, pattern: String = "yyyy-MM-dd"): String {
+    fun LocalDate.toStringDate(pattern: String = "yyyy-MM-dd"): String {
         val formatter = DateTimeFormatter.ofPattern(pattern)
-        return date.format(formatter)
+        return this.format(formatter)
     }
 
     fun convertStringDateToLocalDate(
@@ -42,6 +41,14 @@ object DateUtil {
         } catch (e: Exception) {
             dateString
         }
+    }
+
+    fun LocalDateTime.toTimeStamp(): Long {
+        return this.toEpochSecond(java.time.ZoneOffset.UTC)
+    }
+
+    fun convertTimeStampToDateTime(timestamp: Long): LocalDateTime {
+        return LocalDateTime.ofEpochSecond(timestamp, 0, java.time.ZoneOffset.UTC)
     }
 
     /**

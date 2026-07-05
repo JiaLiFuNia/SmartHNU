@@ -46,7 +46,7 @@ import com.smart.htu.component.rememberBlurBackdrop
 import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.utils.Constants.Companion.COURSE_PERIOD
 import com.smart.htu.utils.CourseTimeRange.checkTimeInterval
-import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
+import com.smart.htu.utils.DateUtil.toStringDate
 import com.smart.htu.utils.ToastUtil.showToast
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -159,10 +159,7 @@ fun ClassroomSearchScreen(
                             title = "选择日期",
                             endActions = {
                                 Text(
-                                    text = convertLocalDateToStringDate(
-                                        selectedDate.value,
-                                        "YY年M月d日 E"
-                                    ),
+                                    text = selectedDate.value.toStringDate("YY年M月d日 E"),
                                     fontSize = MiuixTheme.textStyles.body2.fontSize,
                                     color = MiuixTheme.colorScheme.onSurfaceVariantActions
                                 )

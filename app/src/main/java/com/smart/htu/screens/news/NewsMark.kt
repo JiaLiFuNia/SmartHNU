@@ -32,7 +32,9 @@ import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.imageVectors.emptyData
 import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.navigation.Route
+import com.smart.htu.utils.DateUtil.convertTimeStampToDateTime
 import com.smart.htu.utils.DateUtil.formatDateToFriendly
+import com.smart.htu.utils.DateUtil.toStringDate
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
@@ -174,7 +176,9 @@ fun NewsItem(
                     fontSize = MiuixTheme.textStyles.subtitle.fontSize
                 )
                 Text(
-                    text = formatDateToFriendly(news.time),
+                    text = formatDateToFriendly(
+                        convertTimeStampToDateTime(news.timeStamp).toLocalDate().toStringDate()
+                    ),
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                     fontSize = MiuixTheme.textStyles.subtitle.fontSize
                 )

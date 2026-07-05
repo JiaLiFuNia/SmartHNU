@@ -34,7 +34,7 @@ import com.smart.htu.component.EmptyContent
 import com.smart.htu.component.rememberBlurBackdrop
 import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.application.grade.UpFloatingActionButton
-import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
+import com.smart.htu.utils.DateUtil.toStringDate
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
@@ -70,8 +70,8 @@ fun ConsumptionRecordScreen(
     LaunchedEffect(Unit) {
         if (uiState.consumptionRecords == null && uiState.loginState) {
             viewModel.getConsumptionRecord(
-                beginDate = convertLocalDateToStringDate(beginDate),
-                endDate = convertLocalDateToStringDate(endDate)
+                beginDate = beginDate.toStringDate(),
+                endDate = endDate.toStringDate()
             )
         }
     }
@@ -79,8 +79,8 @@ fun ConsumptionRecordScreen(
     LaunchedEffect(uiState.isLastPage, lazyListState.canScrollForward) {
         if (!uiState.isLastPage && !lazyListState.canScrollForward && uiState.consumptionRecords != null && !uiState.isRefreshing) {
             viewModel.getConsumptionRecord(
-                beginDate = convertLocalDateToStringDate(beginDate),
-                endDate = convertLocalDateToStringDate(endDate),
+                beginDate = beginDate.toStringDate(),
+                endDate = endDate.toStringDate(),
                 beginIndex = uiState.consumptionRecords?.size ?: 0,
                 pageSize = 20,
                 isAppend = true
@@ -162,7 +162,7 @@ fun ConsumptionRecordScreen(
                                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                                 )
                                 Text(
-                                    text = convertLocalDateToStringDate(beginDate),
+                                    text = beginDate.toStringDate(),
                                     style = MiuixTheme.textStyles.body1
                                 )
                             }
@@ -179,7 +179,7 @@ fun ConsumptionRecordScreen(
                                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary
                                 )
                                 Text(
-                                    text = convertLocalDateToStringDate(endDate),
+                                    text = endDate.toStringDate(),
                                     style = MiuixTheme.textStyles.body1
                                 )
                             }
@@ -228,8 +228,8 @@ fun ConsumptionRecordScreen(
                 showBeginDatePicker = false
                 scope.launch {
                     viewModel.getConsumptionRecord(
-                        beginDate = convertLocalDateToStringDate(beginDate),
-                        endDate = convertLocalDateToStringDate(endDate)
+                        beginDate = beginDate.toStringDate(),
+                        endDate = endDate.toStringDate()
                     )
                 }
             },
@@ -244,8 +244,8 @@ fun ConsumptionRecordScreen(
                 showEndDatePicker = false
                 scope.launch {
                     viewModel.getConsumptionRecord(
-                        beginDate = convertLocalDateToStringDate(beginDate),
-                        endDate = convertLocalDateToStringDate(endDate)
+                        beginDate = beginDate.toStringDate(),
+                        endDate = endDate.toStringDate()
                     )
                 }
             },

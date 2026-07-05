@@ -45,7 +45,7 @@ import com.smart.htu.component.rememberBlurBackdrop
 import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.main.TaskEntity
 import com.smart.htu.screens.main.TaskType
-import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
+import com.smart.htu.utils.DateUtil.toStringDate
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
@@ -230,10 +230,7 @@ fun CourseSearchResItem(
                 )
                 Text(
                     text = "${
-                        convertLocalDateToStringDate(
-                            course.date,
-                            "yyyy年M月d日"
-                        )
+                        course.date.toStringDate("yyyy年M月d日")
                     } 第 ${course.weekIndexString} 周 周${course.day} ${course.sectionCode} 节",
                     fontSize = 14.sp,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,

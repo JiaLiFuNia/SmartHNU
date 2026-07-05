@@ -10,8 +10,8 @@ import com.smart.htu.repo.CampusCardRepo
 import com.smart.htu.repo.DataStoreRepo
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_BLUR_EFFECT
 import com.smart.htu.repo.DataStoreRepo.Companion.DEFAULT_LOGIN_STATE
-import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
 import com.smart.htu.utils.DateUtil.getCurrentDate
+import com.smart.htu.utils.DateUtil.toStringDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -88,7 +88,7 @@ class CampusCardViewModel @Inject constructor(
                 _uiState.update { it.copy(loginState = true) }
                 getCardBalance()
                 getConsumptionRecord(
-                    beginDate = convertLocalDateToStringDate(LocalDate.now().minusDays(30)),
+                    beginDate = LocalDate.now().minusDays(30).toStringDate(),
                     endDate = getCurrentDate(),
                     pageSize = 100
                 )
@@ -213,7 +213,7 @@ class CampusCardViewModel @Inject constructor(
                 )
                 getCardBalance()
                 getConsumptionRecord(
-                    beginDate = convertLocalDateToStringDate(LocalDate.now().minusDays(30)),
+                    beginDate = LocalDate.now().minusDays(30).toStringDate(),
                     endDate = getCurrentDate(),
                     pageSize = 100
                 )

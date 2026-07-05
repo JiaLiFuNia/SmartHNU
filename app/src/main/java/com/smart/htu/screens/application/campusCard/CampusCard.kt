@@ -43,8 +43,8 @@ import com.smart.htu.screens.login.LoginDialog
 import com.smart.htu.screens.login.LoginViewModel
 import com.smart.htu.screens.navigation.Route
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
-import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
 import com.smart.htu.utils.DateUtil.getCurrentDate
+import com.smart.htu.utils.DateUtil.toStringDate
 import com.smart.htu.utils.ToastUtil.showToast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -68,6 +68,7 @@ import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 import java.time.LocalDate
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun CampusCardScreen(
@@ -89,11 +90,11 @@ fun CampusCardScreen(
     val pullToRefreshState = rememberPullToRefreshState()
     LaunchedEffect(isRefreshing) {
         if (isRefreshing) {
-            delay(1000)
+            delay(1000.milliseconds)
             viewModel.getCardBalance()
             if (uiState.loginState) {
                 viewModel.getConsumptionRecord(
-                    beginDate = convertLocalDateToStringDate(LocalDate.now().minusDays(30)),
+                    beginDate = LocalDate.now().minusDays(30).toStringDate(),
                     endDate = getCurrentDate(),
                     pageSize = 100 // 一次获取较多数据以准确计算30天统计
                 )

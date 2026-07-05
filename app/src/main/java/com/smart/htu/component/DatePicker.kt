@@ -19,7 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
+import com.smart.htu.utils.DateUtil.toStringDate
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.NumberPicker
 import top.yukonga.miuix.kmp.basic.NumberPickerDefaults
@@ -61,7 +61,7 @@ fun DatePicker(
     OverlayDialog(
         show = showDatePicker,
         title = "选择日期",
-        summary = convertLocalDateToStringDate(currentSelection, "yyyy年MM月dd日 E"),
+        summary = currentSelection.toStringDate("yyyy年MM月dd日 E"),
         onDismissRequest = onDismissRequest
     ) {
         Column(
