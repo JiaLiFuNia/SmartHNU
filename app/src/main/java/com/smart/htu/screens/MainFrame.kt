@@ -66,6 +66,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.Badge
+import top.yukonga.miuix.kmp.basic.BadgedBox
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.NavigationBar
 import top.yukonga.miuix.kmp.basic.NavigationBarItem
@@ -89,7 +91,6 @@ fun MainFrame(
 ) {
     val mainUiState by mainViewModel.uiState.collectAsState()
     val settingUiState by settingViewModel.uiState.collectAsState()
-    val scope = rememberCoroutineScope()
 
     val blurBackdrop = rememberBlurBackdrop(settingUiState.blurEnabled)
     val blurActive = blurBackdrop != null
@@ -161,7 +162,12 @@ fun MainFrame(
                                             selected = pagerState.currentPage == index,
                                             onClick = { mainPagerState.animateToPage(index) },
                                             icon = item.icon,
-                                            label = item.label
+                                            label = item.label,
+                                            badge = {
+                                                if (index == 3 && mainUiState.update.isNeedUpdate) {
+                                                    Badge()
+                                                }
+                                            }
                                         )
                                     }
                                 }
@@ -191,11 +197,17 @@ fun MainFrame(
                                     onClick = { mainPagerState.animateToPage(index) },
                                     modifier = Modifier.defaultMinSize(minWidth = 76.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = item.icon,
-                                        contentDescription = item.label,
-                                        tint = MiuixTheme.colorScheme.onSurface
-                                    )
+                                    BadgedBox(
+                                        badge = {
+                                            if (index == 3 && mainUiState.update.isNeedUpdate) Badge()
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = item.icon,
+                                            contentDescription = item.label,
+                                            tint = MiuixTheme.colorScheme.onSurface
+                                        )
+                                    }
                                     Text(
                                         text = item.label,
                                         fontSize = 11.sp,

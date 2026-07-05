@@ -79,6 +79,8 @@ import com.smart.htu.utils.DateUtil.getCurrentDate
 import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.basic.Badge
+import top.yukonga.miuix.kmp.basic.BadgedBox
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
@@ -123,7 +125,6 @@ fun Main(
     val loginUiState by loginViewModel.uiState.collectAsState()
     val airConditionUiState by airConditionViewModel.uiState.collectAsState()
     val messageUiState by messageViewModel.uiState.collectAsState()
-    val scope = rememberCoroutineScope()
     val isLoginFailure = remember {
         derivedStateOf { loginUiState.jwcLoginState == 0 || loginUiState.jwcLoginState == -1 } // 未登录或登陆失败
     }
@@ -133,8 +134,6 @@ fun Main(
     val messageCount = remember {
         derivedStateOf { messageUiState.notReadNoticeIdCount }
     }
-
-    val isAddTaskBottomSheetShow = remember { mutableStateOf(false) }
 
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val pullToRefreshState = rememberPullToRefreshState()
@@ -165,11 +164,14 @@ fun Main(
                                 navigator.push(Route.Message)
                             }
                         ) {
-                            // Badge { androidx.compose.material3.Text(text = messageCount.value.toString()) }
-                            Icon(
-                                imageVector = Icons.Outlined.Email,
-                                contentDescription = null
-                            )
+                            BadgedBox(
+                                badge = { Badge { Text(text = messageCount.value.toString()) } }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Email,
+                                    contentDescription = null
+                                )
+                            }
                         }
                     },
                     color = barColor
