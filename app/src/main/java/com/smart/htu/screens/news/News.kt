@@ -74,6 +74,7 @@ import com.smart.htu.screens.navigation.Route
 import com.smart.htu.screens.news.entity.NewsType
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.DateUtil.formatDateToFriendly
+import com.smart.htu.utils.DateUtil.toTimeStamp
 import com.smart.htu.utils.MD5Util.md5
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -92,7 +93,6 @@ import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Composable
@@ -186,7 +186,8 @@ fun NewsScreen(
                                 maxWidth = 140.dp,
                                 itemSpacing = 16.dp,
                                 colors = TabRowDefaults.tabRowColors(
-                                    backgroundColor = Color.Transparent
+                                    backgroundColor = Color.Transparent,
+                                    selectedBackgroundColor = Color.Transparent
                                 )
                             )
                         }
@@ -269,7 +270,7 @@ fun NewsScreen(
                                             NewsMarkEntity(
                                                 title = news.title,
                                                 url = news.url,
-                                                time = LocalDate.now().toString(),
+                                                timeStamp = LocalDateTime.now().toTimeStamp(),
                                                 source = context.getString(news.label.label)
                                             )
                                         )

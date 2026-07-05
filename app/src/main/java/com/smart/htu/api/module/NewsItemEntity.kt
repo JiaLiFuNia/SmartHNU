@@ -16,6 +16,6 @@ data class NewsItemEntity(
 data class NewsMarkEntity(
     val title: String,
     val url: String,
-    val time: String,
+    val timeStamp: Long,
     val source: String
 )
