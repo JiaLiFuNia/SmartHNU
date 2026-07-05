@@ -10,11 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.smart.htu.api.module.SingleTerm
-import top.yukonga.miuix.kmp.basic.BasicComponentDefaults
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.preference.RadioButtonPreference
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun SelectTermDialog(
@@ -49,10 +47,7 @@ fun SelectTermDialog(
                         onClick = {
                             onClick(termList[index].termCode)
                             onDismissRequest()
-                        },
-                        summaryColor = BasicComponentDefaults.summaryColor(
-                            color = if (termList[index].termCode == globalTermCode) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.onSurface
-                        )
+                        }
                     )
                 }
 
