@@ -35,7 +35,7 @@ import com.smart.htu.api.module.CourseEntity
 import com.smart.htu.component.card.MessageCardDisplay
 import com.smart.htu.component.card.SingleInfo
 import com.smart.htu.utils.CourseColorUtil.getColorByCourseName
-import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
+import com.smart.htu.utils.TimeUtil.toStringTime
 import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
@@ -160,19 +160,9 @@ fun SingleCourseCard(
             else -> TaskState.NOT_START
         },
         summary = buildString {
-            append(
-                "${
-                    convertLocalTimeToStringTime(
-                        time = course.startTime,
-                        pattern = "HH:mm"
-                    )
-                }-${
-                    convertLocalTimeToStringTime(
-                        time = course.endTime,
-                        pattern = "HH:mm"
-                    )
-                }"
-            )
+            append(course.startTime.toStringTime("HH:mm"))
+            append("-")
+            append(course.endTime.toStringTime("HH:mm"))
             append(" | ")
             append(course.classroomName?.ifEmpty { "无教室" } ?: "无教室")
         },

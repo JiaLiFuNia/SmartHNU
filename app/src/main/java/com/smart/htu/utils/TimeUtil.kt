@@ -12,9 +12,9 @@ object TimeUtil {
         return currentTime.format(formatter)
     }
 
-    fun convertLocalTimeToStringTime(time: LocalTime, pattern: String): String {
+    fun LocalTime.toStringTime(pattern: String): String {
         val formatter = DateTimeFormatter.ofPattern(pattern)
-        return time.format(formatter)
+        return this.format(formatter)
     }
 
     fun convertStringTimeToLocalTime(timeString: String, pattern: String): LocalTime {

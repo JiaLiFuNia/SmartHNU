@@ -76,7 +76,7 @@ import com.smart.htu.ui.theme.isInDarkTheme
 import com.smart.htu.utils.Constants.Companion.PULL_TO_REFRESH_TEXT
 import com.smart.htu.utils.DateUtil.formatDateToFriendly
 import com.smart.htu.utils.DateUtil.getCurrentDate
-import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
+import com.smart.htu.utils.TimeUtil.toStringTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Badge
@@ -165,7 +165,7 @@ fun Main(
                             }
                         ) {
                             BadgedBox(
-                                badge = { Badge { Text(text = messageCount.value.toString()) } }
+                                badge = { if (messageCount.value > 0) Badge { Text(text = messageCount.value.toString()) } }
                             ) {
                                 Icon(
                                     imageVector = Icons.Outlined.Email,
@@ -290,15 +290,9 @@ fun TodayTaskCard(
                         summary = buildString {
                             append(
                                 "${
-                                    convertLocalTimeToStringTime(
-                                        it.startDateTime.toLocalTime(),
-                                        "hh:mm"
-                                    )
+                                    it.startDateTime.toLocalTime().toStringTime("hh:mm")
                                 } - ${
-                                    convertLocalTimeToStringTime(
-                                        it.endDateTime.toLocalTime(),
-                                        "hh:mm"
-                                    )
+                                    it.endDateTime.toLocalTime().toStringTime("hh:mm")
                                 }"
                             )
                             if (it.location.isNotEmpty())
@@ -521,16 +515,8 @@ fun CourseStateCard(
                                     .padding(end = 2.dp)
                             )
                             Text(
-                                text = "${
-                                    convertLocalTimeToStringTime(
-                                        time = course?.startTime ?: currentTime,
-                                        pattern = "HH:mm"
-                                    )
-                                }-${
-                                    convertLocalTimeToStringTime(
-                                        time = course?.endTime ?: currentTime,
-                                        pattern = "HH:mm"
-                                    )
+                                text = "${course?.startTime ?: currentTime.toStringTime("HH:mm")}-${
+                                    course?.endTime ?: currentTime.toStringTime("HH:mm")
                                 }",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,

@@ -40,8 +40,8 @@ import com.smart.htu.component.rememberBlurBackdrop
 import com.smart.htu.screens.LocalNavigator
 import com.smart.htu.screens.main.TaskEntity
 import com.smart.htu.utils.Calendar.addEvent
-import com.smart.htu.utils.DateUtil.convertLocalDateToStringDate
-import com.smart.htu.utils.TimeUtil.convertLocalTimeToStringTime
+import com.smart.htu.utils.DateUtil.toStringDate
+import com.smart.htu.utils.TimeUtil.toStringTime
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
@@ -277,7 +277,7 @@ fun TaskManager(
                     uiState.taskList.groupBy { it.startDateTime.toLocalDate() }.toSortedMap()
                 tasksGroupByDate.forEach { (date, tasks) ->
                     item {
-                        val dateString = convertLocalDateToStringDate(date, "yyyy年MM月dd日 E")
+                        val dateString = date.toStringDate("yyyy年MM月dd日 E")
                         SmallTitle(
                             text = if (date.isEqual(LocalDate.now())
                             ) "今天 ($dateString)" else dateString,
@@ -367,15 +367,9 @@ fun ExpandTaskCard(
         BasicComponent(
             title = task.title,
             summary = "${
-                convertLocalTimeToStringTime(
-                    time = task.startDateTime.toLocalTime(),
-                    pattern = "HH:mm"
-                )
+                task.startDateTime.toLocalTime().toStringTime("HH:mm")                
             }-${
-                convertLocalTimeToStringTime(
-                    time = task.endDateTime.toLocalTime(),
-                    pattern = "HH:mm"
-                )
+                task.endDateTime.toLocalTime().toStringTime("HH:mm")
             } | ${task.location}",
             bottomAction = if (!task.remarkableInfo.isNullOrEmpty()) {
                 {
