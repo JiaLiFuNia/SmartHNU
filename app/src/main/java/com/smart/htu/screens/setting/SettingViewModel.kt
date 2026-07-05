@@ -45,7 +45,6 @@ data class SettingUiState(
     val blurEnabled: Boolean = true,
     val enableFloatingBottomBar: Boolean = false,
     val enableFloatingBottomBarBlur: Boolean = false,
-    val enablePredictiveBack: Boolean = false,
     val pageScale: Float = 1f,
     val selectedLanguageIndex: Int = 0,
     val updateInfo: UpdateRes? = UpdateRes(0, "", UpdateEntity(), CaptchaVersionEntity()),
@@ -258,11 +257,6 @@ class SettingViewModel @Inject constructor(
                 dataStoreRepo.observeEnableFloatingBottomBarBlur().first()
             })
 
-    private val enablePredictiveBackStateFlow = dataStoreRepo.observeEnablePredictiveBack()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
-            dataStoreRepo.observeEnablePredictiveBack().first()
-        })
-
     private val pageScaleStateFlow = dataStoreRepo.observePageScale()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), runBlocking {
             dataStoreRepo.observePageScale().first()
@@ -376,11 +370,6 @@ class SettingViewModel @Inject constructor(
         viewModelScope.launch {
             enableFloatingBottomBarBlurStateFlow.collect { value ->
                 _uiState.update { it.copy(enableFloatingBottomBarBlur = value) }
-            }
-        }
-        viewModelScope.launch {
-            enablePredictiveBackStateFlow.collect { value ->
-                _uiState.update { it.copy(enablePredictiveBack = value) }
             }
         }
         viewModelScope.launch {

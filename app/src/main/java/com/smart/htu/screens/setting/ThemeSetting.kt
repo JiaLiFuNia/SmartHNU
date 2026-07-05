@@ -1,6 +1,5 @@
 package com.smart.htu.screens.setting
 
-import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -161,20 +160,6 @@ fun ThemeSetting(
                                 checked = uiState.enableFloatingBottomBarBlur,
                                 onCheckedChange = {
                                     viewModel.changeEnableFloatingBottomBarBlur(it)
-                                }
-                            )
-                        }
-                    }
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                    item {
-                        Card {
-                            SwitchPreference(
-                                title = "预测性返回手势",
-                                summary = "启用对预测性返回手势的支持",
-                                checked = uiState.enablePredictiveBack,
-                                onCheckedChange = {
-                                    viewModel.changeEnablePredictiveBack(it)
                                 }
                             )
                         }
