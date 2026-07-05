@@ -2,6 +2,7 @@ package com.smart.htu.screens.news.newsView
 
 import android.content.Intent
 import android.os.Environment
+import android.util.Log
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -30,7 +31,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.FormatBold
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -45,7 +45,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Size
@@ -558,7 +557,7 @@ private fun ParsedArticleView(
                                         .toArgb(),
                                     tableMargin = 0,
                                     selectionTextColor = MiuixTheme.colorScheme.onBackground.toArgb(),
-                                    selectionBgColor = MaterialTheme.colorScheme.primaryContainer.toArgb()
+                                    selectionBgColor = MiuixTheme.colorScheme.tertiaryContainer.toArgb()
                                 ),
                                 url,
                                 newsContent?.articleContent,
@@ -589,13 +588,16 @@ private fun ParsedArticleView(
                                         .fillMaxWidth()
                                         .padding(top = 12.dp)
                                         .padding(horizontal = 16.dp),
-                                    onClick = { url, title ->
+                                    onPDFClick = { url, title ->
                                         navigator.push(
                                             Route.PdfReaderView(
                                                 url = url,
                                                 title = title
                                             )
                                         )
+                                    },
+                                    onUrlClick = {
+                                        navigator.pushWebView(it, "附件")
                                     }
                                 )
                             }
@@ -670,11 +672,94 @@ fun TittleContent(
     }
 }
 
+private val attachmentIconMap: Map<String, Int> = mapOf(
+    // 文档
+    "pdf" to R.drawable.ic_pdf_file,
+    "doc" to R.drawable.ic_doc_file,
+    "docx" to R.drawable.ic_docx_file,
+    "txt" to R.drawable.ic_txt_file,
+    "md" to R.drawable.ic_md_file,
+    "csv" to R.drawable.ic_csv_file,
+    "html" to R.drawable.ic_html_file,
+    "xml" to R.drawable.ic_xml_file,
+    "log" to R.drawable.ic_log_file,
+    "caj" to R.drawable.ic_caj_file,
+    "ofd" to R.drawable.ic_ofd_file,
+    "epub" to R.drawable.ic_epub_file,
+    "azw3" to R.drawable.ic_azw3_file,
+    "mobi" to R.drawable.ic_mobi_file,
+    // 表格
+    "xls" to R.drawable.ic_xls_file,
+    "xlsx" to R.drawable.ic_xlsx_file,
+    "ods" to R.drawable.ic_ods_file,
+    "numbers" to R.drawable.ic_numbers_file,
+    // 演示
+    "ppt" to R.drawable.ic_ppt_file,
+    "pptx" to R.drawable.ic_pptx_file,
+    "odp" to R.drawable.ic_odp_file,
+    "wps" to R.drawable.ic_wps_file,
+    "pages" to R.drawable.ic_pages_file,
+    // 图片
+    "jpg" to R.drawable.ic_jpg_file,
+    "jpeg" to R.drawable.ic_jpeg_file,
+    "png" to R.drawable.ic_png_file,
+    "gif" to R.drawable.ic_gif_file,
+    "bmp" to R.drawable.ic_bmp_file,
+    "svg" to R.drawable.ic_svg_file,
+    "webp" to R.drawable.ic_webp_file,
+    "tif" to R.drawable.ic_tif_file,
+    "tiff" to R.drawable.ic_tiff_file,
+    // 音频
+    "mp3" to R.drawable.ic_mp3_file,
+    "wav" to R.drawable.ic_wav_file,
+    "aac" to R.drawable.ic_aac_file,
+    "flac" to R.drawable.ic_flac_file,
+    "ogg" to R.drawable.ic_ogg_file,
+    "m4a" to R.drawable.ic_m4a_file,
+    "amr" to R.drawable.ic_amr_file,
+    "wma" to R.drawable.ic_wma_file,
+    // 视频
+    "mp4" to R.drawable.ic_mp4_file,
+    "avi" to R.drawable.ic_avi_file,
+    "mkv" to R.drawable.ic_mkv_file,
+    "mov" to R.drawable.ic_mov_file,
+    "flv" to R.drawable.ic_flv_file,
+    "m4v" to R.drawable.ic_m4v_file,
+    "wmv" to R.drawable.ic_wmv_file,
+    "mpeg" to R.drawable.ic_mpeg_file,
+    "mpg" to R.drawable.ic_mpg_file,
+    "3gp" to R.drawable.ic_3gp_file,
+    // 压缩
+    "zip" to R.drawable.ic_zip_file,
+    "rar" to R.drawable.ic_rar_file,
+    "7z" to R.drawable.ic_7z_file,
+    "gz" to R.drawable.ic_gz_file,
+    "tar" to R.drawable.ic_tar_file,
+    "tgz" to R.drawable.ic_tgz_file,
+    // 代码/脚本/数据
+    "js" to R.drawable.ic_js_file,
+    "py" to R.drawable.ic_py_file,
+    "sh" to R.drawable.ic_sh_file,
+    "bat" to R.drawable.ic_bat_file,
+    "jar" to R.drawable.ic_jar_file,
+    "dat" to R.drawable.ic_dat_file,
+    "db" to R.drawable.ic_db_file,
+    "bin" to R.drawable.ic_bin_file,
+    // 应用/其他
+    "apk" to R.drawable.ic_apk_file,
+    "exe" to R.drawable.ic_exe_file,
+    "ics" to R.drawable.ic_ics_file,
+    "vcf" to R.drawable.ic_vcf_file,
+    "key" to R.drawable.ic_key_file,
+    "odt" to R.drawable.ic_odt_file
+)
+
 @Composable
 fun AttachmentContent(
     attachments: List<AttachmentEntity>,
     modifier: Modifier,
-    onClick: (String, String) -> Unit = { _, _ -> }
+    onPDFClick: (String, String) -> Unit = { _, _ -> },
+    onUrlClick: (String) -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -683,39 +768,39 @@ fun AttachmentContent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         attachments.forEach { attachment ->
-            if (attachment.fileName.isNotEmpty() || attachment.url.isNotEmpty()) {
+            Log.i("TAG666", attachment.toString())
+            if (attachment.url.isNotEmpty()) {
                 Card {
                     val showDownloadDialog = remember { mutableStateOf(false) }
+                    val iconRes = remember(attachment.fileType) {
+                        attachmentIconMap[attachment.fileType.lowercase()]
+                            ?: R.drawable.ic_html_file
+                    }
                     BasicComponent(
                         startAction = {
                             Image(
-                                painter = painterResource(
-                                    id = when (attachment.fileType) {
-                                        "pdf" -> R.drawable.ic_pdf
-                                        "doc", "docx" -> R.drawable.ic_doc
-                                        "xls", "xlsx" -> R.drawable.ic_xls
-                                        "ppt", "pptx" -> R.drawable.ic_ppt
-                                        "mp3", "wav" -> R.drawable.ic_music
-                                        "mp4", "avi", "mkv" -> R.drawable.ic_video
-                                        "zip", "rar", "7z" -> R.drawable.ic_zip
-                                        "jpg", "jpeg", "png", "gif" -> R.drawable.ic_img
-                                        "csv" -> R.drawable.ic_csv
-                                        "psd" -> R.drawable.ic_psd
-                                        else -> R.drawable.folder_24px
-                                    }
-                                ),
+                                painter = painterResource(id = iconRes),
                                 contentDescription = "file",
                                 modifier = Modifier
-                                    .padding(end = 10.dp)
+                                    .padding(end = 8.dp)
                                     .size(36.dp)
                             )
                         },
                         title = attachment.fileName,
                         onClick = {
-                            if (attachment.fileType == "pdf" || attachment.isNeedOnlineView)
-                                onClick(attachment.url, attachment.fileName)
-                            else
-                                showDownloadDialog.value = true
+                            when {
+                                !attachment.isFile -> {
+                                    onUrlClick(attachment.url)
+                                }
+
+                                attachment.fileType == "pdf" -> {
+                                    onPDFClick(attachment.url, attachment.fileName)
+                                }
+
+                                else -> {
+                                    showDownloadDialog.value = true
+                                }
+                            }
                         }
                     )
                     DownloadDialog(
@@ -813,7 +898,6 @@ fun AISummaryBottomSheet(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                                 modifier = Modifier
-                                    .clip(MaterialTheme.shapes.small)
                                     .fillMaxWidth()
                                     .clickable {
                                         expandState.value = !expandState.value

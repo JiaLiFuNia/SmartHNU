@@ -12,5 +12,5 @@ data class AttachmentEntity(
     val fileName: String,
     val url: String,
     val fileType: String,
-    val isNeedOnlineView: Boolean = false
+    val isFile: Boolean = true
 )

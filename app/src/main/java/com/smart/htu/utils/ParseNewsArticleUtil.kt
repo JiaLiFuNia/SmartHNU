@@ -204,16 +204,19 @@ object ParseNewsArticleUtil {
             sudyFileElements.forEach { element ->
                 if (element.tagName() != "img") {
                     val url = element.attr("href").ifEmpty { element.attr("pdfsrc") }
-                    val fileName = element.text().ifEmpty { element.attr("sudyfile-attr") }
+                    val fileName = element.attr("sudyfile-attr")
                     val pattern = "'title':\\s*'([^']*)'".toRegex()
                     val matchResult = pattern.find(fileName)
-                    val dealFileName = matchResult?.groupValues?.getOrNull(1) ?: fileName
+                    val dealFileName = matchResult?.groupValues?.getOrNull(1) ?: ""
                     attachment.add(
                         AttachmentEntity(
-                            fileName = dealFileName,
-                            url = "https://www.htu.edu.cn$url",
+                            fileName = dealFileName
+                                .replace("：", "")
+                                .replace("附件", "")
+                                .ifBlank { url },
+                            url = url.toFullUrl(),
                             fileType = url.split('.').lastOrNull() ?: "",
-                            isNeedOnlineView = element.attr("pdfsrc").isNotEmpty()
+                            isFile = dealFileName.isNotBlank() // 如果有文件名判定为文件
                         )
                     )
                 }
