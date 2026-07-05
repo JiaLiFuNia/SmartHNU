@@ -15,7 +15,6 @@ hiltAndroid = "2.59.2"
 hiltNavigationCompose = "1.3.0"
 konfetti = "2.0.5"
 material = "1.11.2"
-material3 = "1.4.0"
 materialKolor = "4.1.1"
 materialIconsCore = "1.7.8"
 nav3 = "1.1.2"
@@ -30,7 +29,7 @@ lifecycleRuntimeKtx = "2.10.0"
 lifecycleViewmodelNav3 = "2.10.0"
 activityCompose = "1.13.0"
 composeBom = "2026.05.00"
-miuix = "0.9.2"
+miuix = "0.9.3"
 navigationCompose = "2.9.7"
 coil = "3.4.0"
 appcompat = "1.7.1"
@@ -66,7 +65,6 @@ androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", vers
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "material" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "material" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "material" }
-androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
