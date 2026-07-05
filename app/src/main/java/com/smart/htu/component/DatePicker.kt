@@ -216,7 +216,7 @@ fun DateTimePicker(
                         onValueChange = { selectedDate = dates[it] },
                         range = dates.indices,
                         label = {
-                            dates[it].format(DateTimeFormatter.ofPattern("M月d日 E"))
+                            dates[it].format(DateTimeFormatter.ofPattern("M月d日"))
                         },
                         visibleItemCount = VISIBLE_COUNT,
                         modifier = Modifier.fillMaxWidth(),

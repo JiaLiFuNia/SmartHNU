@@ -1,6 +1,5 @@
 package com.smart.htu.screens.application.classroom
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,6 +56,7 @@ import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.basic.TabRowWithContour
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.blur.layerBackdrop
@@ -86,7 +86,6 @@ fun ClassroomSearchScreen(
     val classroomList by remember(selectedCampusIndex) {
         mutableStateOf(viewModel.buildingsList[selectedCampusIndex])
     }
-    Log.i("TAG666", classroomList.toString())
 
     val (selectedTimeIndex, onSelectedTimeIndex) = rememberSaveable {
         mutableIntStateOf(checkTimeInterval())
@@ -159,7 +158,7 @@ fun ClassroomSearchScreen(
                             title = "选择日期",
                             endActions = {
                                 Text(
-                                    text = selectedDate.value.toStringDate("YY年M月d日 E"),
+                                    text = selectedDate.value.toStringDate("YYYY年M月d日 E"),
                                     fontSize = MiuixTheme.textStyles.body2.fontSize,
                                     color = MiuixTheme.colorScheme.onSurfaceVariantActions
                                 )
@@ -254,7 +253,7 @@ fun ClassroomSearchScreen(
                                         }
                                     )
                                 }
-                            top.yukonga.miuix.kmp.basic.TabRow(
+                            TabRowWithContour(
                                 tabs = tabRowItem,
                                 selectedTabIndex = selectFloorIndex.value,
                                 onTabSelected = {

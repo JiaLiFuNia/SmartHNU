@@ -154,7 +154,7 @@ fun AddTaskBottomSheet(
                 )
             }
             item {
-                val formator = DateTimeFormatter.ofPattern("yyyy年M月d日E HH:mm")
+                val formator = DateTimeFormatter.ofPattern("yyyy年M月d日 HH:mm")
                 Card {
                     ArrowPreference(
                         title = "开始时间",
