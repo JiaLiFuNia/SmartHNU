@@ -84,7 +84,9 @@ import com.smart.htu.screens.news.NewsViewModel
 import com.smart.htu.screens.news.newsView.NewsStyle.HORIZONTAL_MARGIN
 import com.smart.htu.screens.news.newsView.NewsStyle.fontList
 import com.smart.htu.utils.DateUtil.getCurrentDate
+import com.smart.htu.utils.DateUtil.toTimeStamp
 import com.smart.htu.utils.FileUtil.downloadFile
+import com.smart.htu.utils.ToastUtil.showSnackbar
 import com.smart.htu.utils.ToastUtil.showToast
 import com.smart.htu.utils.copyContent
 import com.smart.htu.utils.startWebUrl
@@ -104,6 +106,7 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
+import top.yukonga.miuix.kmp.basic.SnackbarHost
 import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
@@ -124,7 +127,7 @@ import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
-import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
@@ -139,8 +142,6 @@ fun NewsDetail(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val webViewNavigator = rememberWebViewNavigator()
-    val listState = rememberLazyListState()
-    val scrollState = rememberScrollState()
     val snackBarHostState = remember { SnackbarHostState() }
 
     val showDropDownMenu = remember { mutableStateOf(false) }
@@ -327,19 +328,75 @@ fun NewsDetail(
                     }*/
                     IconButton(
                         onClick = {
-                            scope.launch {
-                                newsViewModel.addNewsFavorite(
+                            if (newsViewModel.isInNewsFavorite(title)) {
+                                newsViewModel.removeNewsFavorite(
                                     NewsMarkEntity(
                                         title = title,
                                         url = url,
-                                        time = LocalDate.now().toString(),
+                                        timeStamp = LocalDateTime.now().toTimeStamp(),
                                         source = source
                                     ),
                                     onResult = {
-                                        if (it) {
-                                            showToast(context, "已添加到收藏")
-                                        } else {
-                                            showToast(context, "已从收藏夹移除")
+                                        scope.launch {
+                                            showSnackbar(
+                                                snackBarHostState = snackBarHostState,
+                                                message = it,
+                                                actionLabel = "取消",
+                                                onConfirm = {
+                                                    newsViewModel.addNewsFavorite(
+                                                        newsItem = NewsMarkEntity(
+                                                            title = title,
+                                                            url = url,
+                                                            timeStamp = LocalDateTime.now().toTimeStamp(),
+                                                            source = source
+                                                        ),
+                                                        onResult = {
+                                                            scope.launch {
+                                                                showSnackbar(
+                                                                    snackBarHostState = snackBarHostState,
+                                                                    message = it
+                                                                )
+                                                            }
+                                                        }
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    }
+                                )
+                            } else {
+                                newsViewModel.addNewsFavorite(
+                                    newsItem = NewsMarkEntity(
+                                        title = title,
+                                        url = url,
+                                        timeStamp = LocalDateTime.now().toTimeStamp(),
+                                        source = source
+                                    ),
+                                    onResult = {
+                                        scope.launch {
+                                            showSnackbar(
+                                                snackBarHostState = snackBarHostState,
+                                                message = it,
+                                                actionLabel = "取消",
+                                                onConfirm = {
+                                                    newsViewModel.removeNewsFavorite(
+                                                        NewsMarkEntity(
+                                                            title = title,
+                                                            url = url,
+                                                            timeStamp = LocalDateTime.now().toTimeStamp(),
+                                                            source = source
+                                                        ),
+                                                        onResult = {
+                                                            scope.launch {
+                                                                showSnackbar(
+                                                                    snackBarHostState = snackBarHostState,
+                                                                    message = it
+                                                                )
+                                                            }
+                                                        }
+                                                    )
+                                                }
+                                            )
                                         }
                                     }
                                 )
@@ -382,6 +439,7 @@ fun NewsDetail(
             }
         },
         floatingToolbarPosition = ToolbarPosition.BottomEnd,
+        snackbarHost = { SnackbarHost(snackBarHostState) },
         modifier = Modifier.fillMaxSize()
     ) {
         if (newsViewMode.intValue == 0) {

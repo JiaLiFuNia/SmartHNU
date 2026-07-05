@@ -16,11 +16,6 @@ object ToastUtil {
         }
     }
 
-    fun showLongToast(context: Context, text: String) {
-        showToast(context, text, Toast.LENGTH_LONG)
-    }
-
-    // snackBar
     suspend fun showSnackbar(
         snackBarHostState: SnackbarHostState,
         message: String,

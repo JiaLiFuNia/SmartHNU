@@ -340,17 +340,25 @@ class NewsViewModel @Inject constructor(
         }
     }
 
-    fun addNewsFavorite(newsItem: NewsMarkEntity, onResult: (Boolean) -> Unit) {
+    fun isInNewsFavorite(title: String): Boolean {
+        return _uiState.value.newsFavoriteList.any { it.title == title }
+    }
+
+    fun addNewsFavorite(newsItem: NewsMarkEntity, onResult: (String) -> Unit) {
         viewModelScope.launch {
             val currentList = _uiState.value.newsFavoriteList.toMutableList()
-            if (newsItem.title in currentList.map { it.title }) {
-                currentList.remove(newsItem)
-                onResult(false)
-            } else {
-                currentList.add(newsItem)
-                onResult(true)
-            }
+            currentList.add(newsItem)
             dataStoreRepo.addNewsFavoriteList(currentList)
+            onResult("已添加到收藏夹")
+        }
+    }
+
+    fun removeNewsFavorite(newsItem: NewsMarkEntity, onResult: (String) -> Unit) {
+        viewModelScope.launch {
+            val currentList = _uiState.value.newsFavoriteList.toMutableList()
+            currentList.removeAll { it.title == newsItem.title }
+            dataStoreRepo.addNewsFavoriteList(currentList)
+            onResult("已从收藏夹移除")
         }
     }
 
