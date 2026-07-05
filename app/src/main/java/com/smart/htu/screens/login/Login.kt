@@ -13,9 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -247,24 +247,28 @@ fun LoginScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 12.dp)
+                        .padding(top = 8.dp)
                 ) {
                     Text(
                         text = "忘记密码?",
+                        fontSize = MiuixTheme.textStyles.subtitle.fontSize,
                         modifier = Modifier
-                            .clip(MaterialTheme.shapes.small)
+                            .clip(RoundedCornerShape(8.dp))
                             .clickable {
                                 showLoginInfoDialog.value = true
                             }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                     Text(
                         text = "游客访问",
+                        fontSize = MiuixTheme.textStyles.subtitle.fontSize,
                         modifier = Modifier
-                            .clip(MaterialTheme.shapes.medium)
+                            .clip(RoundedCornerShape(8.dp))
                             .clickable {
                                 viewModel.guestLogin()
                                 navigator.pop()
                             }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
             }

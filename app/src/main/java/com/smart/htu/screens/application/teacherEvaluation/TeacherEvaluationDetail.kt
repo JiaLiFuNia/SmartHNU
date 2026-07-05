@@ -1,5 +1,6 @@
 package com.smart.htu.screens.application.teacherEvaluation
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,8 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -26,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.smart.htu.R
 import com.smart.htu.api.module.EvaluationQuestion
@@ -52,7 +52,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeacherEvaluationDetail(
     viewModel: TEViewModel = hiltViewModel(),
@@ -131,7 +130,8 @@ fun TeacherEvaluationDetail(
                         .overScrollVertical()
                         .scrollEndHaptic()
                         .nestedScroll(scrollBehavior.nestedScrollConnection),
-                    overscrollEffect = null
+                    overscrollEffect = null,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     if (uiState.evaluationQuestionList == null) {
                         item {
@@ -166,15 +166,13 @@ fun QuestionItem(
         ) {
             Text(
                 text = question.questionType,
-                style = MaterialTheme.typography.labelMedium.copy(
-                    color = MiuixTheme.colorScheme.onSurfaceContainerVariant
-                )
+                fontSize = 12.sp,
+                color = MiuixTheme.colorScheme.onSurfaceContainerVariant
             )
             Text(
                 text = question.question,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MiuixTheme.colorScheme.onSurface
-                )
+                style = MiuixTheme.textStyles.body2,
+                color = MiuixTheme.colorScheme.onSurface
             )
             Column {
 

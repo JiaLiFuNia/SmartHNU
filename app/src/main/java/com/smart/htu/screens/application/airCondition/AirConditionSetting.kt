@@ -21,7 +21,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -197,7 +196,7 @@ fun AirConditionSetting(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         colors = TextFieldDefaults.textFieldColors(
                             backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
-                            labelColor = if (roomIdError) MaterialTheme.colorScheme.error else MiuixTheme.colorScheme.onSecondaryContainer,
+                            labelColor = if (buildingIdError) MiuixTheme.colorScheme.error else MiuixTheme.colorScheme.onSecondaryContainer,
                         ),
                         singleLine = true,
                         maxLines = 1,
@@ -229,14 +228,14 @@ fun AirConditionSetting(
                         ),
                         colors = TextFieldDefaults.textFieldColors(
                             backgroundColor = MiuixTheme.colorScheme.surfaceContainer,
-                            labelColor = if (roomIdError) MaterialTheme.colorScheme.error else MiuixTheme.colorScheme.onSecondaryContainer,
+                            labelColor = if (roomIdError) MiuixTheme.colorScheme.error else MiuixTheme.colorScheme.onSecondaryContainer,
                         ),
                         trailingIcon = {
                             if (roomIdError)
                                 Icon(
                                     imageVector = Icons.Outlined.Warning,
                                     contentDescription = "warning",
-                                    tint = MaterialTheme.colorScheme.error,
+                                    tint = MiuixTheme.colorScheme.error,
                                     modifier = Modifier.padding(end = 12.dp)
                                 )
                         }

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -152,7 +151,7 @@ fun ArticleStyle(
                                                 .toArgb(),
                                             tableMargin = 0,
                                             selectionTextColor = MiuixTheme.colorScheme.onBackground.toArgb(),
-                                            selectionBgColor = MaterialTheme.colorScheme.primaryContainer.toArgb()
+                                            selectionBgColor = MiuixTheme.colorScheme.tertiaryContainer.toArgb()
                                         ),
                                         "",
                                         "<p>字体设置</p>" +

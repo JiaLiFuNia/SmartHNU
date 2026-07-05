@@ -1,6 +1,8 @@
 package com.smart.htu.screens.news
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -22,12 +24,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.Tab
-import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
-import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -89,6 +85,8 @@ import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.TabRowDefaults
+import top.yukonga.miuix.kmp.basic.TabRowWithContour
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
 import top.yukonga.miuix.kmp.blur.layerBackdrop
@@ -175,36 +173,22 @@ fun NewsScreen(
                         Column(
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
-                                .padding(top = dynamicTopPadding, bottom = 6.dp)
+                                .padding(top = dynamicTopPadding, bottom = 4.dp)
                         ) {
-                            PrimaryScrollableTabRow(
-                                containerColor = barColor,
-                                selectedTabIndex = newsPagerState.currentPage,
-                                indicator = { },
-                                divider = { }
-                            ) {
-                                tabItems.forEachIndexed { index, item ->
-                                    Tab(
-                                        selected = index == selectedTabIndex.value,
-                                        onClick = {
-                                            scope.launch {
-                                                newsPagerState.animateScrollToPage(index)
-                                            }
-                                        },
-                                        selectedContentColor = MiuixTheme.colorScheme.onSurface,
-                                        unselectedContentColor = MiuixTheme.colorScheme.onSurface
-                                    ) {
-                                        Text(
-                                            text = stringResource(id = item),
-                                            modifier = Modifier.padding(8.dp),
-                                            fontSize = if (index == selectedTabIndex.value) 17.sp else 15.sp,
-                                            fontWeight = if (index == selectedTabIndex.value) FontWeight.Bold else FontWeight.Medium,
-                                            color = if (index == selectedTabIndex.value) MiuixTheme.colorScheme.onSurface
-                                            else MiuixTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                                        )
+                            TabRowWithContour(
+                                tabs = tabItems.map { stringResource(id = it) },
+                                selectedTabIndex = selectedTabIndex.value,
+                                onTabSelected = { index ->
+                                    scope.launch {
+                                        newsPagerState.animateScrollToPage(index)
                                     }
-                                }
-                            }
+                                },
+                                maxWidth = 140.dp,
+                                itemSpacing = 16.dp,
+                                colors = TabRowDefaults.tabRowColors(
+                                    backgroundColor = Color.Transparent
+                                )
+                            )
                         }
                     }
                 )
@@ -412,8 +396,6 @@ fun NewsItem(
     }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HorizontalBanner(
     bannerPicUrl: List<String>,
@@ -421,62 +403,85 @@ fun HorizontalBanner(
     bannerTitle: List<String>,
     onClick: (String, String) -> Unit
 ) {
-    HorizontalMultiBrowseCarousel(
-        state = rememberCarouselState { bannerPicUrl.count() },
-        modifier = Modifier
-            .clip(RoundedCornerShape(28.dp))
-            .fillMaxWidth(),
-        preferredItemWidth = 320.dp,
-        itemSpacing = 4.dp
-    ) { index ->
-        Box(
-            modifier = Modifier.clickable {
-                onClick(bannerUrl[index], "河南师范大学")
-            },
-            contentAlignment = Alignment.Center
+    val pagerState = rememberPagerState(
+        pageCount = { bannerPicUrl.count() },
+        initialPage = 0
+    )
+    Box {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .clip(RoundedCornerShape(28.dp))
+                .fillMaxWidth()
         ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(bannerPicUrl[index])
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "picture",
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(16 / 9f)
-                    .maskClip(RoundedCornerShape(28.dp))
-                    .drawWithContent {
-                        drawContent()
-                        drawRect(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    Color(0xAA000000)
-                                ),
-                                startY = 300f,
-                                endY = Float.POSITIVE_INFINITY
+            Box(
+                modifier = Modifier.clickable {
+                    onClick(bannerUrl[it], "河南师范大学")
+                },
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(bannerPicUrl[it])
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "picture",
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(16 / 9f)
+                        .drawWithContent {
+                            drawContent()
+                            drawRect(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        Color(0xAA000000)
+                                    ),
+                                    startY = 300f,
+                                    endY = Float.POSITIVE_INFINITY
+                                )
+                            )
+                        },
+                    error = painterResource(id = R.drawable.ic_placeholder_large),
+                    placeholder = painterResource(id = R.drawable.ic_placeholder_large)
+                )
+                Text(
+                    text = bannerTitle[it],
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    color = Color.White,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomEnd)
+                        .padding(
+                            horizontal = 16.dp,
+                            vertical = 8.dp
+                        )
+                )
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            bannerPicUrl.forEachIndexed { i, _ ->
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp)
+                        .size(5.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(
+                            if (i == pagerState.currentPage) Color.White else Color.White.copy(
+                                alpha = 0.5f
                             )
                         )
-                    },
-                error = painterResource(id = R.drawable.ic_placeholder_large),
-                placeholder = painterResource(id = R.drawable.ic_placeholder_large)
-            )
-            Text(
-                text = bannerTitle[index],
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    color = Color.White
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomEnd)
-                    .padding(
-                        horizontal = 16.dp,
-                        vertical = 8.dp
-                    )
-            )
+                )
+            }
         }
     }
 }

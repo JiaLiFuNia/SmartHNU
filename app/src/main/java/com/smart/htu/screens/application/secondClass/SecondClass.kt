@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.rounded.ErrorOutline
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -143,7 +142,7 @@ fun SecondClass(
                                 Icon(
                                     imageVector = Icons.Rounded.ErrorOutline,
                                     contentDescription = "Login",
-                                    tint = MaterialTheme.colorScheme.error
+                                    tint = MiuixTheme.colorScheme.error
                                 )
                             }
                         }

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -321,7 +320,7 @@ fun BookStateCard(
                 Text(
                     text = book.status,
                     modifier = Modifier.padding(end = 8.dp),
-                    color = if (book.status == "可借") MiuixTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                    color = if (book.status == "可借") MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.error
                 )
             }
         )

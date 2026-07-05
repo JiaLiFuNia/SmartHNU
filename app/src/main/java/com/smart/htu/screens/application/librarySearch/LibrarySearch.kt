@@ -19,8 +19,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -102,7 +100,6 @@ import java.time.Duration
 import java.time.LocalDate
 import kotlin.math.ceil
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibrarySearchScreen(
     viewModel: LibrarySearchViewModel = hiltViewModel(),
@@ -418,7 +415,6 @@ fun WaitingToBorrowedBookList(
                             )
                             Text(
                                 text = it.title.toString(),
-                                style = MaterialTheme.typography.titleMedium,
                                 maxLines = 1,
                                 textAlign = TextAlign.Left,
                                 overflow = TextOverflow.Ellipsis,

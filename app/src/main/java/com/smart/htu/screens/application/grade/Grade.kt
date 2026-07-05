@@ -3,7 +3,6 @@ package com.smart.htu.screens.application.grade
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,9 +24,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.ArrowUpward
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -71,6 +67,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Icon
@@ -104,7 +101,6 @@ data class CourseGradeDialogData(
         get() = gradeDetail != null && gradeRankInClass != null && gradeRankInCourse != null
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Grade(
     viewModel: GradeViewModel = hiltViewModel()
@@ -334,22 +330,11 @@ fun Grade(
                                                     viewModel.getCourseGPA(selectedIndex.intValue)
                                                 }
                                             },
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = MiuixTheme.colorScheme.background,
-                                                contentColor = MiuixTheme.colorScheme.onBackground
-                                            ),
-                                            border = BorderStroke(
-                                                1.dp,
-                                                MiuixTheme.colorScheme.outline
-                                            ),
-                                            contentPadding = PaddingValues(
-                                                horizontal = 4.dp,
-                                                vertical = 2.dp
-                                            ),
                                             modifier = Modifier
                                                 .align(Alignment.BottomEnd)
                                                 .size(width = 96.dp, height = 36.dp),
-                                            enabled = !uiState.isLoadingGPA
+                                            enabled = !uiState.isLoadingGPA,
+                                            insideMargin = PaddingValues(0.dp, 0.dp)
                                         ) {
                                             Icon(
                                                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
@@ -380,7 +365,7 @@ fun Grade(
                                         Column(
                                             modifier = Modifier.weight(0.5f)
                                         ) {
-                                            uiState.allCredits?.filterIndexed { index, entity ->
+                                            uiState.allCredits?.filterIndexed { index, _ ->
                                                 index % 2 == 0
                                             }?.forEach {
                                                 BasicComponent(
@@ -393,7 +378,7 @@ fun Grade(
                                         Column(
                                             modifier = Modifier.weight(0.5f)
                                         ) {
-                                            uiState.allCredits?.filterIndexed { index, entity ->
+                                            uiState.allCredits?.filterIndexed { index, _ ->
                                                 index % 2 == 1
                                             }?.forEach {
                                                 BasicComponent(

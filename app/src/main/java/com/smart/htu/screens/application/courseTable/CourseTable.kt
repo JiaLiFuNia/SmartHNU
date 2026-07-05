@@ -37,7 +37,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Group
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -115,6 +114,8 @@ import top.yukonga.miuix.kmp.preference.CheckboxPreference
 import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.overScrollVertical
+import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 import java.lang.Integer.max
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -318,11 +319,13 @@ fun CourseTable(
             HorizontalPager(
                 state = pagerState,
                 pageSpacing = 12.dp,
-                contentPadding = PaddingValues(8.dp, 8.dp),
+                contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = 8.dp),
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(top = it.calculateTopPadding())
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .scrollEndHaptic()
+                    .overScrollVertical()
             ) {
                 WeekCourseTable(
                     isWeekendCourseShow = uiState.courseTableSettings.showWeekendCourse,
@@ -430,6 +433,7 @@ fun CourseTable(
     }
 }
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun WeekCourseTable(
     currentDate: LocalDate = LocalDate.now(),
@@ -440,7 +444,7 @@ fun WeekCourseTable(
     courseBlockAlpha: Float = 1f
 ) {
 
-    val nodeColumnWeight = 0.65F
+    val timeColumnWeight = 0.1f
     val screenHeight = LocalConfiguration.current.screenHeightDp
     val minHeight = max((screenHeight - 180) / 12, 70)
 
@@ -458,7 +462,7 @@ fun WeekCourseTable(
         ) {
             Box(
                 modifier = Modifier
-                    .weight(nodeColumnWeight)
+                    .weight(timeColumnWeight)
             ) {
                 IconButton(
                     onClick = {}
@@ -473,7 +477,7 @@ fun WeekCourseTable(
             }
             Row(
                 modifier = Modifier
-                    .weight(7F)
+                    .weight(1 - timeColumnWeight)
                     .align(Alignment.CenterVertically)
             ) {
                 listOf(
@@ -496,16 +500,14 @@ fun WeekCourseTable(
                             ) {
                                 Text(
                                     text = week,
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        color = color
-                                    )
+                                    color = color,
+                                    fontSize = 14.sp,
                                 )
                                 if (selectedDataSource == 0) {
                                     Text(
                                         text = date?.format(pattern) ?: "",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            color = color
-                                        )
+                                        color = color,
+                                        fontSize = 11.sp
                                     )
                                 }
                             }
@@ -518,6 +520,8 @@ fun WeekCourseTable(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
+                .scrollEndHaptic()
+                .overScrollVertical()
                 .padding(top = 2.dp)
         ) {
             Row(
@@ -527,7 +531,7 @@ fun WeekCourseTable(
                 // 第一列 时间和节次
                 Column(
                     modifier = Modifier
-                        .weight(nodeColumnWeight),
+                        .weight(timeColumnWeight),
                     verticalArrangement = Arrangement.SpaceAround,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -539,23 +543,25 @@ fun WeekCourseTable(
                             Column(
                                 modifier = Modifier
                                     .requiredHeight(minHeight.dp)
-                                    .padding(vertical = 2.dp),
+                                    .padding(vertical = 2.dp)
+                                    .fillMaxWidth(),
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
+                                verticalArrangement = Arrangement.Center,
                             ) {
                                 Text(
                                     text = "${it + 1}",
                                     textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        color = color
-                                    )
+                                    color = color,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.fillMaxWidth()
                                 )
                                 Text(
                                     text = "${times[it].first}\n${times[it].second}",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        color = color
-                                    ),
+                                    color = color,
                                     lineHeight = 12.sp,
+                                    fontSize = 12.sp,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         }
@@ -563,13 +569,13 @@ fun WeekCourseTable(
                 }
                 // 每一天的课程
                 Row(
-                    modifier = Modifier.weight(7F),
+                    modifier = Modifier.weight(1 - timeColumnWeight),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     if (weekCourseSchedule == null) {
                         Box(
                             modifier = Modifier
-                                .weight(7F)
+                                .weight(1 - timeColumnWeight)
                                 .height((minHeight * 10).dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -639,7 +645,7 @@ fun WeekCourseTable(
                         } else {
                             Box(
                                 modifier = Modifier
-                                    .weight(7F)
+                                    .weight(1 - timeColumnWeight)
                                     .height((minHeight * 10).dp),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -677,7 +683,7 @@ fun CourseTableSingleCourseCard(
             .fillMaxWidth()
             .height((minHeight * slotsOccupied).dp)
             .padding(vertical = 2.dp),
-        shape = MaterialTheme.shapes.small,
+        shape = RoundedCornerShape(6.dp),
         color = getColorByCourseName(course.courseName).copy(alpha)
     ) {
         Column(
