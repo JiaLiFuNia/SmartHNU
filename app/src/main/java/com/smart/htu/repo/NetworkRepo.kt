@@ -23,6 +23,7 @@ import com.smart.htu.utils.AESUtils
 import com.smart.htu.utils.AESUtils.randomString
 import com.smart.htu.utils.DateUtil.convertStringDateToLocalDate
 import com.smart.htu.utils.ParseNewsArticleUtil.dealArticleContent
+import com.smart.htu.utils.ParseNewsArticleUtil.extractAttachment
 import com.smart.htu.utils.ParseNewsArticleUtil.parseHTMLToNewsArticle
 import com.smart.htu.utils.ParseNewsListUtil.parseHTMLToNewsList
 import kotlinx.coroutines.Dispatchers
@@ -151,11 +152,14 @@ class NetworkRepo @Inject constructor(
                 Log.i("TAG666 getNewsDetailService article", "解析失败，采用 Readability4J")
                 val readability4J = Readability4J(url, res)
                 val articleContent = readability4J.parse()
-                article.apply {
-                    val document = Jsoup.parse(articleContent.content ?: "")
-                    this.articleContent = dealArticleContent(document.allElements)
-                    this.title = articleContent.title
-                }
+                val document = Jsoup.parse(articleContent.content ?: "")
+                return NewsArticleEntity(
+                    title = articleContent.title,
+                    publishDate = article.publishDate,
+                    articleContent = dealArticleContent(document.body()),
+                    attachment = extractAttachment(document.body()),
+                    visitCount = article.visitCount
+                )
             }
             return article
         } catch (e: Exception) {

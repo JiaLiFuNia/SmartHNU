@@ -7,7 +7,6 @@ import com.smart.htu.api.module.NewsArticleEntity
 import com.smart.htu.utils.DateUtil.extractDateFromString
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
-import org.jsoup.select.Elements
 
 object ParseNewsArticleUtil {
 
@@ -78,29 +77,24 @@ object ParseNewsArticleUtil {
     fun parseHTMLToNewsArticle(url: String, html: String): NewsArticleEntity {
         val document = Jsoup.parse(html)
         val rule = selectParseRule(url)
-        val newsArticleElement = document.select(rule.elementPath.path)
+        val newsArticleElement = document.select(rule.elementPath.path).firstOrNull()
+            ?: Element("<div></div>")
         val articleEntity = NewsArticleEntity(
-            title = selectElement(
-                newsArticleElement.firstOrNull() ?: Element("<div></div>"),
-                rule.titlePath
-            ),
+            title = selectElement(newsArticleElement, rule.titlePath),
             publishDate = extractDateFromString(
-                selectElement(
-                    newsArticleElement.firstOrNull() ?: Element("<div></div>"),
-                    rule.publishDatePath
-                ).toString()
+                selectElement(newsArticleElement, rule.publishDatePath).toString()
             ),
-            visitCount = selectElement(
-                newsArticleElement.firstOrNull() ?: Element("<div></div>"),
-                rule.visitCountPath
-            ),
+            visitCount = selectElement(newsArticleElement, rule.visitCountPath),
             attachment = extractAttachment(newsArticleElement),
-            articleContent = dealArticleContent(newsArticleElement.select(rule.articleContentPath.path))
+            articleContent = dealArticleContent(
+                newsArticleElement.select(rule.articleContentPath.path).firstOrNull()
+                    ?: Element("<div></div>")
+            )
         )
         return articleEntity
     }
 
-    fun dealArticleContent(rawArticleHtml: Elements): String {
+    fun dealArticleContent(rawArticleHtml: Element): String {
         // 段落
         val pElements = rawArticleHtml.select("p")
         pElements.forEach {
@@ -197,7 +191,7 @@ object ParseNewsArticleUtil {
     }
 
     // 提取附件
-    private fun extractAttachment(rawArticleHtml: Elements): List<AttachmentEntity> {
+    fun extractAttachment(rawArticleHtml: Element): List<AttachmentEntity> {
         val attachment = mutableListOf<AttachmentEntity>()
         val sudyFileElements = rawArticleHtml.select("[sudyfile-attr]")
         if (sudyFileElements.isNotEmpty()) {

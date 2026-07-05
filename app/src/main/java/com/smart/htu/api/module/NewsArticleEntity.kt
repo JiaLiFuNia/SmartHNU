@@ -1,10 +1,10 @@
 package com.smart.htu.api.module
 
 data class NewsArticleEntity(
-    var title: String?,
+    val title: String?,
     val publishDate: String?,
     val visitCount: String?,
-    var articleContent: String?,
+    val articleContent: String?,
     val attachment: List<AttachmentEntity>? = emptyList()
 )
 
