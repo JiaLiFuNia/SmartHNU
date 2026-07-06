@@ -3,6 +3,7 @@ package com.smart.htu.screens.main
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,6 +49,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -327,6 +330,7 @@ fun TodayTaskCard(
     }
 }
 
+@SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun CourseStateCard(
     todayCourseList: List<CourseEntity>?
@@ -391,16 +395,16 @@ fun CourseStateCard(
         }
     }
     val emoji = when {
-        currentTime.isAfter(LocalTime.of(22, 0)) -> R.drawable.sentiment_worried_24px
-        isToadyNoCourse -> R.drawable.sentiment_excited_24px
-        isAllCourseFinished -> R.drawable.sentiment_excited_24px
-        currentTime.isBefore(LocalTime.of(8, 30)) -> R.drawable.sentiment_calm_24px
+        currentTime.isAfter(LocalTime.of(22, 0)) -> R.drawable.sentiment_worried
+        isToadyNoCourse -> R.drawable.sentiment_excited
+        isAllCourseFinished -> R.drawable.sentiment_excited
+        currentTime.isBefore(LocalTime.of(8, 30)) -> R.drawable.sentiment_calm
         currentTime.isBefore(LocalTime.of(14, 30)) &&
-                currentTime.isAfter(LocalTime.of(12, 0)) -> R.drawable.sentiment_content_24px
+                currentTime.isAfter(LocalTime.of(12, 0)) -> R.drawable.sentiment_content
 
-        !isAllCourseFinished -> R.drawable.sentiment_neutral_24px
+        !isAllCourseFinished -> R.drawable.sentiment_neutral
 
-        else -> R.drawable.sentiment_excited_24px
+        else -> R.drawable.sentiment_excited
     }
     val emojiColor = if (isToadyNoCourse || isAllCourseFinished) {
         if (isDynamicColor) {
@@ -565,22 +569,27 @@ fun FocusCard(
     mainUiState: AppUiState
 ) {
     val navigator = LocalNavigator.current
-    /*val isShowWeatherBottomSheet = remember { mutableStateOf(false) }
-    val isWarningWeather = remember {
-        derivedStateOf { mainUiState.warningWeatherData.isNotEmpty() }
-    }*/
     val today = LocalDate.now()
     val dayOfWeek = today.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.CHINA)
     val formatter = DateTimeFormatter.ofPattern("M月d日")
     val airConditionString = stringResource(R.string.dorm_air_conditioner)
+
+    var rowHeightDp by remember { mutableStateOf(74.dp) }
+    val density = LocalDensity.current
+    val gridHeightDp = rowHeightDp * 2 + 12.dp
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
-        modifier = Modifier.height((74 * 2 + 12).dp),
+        modifier = Modifier.height(gridHeightDp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
-            Card {
+            Card(
+                modifier = Modifier.onSizeChanged {
+                    rowHeightDp = with(density) { it.height.toDp() }
+                }
+            ) {
                 BasicComponent(
                     title = "${today.format(formatter)}",
                     summary = (if (mainUiState.isTermEnded) "放假中" else "第 ${mainUiState.weekIndex} 周") + " $dayOfWeek",
@@ -729,7 +738,10 @@ fun TodayCourseCard(
                     text = "查看课表",
                     color = MiuixTheme.colorScheme.primary,
                     style = MiuixTheme.textStyles.headline2,
-                    modifier = Modifier.clickable {
+                    modifier = Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
                         navigator.pushWithLoginCheck(
                             route = Route.CourseTable,
                             loginState = loginState,
@@ -811,7 +823,10 @@ fun RecentImportantNews(
             insideMargin = PaddingValues(16.dp),
             endActions = {
                 Row(
-                    modifier = Modifier.clickable {
+                    modifier = Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
                         onClickToNewsScreen()
                     },
                     verticalAlignment = Alignment.CenterVertically
@@ -820,15 +835,14 @@ fun RecentImportantNews(
                         text = "全部新闻",
                         fontSize = MiuixTheme.textStyles.body2.fontSize,
                         color = MiuixTheme.colorScheme.onSurfaceVariantActions,
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically),
+                        modifier = Modifier.padding(end = 8.dp),
                     )
                     Icon(
                         modifier = Modifier
-                            .size(width = 10.dp, height = 16.dp)
-                            .align(Alignment.CenterVertically),
+                            .size(width = 10.dp, height = 16.dp),
                         imageVector = MiuixIcons.Basic.ArrowRight,
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = MiuixTheme.colorScheme.onSurfaceVariantActions
                     )
                 }
             }
