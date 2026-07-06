@@ -174,7 +174,7 @@ fun SecondClass(
                                 }
                             ) {
                                 Icon(
-                                    painter = painterResource(R.drawable.format_paint_24px),
+                                    painter = painterResource(R.drawable.format_paint),
                                     contentDescription = "paint"
                                 )
                             }
@@ -250,7 +250,7 @@ fun SecondClass(
                                             ),
                                             startAction = {
                                                 Icon(
-                                                    painter = painterResource(R.drawable.format_paint_24px_filled),
+                                                    painter = painterResource(R.drawable.format_paint_filled),
                                                     contentDescription = "学时总计",
                                                     modifier = Modifier.padding(end = 8.dp),
                                                     tint = Color(ApplicationEntity.ApplicationColor.ORANGE.color)

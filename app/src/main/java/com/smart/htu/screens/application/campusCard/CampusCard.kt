@@ -177,7 +177,7 @@ fun CampusCardScreen(
                                 summary = "数据来源于完美校园",
                                 startAction = {
                                     Icon(
-                                        painter = painterResource(R.drawable.credit_card_24px_filled),
+                                        painter = painterResource(R.drawable.credit_card_filled),
                                         contentDescription = "balance",
                                         tint = Color(ApplicationEntity.ApplicationColor.RED.color)
                                     )

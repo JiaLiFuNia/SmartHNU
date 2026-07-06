@@ -208,8 +208,8 @@ fun LoginDialog(
                                 .clickable {
                                     onRefreshVerifyCode()
                                 },
-                            placeholder = painterResource(id = R.drawable.ic_loading_placeholder_horizontal),
-                            error = painterResource(id = R.drawable.ic_loading_placeholder_horizontal)
+                            placeholder = painterResource(id = R.drawable.loading_placeholder_horizontal),
+                            error = painterResource(id = R.drawable.loading_placeholder_horizontal)
                         )
                     },
                     modifier = Modifier

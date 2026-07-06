@@ -206,7 +206,7 @@ fun AirCondition(
                                 },
                                 startAction = {
                                     Icon(
-                                        painter = painterResource(R.drawable.water_ec_24px_filled),
+                                        painter = painterResource(R.drawable.water_ec_filled),
                                         contentDescription = null,
                                         modifier = Modifier.padding(end = 8.dp),
                                         tint = Color(ApplicationEntity.ApplicationColor.GREEN.color)

@@ -253,7 +253,7 @@ fun CampusLife(
                                     },
                                     startAction = {
                                         Image(
-                                            painter = painterResource(R.drawable.ic_pinduoduo),
+                                            painter = painterResource(R.drawable.pinduoduo),
                                             contentDescription = "pinduoduo",
                                             modifier = Modifier
                                                 .padding(end = 8.dp)
@@ -290,7 +290,7 @@ fun CampusLife(
                                     },
                                     startAction = {
                                         Image(
-                                            painter = painterResource(R.drawable.ic_taobao),
+                                            painter = painterResource(R.drawable.taobao),
                                             contentDescription = "pinduoduo",
                                             modifier = Modifier
                                                 .padding(end = 8.dp)
@@ -330,7 +330,7 @@ fun CampusLife(
                                     },
                                     startAction = {
                                         Image(
-                                            painter = painterResource(R.drawable.ic_cainiao),
+                                            painter = painterResource(R.drawable.cainiao),
                                             contentDescription = "cainiao",
                                             modifier = Modifier
                                                 .padding(end = 8.dp)

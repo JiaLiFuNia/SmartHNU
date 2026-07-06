@@ -156,7 +156,7 @@ fun NewsScreen(
                     actions = {
                         IconButton(onClick = { navigator.push(Route.NewsMark) }) {
                             Icon(
-                                painter = painterResource(id = R.drawable.bookmark_24px),
+                                painter = painterResource(id = R.drawable.bookmark),
                                 contentDescription = "history"
                             )
                         }
@@ -360,8 +360,8 @@ fun NewsItem(
                         .width(90.dp)
                         .aspectRatio(16 / 10f)
                         .clip(RoundedCornerShape(8.dp)),
-                    placeholder = painterResource(id = R.drawable.ic_loading_placeholder_horizontal),
-                    error = painterResource(id = R.drawable.ic_loading_placeholder_horizontal)
+                    placeholder = painterResource(id = R.drawable.loading_placeholder_horizontal),
+                    error = painterResource(id = R.drawable.loading_placeholder_horizontal)
                 )
             }
             if (news.label == NewsType.RESEARCH || news.label == NewsType.MATH_LECTURES) {
@@ -444,8 +444,8 @@ fun HorizontalBanner(
                                 )
                             )
                         },
-                    error = painterResource(id = R.drawable.ic_placeholder_large),
-                    placeholder = painterResource(id = R.drawable.ic_placeholder_large)
+                    error = painterResource(id = R.drawable.placeholder_large),
+                    placeholder = painterResource(id = R.drawable.placeholder_large)
                 )
                 Text(
                     text = bannerTitle[it],

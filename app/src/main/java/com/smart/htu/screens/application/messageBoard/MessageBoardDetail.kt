@@ -205,7 +205,7 @@ fun PostCard(
         summary = post.createDateTime,
         startAction = {
             Image(
-                painter = painterResource(R.drawable.ic_avator_poster),
+                painter = painterResource(R.drawable.avator_poster),
                 contentDescription = null,
                 modifier = Modifier
                     .size(48.dp)
@@ -260,8 +260,8 @@ fun PostCard(
                             onImgClick(it.url)
                         },
                     alignment = Alignment.Center,
-                    error = painterResource(id = R.drawable.ic_loading_placeholder_horizontal),
-                    placeholder = painterResource(id = R.drawable.ic_loading_placeholder_horizontal)
+                    error = painterResource(id = R.drawable.loading_placeholder_horizontal),
+                    placeholder = painterResource(id = R.drawable.loading_placeholder_horizontal)
                 )
             }
         }
@@ -299,8 +299,8 @@ fun ReplyCard(
                         Image(
                             painter = painterResource(
                                 id = when (it.label) {
-                                    "楼主" -> R.drawable.ic_avator_poster
-                                    else -> R.drawable.ic_avator_official
+                                    "楼主" -> R.drawable.avator_poster
+                                    else -> R.drawable.avator_official
                                 }
                             ),
                             contentDescription = null,
@@ -336,8 +336,8 @@ fun ReplyCard(
                                         onImgClick(it.url)
                                     },
                                 alignment = Alignment.Center,
-                                error = painterResource(id = R.drawable.ic_loading_placeholder_horizontal),
-                                placeholder = painterResource(id = R.drawable.ic_loading_placeholder_horizontal)
+                                error = painterResource(id = R.drawable.loading_placeholder_horizontal),
+                                placeholder = painterResource(id = R.drawable.loading_placeholder_horizontal)
                             )
                         }
                     }

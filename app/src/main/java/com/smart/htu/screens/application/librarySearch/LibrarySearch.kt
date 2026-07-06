@@ -410,8 +410,8 @@ fun WaitingToBorrowedBookList(
                                     .height(120.dp)
                                     .aspectRatio(1 / 1f)
                                     .clip(RoundedCornerShape(10.dp)),
-                                error = painterResource(id = R.drawable.ic_placeholder_vertical_error),
-                                placeholder = painterResource(id = R.drawable.ic_placeholder_vertical_loading)
+                                error = painterResource(id = R.drawable.placeholder_vertical_error),
+                                placeholder = painterResource(id = R.drawable.placeholder_vertical_loading)
                             )
                             Text(
                                 text = it.title.toString(),
@@ -603,8 +603,8 @@ fun LibrarySingleBook(
                     .width(56.dp)
                     .aspectRatio(10 / 15f)
                     .clip(RoundedCornerShape(8.dp)),
-                error = painterResource(id = R.drawable.ic_placeholder_vertical_error),
-                placeholder = painterResource(id = R.drawable.ic_placeholder_vertical_loading)
+                error = painterResource(id = R.drawable.placeholder_vertical_error),
+                placeholder = painterResource(id = R.drawable.placeholder_vertical_loading)
             )
             Column(
                 modifier = Modifier
