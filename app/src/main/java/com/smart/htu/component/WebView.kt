@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.util.Log
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -26,7 +27,6 @@ import com.kevinnzou.web.WebViewNavigator
 import com.kevinnzou.web.WebViewState
 import com.kevinnzou.web.rememberWebViewState
 import com.smart.htu.screens.news.newsView.JavaScriptInterface
-import com.smart.htu.utils.ToastUtil.showSnackbar
 import com.smart.htu.utils.getHtml
 import com.smart.htu.utils.setDefaultSettings
 import kotlinx.coroutines.launch
@@ -34,7 +34,6 @@ import okhttp3.Cookie
 import org.json.JSONTokener
 import org.jsoup.Jsoup
 import top.yukonga.miuix.kmp.basic.LinearProgressIndicator
-import top.yukonga.miuix.kmp.basic.SnackbarHostState
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -44,15 +43,16 @@ fun WebView(
     headers: Map<String, String> = emptyMap(),
     cookie: List<Cookie> = emptyList(),
     webViewState: WebViewState = rememberWebViewState(url, headers),
-    onError: (String) -> Unit = { },
+    onError: (String) -> Unit,
     onFinished: (Boolean) -> Unit = { },
     onLogin: (Boolean) -> Unit = { },
     onCurrentUrl: (String) -> Unit = { },
     onImageClick: (imgUrl: String) -> Unit = { },
     onDownloadClick: (fileUrl: String, fileName: String) -> Unit = { _, _ -> },
+    onOpenInExternalBrowse: (url: String) -> Unit = { },
+    isOpenInExternalBrowser: Boolean = false,
     isShowLinearProgressIndicator: Boolean = true,
     captureBackPresses: Boolean = true,
-    snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
     navigator: WebViewNavigator
 ) {
     val scope = rememberCoroutineScope()
@@ -104,18 +104,30 @@ fun WebView(
                 request: WebResourceRequest?,
             ): Boolean {
                 request?.let {
+
+                    // http(s) 处理：文件则下载，链接则外部打开
+                    if (it.url.toString().startsWith("http") && isOpenInExternalBrowser) {
+                        val requestUrl = it.url.toString()
+                        if (isDownloadableUrl(requestUrl)) {
+                            val fileName = requestUrl.substringAfterLast('/')
+                            onDownloadClick(requestUrl, fileName)
+                        } else {
+                            onOpenInExternalBrowse(requestUrl)
+                        }
+                        return true
+                    }
+
                     if (it.url.toString().startsWith("weixin://")) {
                         try {
                             val intent = Intent(Intent.ACTION_VIEW, it.url)
                             context.startActivity(intent)
                             return true
                         } catch (_: Exception) {
-                            scope.launch {
-                                showSnackbar(snackBarHostState, "未安装微信或无法打开微信")
-                            }
+                            onError("未安装微信或无法打开微信")
                             return true
                         }
                     }
+
                     // email
                     if (it.url.toString().startsWith("mailto:")) {
                         try {
@@ -123,9 +135,7 @@ fun WebView(
                             context.startActivity(intent)
                             return true
                         } catch (_: Exception) {
-                            scope.launch {
-                                showSnackbar(snackBarHostState, "无法打开邮件客户端")
-                            }
+                            onError("无法打开邮件客户端")
                             return true
                         }
                     }
@@ -153,13 +163,7 @@ fun WebView(
             ): WebResourceResponse? {
                 request?.let {
                     val requestUrl = it.url.toString()
-                    val isDownloadable = requestUrl.contains(".pdf") ||
-                            requestUrl.contains(".doc") ||
-                            requestUrl.contains(".docx") ||
-                            requestUrl.contains(".xls") ||
-                            requestUrl.contains(".xlsx") ||
-                            requestUrl.contains(".zip") ||
-                            requestUrl.contains(".rar")
+                    val isDownloadable = isDownloadableUrl(requestUrl)
 
                     if (isDownloadable &&
                         !requestUrl.startsWith("blob:") &&
@@ -172,6 +176,17 @@ fun WebView(
                     }
                 }
                 return super.shouldInterceptRequest(view, request)
+            }
+
+            override fun onReceivedError(
+                view: WebView,
+                request: WebResourceRequest?,
+                error: WebResourceError?
+            ) {
+                super.onReceivedError(view, request, error)
+                error?.let {
+                    onError(it.description.toString())
+                }
             }
 
         }
@@ -240,4 +255,14 @@ fun updateWebViewCookies(url: String, cookie: List<Cookie>) {
         cookieManager.setCookie(url, "${cookie.name}=${cookie.value}")
     }
     cookieManager.flush()
+}
+
+private fun isDownloadableUrl(url: String): Boolean {
+    return url.contains(".pdf") ||
+            url.contains(".doc") ||
+            url.contains(".docx") ||
+            url.contains(".xls") ||
+            url.contains(".xlsx") ||
+            url.contains(".zip") ||
+            url.contains(".rar")
 }

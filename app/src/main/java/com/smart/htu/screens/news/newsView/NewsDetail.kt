@@ -463,7 +463,6 @@ fun NewsDetail(
                     downloadFileName = fileName
                 },
                 webViewNavigator = webViewNavigator,
-                snackBarHostState = snackBarHostState,
                 backdrop = backdrop
             )
         } else {
@@ -477,8 +476,7 @@ fun NewsDetail(
                     downloadedFileUrl = fileUrl
                     downloadFileName = fileName
                 },
-                webViewNavigator = webViewNavigator,
-                snackBarHostState = snackBarHostState
+                webViewNavigator = webViewNavigator
             )
         }
 
@@ -549,7 +547,6 @@ private fun ParsedArticleView(
     onError: (String) -> Unit,
     onDownloadClick: (fileUrl: String, fileName: String) -> Unit,
     webViewNavigator: WebViewNavigator,
-    snackBarHostState: SnackbarHostState,
     backdrop: LayerBackdrop? = null
 ) {
     val lazyListState = rememberLazyListState()
@@ -634,8 +631,11 @@ private fun ParsedArticleView(
                             )
                         },
                         isShowLinearProgressIndicator = false,
-                        navigator = webViewNavigator,
-                        snackBarHostState = snackBarHostState
+                        isOpenInExternalBrowser = true,
+                        onOpenInExternalBrowse = {
+                            startWebUrl(it)
+                        },
+                        navigator = webViewNavigator
                     )
                     newsContent?.attachment
                         .let { attachments ->
@@ -655,7 +655,7 @@ private fun ParsedArticleView(
                                         )
                                     },
                                     onUrlClick = {
-                                        navigator.pushWebView(it, "附件")
+                                        startWebUrl(it)
                                     }
                                 )
                             }
@@ -679,17 +679,19 @@ private fun RawArticleView(
     url: String,
     onError: (String) -> Unit,
     onDownloadClick: (fileUrl: String, fileName: String) -> Unit,
-    webViewNavigator: WebViewNavigator,
-    snackBarHostState: SnackbarHostState
+    webViewNavigator: WebViewNavigator
 ) {
     WebView(
         modifier = modifier,
         url = url,
         webViewState = rememberWebViewState(url),
         navigator = webViewNavigator,
-        snackBarHostState = snackBarHostState,
         onError = { onError(it) },
-        onDownloadClick = { fileUrl, fileName -> onDownloadClick(fileUrl, fileName) }
+        onDownloadClick = { fileUrl, fileName -> onDownloadClick(fileUrl, fileName) },
+        isOpenInExternalBrowser = true,
+        onOpenInExternalBrowse = {
+            startWebUrl(it)
+        }
     )
 }
 

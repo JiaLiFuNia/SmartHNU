@@ -31,8 +31,7 @@ fun PDFViewer(
                 title = title,
                 navigationIcon = {
                     IconButton(
-                        onClick = { navigator.pop() },
-                        
+                        onClick = { navigator.pop() }
                     ) {
                         Icon(imageVector = MiuixIcons.Regular.Back, contentDescription = "close")
                     }
@@ -61,7 +60,8 @@ fun PDFViewer(
                     url = "https://www.htu.edu.cn/_js/_portletPlugs/swfPlayer/pdfjs22228/web/viewer.html?file=${url}",
                     navigator = rememberWebViewNavigator(),
                     headers = mapOf("user-agent" to "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36 Edg/145.0.0.0"),
-                    modifier = Modifier.fillParentMaxSize()
+                    modifier = Modifier.fillParentMaxSize(),
+                    onError = {}
                 )
             }
         }

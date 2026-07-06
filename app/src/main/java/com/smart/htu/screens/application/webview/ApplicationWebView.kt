@@ -55,6 +55,7 @@ import top.yukonga.miuix.kmp.icon.extended.Close
 import top.yukonga.miuix.kmp.icon.extended.More
 import top.yukonga.miuix.kmp.icon.extended.Refresh
 import top.yukonga.miuix.kmp.overlay.OverlayListPopup
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun ApplicationWebView(
@@ -240,7 +241,7 @@ fun ApplicationWebView(
                     cookie = cookie.value,
                     onLogin = {
                         scope.launch {
-                            delay(500)
+                            delay(500.milliseconds)
                             if (it) isLoginDialogShow.value = true
                         }
                     },
@@ -251,7 +252,11 @@ fun ApplicationWebView(
                         currentUrl = it
                     },
                     navigator = webViewNavigator,
-                    snackBarHostState = snackBarHostState
+                    onError = {
+//                        scope.launch {
+//                            snackBarHostState.showSnackbar(it)
+//                        }
+                    }
                 )
             }
         }

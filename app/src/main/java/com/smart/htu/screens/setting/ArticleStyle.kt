@@ -161,6 +161,7 @@ fun ArticleStyle(
                                     )
                                 ),
                                 isShowLinearProgressIndicator = false,
+                                onError = {}
                             )
                         }
                     }
