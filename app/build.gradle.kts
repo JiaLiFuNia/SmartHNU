@@ -19,11 +19,23 @@ android {
         version = release(37)
     }
 
+    val keystorePath = System.getenv("KEYSTORE_PATH")
+    if (keystorePath != null) {
+        signingConfigs {
+            create("release") {
+                storeFile = rootProject.file(keystorePath)
+                storePassword = System.getenv("STORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
     defaultConfig {
         applicationId = "com.smart.htu"
         minSdk = 33
         targetSdk = 37
-        versionCode = 202607051
+        versionCode = 202607071
         versionName = "3.2.0"
 
         val buildTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
@@ -47,6 +59,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (keystorePath != null) signingConfig = signingConfigs.getByName("release")
+        }
+
+        debug {
+            if (keystorePath != null) signingConfig = signingConfigs.getByName("release")
         }
     }
 
