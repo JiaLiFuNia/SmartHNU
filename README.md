@@ -2,9 +2,9 @@
 
 <img src="./img/SmartHNU.svg" width="160" height="160" style="display: block; margin: 0 auto; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); border-radius: 20%;" alt="icon" />
 
-# 师韵 SmartHNU
+# 师韵（SmartHNU）
 
-### 一款 [河师大](https://www.htu.edu.cn) 校园生活助手
+### 一款 [河师大](https://www.htu.edu.cn) 校园信息查询应用
 ![Gitea Stars](https://img.shields.io/github/stars/JiaLiFuNia/SmartHNU?style=flat)
 ![GitHub top language](https://img.shields.io/github/languages/top/JiaLiFuNia/SmartHNU)
 ![GitHub license](https://img.shields.io/github/license/JiaLiFuNia/SmartHNU.svg)
@@ -15,9 +15,9 @@
 
 ## 简介
 
-师韵 SmartHNU 是一款基于 `Android` 平台的校园生活助手，集新闻阅览、成绩查询、教学评价、图书查询、教室查询、第二课堂、电费查询等于一体，旨在为河南师范大学本科生提供便捷的校园信息查询服务。
+师韵 SmartHNU 是一款基于 `Android` 平台的校园信息查询应用，集新闻阅览、成绩查询、教学评价、图书查询、教室查询、第二课堂、电费查询等各项服务于一体，旨在为河南师范大学本科生提供便捷的信息查询服务。本应用完全采用 miuix 设计语言，具有更加现代化的设计。
 
-## 界面
+## 界面设计
 
 ![界面](./img/screen.png)
 
@@ -26,29 +26,35 @@
 在使用本应用时，登录密码会被加密后存储在本地。其余信息均需联网获取，不会被存储。由于登录令牌具有时效性，当令牌失效时，存储的密码将用于自动重新登录。
 ### 河南师大智慧教务
 主要用于获取教务相关数据，如课程表、成绩、教室等。
-#### ~~微信登录（推荐）~~
-~~1. 关注微信公众号 **河南师范大学智慧教务**。
-2. 进入公众号后，点击菜单栏中的 **教务系统** 选项，进行登录。
-3. 登录成功后点击右上角三个点，使用 **师韵** 打开。
-4. 如果你在短时间内重复在微信公众号中登录，可能会导致登录失败，请稍等片刻后重试。~~
 
-#### 账号密码登录
+#### 账号密码登录（推荐）
 打开师韵后点击登录提示栏将跳转到登录页面。密码与[网页版教务系统](http://jwc.htu.edu.cn)一致。
 
-### 统一认证登录
-主要用于查看留言板、智慧学工、一网通办、保修、校园卡等。
+#### 微信登录
+1. 关注微信公众号 **河南师范大学智慧教务**。
+2. 进入公众号后，点击菜单栏中的 **教务系统** 选项，进行登录。
+3. 登录成功后点击右上角三个点，使用 **师韵** 打开。
+4. 如果你在短时间内重复在微信公众号中登录，可能会导致登录失败，请稍等片刻后重试。
 
-当你需要登录时应用会自动弹出登录对话框。密码与校园网、i 师大一致。
+### 统一认证登录
+主要用于图书、留言板、智慧学工、一网通办、保修、校园卡等。
+
+当你需要登录时应用会自动弹出登录对话框。密码与寝室校园网、i 师大一致。
 
 ### 第二课堂
 主要用于获取第二课堂相关数据，如活动、学时等。
 
-### 图书馆管理系统
-主要用于获取图书馆相关数据，如借阅信息、借阅历史等。
-
 ## 功能
 
-![界面](./img/function.png)
+```mermaid
+flowchart LR
+
+师韵["师韵"] --> 教务["教务（课表 / 成绩 / 选课 / 评价 / 教室 / 教材 / 搜索）"]
+师韵 --> 认证["校园（留言 / 学工 / 一网通办 / 保修 / 校园卡）"]
+师韵 --> 新闻["新闻（官网 / 教务处公告）"]
+师韵 --> 服务["生活（第二课堂 / 图书馆 / 电费）"]
+师韵 --> YunAI["YunAI"]
+```
 
 ## 数据来源
 
@@ -62,9 +68,15 @@
 
 
 ## 下载
+[123 云盘](https://www.123pan.com/s/uyHuVv-dTdjH)
+
 [GitHub Release](https://github.com/JiaLiFuNia/SmartHNU/releases)
 
-[Telegram CI Channel](https://t.me/SmartHNU)
+[Telegram CI Channel](https://t.me/SmartHNU) 提供了 CI 版本
+
+## 反馈
+
+如果您在使用过程中遇到任何问题或有改进建议，您可以通过应用内反馈（设置-->反馈）或者通过邮件联系开发者：[xbh0704@outlook.com](mailto:xbh0704@outlook.com)
 
 ## 鸣谢
 
